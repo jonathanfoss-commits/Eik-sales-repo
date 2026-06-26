@@ -21,7 +21,7 @@ Shared, **non-secret** configuration and conventions for the Eik Sales OS. This 
 | --- | --- |
 | Timezone | `Europe/Oslo` |
 | Currency | `NOK` |
-| Default language | English (Norwegian variants suffixed `.no`) |
+| Default language | Norwegian (Bokmål); English variants suffixed `.en` (ADR 0001) |
 | Date format | ISO 8601 (`YYYY-MM-DD`) |
 | Owner (default) | Jonathan Foss |
 
@@ -30,9 +30,9 @@ When integrations are wired in Phase 1, list the credential *names* the system e
 
 | Reference name | Used by | Provided via |
 | --- | --- | --- |
+| `AIRTABLE_API_KEY` | Airtable CRM (`appzIFWfzob6WEhnq`) | Execution environment |
 | `GMAIL_OAUTH` | Gmail integration | Execution environment |
 | `GCAL_OAUTH` | Calendar integration | Execution environment |
-| `NOTION_TOKEN` | Notion CRM | Execution environment |
 
 (Names are illustrative — fill in as integrations are added. Values never appear here.)
 

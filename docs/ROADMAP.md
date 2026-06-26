@@ -20,24 +20,25 @@ Etablere en profesjonell, godt dokumentert struktur og de første verdifulle sal
 ## Fase 1 — Koble til verktøyene
 Få systemet til å handle på ekte data gjennom Jonathans daglige verktøy.
 
+- [x] Kartlegge de faktiske, tilkoblede systemene (Airtable, Gmail, Kalender, Drive, Notion-arkiv)
+- [x] Dokumentere det levende **Airtable-CRM-et** (skjema, pipeline) — se `crm/` + `integrations/airtable-integration.md`
 - [x] Dokumentere Gmail-integrasjonen (utkast, etiketter, triage) — se `integrations/gmail-integration.md`
-- [ ] Validere Gmail-integrasjonen mot den ekte kontoen
-- [x] Dokumentere Google Kalender-integrasjonen (reservasjoner, planlegging) — se `integrations/calendar-integration.md`
-- [ ] Validere Kalender-integrasjonen mot den ekte kontoen
-- [x] Dokumentere Notion-CRM-databasestrukturen — se `integrations/notion-integration.md`
-- [ ] Notion-CRM: opprette de faktiske databasene som speiler `crm/schema.md`
+- [x] Dokumentere Google Kalender-integrasjonen — se `integrations/calendar-integration.md`
+- [x] Markere det gamle Notion-salgssystemet som arkivert (ADR 0002)
+- [x] Dokumentere de virkelige n8n-agentene (Digital Jonathan, Gavekort-selger) — se `agents/`
 - [x] Definere miljø-/hemmelighetshåndtering i `config/`
-- [x] Dokumentere arbeidsflyten for innkommende lead-triage — se `workflows/inbound-lead-triage.md`
-- [ ] Bygge & validere lead-triage-arbeidsflyten i n8n
+- [ ] Validere Gmail-/Kalender-utkast mot ekte kontoer i drift
 
 ## Fase 2 — Automatisere det repeterende
 Redusere manuelt arbeid på gjentakende salgsbevegelser.
 
+- [ ] **CRM-hygiene-regel:** auto-flytt `Bekreftet → Gjennomført` når «Dato for selskap» passerer
+  (fjerner 86-rad-problemet permanent — se [helsesjekk](../analytics/crm-helsesjekk-2026-06-26.md))
+- [ ] **Håndhev «Neste oppfølging»:** ingen åpen avtale uten dato; varsle ved forfall
 - [ ] Automatisert oppfølgingssekvensering med godkjenningsporter
 - [ ] Møteforberedelses-brief auto-generert før hvert kalendermøte
-- [ ] Oppsummering etter møte + uttrekk av neste steg
 - [x] Dokumentere ukentlig pipeline-sammendrag (prompt + arbeidsflyt) — se `workflows/weekly-pipeline-digest.md`
-- [ ] Bygge & validere ukentlig pipeline-sammendrag i n8n
+- [ ] Bygge & validere ukentlig pipeline-sammendrag + helsesjekk i n8n
 
 ## Fase 3 — Innsikt & research
 Skjerpe målretting og personalisering.

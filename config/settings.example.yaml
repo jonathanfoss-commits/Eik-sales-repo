@@ -16,9 +16,9 @@ defaults:
 # Referanser til hemmeligheter — KUN navn, aldri verdier.
 # De faktiske verdiene bor i kjøremiljøet (Claude/ChatGPT/n8n/Zapier).
 secrets:
+  airtable_api_key: "AIRTABLE_API_KEY"   # CRM-base appzIFWfzob6WEhnq
   gmail_oauth: "GMAIL_OAUTH"
   calendar_oauth: "GCAL_OAUTH"
-  notion_token: "NOTION_TOKEN"
 
 # Integrasjonsinnstillinger (ikke-hemmelige)
 integrations:
@@ -28,8 +28,9 @@ integrations:
   calendar:
     default_calendar: "primary"
     create_invites: false    # lag reservasjoner; ikke inviter eksterne uten bekreftelse
-  notion:
-    crm_databases: ["Kontoer", "Kontakter", "Avtaler", "Aktiviteter"]
+  airtable:
+    base_id: "appzIFWfzob6WEhnq"   # Salgspipeline – Restaurant CRM
+    tables: ["Avtaler", "Venues", "Partneravtaler", "Kampanjer", "Agentlogg"]
 
 # Leveranse av rapporter
 reports:
