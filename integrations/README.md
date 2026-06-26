@@ -29,9 +29,16 @@ and the data it exposes — so agents act safely and predictably.
 5. **Privacy.** Don't export contact data out of the systems of record.
 
 ## Per-tool notes
-As each integration is validated in [Phase 1](../docs/ROADMAP.md), add a `*-integration.md` file
-here documenting: purpose, scopes/permissions used, the specific data fields read/written, and any
-quirks. Start with `gmail-integration.md` and `calendar-integration.md`.
+Detailed, per-tool integration docs (purpose, least-privilege permissions, conventions, and a
+Phase 1 validation checklist):
+
+| Doc | Tool | Status |
+| --- | --- | --- |
+| [`gmail-integration.md`](gmail-integration.md) | Gmail | Documented; pending validation |
+| [`calendar-integration.md`](calendar-integration.md) | Google Calendar | Documented; pending validation |
+| [`notion-integration.md`](notion-integration.md) | Notion (CRM) | Documented; pending build |
+
+Add a new `*-integration.md` as each additional tool is brought in.
 
 ## Adding a new integration
 1. Confirm it earns its place (a real, recurring need).

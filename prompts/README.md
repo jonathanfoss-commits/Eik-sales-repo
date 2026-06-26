@@ -51,7 +51,11 @@ A short filled-in example of input → output.
 - Bump `version` on meaningful edits; keep the `id` stable.
 
 ## Index
-- Outreach: [`cold-outreach`](outreach/cold-outreach.md), [`partnership-pitch`](outreach/partnership-pitch.md)
-- Follow-up: [`follow-up-sequence`](follow-up/follow-up-sequence.md)
+- Outreach: [`cold-outreach`](outreach/cold-outreach.md) ([🇳🇴](outreach/cold-outreach.no.md)),
+  [`partnership-pitch`](outreach/partnership-pitch.md) ([🇳🇴](outreach/partnership-pitch.no.md))
+- Follow-up: [`follow-up-sequence`](follow-up/follow-up-sequence.md) ([🇳🇴](follow-up/follow-up-sequence.no.md))
 - Meetings: [`meeting-prep`](meetings/meeting-prep.md), [`meeting-followup`](meetings/meeting-followup.md)
 - Negotiation: [`negotiation-prep`](negotiation/negotiation-prep.md)
+
+🇳🇴 = Norwegian (Bokmål) variant available. English is the default; keep variants in sync when
+editing the source prompt.

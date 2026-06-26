@@ -19,11 +19,15 @@ Establish a professional, well-documented structure and the first high-value sal
 ## Phase 1 — Connect the tools
 Make the system act on real data through Jonathan's daily tools.
 
-- [ ] Document and validate Gmail integration (drafting, labeling, triage)
-- [ ] Document and validate Google Calendar integration (holds, scheduling)
+- [x] Document Gmail integration (drafting, labeling, triage) — see `integrations/gmail-integration.md`
+- [ ] Validate Gmail integration against the live account
+- [x] Document Google Calendar integration (holds, scheduling) — see `integrations/calendar-integration.md`
+- [ ] Validate Calendar integration against the live account
+- [x] Document Notion CRM database structure — see `integrations/notion-integration.md`
 - [ ] Notion CRM: create the actual databases mirroring `crm/schema.md`
-- [ ] Define environment/secret handling conventions in `config/`
-- [ ] First n8n workflow: inbound lead triage → CRM + draft reply
+- [x] Define environment/secret handling conventions in `config/`
+- [x] Document the inbound lead triage workflow — see `workflows/inbound-lead-triage.md`
+- [ ] Build & validate the inbound lead triage workflow in n8n
 
 ## Phase 2 — Automate the repetitive
 Reduce manual effort on recurring sales motions.
@@ -52,7 +56,8 @@ Measure and improve the whole system.
 ## Backlog / opportunities
 Ideas worth doing when they rise to the top. Not yet scheduled.
 
-- Bilingual (Norwegian/English) prompt variants for local outreach.
+- Bilingual (Norwegian/English) prompt variants — *started:* outreach + follow-up localized;
+  extend to meetings/negotiation as needed.
 - Templated proposal & quote generation into Google Docs.
 - Partner/venue database with seasonal event calendar.
 - LinkedIn outreach playbook (if/when that channel is added).

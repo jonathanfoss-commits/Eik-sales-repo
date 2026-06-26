@@ -42,6 +42,9 @@ If a workflow's JSON is exported, commit it next to its doc as `<name>.json`.
 - **Idempotent where possible.** Re-running shouldn't double-send or duplicate records.
 - **Least privilege** on every connection (see [`integrations/`](../integrations/)).
 
-## Planned workflows
-See [Phase 1–2 of the roadmap](../docs/ROADMAP.md). First up:
-**inbound lead triage** — Gmail trigger → classify → CRM record + draft reply (with approval gate).
+## Workflows
+| Workflow | Status | Summary |
+| --- | --- | --- |
+| [`inbound-lead-triage`](inbound-lead-triage.md) | Draft (Phase 1) | Gmail trigger → classify → label + propose CRM record + draft reply (approval gate). |
+
+See [Phase 1–2 of the roadmap](../docs/ROADMAP.md) for what's next.
