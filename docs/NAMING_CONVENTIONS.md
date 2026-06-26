@@ -9,8 +9,9 @@ Consistency makes the repository navigable for humans and predictable for AI age
   `meeting-prep.md`, `sales-development-agent.md`.
 - **Documentation constants:** top-level docs use `UPPER_SNAKE_CASE.md` by convention
   (`ARCHITECTURE.md`, `ROADMAP.md`). Module content files use `kebab-case.md`.
-- **Language variants:** append `.no` before the extension for Norwegian
-  (`cold-outreach.no.md`). English is the default with no suffix.
+- **Language variants:** Norwegian (Bokmål) is the default with **no suffix** (see
+  [ADR 0001](decisions/0001-sprakpolicy.md)). An English variant, where genuinely needed, appends
+  `.en` before the extension (`cold-outreach.en.md`).
 - **READMEs:** every module folder has exactly one `README.md`.
 
 ## Agents

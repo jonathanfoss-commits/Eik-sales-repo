@@ -1,52 +1,55 @@
 ---
 id: partnership-pitch
-title: Partnership / Collaboration Pitch
+title: Partnerskap / Samarbeid (henvendelse)
 stage: outreach
 inputs: [partner_name, partner_company, partner_type, shared_value, proposed_collaboration, call_to_action]
 version: 1
+lang: no
+variants: [partnership-pitch.en.md]
 ---
 
-## Purpose
-Open a conversation about an ongoing partnership or marketing collaboration — for example with a
-restaurant, venue, supplier, or complementary brand. Unlike cold outreach (which sells a service),
-this frames a **mutual, two-way opportunity**.
+## Formål
+Åpne en samtale om et løpende partnerskap eller markedssamarbeid — for eksempel med en restaurant,
+et lokale, en leverandør eller en komplementær merkevare. I motsetning til kald henvendelse (som
+selger en tjeneste), rammer dette inn en **gjensidig mulighet**. Engelsk variant for
+internasjonale mottakere: [`partnership-pitch.en.md`](partnership-pitch.en.md).
 
-## Inputs
-- **partner_name** — first name of the contact.
-- **partner_company** — their business.
-- **partner_type** — _e.g._ `restaurant`, `venue`, `beverage brand`, `event partner`.
-- **shared_value** — the overlap that makes this make sense. _e.g._
-  `we both serve premium corporate clients in Oslo`.
-- **proposed_collaboration** — the concrete idea. _e.g._
-  `cross-promote each other's spaces for corporate bookings`.
-- **call_to_action** — the ask. _e.g._ `a coffee to explore it`.
+## Inndata
+- **partner_name** — fornavn på kontaktpersonen.
+- **partner_company** — virksomheten deres.
+- **partner_type** — _f.eks._ `restaurant`, `lokale/venue`, `drikkevaremerke`, `arrangementspartner`.
+- **shared_value** — overlappet som gjør dette logisk. _f.eks._
+  `vi betjener begge premium bedriftskunder i Oslo`.
+- **proposed_collaboration** — den konkrete idéen. _f.eks._
+  `henvise bedriftsbookinger til hverandre`.
+- **call_to_action** — forespørselen. _f.eks._ `en kaffe for å utforske det`.
 
 ## Prompt
-> You are writing on behalf of Jonathan Foss, Sales Manager at Eik & Friends (Norwegian
-> hospitality: corporate events, restaurant experiences, partnerships). Voice: warm, professional,
-> direct, collaborative — peer to peer, never salesy.
+> Du skriver på vegne av Jonathan Foss, Sales Manager i Eik & Friends (norsk hospitality:
+> bedriftsarrangementer, restaurantopplevelser, partnerskap). Tone: varm, profesjonell, direkte og
+> samarbeidsorientert — likeverdig, aldri selgersk.
 >
-> Write a partnership outreach email to {{partner_name}} at {{partner_company}}, a
+> Skriv en partnerskapshenvendelse på norsk (bokmål) til {{partner_name}} i {{partner_company}}, en
 > {{partner_type}}.
 >
-> Requirements:
-> - Frame this as a mutual opportunity, not a pitch for our services.
-> - Name the shared ground clearly: {{shared_value}}.
-> - Propose the collaboration concretely and lightly: {{proposed_collaboration}}.
-> - One clear, low-pressure ask: {{call_to_action}}.
-> - Under 130 words. Confident but humble; assume they're busy and successful.
-> - Provide a short, specific subject line.
-> - Sign off as Jonathan, Eik & Friends.
+> Krav:
+> - Ram det inn som en gjensidig mulighet, ikke som et salg av våre tjenester.
+> - Nevn det felles grunnlaget tydelig: {{shared_value}}.
+> - Foreslå samarbeidet konkret og uforpliktende: {{proposed_collaboration}}.
+> - Én tydelig, lavterskel forespørsel: {{call_to_action}}.
+> - Under 130 ord. Trygg, men ydmyk; anta at de er travle og dyktige.
+> - Lag en kort, konkret emnelinje.
+> - Avslutt med hilsen fra Jonathan, Eik & Friends.
 >
-> Output: subject line, then email body.
+> Output: emnelinje, deretter e-postteksten.
 
-## Notes & variations
-- Emphasize **what's in it for them** first; partners say yes to mutual upside, not favors.
-- For a warm/existing relationship, drop the framing and get straight to the idea.
-- Keep the first ask tiny (a chat), not a signed agreement.
+## Notater & varianter
+- Vektlegg **hva de får ut av det** først; partnere sier ja til gjensidig oppside, ikke tjenester.
+- Ved et varmt/eksisterende forhold: dropp innrammingen og gå rett på idéen.
+- Hold den første forespørselen liten (en prat), ikke en signert avtale.
 
-## Example
-Partner=`Lars` at `Bryggen Bistro` (restaurant); shared_value=`we both host premium corporate
-clients downtown`; proposed_collaboration=`send each other overflow event bookings`;
-call_to_action=`a coffee next week`. → A ~110-word note proposing a simple referral arrangement and
-a coffee to discuss.
+## Eksempel
+partner=`Lars` i `Bryggen Bistro` (restaurant); shared_value=`vi betjener begge premium
+bedriftskunder i sentrum`; proposed_collaboration=`sende overflow-bookinger til hverandre`;
+call_to_action=`en kaffe neste uke`. → En tekst på ca. 110 ord som foreslår en enkel
+henvisningsordning og en kaffe for å snakke om det.

@@ -1,51 +1,52 @@
 ---
 id: meeting-prep
-title: Meeting Prep Brief
+title: Møteforberedelse (brief)
 stage: meetings
 inputs: [meeting_purpose, attendees, account_context, deal_stage, recent_history, desired_outcome]
 version: 1
+lang: no
 ---
 
-## Purpose
-Produce a concise one-page brief before a sales or partnership meeting so Jonathan walks in
-prepared and outcome-focused.
+## Formål
+Lag en kort, nyttig brief før et salgs- eller partnermøte, slik at Jonathan går inn godt forberedt
+og målrettet.
 
-## Inputs
-- **meeting_purpose** — why the meeting is happening.
-- **attendees** — who's in the room (names, roles, company).
-- **account_context** — what we know about the account/relationship.
-- **deal_stage** — current pipeline stage, if applicable.
-- **recent_history** — last few touches, open threads, commitments made.
-- **desired_outcome** — the single most important result to leave with.
+## Inndata
+- **meeting_purpose** — hvorfor møtet finner sted.
+- **attendees** — hvem som er med (navn, roller, selskap).
+- **account_context** — hva vi vet om kunden/relasjonen.
+- **deal_stage** — nåværende pipeline-steg, om relevant.
+- **recent_history** — siste kontaktpunkter, åpne tråder, avtalte ting.
+- **desired_outcome** — det viktigste resultatet å gå ut med.
 
 ## Prompt
-> You are preparing Jonathan Foss (Sales Manager, Eik & Friends) for an upcoming meeting. Be
-> concise and practical — he'll skim this just before walking in.
+> Du forbereder Jonathan Foss (Sales Manager, Eik & Friends) til et kommende møte. Vær konkret og
+> praktisk — han skummer dette rett før han går inn.
 >
-> Meeting purpose: {{meeting_purpose}}
-> Attendees: {{attendees}}
-> Account context: {{account_context}}
-> Deal stage: {{deal_stage}}
-> Recent history: {{recent_history}}
-> Desired outcome: {{desired_outcome}}
+> Møtets formål: {{meeting_purpose}}
+> Deltakere: {{attendees}}
+> Kundekontekst: {{account_context}}
+> Pipeline-steg: {{deal_stage}}
+> Nylig historikk: {{recent_history}}
+> Ønsket resultat: {{desired_outcome}}
 >
-> Produce a one-page brief with these sections:
-> 1. **The room** — each attendee and their likely priority/concern (1 line each).
-> 2. **Where we stand** — 2–3 sentences on the deal/relationship.
-> 3. **Goal of this meeting** — the one outcome to aim for, stated sharply.
-> 4. **Agenda** — 3–5 bullets to guide the conversation.
-> 5. **Likely objections & responses** — 2–3, each with a brief response.
-> 6. **Smart questions to ask** — 3 that uncover needs or advance the deal.
-> 7. **Next step to propose** — the concrete commitment to ask for at the end.
+> Lag en brief på én side med disse seksjonene:
+> 1. **Rommet** — hver deltaker og deres sannsynlige prioritet/bekymring (én linje hver).
+> 2. **Hvor vi står** — 2–3 setninger om avtalen/relasjonen.
+> 3. **Målet med møtet** — det ene resultatet å sikte mot, skarpt formulert.
+> 4. **Agenda** — 3–5 punkter som styrer samtalen.
+> 5. **Sannsynlige innvendinger & svar** — 2–3, hver med et kort svar.
+> 6. **Gode spørsmål å stille** — 3 som avdekker behov eller flytter avtalen fremover.
+> 7. **Neste steg å foreslå** — den konkrete forpliktelsen å be om til slutt.
 >
-> If any context is missing, note it explicitly rather than guessing.
+> Mangler kontekst: si det eksplisitt i stedet for å gjette.
 
-## Notes & variations
-- For a first discovery meeting, weight sections 4 and 6 (agenda + questions).
-- For a late-stage/close meeting, weight sections 5 and 7 (objections + next step).
-- Keep it to one page — it's a pre-game glance, not a dossier.
+## Notater & varianter
+- For et første kartleggingsmøte: vektlegg seksjon 4 og 6 (agenda + spørsmål).
+- For et sent møte / closing: vektlegg seksjon 5 og 7 (innvendinger + neste steg).
+- Hold den til én side — dette er et raskt overblikk, ikke et dossier.
 
-## Example
-A discovery meeting with a 3-person buying group → brief that maps each person's likely concern,
-proposes a needs-focused agenda, and lists three open questions to qualify budget, timing, and
-decision process.
+## Eksempel
+Et kartleggingsmøte med en innkjøpsgruppe på tre → en brief som kartlegger hver persons sannsynlige
+bekymring, foreslår en behovsorientert agenda, og lister tre åpne spørsmål for å kvalifisere
+budsjett, timing og beslutningsprosess.

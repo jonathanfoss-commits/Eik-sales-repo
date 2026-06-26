@@ -1,62 +1,68 @@
 ---
 id: cold-outreach
-title: Cold Outreach Email
+title: Kald Henvendelse (e-post)
 stage: outreach
 inputs: [prospect_name, prospect_company, prospect_role, personalization_hook, offering, call_to_action]
 version: 1
+lang: no
+variants: [cold-outreach.en.md]
 ---
 
-## Purpose
-Draft a short, personalized first-contact email to a prospect who doesn't know us yet. Goal: earn
-a reply, not close a deal. Use when the target fits the ICP ([`../../sales/icp.md`](../../sales/icp.md)).
+## Formål
+Skriv en kort, personlig førstegangshenvendelse til en potensiell kunde som ikke kjenner oss ennå.
+Mål: få et svar, ikke lande en avtale. Brukes når kontakten passer ICP-en
+([`../../sales/icp.md`](../../sales/icp.md)). Engelsk variant for internasjonale mottakere:
+[`cold-outreach.en.md`](cold-outreach.en.md).
 
-## Inputs
-- **prospect_name** — first name. _e.g._ `Marit`
-- **prospect_company** — their company. _e.g._ `Nordic Tech AS`
-- **prospect_role** — their title. _e.g._ `Head of People`
-- **personalization_hook** — one specific, true reason you're reaching out now. _e.g._
-  `they just announced a 40-person Oslo office opening`
-- **offering** — what Eik & Friends can do for them. _e.g._ `host their team launch dinner`
-- **call_to_action** — the single ask. _e.g._ `a 15-minute call next week`
+## Inndata
+- **prospect_name** — fornavn. _f.eks._ `Marit`
+- **prospect_company** — selskap. _f.eks._ `Nordic Tech AS`
+- **prospect_role** — tittel. _f.eks._ `HR-sjef`
+- **personalization_hook** — én konkret, sann grunn til at du tar kontakt nå. _f.eks._
+  `de har akkurat annonsert et nytt kontor i Oslo med 40 ansatte`
+- **offering** — hva Eik & Friends kan gjøre for dem. _f.eks._ `arrangere lanseringsmiddagen deres`
+- **call_to_action** — den ene forespørselen. _f.eks._ `en kort prat på 15 minutter neste uke`
 
 ## Prompt
-> You are writing on behalf of Jonathan Foss, Sales Manager at Eik & Friends, a Norwegian
-> hospitality company specializing in corporate events, restaurant experiences, and partnerships.
-> Voice: warm, professional, direct. No hype, no pressure, no jargon.
+> Du skriver på vegne av Jonathan Foss, Sales Manager i Eik & Friends — et norsk
+> hospitality-selskap som spesialiserer seg på bedriftsarrangementer, restaurantopplevelser og
+> partnerskap. Tone: varm, profesjonell og direkte. Ingen svulstige ord, ingen press, ingen
+> stammespråk.
 >
-> Write a cold outreach email to {{prospect_name}}, {{prospect_role}} at {{prospect_company}}.
+> Skriv en kald henvendelse på norsk (bokmål) til {{prospect_name}}, {{prospect_role}} i
+> {{prospect_company}}.
 >
-> Requirements:
-> - Open with a specific, genuine reference to: {{personalization_hook}}. Do not flatter or fake.
-> - In one or two sentences, connect that to how we could help: {{offering}}.
-> - Make exactly one clear, low-friction ask: {{call_to_action}}.
-> - Keep it under 120 words. Short sentences. Easy to reply to on a phone.
-> - Sign off as Jonathan, Eik & Friends.
-> - Provide a subject line under 6 words that is specific, not salesy.
+> Krav:
+> - Åpne med en konkret, ekte referanse til: {{personalization_hook}}. Ikke smigre, ikke dikt opp.
+> - Knytt det i én–to setninger til hvordan vi kan hjelpe: {{offering}}.
+> - Ha nøyaktig én tydelig, lavterskel forespørsel: {{call_to_action}}.
+> - Hold den under 120 ord. Korte setninger. Lett å svare på fra mobilen.
+> - Avslutt med hilsen fra Jonathan, Eik & Friends.
+> - Lag en emnelinje på under 6 ord som er konkret, ikke selgersk.
 >
-> Output: subject line, then the email body. Nothing else.
+> Output: emnelinje, deretter e-postteksten. Ingenting annet.
 
-## Notes & variations
-- If the hook is weak or invented, **stop** and gather a real one first — a generic email is worse
-  than none.
-- Warmer intro (referral/mutual contact)? Lead with the connection instead of the hook.
-- Norwegian recipient? Use the `cold-outreach.no.md` variant when available.
+## Notater & varianter
+- Hvis vinkelen er svak eller oppdiktet, **stopp** og finn en ekte først — en generisk e-post er
+  verre enn ingen.
+- Varmere intro (felles kontakt/anbefaling)? Led med koblingen i stedet for vinkelen.
+- Bruk «du/dere»-form; norsk forretningstone er mindre formell enn engelsk.
 
-## Example
-**Input:** prospect_name=`Marit`, prospect_company=`Nordic Tech AS`, prospect_role=`Head of People`,
-personalization_hook=`your new Oslo office announcement`, offering=`host the team's launch dinner`,
-call_to_action=`a quick 15-min call next week`.
+## Eksempel
+**Inndata:** prospect_name=`Marit`, prospect_company=`Nordic Tech AS`, prospect_role=`HR-sjef`,
+personalization_hook=`det nye Oslo-kontoret deres`, offering=`arrangere lanseringsmiddagen`,
+call_to_action=`en kjapp prat på 15 min neste uke`.
 
-**Output (illustrative):**
-> **Subject:** Your Oslo office launch
+**Output (illustrasjon):**
+> **Emne:** Det nye Oslo-kontoret
 >
-> Hi Marit,
+> Hei Marit,
 >
-> Saw Nordic Tech is opening an Oslo office — congrats on the growth. Moments like this are worth
-> marking, and that's what we do: we host launch dinners and team gatherings that actually feel
-> personal, not corporate.
+> Så at Nordic Tech åpner kontor i Oslo — gratulerer med veksten. Slike øyeblikk er verdt å
+> markere, og det er akkurat det vi gjør: vi lager lanseringsmiddager og samlinger som faktisk
+> føles personlige, ikke korporative.
 >
-> Would a quick 15-minute call next week be worth it to see if we're a fit?
+> Hadde en kjapp prat på 15 minutter neste uke vært verdt det, for å se om vi passer sammen?
 >
-> Best,
+> Beste hilsen,
 > Jonathan — Eik & Friends

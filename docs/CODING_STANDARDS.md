@@ -5,8 +5,14 @@ data-model definitions, and the occasional script or workflow export. These stan
 everything consistent and readable for both humans and AI agents.
 
 ## General
-- **Language:** Documentation and prompts are written in **English** by default. Norwegian
-  variants live alongside the English version with a `.no` suffix (e.g. `cold-outreach.no.md`).
+- **Language:** **Norwegian (Bokmål) is the default** for everything business- and user-facing —
+  prompts, email templates, reports, AI outputs, CRM field labels, and documentation intended for
+  Jonathan (README, roadmap, sales playbooks, glossary). English is kept only where it follows
+  technical industry standard: code, APIs, variable names, field *identifiers* (`snake_case`),
+  stable `id`s, enum keys, filenames, and deep developer-internal docs. See
+  [ADR 0001](decisions/0001-sprakpolicy.md). Where an English-language variant of a prompt is
+  genuinely needed (international recipients), it lives alongside the Norwegian default with an
+  `.en` suffix (e.g. `cold-outreach.en.md`).
 - **Format:** Markdown for all documents. Plain, standard, GitHub-flavored Markdown.
 - **Line length:** Wrap prose at ~100 characters where practical. Never hard-wrap inside tables
   or code blocks.

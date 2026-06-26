@@ -1,61 +1,68 @@
-# Prompts
+# Prompter
 
-A versioned, reusable library of prompts for concrete sales tasks. Prompts are the building blocks
-that [agents](../agents/) compose. Keep them sharp, specific, and tool-agnostic so they work in
-Claude or ChatGPT alike.
+Et versjonert, gjenbrukbart bibliotek av prompter for konkrete salgsoppgaver. Prompter er
+byggeklossene som [agentene](../agents/) settes sammen av. Hold dem skarpe, konkrete og
+verktøy-uavhengige, slik at de fungerer i både Claude og ChatGPT.
 
-## Organization
-Prompts are grouped by sales stage:
+> **Språk:** Norsk (bokmål) er standard, jf. [ADR 0001](../docs/decisions/0001-sprakpolicy.md).
+> Standardfilen (uten suffiks) er norsk. Engelsk variant, der den trengs for internasjonale
+> mottakere, ligger som `<navn>.en.md`.
 
-| Folder | Stage |
+## Organisering
+Prompter er gruppert etter salgsfase:
+
+| Mappe | Fase |
 | --- | --- |
-| [`outreach/`](outreach/) | First contact — cold and warm outbound. |
-| [`follow-up/`](follow-up/) | Advancing or reviving conversations. |
-| [`meetings/`](meetings/) | Preparing for and following up on meetings. |
-| [`negotiation/`](negotiation/) | Working terms toward a close. |
+| [`outreach/`](outreach/) | Førstegangskontakt — kald og varm utgående. |
+| [`follow-up/`](follow-up/) | Bevege eller gjenopplive samtaler. |
+| [`meetings/`](meetings/) | Forberede og følge opp møter. |
+| [`negotiation/`](negotiation/) | Jobbe mot betingelser og signering. |
 
-## Prompt file template
-Every prompt follows this structure:
+## Mal for promptfil
+Hver prompt følger denne strukturen:
 
 ```markdown
 ---
-id: <stable-kebab-id>
-title: <Human Title>
+id: <stabil-kebab-id>
+title: <Tittel>
 stage: outreach | follow-up | meetings | negotiation
-inputs: [list, of, required, inputs]
+inputs: [liste, over, inndata]
 version: 1
+lang: no
 ---
 
-## Purpose
-What this prompt is for and when to use it.
+## Formål
+Hva prompten er til og når den brukes.
 
-## Inputs
-Each input explained, with example values.
+## Inndata
+Hver inndata forklart, med eksempelverdier.
 
 ## Prompt
-> The actual prompt text, with {{placeholders}} for inputs.
+> Selve prompteksten, med {{plassholdere}} for inndata.
 
-## Notes & variations
-Tips, common adjustments, and when *not* to use it.
+## Notater & varianter
+Tips, vanlige justeringer, og når den *ikke* bør brukes.
 
-## Example
-A short filled-in example of input → output.
+## Eksempel
+Et kort, utfylt eksempel på inndata → output.
 ```
 
-## Conventions
-- **Placeholders** use `{{double_braces}}` and match the `inputs` list exactly.
-- **Tool-agnostic** by default. If a prompt is tied to a surface, say so in Notes.
-- **Honest and concise.** Eik & Friends' voice is warm, professional, and direct — no hype, no
-  pressure. Short messages with one clear call to action.
-- **Localize when needed.** Norwegian variants use the `.no.md` suffix.
-- Bump `version` on meaningful edits; keep the `id` stable.
+## Konvensjoner
+- **Plassholdere** bruker `{{doble_klammer}}` og matcher `inputs`-listen nøyaktig.
+- **Verktøy-uavhengig** som standard. Er en prompt knyttet til én flate, si det i Notater.
+- **Ærlig og konsis.** Eik & Friends' stemme er varm, profesjonell og direkte — ingen svulst, intet
+  press. Korte meldinger med én tydelig oppfordring.
+- **Engelsk variant** lages kun ved reelt behov (internasjonale mottakere), som `<navn>.en.md`.
+- **Identifikatorer på engelsk:** `id`, `stage` og `inputs`-nøkler holdes på engelsk (teknisk
+  standard, jf. ADR 0001). Selve innholdet er norsk.
+- Øk `version` ved meningsfulle endringer; hold `id` stabil.
 
-## Index
-- Outreach: [`cold-outreach`](outreach/cold-outreach.md) ([🇳🇴](outreach/cold-outreach.no.md)),
-  [`partnership-pitch`](outreach/partnership-pitch.md) ([🇳🇴](outreach/partnership-pitch.no.md))
-- Follow-up: [`follow-up-sequence`](follow-up/follow-up-sequence.md) ([🇳🇴](follow-up/follow-up-sequence.no.md))
-- Meetings: [`meeting-prep`](meetings/meeting-prep.md), [`meeting-followup`](meetings/meeting-followup.md)
-- Negotiation: [`negotiation-prep`](negotiation/negotiation-prep.md)
-
-🇳🇴 = Norwegian (Bokmål) variant available. English is the default; keep variants in sync when
-editing the source prompt.
+## Register
+| Prompt | Fase | Norsk (standard) | Engelsk variant |
+| --- | --- | --- | --- |
+| Kald henvendelse | outreach | [`cold-outreach.md`](outreach/cold-outreach.md) | [`.en`](outreach/cold-outreach.en.md) |
+| Partnerskap / samarbeid | outreach | [`partnership-pitch.md`](outreach/partnership-pitch.md) | [`.en`](outreach/partnership-pitch.en.md) |
+| Oppfølgingssekvens | follow-up | [`follow-up-sequence.md`](follow-up/follow-up-sequence.md) | [`.en`](follow-up/follow-up-sequence.en.md) |
+| Møteforberedelse | meetings | [`meeting-prep.md`](meetings/meeting-prep.md) | — |
+| Oppfølging etter møte | meetings | [`meeting-followup.md`](meetings/meeting-followup.md) | — |
+| Forhandlingsforberedelse | negotiation | [`negotiation-prep.md`](negotiation/negotiation-prep.md) | — |
