@@ -54,6 +54,8 @@ Lag et førsteutkast til et tilbud på et bedriftsarrangement, basert på
 > Output: hele tilbudet som ferdig tekst, klart til gjennomgang og innliming i Google Docs.
 
 ## Notater & varianter
+- **Velg riktig lokale** med [`sales/lokaler.md`](../../sales/lokaler.md) (venue-guide) — match på
+  gjestetall og type, og foreslå gjerne 2–3 alternativer.
 - Dette er et **førsteutkast** — Jonathan gjennomgår og justerer før sending.
 - For enklere arrangementer: be modellen droppe program-seksjonen.
 - Marker alltid usikre tall som `[avklares]` fremfor å gjette — et tilbud må være etterrettelig.
