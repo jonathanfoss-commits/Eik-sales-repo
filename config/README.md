@@ -12,7 +12,9 @@ Shared, **non-secret** configuration and conventions for the Eik Sales OS. This 
 ## What lives here
 - Shared constants and conventions (timezone, currency, language defaults).
 - Non-secret references to integrations (the *names* of credentials, not the values).
-- Example/template config files (`*.example.*`) showing structure without real data.
+- Example/template config files (`*.example.*`) showing structure without real data —
+  see [`settings.example.yaml`](settings.example.yaml). Copy it to `settings.local.yaml`
+  (git-ignored) and adapt.
 
 ## Shared defaults
 | Setting | Value |

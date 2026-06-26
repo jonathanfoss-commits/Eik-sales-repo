@@ -39,10 +39,13 @@ arbeidet, gjenta det og forbedre det over tid.
 
 ## Kom i gang
 
-1. Les [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for å forstå hvordan delene henger sammen.
-2. Les [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md) for å forstå *hvordan* vi bygger her.
-3. Bla i [`prompts/`](prompts/) for ferdige salgsprompter.
-4. Se [`docs/SETUP.md`](docs/SETUP.md) for å koble til verktøyene dine.
+- **Skal du bruke systemet i salgshverdagen?** Start med
+  [`docs/bruk.md`](docs/bruk.md) — situasjon → riktig ressurs, uten teknisk oppsett.
+- **Vil du forstå hvordan systemet er bygd?**
+  1. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — hvordan delene henger sammen.
+  2. [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md) — *hvordan* vi bygger her.
+  3. [`prompts/`](prompts/) — ferdige salgsprompter.
+  4. [`docs/SETUP.md`](docs/SETUP.md) — koble til verktøyene dine.
 
 > Merk: De dype tekniske dokumentene (arkitektur, prinsipper, kodestandard) er på engelsk fordi de
 > primært er for AI-agenter og fremtidige utviklere. Alt forretningsvendt — denne README-en,
