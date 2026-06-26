@@ -36,3 +36,4 @@ Hva betyr dette fremover (positivt og negativt)?
 | --- | --- | --- |
 | [0001](0001-sprakpolicy.md) | Norsk (bokmål) som standardspråk | Vedtatt |
 | [0002](0002-faktisk-systemarkitektur.md) | Faktisk systemarkitektur: Airtable-CRM + n8n-agenter | Vedtatt |
+| [0003](0003-relasjonell-crm-kjerne.md) | Relasjonell CRM-kjerne med Bedrifter som navet | Vedtatt (struktur) |

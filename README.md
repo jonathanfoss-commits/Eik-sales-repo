@@ -33,7 +33,7 @@ arbeidet, gjenta det og forbedre det over tid.
 | [`workflows/`](workflows/) | Automatiseringer (n8n, Zapier) og dokumentasjonen av dem. |
 | [`analytics/`](analytics/) | Datadrevne helsesjekker og analyser av CRM-et. |
 | [`config/`](config/) | Konfigurasjonskonvensjoner, miljø og delte innstillinger. |
-| [`docs/`](docs/) | Arkitektur, veikart, prinsipper og standarder for bidragsytere. |
+| [`docs/`](docs/) | Strategi, arkitektur, veikart, prinsipper og standarder. |
 
 > Mapper opprettes bare når de har reelt, nyttig innhold. Vi vokser strukturen etter behov — aldri
 > tomt stillas.

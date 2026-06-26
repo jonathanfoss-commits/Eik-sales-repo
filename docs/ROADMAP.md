@@ -4,6 +4,16 @@ En levende, faseinndelt plan for Eik Sales OS. Hver fase leverer selvstendig ver
 en fase før den forrige er reelt nyttig. Punkter beveger seg fra **Planlagt → Pågår → Ferdig**.
 Teknisk gjeld og muligheter som oppdages underveis fanges nederst.
 
+> **Strategisk retning:** se [`docs/STRATEGY.md`](STRATEGY.md) (10x/5-års-visjon). De strategiske
+> initiativene under er forankret der og i ADR-ene.
+
+## Strategiske initiativer (fra STRATEGY.md)
+- [ ] **Relasjonell CRM-kjerne** (Bedrifter som navet) — [ADR 0003](decisions/0003-relasjonell-crm-kjerne.md). *Pågår: struktur.*
+- [ ] **Gavekort-produktifisering** (årsavtaler + sesongtriggere) — gjentakende inntekt.
+- [ ] **Måle-loop** (utfall per AI-handling → forbedring) — komponerende kvalitet.
+- [ ] **Agent-mesh + kunnskapslag** — fra én monolitt til spesialiserte, styrte agenter.
+- [ ] **Venue-matchemodell** — anbefal lokale automatisk fra gjestetall/type/sesong.
+
 ---
 
 ## Fase 0 — Grunnmur ✅
