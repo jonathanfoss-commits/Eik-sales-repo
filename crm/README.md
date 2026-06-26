@@ -1,43 +1,48 @@
 # CRM
 
-**Datamodellen** for kunder og avtaler i Eik Sales OS. Denne modulen definerer *formen på dataene* —
-hva en kontakt, konto og avtale er — og hvordan de mappes mot verktøyene som faktisk lagrer de
-levende postene (primært Notion, Google Sheets som et lett alternativ).
+Dokumentasjon av det **levende CRM-et** for Eik & Friends. Det faktiske systemet er en
+**Airtable-base** — «Salgspipeline – Restaurant CRM» (`appzIFWfzob6WEhnq`) — ikke noe som bor i
+dette repoet. Denne modulen *beskriver* basens tabeller, felter og konvensjoner så mennesker og
+AI-agenter jobber konsistent mot den. Se [ADR 0002](../docs/decisions/0002-faktisk-systemarkitektur.md).
 
-> **Viktig:** Ingen levende kundedata ligger i dette repoet. Dette er skjemaet og konvensjonene.
-> Selve postene ligger i de tilkoblede kildesystemene (se [`integrations/`](../integrations/)). Én
-> sannhetskilde per område ([`docs/PRINCIPLES.md`](../docs/PRINCIPLES.md)).
+> **Viktig:** Levende kundedata ligger i Airtable, ikke her. Dette er skjemaet og konvensjonene.
+> Endres Airtable-skjemaet, oppdater denne dokumentasjonen. Én sannhetskilde per område
+> ([`docs/PRINCIPLES.md`](../docs/PRINCIPLES.md)).
 
-> **Språk:** Synlige feltnavn og utvalgsverdier er på norsk; felt-*identifikatorer* (`snake_case`)
-> holdes på engelsk for robuste integrasjoner (jf. [ADR 0001](../docs/decisions/0001-sprakpolicy.md)).
+> **Historikk:** Et tidligere Notion-salgssystem ble arkivert 12.06.2026 og erstattet av Airtable.
+> Vi skriver ikke til Notion-arkivet. Se [`integrations/notion-integration.md`](../integrations/notion-integration.md).
 
-## Innhold
-| Fil | Hva den definerer |
+> **Språk:** Synlige feltnavn og utvalgsverdier er på norsk (slik de er i Airtable);
+> tabell-/felt-id-er er Airtables tekniske id-er. Jf. [ADR 0001](../docs/decisions/0001-sprakpolicy.md).
+
+## Eik & Friends i korthet
+Eik & Friends er et **restaurantkollektiv** med ~22 spisesteder i Oslo-området (TAKET Steen &
+Strøm, Sawan, Amazonia by BAR, Kastellet, Honolulu, Bar Vulkan, Brød & Sirkus m.fl.). Salget er
+**bedriftsevent, private selskaper, gavekort og Amex-avtaler** på tvers av disse lokalene. To
+selgere: **Jonathan Foss** og **Christopher Erstad**.
+
+## Basens tabeller
+| Tabell | Hva den holder |
 | --- | --- |
-| [`schema.md`](schema.md) | Entitetene (Konto, Kontakt, Avtale, Aktivitet) og feltene deres. |
-| [`pipeline-stages.md`](pipeline-stages.md) | Pipeline-stegene for avtaler og betydningen deres. |
+| **Avtaler** | Alle leads, tilbud og bekreftede bestillinger. Én rad per avtale/event. Kjernen. |
+| **Venues** | Register over de ~22 spisestedene (kapasitet, konsept, egnethet, kontakt). |
+| **Partneravtaler** | Samarbeids-/partneravtaler med fornyelsessyklus (medlemsfordeler, sponsor, gavekort-distribusjon). |
+| **Kampanjer** | Salgs- og markedskampanjer (julebord, sommer, gavekort, Amex, events). |
+| **Agentlogg** | AI-aktivitetslogg: hva n8n-agentene har gjort og hva som trenger menneskelig vurdering. |
 
-## Entitetene i korthet
-- **Konto (Account)** — en virksomhet vi selger til eller samarbeider med (inkl. partnerlokaler).
-- **Kontakt (Contact)** — en person hos en konto.
-- **Avtale (Deal)** — en potensiell forretning som beveger seg gjennom pipelinen.
-- **Aktivitet (Activity)** — en logget interaksjon (e-post, samtale, møte, notat).
-
-```
-Konto 1───* Kontakt
-   │              │
-   *              *
-   └──── Avtale ──┘
-          │
-          *
-      Aktivitet
-```
+Detaljerte felter og utvalgsverdier: [`schema.md`](schema.md). Pipeline (Avtaler.Status):
+[`pipeline-stages.md`](pipeline-stages.md).
 
 ## Slik bruker agentene dette
-- Før du oppretter eller oppdaterer en post, følg `schema.md` for feltnavn og typer.
-- Bruk de eksakte pipeline-stegverdiene fra `pipeline-stages.md`.
-- Foreslå CRM-endringer for menneskelig gjennomgang (standard) fremfor å skrive stille.
+- **Les skjemaet** i `schema.md` før du oppretter eller oppdaterer en rad — bruk eksakte feltnavn
+  og utvalgsverdier.
+- **Avtaler er navet:** nye leads blir rader i Avtaler, knyttet til en Venue og en Selger.
+- **Foreslå endringer for gjennomgang** der det er utadrettet konsekvens; rene CRM-oppdateringer
+  (status, neste oppfølging) gjøres av n8n-agentene og logges i Agentlogg.
+- **Aldri skriv til det arkiverte Notion-systemet.**
 
-## Implementasjonsnotat
-Fase 1 i [veikartet](../docs/ROADMAP.md) oppretter de faktiske Notion-databasene som speiler dette
-skjemaet. Inntil da er dette kontrakten agenter og mennesker skal følge.
+## Tilkobling
+Airtable nås via Airtable-integrasjonen (se
+[`integrations/airtable-integration.md`](../integrations/airtable-integration.md)). n8n-agentene
+leser og skriver til basen som en del av sine arbeidsflyter
+([`workflows/`](../workflows/)).

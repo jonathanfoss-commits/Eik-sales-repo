@@ -1,4 +1,22 @@
-# Notion Integration
+# Notion-integrasjon (ARKIVERT)
+
+> ⚠️ **ARKIVERT.** Notion-salgssystemet ble arkivert 12.06.2026 og erstattet av Airtable-CRM-et.
+> **Vi skriver ikke til Notion-arkivet.** Det levende CRM-et er nå i Airtable — se
+> [`airtable-integration.md`](airtable-integration.md) og
+> [ADR 0002](../docs/decisions/0002-faktisk-systemarkitektur.md). Dette dokumentet beholdes kun som
+> historikk.
+
+## Historikk
+Det opprinnelige salgssystemet («Eik & Friends Salgs- og Eventsystem») lå i Notion med databaser
+for Pipeline, Kontakter, Partnere og avtaler, Salgslogg, KPI og Forecast og Oppgaver, samt
+Command Center-sider. Det ble migrert til Airtable for bedre integrasjon med n8n-automatiseringen.
+Aktive avtaler ble flyttet; Notion-sidene ligger under en «🗄️ ARKIV»-forelder og oppdateres ikke.
+
+Notion kan fortsatt brukes som **kunnskaps-/dokumentbase** (ikke-CRM) ved behov, men all
+salgspipeline lever i Airtable.
+
+<details>
+<summary>Opprinnelig (utdatert) integrasjonsbeskrivelse</summary>
 
 How the Eik Sales OS works with Notion. Notion is the primary **system of record for the CRM and
 knowledge base**. The databases mirror the model defined in [`crm/schema.md`](../crm/schema.md).
@@ -48,3 +66,5 @@ Credential reference: `NOTION_TOKEN` (supplied by the execution environment).
 - [ ] Deal `Stage` select matches `pipeline-stages.md` exactly.
 - [ ] Integration token connected with read/write (no delete) scope.
 - [ ] A sample Account→Contact→Deal→Activity chain round-trips correctly.
+
+</details>

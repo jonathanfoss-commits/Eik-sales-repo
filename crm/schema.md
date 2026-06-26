@@ -1,90 +1,116 @@
-# CRM-skjema
+# CRM-skjema (Airtable)
 
-Den kanoniske datamodellen. Felt-*identifikatorer* bruker `snake_case` og holdes på engelsk (teknisk
-standard, jf. [ADR 0001](../docs/decisions/0001-sprakpolicy.md)); typene kommer fra det faste
-vokabularet i [`docs/NAMING_CONVENTIONS.md`](../docs/NAMING_CONVENTIONS.md). Kolonnen **Synlig navn**
-viser den norske Notion-egenskapen / Sheet-kolonnen — det brukervendte navnet.
+Dokumentasjon av det faktiske skjemaet i Airtable-basen «Salgspipeline – Restaurant CRM»
+(`appzIFWfzob6WEhnq`). Feltnavn og utvalgsverdier er gjengitt nøyaktig slik de er i basen (norsk).
+Endres basen, oppdater denne filen. Jf. [ADR 0002](../docs/decisions/0002-faktisk-systemarkitektur.md).
 
 ---
 
-## Konto (Account)
-En virksomhet vi selger til eller samarbeider med.
+## Avtaler  `tblIrsWlPYO3K4AXz`
+Alle leads, tilbud og bekreftede bestillinger. Én rad per avtale/event. **Kjernetabellen.**
 
-| Felt (id) | Type | Påkrevd | Beskrivelse | Synlig navn |
-| --- | --- | --- | --- | --- |
-| `account_id` | text | ja | Stabil unik id (kebab-case). | Tittel/nøkkel |
-| `name` | text | ja | Selskapsnavn. | Navn |
-| `account_type` | select | ja | `Kunde`, `Prospekt`, `Partner`. | Type |
-| `industry` | text | nei | Bransje/sektor. | Bransje |
-| `size` | select | nei | `1-19`, `20-49`, `50-199`, `200-499`, `500+`. | Størrelse |
-| `location` | text | nei | By / region. | Sted |
-| `website` | url | nei | Nettside. | Nettside |
-| `icp_fit` | select | nei | `Sterk`, `Moderat`, `Svak`. | ICP-treff |
-| `owner` | text | ja | Intern eier (standard: Jonathan). | Eier |
-| `notes` | long_text | nei | Fri kontekst. | Notater |
-| `created_at` | date | ja | Post opprettet. | Opprettet |
+| Felt | Type | Beskrivelse |
+| --- | --- | --- |
+| Tittel | singleLineText | Kort navn, f.eks. «Pareto – Sommerfest Amazonia». (Primærfelt.) |
+| Bedrift | singleLineText | Kundens firma. |
+| Kontaktperson | singleLineText | Navn på kontakt. |
+| Telefon | phoneNumber | Telefon. |
+| Epost | email | E-post. |
+| Selger | singleSelect | `Jonathan Foss`, `Christopher Erstad`. |
+| Restaurant | singleSelect | Lokalet (22 venues) + `Gavekort`, `Amex`, `Flere/Annet`. Se [Venues](#venues--tblgmdhwepcy4596a). |
+| Type | singleSelect | `Bedriftsevent`, `Privat`, `Gavekort`, `Amex`, `Annet`. |
+| Status | singleSelect | Pipeline — se [`pipeline-stages.md`](pipeline-stages.md). |
+| Totalbudsjett | currency (NOK) | Samlet verdi. |
+| Spend per pax | currency (NOK) | Forbruk per gjest. |
+| Antall pax | number | Antall gjester. |
+| Dato for selskap | date | Når arrangementet avholdes. |
+| Booket dato | date | Når avtalen ble booket. |
+| Neste oppfølging | date | Når lead/kunde skal følges opp neste gang. Brukes i mandagsbriefen. |
+| Notater | multilineText | Fri kontekst. |
+| Dager til selskap | formula | Antall dager til «Dato for selskap». |
+| Forfalt oppfølging | formula | Flagger om «Neste oppfølging» er passert. |
+| Vektet verdi | formula | Totalbudsjett × sannsynlighet (avledet av Status). |
+| Gmail-tråd | url | Lenke til kilde-eposten. **Settes automatisk av n8n** ved lead-intake. |
+| Tilbudsutkast laget | checkbox | **Settes av n8n Tilbud-agenten** når et utkast er generert (hindrer dobbeltbehandling). |
 
-## Kontakt (Contact)
-En person hos en konto.
+## Venues  `tblgMDhWEPCY4596A`
+Register over spisestedene i porteføljen. Brukes av AI-agenten til venueforslag og tilbud.
 
-| Felt (id) | Type | Påkrevd | Beskrivelse | Synlig navn |
-| --- | --- | --- | --- | --- |
-| `contact_id` | text | ja | Stabil unik id. | Tittel/nøkkel |
-| `account_id` | relation | ja | Tilhørende konto. | Konto (relasjon) |
-| `first_name` | text | ja | Fornavn. | Fornavn |
-| `last_name` | text | nei | Etternavn. | Etternavn |
-| `role` | text | nei | Stillingstittel. | Rolle |
-| `email` | email | nei | Primær e-post. | E-post |
-| `phone` | phone | nei | Telefon. | Telefon |
-| `is_decision_maker` | boolean | nei | Økonomisk/beslutningsmyndighet. | Beslutningstaker |
-| `do_not_contact` | boolean | nei | Reservasjonsflagg — respekteres alltid. | Ikke kontakt |
-| `preferred_language` | select | nei | `Norsk`, `Engelsk`. | Språk |
-| `notes` | long_text | nei | Kontekst om personen. | Notater |
+| Felt | Type | Beskrivelse |
+| --- | --- | --- |
+| Navn | singleLineText | Lokalets navn. (Primærfelt.) |
+| Sted | singleLineText | By/område. |
+| Konsept | singleLineText | Kjøkken/konsept kort. |
+| Nettside | url | Lokalets nettside. |
+| Kontaktperson | singleLineText | Kontakt på lokalet. |
+| Kontakt-epost | email | E-post. |
+| Maks pax | number | Maks kapasitet. |
+| Egnet for | multipleSelects | `Julebord`, `Sommerfest`, `Konferanse`, `Stort event 150+`, `Mindre grupper`, `Privatfest`, `Uteservering`, `Nattklubb/fest`, `Matkurs`. |
+| Priser og vilkår | multilineText | Pris/vilkår. |
+| Notater | multilineText | Fri kontekst. |
+| Verifisert | checkbox | Avhuket når Jonathan har kvalitetssikret raden. |
 
-## Avtale (Deal)
-En potensiell forretning.
+**Lokaler (Restaurant-valg i Avtaler):** TAKET Steen & Strøm, FYR Bistronomi & Bar, Sawan,
+Amazonia by BAR, Brød & Sirkus, Kafe Republik, Kastellet, Honolulu, Girotondo, Bar Vulkan,
+Hitchhiker, LULU, Rugantino, Der Peppern Gror Rådhusplassen, Delicatessen Aker Brygge,
+Delicatessen Stavanger, Vineria Ventidue, Smalhans, Katla, HEIM Gastropub St. Hanshaugen, Folkvang,
+The Golden Chimp.
 
-| Felt (id) | Type | Påkrevd | Beskrivelse | Synlig navn |
-| --- | --- | --- | --- | --- |
-| `deal_id` | text | ja | Stabil unik id. | Tittel/nøkkel |
-| `name` | text | ja | Forståelig avtalenavn. | Navn |
-| `account_id` | relation | ja | Tilknyttet konto. | Konto (relasjon) |
-| `primary_contact_id` | relation | nei | Hovedkontakt. | Kontakt (relasjon) |
-| `deal_type` | select | ja | `Bedriftsarrangement`, `Restaurantpartnerskap`, `Markedssamarbeid`, `Annet`. | Type |
-| `stage` | select | ja | Se [`pipeline-stages.md`](pipeline-stages.md). | Steg |
-| `value` | currency | nei | Forventet verdi (NOK). | Verdi |
-| `expected_close_date` | date | nei | Beste estimat for signering. | Sluttdato |
-| `next_step` | text | ja* | Neste handling. *(påkrevd mens åpen)* | Neste steg |
-| `next_step_date` | date | ja* | Når neste handling forfaller. | Dato neste steg |
-| `probability` | number | nei | 0–100 % sannsynlighet. | Sannsynlighet |
-| `source` | select | nei | `Utgående`, `Innkommende`, `Anbefaling`, `Partner`. | Kilde |
-| `lost_reason` | text | nei | Hvis tapt, hvorfor (ærlig). | Tapsårsak |
-| `owner` | text | ja | Avtaleeier. | Eier |
-| `created_at` | date | ja | Post opprettet. | Opprettet |
+## Partneravtaler  `tbl2rul6qnsOselDY`
+Samarbeids- og partneravtaler med fornyelsessyklus (ulikt enkeltbookinger i Avtaler).
 
-\* `next_step` og `next_step_date` er påkrevd for enhver avtale som ikke er i et avsluttet steg
-(`Vunnet`/`Tapt`) — se steghygiene i [`sales/methodology.md`](../sales/methodology.md).
+| Felt | Type | Beskrivelse |
+| --- | --- | --- |
+| Avtalenavn | singleLineText | Kort navn, f.eks. «Glede – medlemsfordel 2026». (Primærfelt.) |
+| Partner | singleLineText | Partnerens navn. |
+| Type | singleSelect | `Medlemsfordel`, `Sponsor`, `Gjensidig henvisning`, `Gavekort-distribusjon`, `Annet`. |
+| Status | singleSelect | `Prospekt`, `I dialog`, `Aktiv`, `Pauset`, `Avsluttet`. |
+| Verdi per år | currency (NOK) | Årlig verdi. |
+| Rabatt | percent | Eventuell rabatt. |
+| Startdato | date | Start. |
+| Fornyelsesdato | date | Når avtalen fornyes. |
+| Kontaktperson | singleLineText | Kontakt. |
+| Kontakt-epost | email | E-post. |
+| Ansvarlig | singleSelect | `Jonathan Foss`, `Christopher Erstad`. |
+| Notater | multilineText | Fri kontekst. |
+| Fornyelsesvarsel | formula | Flagger avtaler som nærmer seg eller har passert fornyelse. |
 
-## Aktivitet (Activity)
-En logget interaksjon.
+## Kampanjer  `tblCSWGuK6JyZsIyG`
+Salgs- og markedskampanjer for planlegging og resultatoppfølging.
 
-| Felt (id) | Type | Påkrevd | Beskrivelse | Synlig navn |
-| --- | --- | --- | --- | --- |
-| `activity_id` | text | ja | Stabil unik id. | Tittel/nøkkel |
-| `deal_id` | relation | nei | Tilknyttet avtale (om noen). | Avtale (relasjon) |
-| `contact_id` | relation | nei | Tilknyttet kontakt. | Kontakt (relasjon) |
-| `type` | select | ja | `E-post`, `Samtale`, `Møte`, `Notat`, `Oppgave`. | Type |
-| `summary` | long_text | ja | Hva som skjedde / ble sagt. | Sammendrag |
-| `occurred_at` | datetime | ja | Når det skjedde (Europe/Oslo). | Tidspunkt |
-| `created_by` | text | ja | Menneske- eller agentnavn. | Opprettet av |
+| Felt | Type | Beskrivelse |
+| --- | --- | --- |
+| Kampanjenavn | singleLineText | Navn. (Primærfelt.) |
+| Type | singleSelect | `Julebord`, `Sommer`, `Gavekort`, `Amex`, `Event`, `Medlemsfordel`, `Annet`. |
+| Status | singleSelect | `Idé`, `Planlagt`, `Aktiv`, `Avsluttet`. |
+| Startdato / Sluttdato | date | Kampanjeperiode. |
+| Målgruppe | singleLineText | Hvem kampanjen retter seg mot. |
+| Kanal | multipleSelects | `E-post`, `LinkedIn`, `Telefon`, `Partner`, `Nettside`, `Sosiale medier`, `Annet`. |
+| Mål | multilineText | Kampanjemål. |
+| Resultat omsetning | currency (NOK) | Oppnådd omsetning. |
+| Ansvarlig | singleSelect | Selger. |
+| Notater | multilineText | Fri kontekst. |
+
+## Agentlogg  `tblvJbS3hvhC1C4cY`
+AI-aktivitetslogg: hva n8n-agentene har gjort, besluttet og trenger hjelp til.
+
+| Felt | Type | Beskrivelse |
+| --- | --- | --- |
+| Handling | singleLineText | Kort hva agenten gjorde. (Primærfelt.) |
+| Tidspunkt | dateTime | Når. |
+| Agent | singleSelect | `Digital Jonathan (AI)`, `Gavekort-selger (AI)`, `Annen agent`. |
+| Kategori | singleSelect | `Prospektering`, `Outreach-utkast`, `CRM-oppdatering`, `Tilbud`, `Oppfølging`, `Analyse/rapport`, `Annet`. |
+| Resultat | multilineText | Hva som kom ut av handlingen. |
+| Trenger menneskelig vurdering | checkbox | Flagg for at Jonathan bør se på det. |
+| Relatert avtale/bedrift | singleLineText | Kobling til avtale/bedrift. |
 
 ---
 
 ## Konvensjoner
-- **Id-er er stabile og gjenbrukes aldri.** Bruk beskrivende kebab-case
-  (`deal-acme-2026-vaarlansering`).
-- **Datoer** er ISO 8601; datotid bærer Europe/Oslo-konteksten.
-- **Relasjoner** refererer til den tilknyttede entitetens id.
-- **Synlige navn og utvalgsverdier er norske; identifikatorer er engelske.** Endrer du skjemaet, må
-  det reflekteres i Notion/Sheets-implementasjonen og noteres i [veikartet](../docs/ROADMAP.md) hvis
-  det er strukturelt.
+- **Bruk eksakte feltnavn og utvalgsverdier** slik de står her — Airtable er strengt på navn.
+- **Datoer** er ISO 8601; valuta er NOK.
+- **n8n-eide felter** (`Gmail-tråd`, `Tilbudsutkast laget`, formelfelter) settes av automatikken —
+  ikke overstyr dem manuelt uten grunn.
+- **Regler for nye avtaler:** hver avtale skal ha Selger, Type, Status og — for åpne avtaler — en
+  `Neste oppfølging`. Tapte avtaler bør ha en kort årsak i Notater.
+- Endringer i basens struktur skal reflekteres her og noteres i [veikartet](../docs/ROADMAP.md).

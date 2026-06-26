@@ -1,40 +1,44 @@
-# Pipeline-steg
+# Pipeline-steg (Avtaler.Status)
 
-De ordnede stegene en avtale beveger seg gjennom. Disse speiler [salgsmetodikken](../sales/methodology.md)
-nøyaktig, og er de tillatte verdiene for `stage`-feltet på avtaler i [`schema.md`](schema.md).
+De ordnede stegene en avtale beveger seg gjennom. Dette er de **faktiske `Status`-verdiene** i
+Airtable-tabellen Avtaler — bruk dem nøyaktig slik de står. Jf.
+[ADR 0002](../docs/decisions/0002-faktisk-systemarkitektur.md).
 
-De norske stegnavnene under er de **synlige verdiene** (slik de vises i Notion). Den engelske
-nøkkelen i parentes er en stabil teknisk identifikator for integrasjoner (jf.
-[ADR 0001](../docs/decisions/0001-sprakpolicy.md)) — bruk den norske verdien i alt brukervendt.
+| Rekkefølge | Status | Betydning | Gå videre når … |
+| --- | --- | --- | --- |
+| 1 | `Ny lead` | Ny henvendelse/lead registrert, ikke jobbet ennå. | Vi har tatt kontakt / dialog er i gang. |
+| 2 | `I dialog` | Aktiv samtale; behov kartlegges. | Et tilbud er klart til å sendes. |
+| 3 | `Tilbud sendt` | Tilbud levert til kunden. | Kunden vurderer / vi venter på svar. |
+| 4 | `Pending` | Venter på kundens beslutning eller en avklaring. | Kunden bekrefter eller takker nei. |
+| 5 | `Bekreftet` | Avtale bekreftet — arrangementet skal gjennomføres. | Arrangementet er avholdt. |
+| 6 | `Gjennomført` | Arrangementet er levert. | — (terminal; grunnlag for gjenkjøp/pleie). |
+| — | `Tapt` | Avtalen ble ikke noe av. | — (terminal; noter årsak i Notater). |
 
-| Rekkefølge | Steg (verdi) | Teknisk nøkkel | Betydning | Gå videre når … |
-| --- | --- | --- | --- | --- |
-| 1 | `Prospekt` | `prospect` | Identifisert, passer ICP, har en trigger. Ikke kontaktet, eller intet svar. | Første meningsfulle svar / interesse. |
-| 2 | `I dialog` | `engaged` | I samtale; interesse vist. | En kartleggingssamtale er avtalt/holdt. |
-| 3 | `Kvalifisert` | `qualified` | Behov, budsjett, timing og prosess validert. | En reell mulighet bekreftet begge veier. |
-| 4 | `Tilbud` | `proposal` | Skreddersydd tilbud levert. | Tilbud bekreftet mottatt; går mot betingelser. |
-| 5 | `Forhandling` | `negotiation` | Jobber mot enighet om betingelser. | Betingelser muntlig avtalt. |
-| 6 | `Vunnet` | `won` | Avtale bekreftet. | — (terminal; overlever til leveranse + pleie). |
-| 7 | `Tapt` | `lost` | Går ikke videre. | — (terminal; registrer `lost_reason`). |
-| 8 | `Pleie` | `nurture` | Tidligere kunde / lang horisont; holdes varm for gjentakelse eller anbefaling. | Går inn på nytt i `I dialog`/`Kvalifisert` ved ny mulighet. |
+## Sannsynlighet (for «Vektet verdi»)
+Formelfeltet **Vektet verdi** = Totalbudsjett × en sannsynlighet avledet av Status. Veiledende
+mapping (juster i Airtable-formelen ved behov):
 
-## Regler
-- **Hver åpen avtale** (steg 1–5) må ha et `next_step` og en `next_step_date`. En avtale uten neste
-  steg står fast — handle på den, eller flytt den til `Tapt`.
-- **Gå kun videre på ekte vilkår.** Ikke blås opp pipelinen med optimisme.
-- **`Tapt` registrerer alltid en årsak** — ærlige årsaker er det som skjerper [ICP-en](../sales/icp.md).
-- **`Pleie`** er der vunne avtaler og «ikke nå»-prospekter lever, så de aldri glemmes. Den beste
-  pipelinen er en varm tidligere kunde.
-
-## Sannsynlighet (valgfritt)
-En grov standardmapping for prognoser; juster per avtale:
-
-| Steg | Standard sannsynlighet |
+| Status | Veiledende sannsynlighet |
 | --- | --- |
-| Prospekt | 5 % |
-| I dialog | 15 % |
-| Kvalifisert | 35 % |
-| Tilbud | 55 % |
-| Forhandling | 75 % |
-| Vunnet | 100 % |
+| Ny lead | 10 % |
+| I dialog | 30 % |
+| Tilbud sendt | 50 % |
+| Pending | 65 % |
+| Bekreftet | 100 % (kontraktsfestet) |
+| Gjennomført | 100 % (realisert) |
 | Tapt | 0 % |
+
+## Regler (steghygiene)
+- **Åpne avtaler** (`Ny lead` → `Pending`) skal ha en `Neste oppfølging`-dato. Mangler den, er
+  avtalen i ferd med å gli ut — sett en dato eller flytt til `Tapt`.
+- **Gå kun videre på ekte vilkår.** Ikke blås opp pipelinen.
+- **`Tapt` bør ha en kort årsak** i Notater (pris, timing, valgte konkurrent, ingen respons,
+  avlyst). Ærlige årsaker skjerper [ICP-en](../sales/icp.md).
+- **`Bekreftet` → `Gjennomført`** når «Dato for selskap» er passert og arrangementet er levert.
+  Dette skiller fremtidig kontraktsfestet omsetning fra realisert.
+
+## Forhold til salgsmetodikken
+[`sales/methodology.md`](../sales/methodology.md) beskriver salgsbevegelsen i mer generelle steg
+(kartlegging, tilbud, forhandling, pleie). Disse er det *mentale* rammeverket; `Status`-verdiene
+over er det *operative* som faktisk registreres i Airtable. Når de to omtaler samme ting, er det
+`Status`-verdiene her som gjelder i praksis.

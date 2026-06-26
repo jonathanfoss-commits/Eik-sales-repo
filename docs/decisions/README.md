@@ -35,3 +35,4 @@ Hva betyr dette fremover (positivt og negativt)?
 | Nr | Tittel | Status |
 | --- | --- | --- |
 | [0001](0001-sprakpolicy.md) | Norsk (bokmål) som standardspråk | Vedtatt |
+| [0002](0002-faktisk-systemarkitektur.md) | Faktisk systemarkitektur: Airtable-CRM + n8n-agenter | Vedtatt |
