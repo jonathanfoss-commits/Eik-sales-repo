@@ -12,7 +12,8 @@ Alle leads, tilbud og bekreftede bestillinger. Én rad per avtale/event. **Kjern
 | Felt | Type | Beskrivelse |
 | --- | --- | --- |
 | Tittel | singleLineText | Kort navn, f.eks. «Pareto – Sommerfest Amazonia». (Primærfelt.) |
-| Bedrift | singleLineText | Kundens firma. |
+| Bedrift | singleLineText | Kundens firma (fritekst — beholdes under overgangen). |
+| Bedrift (lenke) | multipleRecordLinks | Relasjon til **Bedrifter** (ADR 0003). Dual-write sammen med fritekstfeltet. |
 | Kontaktperson | singleLineText | Navn på kontakt. |
 | Telefon | phoneNumber | Telefon. |
 | Epost | email | E-post. |
@@ -33,6 +34,24 @@ Alle leads, tilbud og bekreftede bestillinger. Én rad per avtale/event. **Kjern
 | Pipeline-hygiene | formula | Auto-flagg (oppdateres daglig): «⚠️ Sett til Gjennomført» eller «🔔 Oppfølging mangler/forfalt». Se [`workflows/crm-hygiene-automation.md`](../workflows/crm-hygiene-automation.md). |
 | Gmail-tråd | url | Lenke til kilde-eposten. **Settes automatisk av n8n** ved lead-intake. |
 | Tilbudsutkast laget | checkbox | **Settes av n8n Tilbud-agenten** når et utkast er generert (hindrer dobbeltbehandling). |
+
+## Bedrifter  `tblta9yg4zK7Uzzxi`
+**Kjerneentitet for kunderelasjoner** (ADR 0003). Én rad per bedrift; avtaler (og senere kontakter,
+gavekortavtaler, interaksjoner) kobles hit for kontooversikt, livstidsverdi og kryss-salg.
+Privatkunder trenger ikke rad her.
+
+| Felt | Type | Beskrivelse |
+| --- | --- | --- |
+| Navn | singleLineText | Bedriftens kanoniske navn. (Primærfelt.) |
+| Org.nr | singleLineText | Organisasjonsnummer (offentlig). |
+| Bransje | singleLineText | Bransje/sektor. |
+| Segment | singleSelect | `Strategisk` (høy verdi/gjentakende), `Vekst`, `Standard`. |
+| Relasjonseier | singleSelect | `Jonathan Foss`, `Christopher Erstad`. |
+| Notater | multilineText | Fri kontekst. |
+| Avtaler | multipleRecordLinks | Omvendt lenke fra Avtaler.`Bedrift (lenke)`. |
+
+> **Planlagt (ADR 0003):** rollup-felter for samlet verdi, antall avtaler, vunnet-rate, siste
+> kontakt og «gjentakende?» — samt nye entiteter `Interaksjoner` og `Gavekortavtaler`.
 
 ## Venues  `tblgMDhWEPCY4596A`
 Register over spisestedene i porteføljen. Brukes av AI-agenten til venueforslag og tilbud.

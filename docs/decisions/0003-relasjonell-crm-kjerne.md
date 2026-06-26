@@ -51,11 +51,15 @@ Bedrifter (ny)  1───*  Kontakter (ny/utvidet)
 koblet til omsetning; risikoen er lav fordi endringen er additiv og reversibel. Vedtatt.
 
 ## Migreringsplan (faser)
-1. **Struktur (nå):** opprett `Bedrifter`-tabell + `Bedrift (lenke)`-felt på Avtaler. Behold
-   dagens fritekstfelt. *(Reversibelt: kan slettes uten datatap i eksisterende felt.)*
-2. **Backfill (kontrollert pass):** uttrekk distinkte bedriftsnavn fra Avtaler (ekskl.
-   «Privatkunde»), opprett Bedrifter-rader, sett lenken på hver avtale via navnematch. Verifiser at
-   n8n-agentene fortsatt fungerer.
+1. **Struktur** ✅ (utført 26.06.2026): `Bedrifter`-tabell (`tblta9yg4zK7Uzzxi`) + lenkefeltet
+   `Bedrift (lenke)` (`fldDNx9qG041noBzh`) på Avtaler opprettet. Fritekstfeltet beholdt.
+   *(Reversibelt: kan slettes uten datatap i eksisterende felt.)*
+2. **Backfill** — *metoden er forbedret*: i stedet for å opprette Bedrifter manuelt og spore id-er,
+   bruker vi Airtables **`typecast`** ved oppdatering av lenkefeltet med bedriftsnavnet som streng —
+   Airtable oppretter/matcher Bedrift-raden automatisk på navn (auto-dedup). 93 bedriftsavtaler
+   (ekskl. «Privatkunde» og tomme) skal lenkes; privatkunder forblir ulenket (korrekt).
+   *Status: klar til å kjøres; gjenstår pga. forbigående ustabilitet i Airtable-MCP-en under økten.*
+   Verifiser etterpå at n8n-intake fortsatt fungerer.
 3. **Dual-write:** oppdater [`digital-jonathan`](../../agents/digital-jonathan.md) og
    [`gavekort-selger`](../../agents/gavekort-selger.md) til å sette *både* fritekst og lenke ved nye
    leads, og opprette Bedrift-rad om den mangler.

@@ -21,7 +21,9 @@ automatisert prospektering og oppfølging.
 2. **Outreach-utkast:** lager forslag til gavekort-henvendelser, tilpasset anledning (sommergaver,
    julegaver, kundegaver) og bedrift.
 3. **Lead-/avtalefangst:** oppretter rader i **Avtaler** med Type `Gavekort`, Restaurant `Gavekort`,
-   Status `Ny lead` / `I dialog`.
+   Status `Ny lead` / `I dialog`. **Dual-write (ADR 0003):** sett `Bedrift (lenke)` i tillegg til
+   fritekst `Bedrift` (typecast på navnet) for bedriftskunder, så gavekort-kontoer kobles til
+   kontooversikten og kryss-salg mot event/Amex blir synlig.
 4. **Oppfølging:** holder gavekort-pipelinen varm — gjentakende avtaler bør følges opp i sesong.
 5. **Logging:** handlinger logges i **Agentlogg**.
 

@@ -24,7 +24,10 @@ automatisk.
 
 ## Hva den gjør, steg for steg
 1. **Lead-fangst:** ny henvendelse i Gmail → opprett rad i **Avtaler** (Status `Ny lead`), med
-   `Gmail-tråd`-lenke tilbake til e-posten, og felt som Bedrift, Type, Selger.
+   `Gmail-tråd`-lenke tilbake til e-posten, og felt som Bedrift, Type, Selger. **Dual-write
+   (ADR 0003):** for bedriftskunder, sett *både* fritekstfeltet `Bedrift` og lenkefeltet
+   `Bedrift (lenke)` (med `typecast` på navnet, så Bedrift-raden opprettes/matches automatisk).
+   Privatkunder trenger ikke Bedrift-lenke.
 2. **Svarutkast:** lager forslag til svar i Gmail basert på [`prompts/`](../prompts/) og
    [`sales/`](../sales/)-konteksten. Sendes aldri automatisk.
 3. **Tilbud:** for kvalifiserte avtaler genereres et tilbudsutkast (se
