@@ -45,7 +45,8 @@ a reply, not close a deal. Use when the target fits the ICP ([`../../sales/icp.m
 - If the hook is weak or invented, **stop** and gather a real one first — a generic email is worse
   than none.
 - Warmer intro (referral/mutual contact)? Lead with the connection instead of the hook.
-- Norwegian recipient? Use the `cold-outreach.no.md` variant when available.
+- Norwegian recipient? Use the default [`cold-outreach.md`](cold-outreach.md) — Norwegian is the
+  primary version; this English file is only for international prospects.
 
 ## Example
 **Input:** prospect_name=`Marit`, prospect_company=`Nordic Tech AS`, prospect_role=`Head of People`,
