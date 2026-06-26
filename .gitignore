@@ -1,0 +1,33 @@
+# Secrets & environment — NEVER commit these
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*credentials*
+*secret*
+*token*
+
+# Local config overrides
+config/*.local.*
+*.local.yaml
+*.local.json
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# Logs & temp
+*.log
+tmp/
+.tmp/
+
+# Exported data dumps (live data must not live in the repo)
+*.csv
+*.xlsx
+data/
+exports/
