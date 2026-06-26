@@ -1,71 +1,74 @@
-# Roadmap
+# Veikart
 
-A living, phased plan for the Eik Sales OS. Each phase delivers standalone value; we do not start
-a phase before the previous one is genuinely useful. Items move from **Planned → In progress →
-Done**. Technical debt and opportunities discovered along the way are captured at the bottom.
-
----
-
-## Phase 0 — Foundation ✅ (current)
-Establish a professional, well-documented structure and the first high-value sales assets.
-
-- [x] Repository structure and module READMEs
-- [x] Core documentation (architecture, principles, standards, naming, setup, glossary)
-- [x] First agent definitions (sales development, inbox triage)
-- [x] Core prompt library (outreach, follow-up, meeting prep, negotiation)
-- [x] CRM data model and pipeline definition
-- [x] Sales playbook foundation (ICP, methodology, partnerships, events)
-
-## Phase 1 — Connect the tools
-Make the system act on real data through Jonathan's daily tools.
-
-- [x] Document Gmail integration (drafting, labeling, triage) — see `integrations/gmail-integration.md`
-- [ ] Validate Gmail integration against the live account
-- [x] Document Google Calendar integration (holds, scheduling) — see `integrations/calendar-integration.md`
-- [ ] Validate Calendar integration against the live account
-- [x] Document Notion CRM database structure — see `integrations/notion-integration.md`
-- [ ] Notion CRM: create the actual databases mirroring `crm/schema.md`
-- [x] Define environment/secret handling conventions in `config/`
-- [x] Document the inbound lead triage workflow — see `workflows/inbound-lead-triage.md`
-- [ ] Build & validate the inbound lead triage workflow in n8n
-
-## Phase 2 — Automate the repetitive
-Reduce manual effort on recurring sales motions.
-
-- [ ] Automated follow-up sequencing with human approval gates
-- [ ] Meeting prep brief auto-generated before each calendar meeting
-- [ ] Post-meeting summary + next-step extraction
-- [ ] Weekly pipeline digest from CRM data
-
-## Phase 3 — Intelligence & research
-Sharpen targeting and personalization.
-
-- [ ] Account & contact research agent (company news, fit scoring)
-- [ ] ICP scoring model for inbound and outbound leads
-- [ ] Restaurant-partnership opportunity scanner
-
-## Phase 4 — Analytics & continuous improvement
-Measure and improve the whole system.
-
-- [ ] Pipeline and conversion analytics from CRM
-- [ ] Prompt/agent performance tracking and iteration loop
-- [ ] Quarterly review playbook
+En levende, faseinndelt plan for Eik Sales OS. Hver fase leverer selvstendig verdi; vi starter ikke
+en fase før den forrige er reelt nyttig. Punkter beveger seg fra **Planlagt → Pågår → Ferdig**.
+Teknisk gjeld og muligheter som oppdages underveis fanges nederst.
 
 ---
 
-## Backlog / opportunities
-Ideas worth doing when they rise to the top. Not yet scheduled.
+## Fase 0 — Grunnmur ✅
+Etablere en profesjonell, godt dokumentert struktur og de første verdifulle salgsressursene.
 
-- Bilingual (Norwegian/English) prompt variants — *started:* outreach + follow-up localized;
-  extend to meetings/negotiation as needed.
-- Templated proposal & quote generation into Google Docs.
-- Partner/venue database with seasonal event calendar.
-- LinkedIn outreach playbook (if/when that channel is added).
+- [x] Repostruktur og modul-README-er
+- [x] Kjernedokumentasjon (arkitektur, prinsipper, veikart, kodestandard, navnekonvensjoner, oppsett, ordliste)
+- [x] Første agentdefinisjoner (salgsutvikling, innboks-triage, møteforberedelse)
+- [x] Kjerne-promptbibliotek (henvendelser, oppfølging, møteforberedelse, forhandling)
+- [x] CRM-datamodell og pipeline-definisjon
+- [x] Grunnmur for salgs-playbook (ICP, metodikk, partnerskap, arrangementer)
+- [x] Norsk (bokmål) satt som standardspråk ([ADR 0001](decisions/0001-sprakpolicy.md))
 
-## Known technical debt
-Honest record of shortcuts and gaps to revisit.
+## Fase 1 — Koble til verktøyene
+Få systemet til å handle på ekte data gjennom Jonathans daglige verktøy.
 
-- *(none yet — repository is new)*
+- [x] Dokumentere Gmail-integrasjonen (utkast, etiketter, triage) — se `integrations/gmail-integration.md`
+- [ ] Validere Gmail-integrasjonen mot den ekte kontoen
+- [x] Dokumentere Google Kalender-integrasjonen (reservasjoner, planlegging) — se `integrations/calendar-integration.md`
+- [ ] Validere Kalender-integrasjonen mot den ekte kontoen
+- [x] Dokumentere Notion-CRM-databasestrukturen — se `integrations/notion-integration.md`
+- [ ] Notion-CRM: opprette de faktiske databasene som speiler `crm/schema.md`
+- [x] Definere miljø-/hemmelighetshåndtering i `config/`
+- [x] Dokumentere arbeidsflyten for innkommende lead-triage — se `workflows/inbound-lead-triage.md`
+- [ ] Bygge & validere lead-triage-arbeidsflyten i n8n
 
-> When you discover debt or an opportunity, add it here in the same change rather than expanding
-> the current task's scope.
+## Fase 2 — Automatisere det repeterende
+Redusere manuelt arbeid på gjentakende salgsbevegelser.
+
+- [ ] Automatisert oppfølgingssekvensering med godkjenningsporter
+- [ ] Møteforberedelses-brief auto-generert før hvert kalendermøte
+- [ ] Oppsummering etter møte + uttrekk av neste steg
+- [ ] Ukentlig pipeline-sammendrag fra CRM-data
+
+## Fase 3 — Innsikt & research
+Skjerpe målretting og personalisering.
+
+- [ ] Research-agent for konto & kontakt (selskapsnyheter, treff-scoring)
+- [ ] ICP-scoringsmodell for innkommende og utgående leads
+- [ ] Skanner for restaurantpartnerskap-muligheter
+
+## Fase 4 — Analyse & kontinuerlig forbedring
+Måle og forbedre hele systemet.
+
+- [ ] Pipeline- og konverteringsanalyse fra CRM
+- [ ] Sporing og iterasjon av prompt-/agentytelse
+- [ ] Kvartalsvis gjennomgangs-playbook
+
+---
+
+## Idébank / muligheter
+Ideer verdt å gjøre når de stiger til topps. Ennå ikke planlagt.
+
+- ~~Tospråklige (norsk/engelsk) promptvarianter~~ → erstattet av ADR 0001: norsk er standard,
+  engelsk variant kun ved behov.
+- Maler for tilbud & prisoppsett generert inn i Google Docs.
+- Partner-/lokaledatabase med sesongbasert arrangementskalender.
+- Sesongkampanjer (sommerfest, julebord, kickoff) som ferdige ressurser.
+- LinkedIn-henvendelses-playbook (hvis/når den kanalen tas i bruk).
+
+## Kjent teknisk gjeld
+Ærlig oversikt over snarveier og hull å se på igjen.
+
+- Integrasjonene er dokumentert, men ennå ikke validert mot ekte kontoer (Fase 1).
+- ICP og playbooks er startutkast som trenger ekte vunnet/tapt-data.
+
+> Når du oppdager gjeld eller en mulighet, legg den til her i samme endring fremfor å utvide den
+> nåværende oppgavens omfang.

@@ -1,54 +1,58 @@
-# Agents
+# Agenter
 
-AI agent definitions. An **agent** is a defined role that bundles a purpose, operating
-instructions, the prompts it relies on, the tools it may use, and its guardrails. Agents are how
-we compose the reusable pieces in this repo into a worker that can do a real job.
+Definisjoner av AI-agenter. En **agent** er en definert rolle som samler et formål,
+driftsinstruksjoner, promptene den støtter seg på, verktøyene den kan bruke, og sikkerhetsgjerdene
+sine. Agenter er måten vi setter sammen de gjenbrukbare delene i dette repoet til en arbeider som
+kan gjøre en ekte jobb.
 
-## What an agent is (and isn't)
-- An agent **is** a clear, portable specification you can give to Claude or ChatGPT (or wire into
-  n8n) so it behaves consistently.
-- An agent **is not** running code. The execution surface (Claude/ChatGPT/n8n) runs it; this file
-  defines it.
+## Hva en agent er (og ikke er)
+- En agent **er** en tydelig, portabel spesifikasjon du kan gi til Claude eller ChatGPT (eller koble
+  inn i n8n) slik at den oppfører seg konsistent.
+- En agent **er ikke** kjørende kode. Kjøreflaten (Claude/ChatGPT/n8n) kjører den; denne filen
+  definerer den.
 
-## File format
-Each agent lives in `<role>-agent.md` and follows this structure:
+## Filformat
+Hver agent ligger i `<rolle>-agent.md` og følger denne strukturen:
 
 ```markdown
 ---
 name: <kebab-case-id>
-purpose: <one sentence>
+purpose: <én setning>
 owner: Jonathan Foss
 status: active | draft
 ---
 
-## Mission
-What this agent is responsible for.
+## Oppdrag
+Hva agenten har ansvar for.
 
-## Operating instructions
-How it should behave, step by step.
+## Driftsinstruksjoner
+Hvordan den skal oppføre seg, steg for steg.
 
-## Tools & integrations
-Which integrations/tools it may use, and any limits.
+## Verktøy & integrasjoner
+Hvilke integrasjoner/verktøy den kan bruke, og eventuelle grenser.
 
-## Prompts used
-Links to the prompt files it relies on.
+## Prompter som brukes
+Lenker til promptfilene den støtter seg på.
 
-## Guardrails
-What it must never do; where a human must approve.
+## Sikkerhetsgjerder
+Hva den aldri skal gjøre; hvor et menneske må godkjenne.
 
-## Inputs / Outputs
-What it needs to start, and what it produces.
+## Inndata / Output
+Hva den trenger for å starte, og hva den produserer.
 ```
 
-## Conventions
-- Keep agents **focused** — one clear job each. Compose, don't bloat.
-- Reuse prompts from [`prompts/`](../prompts/) rather than inlining instructions.
-- Default to **human-in-the-loop** for anything outward-facing (see
+> Felt-*navnene* i front-matter (`name`, `purpose`, `status`) holdes på engelsk som tekniske
+> identifikatorer (jf. [ADR 0001](../docs/decisions/0001-sprakpolicy.md)); innholdet er norsk.
+
+## Konvensjoner
+- Hold agenter **fokuserte** — én tydelig jobb hver. Sett sammen, ikke blås opp.
+- Gjenbruk prompter fra [`prompts/`](../prompts/) fremfor å skrive instruksjoner rett inn.
+- Standard er **menneske-i-løkken** for alt utadrettet (se
   [`docs/PRINCIPLES.md`](../docs/PRINCIPLES.md)).
 
-## Current agents
-| Agent | Purpose |
+## Nåværende agenter
+| Agent | Formål |
 | --- | --- |
-| [`sales-development-agent`](sales-development-agent.md) | Prospect, personalize, and draft outbound outreach + follow-ups. |
-| [`inbox-triage-agent`](inbox-triage-agent.md) | Triage the Gmail inbox, classify messages, draft replies, flag hot leads. |
-| [`meeting-prep-agent`](meeting-prep-agent.md) | Produce a concise prep brief before each meeting. |
+| [`sales-development-agent`](sales-development-agent.md) | Prospektere, personalisere og skrive utgående henvendelser + oppfølginger. |
+| [`inbox-triage-agent`](inbox-triage-agent.md) | Triagere Gmail-innboksen, klassifisere meldinger, skrive svar, flagge varme leads. |
+| [`meeting-prep-agent`](meeting-prep-agent.md) | Lage en kort forberedelses-brief før hvert møte. |
