@@ -1,88 +1,90 @@
-# CRM Schema
+# CRM-skjema
 
-The canonical data model. Field identifiers use `snake_case`; types come from the fixed vocabulary
-in [`docs/NAMING_CONVENTIONS.md`](../docs/NAMING_CONVENTIONS.md). The **Maps to** column shows the
-intended Notion property / Sheet column so implementations stay consistent.
-
----
-
-## Account
-A company we sell to or partner with.
-
-| Field | Type | Required | Description | Maps to |
-| --- | --- | --- | --- | --- |
-| `account_id` | text | yes | Stable unique id (kebab-case). | Title/key |
-| `name` | text | yes | Company name. | Name |
-| `account_type` | select | yes | `Client`, `Prospect`, `Partner`. | Type |
-| `industry` | text | no | Industry/sector. | Industry |
-| `size` | select | no | `1-19`, `20-49`, `50-199`, `200-499`, `500+`. | Size |
-| `location` | text | no | City / region. | Location |
-| `website` | url | no | Company website. | Website |
-| `icp_fit` | select | no | `Strong`, `Moderate`, `Weak`. | ICP Fit |
-| `owner` | text | yes | Internal owner (default: Jonathan). | Owner |
-| `notes` | long_text | no | Freeform context. | Notes |
-| `created_at` | date | yes | Record created. | Created |
-
-## Contact
-A person at an account.
-
-| Field | Type | Required | Description | Maps to |
-| --- | --- | --- | --- | --- |
-| `contact_id` | text | yes | Stable unique id. | Title/key |
-| `account_id` | relation | yes | Parent Account. | Account (relation) |
-| `first_name` | text | yes | First name. | First Name |
-| `last_name` | text | no | Last name. | Last Name |
-| `role` | text | no | Job title. | Role |
-| `email` | email | no | Primary email. | Email |
-| `phone` | phone | no | Phone. | Phone |
-| `is_decision_maker` | boolean | no | Economic/decision authority. | Decision Maker |
-| `do_not_contact` | boolean | no | Opt-out flag — respect always. | Do Not Contact |
-| `preferred_language` | select | no | `Norwegian`, `English`. | Language |
-| `notes` | long_text | no | Context about the person. | Notes |
-
-## Deal
-A potential piece of business.
-
-| Field | Type | Required | Description | Maps to |
-| --- | --- | --- | --- | --- |
-| `deal_id` | text | yes | Stable unique id. | Title/key |
-| `name` | text | yes | Human deal name. | Name |
-| `account_id` | relation | yes | Related Account. | Account (relation) |
-| `primary_contact_id` | relation | no | Main contact. | Contact (relation) |
-| `deal_type` | select | yes | `Corporate Event`, `Restaurant Partnership`, `Marketing Collaboration`, `Other`. | Type |
-| `stage` | select | yes | See [`pipeline-stages.md`](pipeline-stages.md). | Stage |
-| `value` | currency | no | Expected value (NOK). | Value |
-| `expected_close_date` | date | no | Best estimate of close. | Close Date |
-| `next_step` | text | yes* | The next action. *(required while open)* | Next Step |
-| `next_step_date` | date | yes* | When the next action is due. | Next Step Date |
-| `probability` | number | no | 0–100 % likelihood. | Probability |
-| `source` | select | no | `Outbound`, `Inbound`, `Referral`, `Partner`. | Source |
-| `lost_reason` | text | no | If lost, why (honest). | Lost Reason |
-| `owner` | text | yes | Deal owner. | Owner |
-| `created_at` | date | yes | Record created. | Created |
-
-\* `next_step` and `next_step_date` are required for any deal not in a `Closed` stage — see stage
-hygiene in [`sales/methodology.md`](../sales/methodology.md).
-
-## Activity
-A logged interaction.
-
-| Field | Type | Required | Description | Maps to |
-| --- | --- | --- | --- | --- |
-| `activity_id` | text | yes | Stable unique id. | Title/key |
-| `deal_id` | relation | no | Related Deal (if any). | Deal (relation) |
-| `contact_id` | relation | no | Related Contact. | Contact (relation) |
-| `type` | select | yes | `Email`, `Call`, `Meeting`, `Note`, `Task`. | Type |
-| `summary` | long_text | yes | What happened / was said. | Summary |
-| `occurred_at` | datetime | yes | When it happened (Europe/Oslo). | When |
-| `created_by` | text | yes | Human or agent name. | Created By |
+Den kanoniske datamodellen. Felt-*identifikatorer* bruker `snake_case` og holdes på engelsk (teknisk
+standard, jf. [ADR 0001](../docs/decisions/0001-sprakpolicy.md)); typene kommer fra det faste
+vokabularet i [`docs/NAMING_CONVENTIONS.md`](../docs/NAMING_CONVENTIONS.md). Kolonnen **Synlig navn**
+viser den norske Notion-egenskapen / Sheet-kolonnen — det brukervendte navnet.
 
 ---
 
-## Conventions
-- **IDs are stable and never reused.** Use descriptive kebab-case
-  (`deal-acme-2026-spring-launch`).
-- **Dates** are ISO 8601; datetimes carry the Europe/Oslo context.
-- **Relations** reference the related entity's id.
-- Changes to this schema must be reflected in the Notion/Sheets implementation and noted in the
-  [roadmap](../docs/ROADMAP.md) if they're structural.
+## Konto (Account)
+En virksomhet vi selger til eller samarbeider med.
+
+| Felt (id) | Type | Påkrevd | Beskrivelse | Synlig navn |
+| --- | --- | --- | --- | --- |
+| `account_id` | text | ja | Stabil unik id (kebab-case). | Tittel/nøkkel |
+| `name` | text | ja | Selskapsnavn. | Navn |
+| `account_type` | select | ja | `Kunde`, `Prospekt`, `Partner`. | Type |
+| `industry` | text | nei | Bransje/sektor. | Bransje |
+| `size` | select | nei | `1-19`, `20-49`, `50-199`, `200-499`, `500+`. | Størrelse |
+| `location` | text | nei | By / region. | Sted |
+| `website` | url | nei | Nettside. | Nettside |
+| `icp_fit` | select | nei | `Sterk`, `Moderat`, `Svak`. | ICP-treff |
+| `owner` | text | ja | Intern eier (standard: Jonathan). | Eier |
+| `notes` | long_text | nei | Fri kontekst. | Notater |
+| `created_at` | date | ja | Post opprettet. | Opprettet |
+
+## Kontakt (Contact)
+En person hos en konto.
+
+| Felt (id) | Type | Påkrevd | Beskrivelse | Synlig navn |
+| --- | --- | --- | --- | --- |
+| `contact_id` | text | ja | Stabil unik id. | Tittel/nøkkel |
+| `account_id` | relation | ja | Tilhørende konto. | Konto (relasjon) |
+| `first_name` | text | ja | Fornavn. | Fornavn |
+| `last_name` | text | nei | Etternavn. | Etternavn |
+| `role` | text | nei | Stillingstittel. | Rolle |
+| `email` | email | nei | Primær e-post. | E-post |
+| `phone` | phone | nei | Telefon. | Telefon |
+| `is_decision_maker` | boolean | nei | Økonomisk/beslutningsmyndighet. | Beslutningstaker |
+| `do_not_contact` | boolean | nei | Reservasjonsflagg — respekteres alltid. | Ikke kontakt |
+| `preferred_language` | select | nei | `Norsk`, `Engelsk`. | Språk |
+| `notes` | long_text | nei | Kontekst om personen. | Notater |
+
+## Avtale (Deal)
+En potensiell forretning.
+
+| Felt (id) | Type | Påkrevd | Beskrivelse | Synlig navn |
+| --- | --- | --- | --- | --- |
+| `deal_id` | text | ja | Stabil unik id. | Tittel/nøkkel |
+| `name` | text | ja | Forståelig avtalenavn. | Navn |
+| `account_id` | relation | ja | Tilknyttet konto. | Konto (relasjon) |
+| `primary_contact_id` | relation | nei | Hovedkontakt. | Kontakt (relasjon) |
+| `deal_type` | select | ja | `Bedriftsarrangement`, `Restaurantpartnerskap`, `Markedssamarbeid`, `Annet`. | Type |
+| `stage` | select | ja | Se [`pipeline-stages.md`](pipeline-stages.md). | Steg |
+| `value` | currency | nei | Forventet verdi (NOK). | Verdi |
+| `expected_close_date` | date | nei | Beste estimat for signering. | Sluttdato |
+| `next_step` | text | ja* | Neste handling. *(påkrevd mens åpen)* | Neste steg |
+| `next_step_date` | date | ja* | Når neste handling forfaller. | Dato neste steg |
+| `probability` | number | nei | 0–100 % sannsynlighet. | Sannsynlighet |
+| `source` | select | nei | `Utgående`, `Innkommende`, `Anbefaling`, `Partner`. | Kilde |
+| `lost_reason` | text | nei | Hvis tapt, hvorfor (ærlig). | Tapsårsak |
+| `owner` | text | ja | Avtaleeier. | Eier |
+| `created_at` | date | ja | Post opprettet. | Opprettet |
+
+\* `next_step` og `next_step_date` er påkrevd for enhver avtale som ikke er i et avsluttet steg
+(`Vunnet`/`Tapt`) — se steghygiene i [`sales/methodology.md`](../sales/methodology.md).
+
+## Aktivitet (Activity)
+En logget interaksjon.
+
+| Felt (id) | Type | Påkrevd | Beskrivelse | Synlig navn |
+| --- | --- | --- | --- | --- |
+| `activity_id` | text | ja | Stabil unik id. | Tittel/nøkkel |
+| `deal_id` | relation | nei | Tilknyttet avtale (om noen). | Avtale (relasjon) |
+| `contact_id` | relation | nei | Tilknyttet kontakt. | Kontakt (relasjon) |
+| `type` | select | ja | `E-post`, `Samtale`, `Møte`, `Notat`, `Oppgave`. | Type |
+| `summary` | long_text | ja | Hva som skjedde / ble sagt. | Sammendrag |
+| `occurred_at` | datetime | ja | Når det skjedde (Europe/Oslo). | Tidspunkt |
+| `created_by` | text | ja | Menneske- eller agentnavn. | Opprettet av |
+
+---
+
+## Konvensjoner
+- **Id-er er stabile og gjenbrukes aldri.** Bruk beskrivende kebab-case
+  (`deal-acme-2026-vaarlansering`).
+- **Datoer** er ISO 8601; datotid bærer Europe/Oslo-konteksten.
+- **Relasjoner** refererer til den tilknyttede entitetens id.
+- **Synlige navn og utvalgsverdier er norske; identifikatorer er engelske.** Endrer du skjemaet, må
+  det reflekteres i Notion/Sheets-implementasjonen og noteres i [veikartet](../docs/ROADMAP.md) hvis
+  det er strukturelt.

@@ -34,7 +34,7 @@ Credential reference: `NOTION_TOKEN` (supplied by the execution environment).
 
 ## How agents use it
 - **Read before write:** load the relevant record for context first.
-- **Propose, don't silently change:** surface the intended update (e.g. "move to `Proposal`, next
+- **Propose, don't silently change:** surface the intended update (e.g. "move to `Tilbud`, next
   step: send tailored offer, due Fri") for human confirmation by default.
 - **Stage hygiene:** never leave an open deal without `next_step` + `next_step_date`.
 

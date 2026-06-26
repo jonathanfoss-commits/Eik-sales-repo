@@ -1,41 +1,43 @@
 # CRM
 
-The customer & deal **data model** for Eik Sales OS. This module defines *the shape of the data* —
-what a Contact, Account, and Deal are — and how those map onto the tools that actually store the
-live records (Notion primarily, Google Sheets as a lightweight alternative).
+**Datamodellen** for kunder og avtaler i Eik Sales OS. Denne modulen definerer *formen på dataene* —
+hva en kontakt, konto og avtale er — og hvordan de mappes mot verktøyene som faktisk lagrer de
+levende postene (primært Notion, Google Sheets som et lett alternativ).
 
-> **Important:** No live customer data lives in this repo. This is the schema and the conventions.
-> The records themselves live in the connected systems of record (see
-> [`integrations/`](../integrations/)). One source of truth per concern
-> ([`docs/PRINCIPLES.md`](../docs/PRINCIPLES.md)).
+> **Viktig:** Ingen levende kundedata ligger i dette repoet. Dette er skjemaet og konvensjonene.
+> Selve postene ligger i de tilkoblede kildesystemene (se [`integrations/`](../integrations/)). Én
+> sannhetskilde per område ([`docs/PRINCIPLES.md`](../docs/PRINCIPLES.md)).
 
-## Contents
-| File | What it defines |
+> **Språk:** Synlige feltnavn og utvalgsverdier er på norsk; felt-*identifikatorer* (`snake_case`)
+> holdes på engelsk for robuste integrasjoner (jf. [ADR 0001](../docs/decisions/0001-sprakpolicy.md)).
+
+## Innhold
+| Fil | Hva den definerer |
 | --- | --- |
-| [`schema.md`](schema.md) | The entities (Contact, Account, Deal, Activity) and their fields. |
-| [`pipeline-stages.md`](pipeline-stages.md) | The deal pipeline stages and their meaning. |
+| [`schema.md`](schema.md) | Entitetene (Konto, Kontakt, Avtale, Aktivitet) og feltene deres. |
+| [`pipeline-stages.md`](pipeline-stages.md) | Pipeline-stegene for avtaler og betydningen deres. |
 
-## Entities at a glance
-- **Account** — a company we sell to or partner with (incl. partner venues).
-- **Contact** — a person at an account.
-- **Deal** — a potential piece of business, moving through the pipeline.
-- **Activity** — a logged interaction (email, call, meeting, note).
+## Entitetene i korthet
+- **Konto (Account)** — en virksomhet vi selger til eller samarbeider med (inkl. partnerlokaler).
+- **Kontakt (Contact)** — en person hos en konto.
+- **Avtale (Deal)** — en potensiell forretning som beveger seg gjennom pipelinen.
+- **Aktivitet (Activity)** — en logget interaksjon (e-post, samtale, møte, notat).
 
 ```
-Account 1───* Contact
+Konto 1───* Kontakt
    │              │
    *              *
-   └──── Deal ────┘
+   └──── Avtale ──┘
           │
           *
-       Activity
+      Aktivitet
 ```
 
-## How agents use this
-- Before creating or updating a record, follow `schema.md` for field names and types.
-- Use the exact pipeline stage values from `pipeline-stages.md`.
-- Propose CRM changes for human review (default) rather than writing silently.
+## Slik bruker agentene dette
+- Før du oppretter eller oppdaterer en post, følg `schema.md` for feltnavn og typer.
+- Bruk de eksakte pipeline-stegverdiene fra `pipeline-stages.md`.
+- Foreslå CRM-endringer for menneskelig gjennomgang (standard) fremfor å skrive stille.
 
-## Implementation note
-Phase 1 of the [roadmap](../docs/ROADMAP.md) creates the actual Notion databases mirroring this
-schema. Until then, this is the contract agents and humans should follow.
+## Implementasjonsnotat
+Fase 1 i [veikartet](../docs/ROADMAP.md) oppretter de faktiske Notion-databasene som speiler dette
+skjemaet. Inntil da er dette kontrakten agenter og mennesker skal følge.

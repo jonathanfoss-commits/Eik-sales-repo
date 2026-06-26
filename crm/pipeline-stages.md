@@ -1,37 +1,40 @@
-# Pipeline Stages
+# Pipeline-steg
 
-The ordered stages a Deal moves through. These mirror the [sales methodology](../sales/methodology.md)
-exactly and are the allowed values for the Deal `stage` field in
-[`schema.md`](schema.md).
+De ordnede stegene en avtale beveger seg gjennom. Disse speiler [salgsmetodikken](../sales/methodology.md)
+nøyaktig, og er de tillatte verdiene for `stage`-feltet på avtaler i [`schema.md`](schema.md).
 
-| Order | Stage value | Meaning | Exit criteria (advance when…) |
-| --- | --- | --- | --- |
-| 1 | `Prospect` | Identified, fits ICP, has a trigger. Not yet contacted or no reply. | First meaningful reply / interest. |
-| 2 | `Engaged` | In conversation; interest shown. | A discovery conversation is agreed/held. |
-| 3 | `Qualified` | Need, budget, timing, and process validated. | A real opportunity confirmed both ways. |
-| 4 | `Proposal` | Tailored offer delivered. | Proposal acknowledged; moving to terms. |
-| 5 | `Negotiation` | Working terms toward agreement. | Terms verbally agreed. |
-| 6 | `Closed Won` | Agreement confirmed. | — (terminal; hand off to delivery + nurture). |
-| 7 | `Closed Lost` | Not proceeding. | — (terminal; record `lost_reason`). |
-| 8 | `Nurture` | Past client / long-horizon; staying warm for repeat or referral. | Re-enters at `Engaged`/`Qualified` on a new opportunity. |
+De norske stegnavnene under er de **synlige verdiene** (slik de vises i Notion). Den engelske
+nøkkelen i parentes er en stabil teknisk identifikator for integrasjoner (jf.
+[ADR 0001](../docs/decisions/0001-sprakpolicy.md)) — bruk den norske verdien i alt brukervendt.
 
-## Rules
-- **Every open deal** (stages 1–5) must have a `next_step` and `next_step_date`. A deal without a
-  next step is stuck — act on it or move it to `Closed Lost`.
-- **Advance only on genuine exit criteria.** Don't inflate the pipeline with optimism.
-- **`Closed Lost` always records a reason** — honest reasons are what sharpen the [ICP](../sales/icp.md).
-- **`Nurture`** is where won deals and "not now" prospects live so they're never forgotten. The
-  best pipeline is a warm past client.
+| Rekkefølge | Steg (verdi) | Teknisk nøkkel | Betydning | Gå videre når … |
+| --- | --- | --- | --- | --- |
+| 1 | `Prospekt` | `prospect` | Identifisert, passer ICP, har en trigger. Ikke kontaktet, eller intet svar. | Første meningsfulle svar / interesse. |
+| 2 | `I dialog` | `engaged` | I samtale; interesse vist. | En kartleggingssamtale er avtalt/holdt. |
+| 3 | `Kvalifisert` | `qualified` | Behov, budsjett, timing og prosess validert. | En reell mulighet bekreftet begge veier. |
+| 4 | `Tilbud` | `proposal` | Skreddersydd tilbud levert. | Tilbud bekreftet mottatt; går mot betingelser. |
+| 5 | `Forhandling` | `negotiation` | Jobber mot enighet om betingelser. | Betingelser muntlig avtalt. |
+| 6 | `Vunnet` | `won` | Avtale bekreftet. | — (terminal; overlever til leveranse + pleie). |
+| 7 | `Tapt` | `lost` | Går ikke videre. | — (terminal; registrer `lost_reason`). |
+| 8 | `Pleie` | `nurture` | Tidligere kunde / lang horisont; holdes varm for gjentakelse eller anbefaling. | Går inn på nytt i `I dialog`/`Kvalifisert` ved ny mulighet. |
 
-## Probability guidance (optional)
-A rough default mapping for forecasting; adjust per deal:
+## Regler
+- **Hver åpen avtale** (steg 1–5) må ha et `next_step` og en `next_step_date`. En avtale uten neste
+  steg står fast — handle på den, eller flytt den til `Tapt`.
+- **Gå kun videre på ekte vilkår.** Ikke blås opp pipelinen med optimisme.
+- **`Tapt` registrerer alltid en årsak** — ærlige årsaker er det som skjerper [ICP-en](../sales/icp.md).
+- **`Pleie`** er der vunne avtaler og «ikke nå»-prospekter lever, så de aldri glemmes. Den beste
+  pipelinen er en varm tidligere kunde.
 
-| Stage | Default probability |
+## Sannsynlighet (valgfritt)
+En grov standardmapping for prognoser; juster per avtale:
+
+| Steg | Standard sannsynlighet |
 | --- | --- |
-| Prospect | 5% |
-| Engaged | 15% |
-| Qualified | 35% |
-| Proposal | 55% |
-| Negotiation | 75% |
-| Closed Won | 100% |
-| Closed Lost | 0% |
+| Prospekt | 5 % |
+| I dialog | 15 % |
+| Kvalifisert | 35 % |
+| Tilbud | 55 % |
+| Forhandling | 75 % |
+| Vunnet | 100 % |
+| Tapt | 0 % |

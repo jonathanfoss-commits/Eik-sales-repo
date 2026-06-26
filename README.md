@@ -1,54 +1,62 @@
 # Eik Sales OS
 
-> The central brain for the AI ecosystem of **Jonathan Foss**, Sales Manager at **Eik & Friends** (Norway).
+> Den sentrale hjernen i AI-økosystemet til **Jonathan Foss**, Sales Manager i **Eik & Friends** (Norge).
 
-This repository is an **AI operating system** for high-performance B2B sales. It is not an
-application you run — it is a structured, version-controlled knowledge base that AI agents
-(Claude, ChatGPT) and automation tools (n8n, Zapier) read from and write to in order to do
-real sales work: prospecting, outreach, follow-up, meeting prep, negotiation, partnership
-development, and reporting.
+Dette repoet er et **AI-operativsystem** for B2B-salg på høyt nivå. Det er ikke en applikasjon du
+kjører — det er en strukturert, versjonskontrollert kunnskapsbase som AI-agenter (Claude, ChatGPT)
+og automatiseringsverktøy (n8n, Zapier) leser fra og skriver til for å gjøre ekte salgsarbeid:
+prospektering, henvendelser, oppfølging, møteforberedelse, forhandling, partnerutvikling og
+rapportering.
 
-The guiding idea: **everything that makes Jonathan effective at sales should live here as
-reusable, composable, documented building blocks** — so that both humans and AI agents can
-understand the work, repeat it, and improve it over time.
+Den bærende idéen: **alt som gjør Jonathan god på salg skal ligge her som gjenbrukbare,
+sammensettbare og dokumenterte byggeklosser** — slik at både mennesker og AI-agenter kan forstå
+arbeidet, gjenta det og forbedre det over tid.
+
+> **Språk:** Norsk (bokmål) er standardspråket. Forretnings- og brukervendt innhold skrives på
+> norsk; teknisk implementasjon (kode, identifikatorer) er på engelsk der det følger bransjestandard.
+> Se [ADR 0001](docs/decisions/0001-sprakpolicy.md).
 
 ---
 
-## What this repository contains
+## Hva repoet inneholder
 
-| Module | Purpose |
+| Modul | Formål |
 | --- | --- |
-| [`agents/`](agents/) | Definitions for AI agents (role, instructions, tools, guardrails). |
-| [`prompts/`](prompts/) | Reusable, battle-tested prompt library for sales tasks. |
-| [`sales/`](sales/) | Sales playbooks: ICP, methodology, event & partnership processes. |
-| [`crm/`](crm/) | The customer & deal data model, pipeline stages, and sync conventions. |
-| [`integrations/`](integrations/) | How the system connects to Gmail, Calendar, Notion, Drive, etc. |
-| [`workflows/`](workflows/) | Automation definitions (n8n, Zapier) and their documentation. |
-| [`config/`](config/) | Configuration conventions, environment, and shared settings. |
-| [`docs/`](docs/) | Architecture, roadmap, principles, and contributor standards. |
+| [`agents/`](agents/) | Definisjoner av AI-agenter (rolle, instruksjoner, verktøy, sikkerhetsgjerder). |
+| [`prompts/`](prompts/) | Gjenbrukbart, utprøvd promptbibliotek for salgsoppgaver. |
+| [`sales/`](sales/) | Salgs-playbooks: ICP, metodikk, arrangements- og partnerprosesser. |
+| [`crm/`](crm/) | Datamodellen for kunder og avtaler, pipeline-steg og synk-konvensjoner. |
+| [`integrations/`](integrations/) | Hvordan systemet kobler seg til Gmail, Kalender, Notion, Drive m.m. |
+| [`workflows/`](workflows/) | Automatiseringer (n8n, Zapier) og dokumentasjonen av dem. |
+| [`config/`](config/) | Konfigurasjonskonvensjoner, miljø og delte innstillinger. |
+| [`docs/`](docs/) | Arkitektur, veikart, prinsipper og standarder for bidragsytere. |
 
-> Folders are only created when they hold real, useful content. We grow the structure as the
-> work demands it — never empty scaffolding.
+> Mapper opprettes bare når de har reelt, nyttig innhold. Vi vokser strukturen etter behov — aldri
+> tomt stillas.
 
 ---
 
-## Quick start
+## Kom i gang
 
-1. Read [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) to understand how the pieces fit together.
-2. Read [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md) to understand *how* we build here.
-3. Browse [`prompts/`](prompts/) for ready-to-use sales prompts.
-4. See [`docs/SETUP.md`](docs/SETUP.md) to connect your tools.
+1. Les [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for å forstå hvordan delene henger sammen.
+2. Les [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md) for å forstå *hvordan* vi bygger her.
+3. Bla i [`prompts/`](prompts/) for ferdige salgsprompter.
+4. Se [`docs/SETUP.md`](docs/SETUP.md) for å koble til verktøyene dine.
 
-## For AI agents
+> Merk: De dype tekniske dokumentene (arkitektur, prinsipper, kodestandard) er på engelsk fordi de
+> primært er for AI-agenter og fremtidige utviklere. Alt forretningsvendt — denne README-en,
+> veikartet, salgs-playbooks og prompter — er på norsk.
 
-If you are an AI agent operating in this repository, start with
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md),
-then load the relevant module's `README.md` before acting. Every module documents its own
-conventions.
+## For AI-agenter
+
+Er du en AI-agent som jobber i dette repoet, start med
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) og [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md), og last
+deretter `README.md` for den relevante modulen før du handler. Hver modul dokumenterer sine egne
+konvensjoner.
 
 ---
 
 ## Status
 
-**Phase 0 — Foundation.** Core structure, documentation, and the first high-value sales assets
-are in place. See [`docs/ROADMAP.md`](docs/ROADMAP.md) for what comes next.
+**Fase 1 — Koble til verktøyene.** Grunnmuren, dokumentasjonen og de første salgsressursene er på
+plass, og norsk er satt som standardspråk. Se [`docs/ROADMAP.md`](docs/ROADMAP.md) for hva som kommer.

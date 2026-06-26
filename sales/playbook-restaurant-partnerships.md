@@ -1,45 +1,45 @@
-# Playbook — Restaurant & Venue Partnerships
+# Playbook — Restaurant- og lokalepartnerskap
 
-How we build ongoing partnerships with restaurants, venues, and complementary brands. Partnerships
-compound: each good one becomes a durable source of referrals, capacity, and credibility. Pair with
-the partnership section of the [ICP](icp.md) and
+Hvordan vi bygger løpende partnerskap med restauranter, lokaler og komplementære merkevarer.
+Partnerskap forsterker seg selv: hvert gode partnerskap blir en varig kilde til anbefalinger,
+kapasitet og troverdighet. Bruk sammen med partnerdelen i [ICP-en](icp.md) og
 [`prompts/outreach/partnership-pitch.md`](../prompts/outreach/partnership-pitch.md).
 
-> **Status: starter draft** — refine as real partnerships are formed.
+> **Status: startutkast** — foredles etter hvert som ekte partnerskap dannes.
 
-## Why partnerships matter
-- **Referral flow** — partners send us business we'd never reach, and vice versa.
-- **Capacity & access** — venues we can offer clients without owning them.
-- **Credibility** — association with respected names raises our own.
-- **Resilience** — a network is harder to disrupt than any single channel.
+## Hvorfor partnerskap betyr noe
+- **Henvisningsflyt** — partnere sender oss forretninger vi aldri ville nådd, og motsatt.
+- **Kapasitet & tilgang** — lokaler vi kan tilby kunder uten å eie dem.
+- **Troverdighet** — å være assosiert med respekterte navn hever vårt eget.
+- **Robusthet** — et nettverk er vanskeligere å forstyrre enn én enkelt kanal.
 
-## Who makes a good partner
-- Serves a similar premium / corporate clientele.
-- Complementary, not directly competing.
-- Reliable and quality-obsessed — they'll reflect on us.
-- Open to genuine reciprocity (referrals, co-marketing, shared events).
+## Hvem som er en god partner
+- Betjener en lignende premium / bedriftskundekrets.
+- Komplementær, ikke direkte konkurrerende.
+- Pålitelig og kvalitetsbesatt — de reflekterer på oss.
+- Åpen for ekte gjensidighet (henvisninger, felles markedsføring, felles arrangementer).
 
-## The motion
-1. **Identify** complementary venues/brands serving our ICP.
-2. **Open** with a mutual-value frame (not a pitch) — see the partnership-pitch prompt.
-3. **Explore** over a low-stakes coffee/call: where do our clients overlap? Where could we help
-   each other?
-4. **Pilot** something small and concrete (a single referral, one co-hosted event).
-5. **Formalize** lightly once it works — clear, simple terms; nothing heavy.
-6. **Nurture** — partnerships decay without attention; keep a regular touch rhythm.
+## Bevegelsen
+1. **Identifiser** komplementære lokaler/merkevarer som betjener vår ICP.
+2. **Åpne** med en gjensidig-verdi-innramming (ikke et salg) — se partnership-pitch-prompten.
+3. **Utforsk** over en uforpliktende kaffe/samtale: hvor overlapper kundene våre? Hvor kan vi hjelpe
+   hverandre?
+4. **Pilotér** noe lite og konkret (én henvisning, ett felles arrangement).
+5. **Formaliser** lett når det fungerer — tydelige, enkle betingelser; ingenting tungt.
+6. **Pleie** — partnerskap forvitrer uten oppmerksomhet; hold en jevn kontaktrytme.
 
-## Forms a partnership can take
-- **Reciprocal referrals** — pass each other overflow or complementary bookings.
-- **Co-hosted events** — joint experiences that showcase both.
-- **Preferred-venue arrangements** — they become a go-to option we offer clients.
-- **Co-marketing** — shared content, cross-promotion, bundled offers.
+## Former et partnerskap kan ta
+- **Gjensidige henvisninger** — send hverandre overflow eller komplementære bookinger.
+- **Felles arrangementer** — felles opplevelser som viser frem begge.
+- **Foretrukket-lokale-ordning** — de blir et førstevalg vi tilbyr kunder.
+- **Felles markedsføring** — delt innhold, kryss-promotering, pakketilbud.
 
-## What makes them last
-- **Reciprocity is real, not nominal** — track that value flows both ways.
-- **Reliability** — every referral we send must be handled well; our reputation rides on it.
-- **A relationship, not a contract** — stay in touch beyond transactions.
-- **A clear point of contact** on each side.
+## Hva som gjør at de varer
+- **Gjensidigheten er ekte, ikke på papiret** — følg med på at verdi flyter begge veier.
+- **Pålitelighet** — hver henvisning vi sender må håndteres godt; vårt omdømme følger med.
+- **En relasjon, ikke en kontrakt** — hold kontakten utover transaksjoner.
+- **Et tydelig kontaktpunkt** på hver side.
 
-## Tracking
-Model partners as Accounts of type `Partner` in the [CRM](../crm/schema.md). Track referrals
-sent/received so reciprocity stays balanced and visible.
+## Sporing
+Modellér partnere som kontoer av typen `Partner` i [CRM-et](../crm/schema.md). Spor henvisninger
+sendt/mottatt slik at gjensidigheten holdes balansert og synlig.

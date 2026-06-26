@@ -20,7 +20,7 @@ actionable queue — automatically, but with a human in the loop for outward act
 4. **Label:** apply the matching `Sales/*` label in Gmail
    (see [`gmail-integration.md`](../integrations/gmail-integration.md)).
 5. **Branch by class:**
-   - **Hot Lead →** propose a new Account/Contact/Deal in Notion (stage `Prospect`/`Engaged`),
+   - **Hot Lead →** propose a new Account/Contact/Deal in Notion (stage `Prospekt`/`I dialog`),
      propose a calendar hold, and draft a reply.
    - **Active Deal →** link to the existing deal, draft the next-step reply, propose a CRM update.
    - **Routine →** draft a short reply or propose the calendar action.

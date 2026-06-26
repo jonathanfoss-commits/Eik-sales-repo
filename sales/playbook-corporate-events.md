@@ -1,49 +1,48 @@
-# Playbook — Corporate Events
+# Playbook — Bedriftsarrangementer
 
-How we win and deliver corporate event bookings (team dinners, launches, celebrations, client
-entertainment, julebord). Pair this with the [methodology](methodology.md) and the
-[ICP](icp.md).
+Hvordan vi vinner og leverer bedriftsarrangementer (teammiddager, lanseringer, feiringer,
+kundepleie, julebord). Bruk denne sammen med [metodikken](methodology.md) og [ICP-en](icp.md).
 
-> **Status: starter draft** — refine with real pricing, capacity, and win/loss data.
+> **Status: startutkast** — foredles med ekte priser, kapasitet og vunnet/tapt-data.
 
-## The buyer's job-to-be-done
-They need an event that makes them look good, runs smoothly, and their guests remember — without
-spending their own scarce time managing logistics. They're buying **peace of mind and taste**, not
-just a venue and food.
+## Kjøperens jobb-som-skal-gjøres
+De trenger et arrangement som får dem til å fremstå godt, som går knirkefritt, og som gjestene
+husker — uten å bruke sin egen knappe tid på logistikk. De kjøper **ro i sjelen og smak**, ikke bare
+et lokale og mat.
 
-## Where deals come from
-- Outbound to ICP-fit companies hitting a trigger (new office, launch, season).
-- Inbound referrals from past clients and partners (the best source).
-- Partner venues sending overflow/complementary bookings.
+## Hvor avtalene kommer fra
+- Utgående mot ICP-treff som har en trigger (nytt kontor, lansering, sesong).
+- Innkommende anbefalinger fra tidligere kunder og partnere (den beste kilden).
+- Partnerlokaler som sender overflow / komplementære bookinger.
 
-## Discovery — what to learn
-- **Occasion & goal:** what are we celebrating/achieving? What does success feel like?
-- **Guests:** how many, who (team / clients / mixed), any VIPs or constraints.
-- **Date & flexibility:** fixed or movable? How urgent?
-- **Budget:** range and what's included in their thinking.
-- **Decision process:** who signs off, by when.
-- **Experience bar:** what's worked/failed for them before.
+## Kartlegging — hva du skal lære
+- **Anledning & mål:** hva feirer/oppnår vi? Hvordan føles suksess?
+- **Gjester:** hvor mange, hvem (team / kunder / blandet), eventuelle VIP-er eller hensyn.
+- **Dato & fleksibilitet:** fast eller flyttbar? Hvor haster det?
+- **Budsjett:** ramme og hva de tenker inngår.
+- **Beslutningsprosess:** hvem godkjenner, og når.
+- **Forventningsnivå:** hva har fungert/feilet for dem før.
 
-## Value points to emphasize
-- End-to-end production — they hand it over and it's handled.
-- Local venue relationships and access.
-- Personal, non-generic experiences that fit *their* culture.
-- Reliability: it will go right, and that reflects on the host.
+## Verdipunkter å vektlegge
+- Ende-til-ende-produksjon — de overlater det, og det blir håndtert.
+- Lokale lokalerelasjoner og tilgang.
+- Personlige, ikke-generiske opplevelser som passer *deres* kultur.
+- Pålitelighet: det går riktig for seg, og det reflekterer på verten.
 
-## Common objections & responses
-| Objection | Response |
+## Vanlige innvendinger & svar
+| Innvending | Svar |
 | --- | --- |
-| "It's more than we wanted to spend." | Anchor on outcome and risk: a memorable, flawless event vs. a cheap one that reflects poorly. Offer to flex scope, not quality. |
-| "We usually just do it ourselves." | Acknowledge it — then quantify the hidden cost in their time and the risk of a miss. |
-| "We need to think about it." | Surface the real hesitation; agree a specific next step and date. |
-| "Can you do [date]?" (tight) | Be honest on feasibility; if dates are scarce, that's a genuine reason to decide. |
+| «Det er mer enn vi hadde tenkt å bruke.» | Forankre på resultat og risiko: et minneverdig, feilfritt arrangement vs. et billig som reflekterer dårlig. Tilby å justere omfang, ikke kvalitet. |
+| «Vi pleier å gjøre det selv.» | Anerkjenn det — tallfest så den skjulte kostnaden i deres tid og risikoen for en glipp. |
+| «Vi må tenke på det.» | Få frem den egentlige tvilen; bli enige om et konkret neste steg og dato. |
+| «Kan dere ta [dato]?» (stramt) | Vær ærlig på gjennomførbarhet; er datoene knappe, er det en ekte grunn til å bestemme seg. |
 
-## Close & next step
-- Propose a concrete hold on the date to create gentle, honest urgency.
-- Confirm scope, headcount, and budget in writing (recap email).
-- Get a clear go/no-go date.
+## Signering & neste steg
+- Foreslå en konkret reservasjon av datoen for å skape mild, ærlig hastverk.
+- Bekreft omfang, antall og budsjett skriftlig (oppsummerings-e-post).
+- Få en tydelig ja/nei-dato.
 
-## After the win
-- Flawless delivery is the real sales engine — handoff cleanly to delivery.
-- Post-event: thank-you, gather feedback, and plant the seed for the next occasion.
-- Move the account to **Nurture / Repeat** in the pipeline.
+## Etter vinst
+- Feilfri leveranse er den egentlige salgsmotoren — overlever rent til leveranse.
+- Etter arrangementet: takk, hent tilbakemelding, og så frøet til neste anledning.
+- Flytt kunden til **Pleie / Gjentakelse** i pipelinen.

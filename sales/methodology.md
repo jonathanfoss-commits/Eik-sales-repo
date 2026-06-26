@@ -1,51 +1,52 @@
-# Sales Methodology
+# Salgsmetodikk
 
-How we move from a stranger to a happy, repeat client. This defines the stages, the goal of each,
-and what "done" looks like before advancing. The pipeline stages in
-[`crm/pipeline-stages.md`](../crm/pipeline-stages.md) mirror this exactly.
+Hvordan vi går fra en fremmed til en fornøyd, gjentakende kunde. Dette definerer stegene, målet for
+hvert steg, og hva «ferdig» betyr før vi går videre. Pipeline-stegene i
+[`crm/pipeline-stages.md`](../crm/pipeline-stages.md) speiler dette nøyaktig.
 
-## Principles
-- **Fit first.** Qualify against the [ICP](icp.md) early; disqualify kindly and fast.
-- **Value before ask.** Every touch should give the prospect something useful.
-- **Human, not transactional.** We're in hospitality — the relationship *is* the product.
-- **Clarity at every step.** Always know (and agree on) the next step and its date.
+## Prinsipper
+- **Treff først.** Kvalifiser mot [ICP-en](icp.md) tidlig; diskvalifiser vennlig og raskt.
+- **Verdi før forespørsel.** Hvert kontaktpunkt skal gi kunden noe nyttig.
+- **Menneskelig, ikke transaksjonelt.** Vi er i hospitality — relasjonen *er* produktet.
+- **Klarhet i hvert steg.** Vit alltid (og bli enige om) neste steg og dato.
 
-## The stages
+## Stegene
 
-### 1. Prospect
-**Goal:** identify a fit account/contact with a real trigger.
-**Done when:** the target matches the ICP and a personalization hook exists.
-**Key prompt:** [`outreach/cold-outreach.md`](../prompts/outreach/cold-outreach.md).
+### 1. Prospekt
+**Mål:** identifisere en kunde/kontakt som passer, med en ekte trigger.
+**Ferdig når:** målet matcher ICP-en og det finnes en personaliseringsvinkel.
+**Nøkkelprompt:** [`outreach/cold-outreach.md`](../prompts/outreach/cold-outreach.md).
 
-### 2. Engaged
-**Goal:** earn a reply and a first conversation.
-**Done when:** the prospect responds and agrees to talk (or shows clear interest).
-**Key prompts:** outreach + [`follow-up/follow-up-sequence.md`](../prompts/follow-up/follow-up-sequence.md).
+### 2. I dialog
+**Mål:** få et svar og en første samtale.
+**Ferdig når:** kunden svarer og sier ja til å snakke (eller viser tydelig interesse).
+**Nøkkelprompter:** henvendelse + [`follow-up/follow-up-sequence.md`](../prompts/follow-up/follow-up-sequence.md).
 
-### 3. Qualified
-**Goal:** confirm need, budget, timing, and decision process (discovery).
-**Done when:** we've validated fit on both sides and there's a real opportunity.
-**Key prompt:** [`meetings/meeting-prep.md`](../prompts/meetings/meeting-prep.md).
+### 3. Kvalifisert
+**Mål:** bekrefte behov, budsjett, timing og beslutningsprosess (kartlegging).
+**Ferdig når:** vi har validert treff på begge sider og det finnes en reell mulighet.
+**Nøkkelprompt:** [`meetings/meeting-prep.md`](../prompts/meetings/meeting-prep.md).
 
-### 4. Proposal
-**Goal:** present a tailored offer that maps to their stated needs.
-**Done when:** the proposal is delivered and acknowledged.
-**Key prompt:** [`meetings/meeting-followup.md`](../prompts/meetings/meeting-followup.md).
+### 4. Tilbud
+**Mål:** presentere et skreddersydd tilbud som matcher de uttalte behovene.
+**Ferdig når:** tilbudet er levert og bekreftet mottatt.
+**Nøkkelprompt:** [`meetings/meeting-followup.md`](../prompts/meetings/meeting-followup.md).
 
-### 5. Negotiation
-**Goal:** align on terms while protecting value and the relationship.
-**Done when:** terms are verbally agreed.
-**Key prompt:** [`negotiation/negotiation-prep.md`](../prompts/negotiation/negotiation-prep.md).
+### 5. Forhandling
+**Mål:** bli enige om betingelser samtidig som verdi og relasjon beskyttes.
+**Ferdig når:** betingelsene er muntlig avtalt.
+**Nøkkelprompt:** [`negotiation/negotiation-prep.md`](../prompts/negotiation/negotiation-prep.md).
 
-### 6. Closed — Won / Lost
-**Won:** agreement confirmed; hand off to delivery; set the relationship-nurture follow-up.
-**Lost:** record the reason honestly; schedule a future re-touch if appropriate.
+### 6. Avsluttet — Vunnet / Tapt
+**Vunnet:** avtale bekreftet; overlever til leveranse; sett oppfølging for relasjonspleie.
+**Tapt:** registrer årsaken ærlig; planlegg en fremtidig ny kontakt om det passer.
 
-### 7. Nurture / Repeat (post-sale)
-**Goal:** turn a one-time client into a recurring one and a referral source.
-**Done when:** a next event or referral is in motion. The best pipeline is a happy past client.
+### 7. Pleie / Gjentakelse (etter salg)
+**Mål:** gjøre en engangskunde til en gjentakende kunde og en kilde til anbefalinger.
+**Ferdig når:** et nytt arrangement eller en anbefaling er i gang. Den beste pipelinen er en fornøyd
+tidligere kunde.
 
-## Stage hygiene
-- Every active deal has a **next step with a date**. No exceptions.
-- If a deal stalls with no next step, it isn't "open" — it's stuck; act or close it.
-- Move stages only when the "done when" condition is genuinely met — no optimistic inflation.
+## Steghygiene
+- Hver aktiv avtale har et **neste steg med dato**. Ingen unntak.
+- Stopper en avtale opp uten neste steg, er den ikke «åpen» — den står fast; handle eller lukk den.
+- Flytt steg kun når «ferdig når»-vilkåret faktisk er oppfylt — ingen optimistisk oppblåsing.

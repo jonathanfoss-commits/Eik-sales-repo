@@ -28,7 +28,8 @@ Consistency makes the repository navigable for humans and predictable for AI age
   identifiers (`first_name`, `deal_stage`, `expected_close_date`).
 - **Field types:** use a small, fixed vocabulary — `text`, `long_text`, `email`, `url`, `phone`,
   `number`, `currency`, `date`, `datetime`, `boolean`, `select`, `multi_select`, `relation`.
-- **Select values:** Title Case, human-readable (`In Negotiation`, `Closed Won`).
+- **Select values:** human-readable Norwegian labels (`Forhandling`, `Vunnet`) per
+  [ADR 0001](decisions/0001-sprakpolicy.md); the value *is* the visible label.
 
 ## Git commits
 Use [Conventional Commits](https://www.conventionalcommits.org/):

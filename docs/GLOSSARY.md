@@ -1,39 +1,41 @@
-# Glossary
+# Ordliste
 
-Shared vocabulary for the Eik Sales OS. Consistent terms keep humans and AI agents aligned.
+Felles vokabular for Eik Sales OS. Konsistente begreper holder mennesker og AI-agenter samkjørte.
 
-## Sales terms
-- **ICP (Ideal Customer Profile)** — the precise definition of the customers worth pursuing.
-  See [`sales/icp.md`](../sales/icp.md).
-- **Lead** — a person or company that may become a customer but is not yet qualified.
-- **Prospect** — a qualified lead actively being worked.
-- **Account** — a company/organization we sell to or partner with.
-- **Contact** — an individual person associated with an account.
-- **Deal / Opportunity** — a potential piece of business with a value and a pipeline stage.
-- **Pipeline** — the ordered set of stages a deal moves through. See
+## Salgsbegreper
+- **ICP (ideell kundeprofil)** — den presise definisjonen av kundene som er verdt å forfølge.
+  Se [`sales/icp.md`](../sales/icp.md).
+- **Lead** — en person eller virksomhet som kan bli kunde, men som ennå ikke er kvalifisert.
+- **Prospekt** — et kvalifisert lead det jobbes aktivt med.
+- **Konto (account)** — en virksomhet vi selger til eller samarbeider med.
+- **Kontakt** — en enkeltperson knyttet til en konto.
+- **Avtale / mulighet (deal)** — en potensiell forretning med en verdi og et pipeline-steg.
+- **Pipeline** — den ordnede rekken av steg en avtale beveger seg gjennom. Se
   [`crm/pipeline-stages.md`](../crm/pipeline-stages.md).
-- **Outreach** — proactive first contact (cold or warm).
-- **Follow-up** — subsequent touches to advance or revive a conversation.
-- **Discovery** — the meeting/conversation where we learn the prospect's needs.
-- **Qualification** — assessing whether a lead fits the ICP and is worth pursuing.
+- **Henvendelse (outreach)** — proaktiv førstekontakt (kald eller varm).
+- **Oppfølging** — påfølgende kontaktpunkter for å bevege eller gjenopplive en samtale.
+- **Kartlegging (discovery)** — møtet/samtalen der vi lærer prospektets behov.
+- **Kvalifisering** — å vurdere om et lead passer ICP-en og er verdt å forfølge.
 
-## Eik & Friends context
-- **Corporate event** — a booked event for a business client (dinners, launches, gatherings).
-- **Restaurant partnership** — an ongoing commercial relationship with a venue/restaurant.
-- **Marketing collaboration** — a joint campaign or co-marketing arrangement with a partner.
+## Eik & Friends-kontekst
+- **Bedriftsarrangement** — et booket arrangement for en bedriftskunde (middager, lanseringer, samlinger).
+- **Restaurantpartnerskap** — et løpende kommersielt forhold til et lokale/en restaurant.
+- **Markedssamarbeid** — en felles kampanje eller co-marketing-ordning med en partner.
 
-## System terms
-- **Agent** — a defined AI role (purpose + instructions + tools + guardrails). See
+## Systembegreper
+- **Agent** — en definert AI-rolle (formål + instruksjoner + verktøy + sikkerhetsgjerder). Se
   [`agents/`](../agents/).
-- **Prompt** — a reusable instruction for a specific task. See [`prompts/`](../prompts/).
-- **Playbook** — a documented sales process or method. See [`sales/`](../sales/).
-- **Workflow** — an automation that runs in n8n or Zapier. See [`workflows/`](../workflows/).
-- **Integration** — a connection to an external tool (Gmail, Calendar, Notion…). See
+- **Prompt** — en gjenbrukbar instruksjon for en bestemt oppgave. Se [`prompts/`](../prompts/).
+- **Playbook** — en dokumentert salgsprosess eller -metode. Se [`sales/`](../sales/).
+- **Workflow (arbeidsflyt)** — en automatisering som kjører i n8n eller Zapier. Se [`workflows/`](../workflows/).
+- **Integrasjon** — en kobling til et eksternt verktøy (Gmail, Kalender, Notion …). Se
   [`integrations/`](../integrations/).
-- **System of record** — the external tool that holds the live, authoritative data for a concern.
-- **Human-in-the-loop** — a step where a person reviews/approves before an action goes out.
-- **Execution surface** — where work actually runs (Claude, ChatGPT, n8n, Zapier).
+- **Kildesystem (system of record)** — det eksterne verktøyet som holder de levende, autoritative
+  dataene for et område.
+- **Menneske-i-løkken (human-in-the-loop)** — et steg der en person gjennomgår/godkjenner før en
+  handling går ut.
+- **Kjøreflate (execution surface)** — der arbeidet faktisk kjører (Claude, ChatGPT, n8n, Zapier).
 
-## Conventions
-- **Source of truth** — the single authoritative place for a given fact. Process → this repo;
-  live data → the connected tools.
+## Konvensjoner
+- **Sannhetskilde (source of truth)** — det ene autoritative stedet for et gitt faktum. Prosess →
+  dette repoet; levende data → de tilkoblede verktøyene.
