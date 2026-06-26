@@ -72,8 +72,12 @@ Ideer verdt å gjøre når de stiger til topps. Ennå ikke planlagt.
 ## Kjent teknisk gjeld
 Ærlig oversikt over snarveier og hull å se på igjen.
 
-- Integrasjonene er dokumentert, men ennå ikke validert mot ekte kontoer (Fase 1).
-- ICP og playbooks er startutkast som trenger ekte vunnet/tapt-data.
+- **CRM-datahygiene:** 86 avtaler står som `Bekreftet` med passert dato og bør flyttes til
+  `Gjennomført` (krever godkjenning — stor endring). Se
+  [analytics/crm-helsesjekk-2026-06-26.md](../analytics/crm-helsesjekk-2026-06-26.md). Bør
+  automatiseres med en n8n-/Airtable-regel.
+- **13 forfalte oppfølginger + 3 store Pending uten oppfølgingsdato** — handles i drift, ikke kode.
+- `sales/`-playbooks og ICP er under tilpasning til restaurantkollektiv-virkeligheten (ADR 0002).
 
 > Når du oppdager gjeld eller en mulighet, legg den til her i samme endring fremfor å utvide den
 > nåværende oppgavens omfang.

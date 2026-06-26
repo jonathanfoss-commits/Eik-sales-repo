@@ -31,6 +31,7 @@ arbeidet, gjenta det og forbedre det over tid.
 | [`crm/`](crm/) | Dokumentasjon av det levende **Airtable**-CRM-et (tabeller, felter, pipeline). |
 | [`integrations/`](integrations/) | Hvordan systemet kobler seg til Gmail, Kalender, Notion, Drive m.m. |
 | [`workflows/`](workflows/) | Automatiseringer (n8n, Zapier) og dokumentasjonen av dem. |
+| [`analytics/`](analytics/) | Datadrevne helsesjekker og analyser av CRM-et. |
 | [`config/`](config/) | Konfigurasjonskonvensjoner, miljø og delte innstillinger. |
 | [`docs/`](docs/) | Arkitektur, veikart, prinsipper og standarder for bidragsytere. |
 
