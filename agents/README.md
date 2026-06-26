@@ -50,7 +50,18 @@ Hva den trenger for å starte, og hva den produserer.
 - Standard er **menneske-i-løkken** for alt utadrettet (se
   [`docs/PRINCIPLES.md`](../docs/PRINCIPLES.md)).
 
-## Nåværende agenter
+## Operative agenter (kjører i n8n)
+Dette er de **faktiske** AI-agentene som kjører i produksjon og logger til Airtable-tabellen
+Agentlogg (jf. [ADR 0002](../docs/decisions/0002-faktisk-systemarkitektur.md)):
+
+| Agent | Formål |
+| --- | --- |
+| [`digital-jonathan`](digital-jonathan.md) | Primær AI-selger: lead-fangst, svar-/tilbudsutkast, CRM-oppdatering, daglig rytme. |
+| [`gavekort-selger`](gavekort-selger.md) | Spesialisert på gavekortsalg: prospektering og oppfølging av gavekort-/månedsavtaler. |
+
+## Konseptuelle agenter (byggeklosser / spesifikasjoner)
+Beskriver enkeltevner. Digital Jonathan er den operative sammenstillingen som faktisk utfører dem.
+
 | Agent | Formål |
 | --- | --- |
 | [`sales-development-agent`](sales-development-agent.md) | Prospektere, personalisere og skrive utgående henvendelser + oppfølginger. |
