@@ -64,7 +64,9 @@ Ideer verdt å gjøre når de stiger til topps. Ennå ikke planlagt.
   + generator [`prompts/proposals/tilbud.md`](../prompts/proposals/tilbud.md). Neste: auto-generering
   rett inn i Google Docs.
 - Partner-/lokaledatabase med sesongbasert arrangementskalender.
-- Sesongkampanjer (sommerfest, julebord, kickoff) som ferdige ressurser.
+- ~~Sesongkampanjer~~ → startet: [sesongkalender](../sales/sesongkalender.md) +
+  [julebord-henvendelse](../prompts/outreach/julebord-henvendelse.md). Neste: sommerfest- og
+  kickoff-varianter når de sesongene nærmer seg.
 - LinkedIn-henvendelses-playbook (hvis/når den kanalen tas i bruk).
 
 ## Kjent teknisk gjeld

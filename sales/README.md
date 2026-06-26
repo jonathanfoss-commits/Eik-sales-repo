@@ -9,6 +9,7 @@ konsistent og forankret i strategi — ikke improvisert hver gang.
 | --- | --- |
 | [`icp.md`](icp.md) | Ideell kundeprofil — hvem som er (og ikke er) verdt å forfølge. |
 | [`methodology.md`](methodology.md) | Vår ende-til-ende salgsmetode og stegdefinisjoner. |
+| [`sesongkalender.md`](sesongkalender.md) | Når henvendelser bør starte for hver arrangementssesong. |
 | [`playbook-corporate-events.md`](playbook-corporate-events.md) | Salg av bedriftsarrangementer. |
 | [`playbook-restaurant-partnerships.md`](playbook-restaurant-partnerships.md) | Bygge løpende partnerskap med restauranter/lokaler. |
 
