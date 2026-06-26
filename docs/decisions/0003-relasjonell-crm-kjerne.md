@@ -56,8 +56,8 @@ koblet til omsetning; risikoen er lav fordi endringen er additiv og reversibel. 
 2. **Backfill (kontrollert pass):** uttrekk distinkte bedriftsnavn fra Avtaler (ekskl.
    «Privatkunde»), opprett Bedrifter-rader, sett lenken på hver avtale via navnematch. Verifiser at
    n8n-agentene fortsatt fungerer.
-3. **Dual-write:** oppdater [`digital-jonathan`](../agents/digital-jonathan.md) og
-   [`gavekort-selger`](../agents/gavekort-selger.md) til å sette *både* fritekst og lenke ved nye
+3. **Dual-write:** oppdater [`digital-jonathan`](../../agents/digital-jonathan.md) og
+   [`gavekort-selger`](../../agents/gavekort-selger.md) til å sette *både* fritekst og lenke ved nye
    leads, og opprette Bedrift-rad om den mangler.
 4. **Rollups & visninger:** samlet verdi/gjentakelse per bedrift; «Strategiske kontoer»-visning.
 5. **Avvikling (valgfritt, senere):** når dual-write er stabil, gjør lenken til primær og faser ut
