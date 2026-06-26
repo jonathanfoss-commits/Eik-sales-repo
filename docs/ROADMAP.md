@@ -36,7 +36,8 @@ Redusere manuelt arbeid på gjentakende salgsbevegelser.
 - [ ] Automatisert oppfølgingssekvensering med godkjenningsporter
 - [ ] Møteforberedelses-brief auto-generert før hvert kalendermøte
 - [ ] Oppsummering etter møte + uttrekk av neste steg
-- [ ] Ukentlig pipeline-sammendrag fra CRM-data
+- [x] Dokumentere ukentlig pipeline-sammendrag (prompt + arbeidsflyt) — se `workflows/weekly-pipeline-digest.md`
+- [ ] Bygge & validere ukentlig pipeline-sammendrag i n8n
 
 ## Fase 3 — Innsikt & research
 Skjerpe målretting og personalisering.

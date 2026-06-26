@@ -18,6 +18,7 @@ Prompter er gruppert etter salgsfase:
 | [`meetings/`](meetings/) | Forberede og følge opp møter. |
 | [`proposals/`](proposals/) | Generere tilbud. |
 | [`negotiation/`](negotiation/) | Jobbe mot betingelser og signering. |
+| [`reports/`](reports/) | Sammendrag og rapporter (f.eks. ukentlig pipeline). |
 
 ## Mal for promptfil
 Hver prompt følger denne strukturen:
@@ -26,7 +27,7 @@ Hver prompt følger denne strukturen:
 ---
 id: <stabil-kebab-id>
 title: <Tittel>
-stage: outreach | follow-up | meetings | proposals | negotiation
+stage: outreach | follow-up | meetings | proposals | negotiation | reports
 inputs: [liste, over, inndata]
 version: 1
 lang: no
@@ -68,3 +69,4 @@ Et kort, utfylt eksempel på inndata → output.
 | Oppfølging etter møte | meetings | [`meeting-followup.md`](meetings/meeting-followup.md) | — |
 | Generer tilbud | proposals | [`tilbud.md`](proposals/tilbud.md) | — |
 | Forhandlingsforberedelse | negotiation | [`negotiation-prep.md`](negotiation/negotiation-prep.md) | — |
+| Ukentlig pipeline-sammendrag | reports | [`ukentlig-pipeline-sammendrag.md`](reports/ukentlig-pipeline-sammendrag.md) | — |
