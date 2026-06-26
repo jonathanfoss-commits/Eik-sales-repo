@@ -4,10 +4,21 @@ This file orients any AI agent (Claude Code or otherwise) working in this reposi
 It is intentionally short; the linked documents are the source of truth.
 
 ## What this repo is
-**Eik Sales OS** — an AI operating system for the B2B sales work of Jonathan Foss, Sales Manager at
-Eik & Friends (Norway). It is a *knowledge-and-automation layer*, not a runnable app: structured
-Markdown that agents and automation tools (n8n, Zapier) read from and write to. See
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+**Eik Sales OS** — an AI operating system for the sales work of Jonathan Foss at Eik & Friends, a
+Norwegian **restaurant collective** (~22 venues) selling event/private/gavekort/Amex bookings. It is
+a *knowledge-and-documentation layer*, not a runnable app: structured Markdown that agents read from
+and write to. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
+## The live system (don't get this wrong)
+- **CRM = Airtable**, base "Salgspipeline – Restaurant CRM" (`appzIFWfzob6WEhnq`). Tables: Avtaler,
+  Venues, Partneravtaler, Kampanjer, Agentlogg. This repo *documents* it — see
+  [`crm/`](crm/) and [`integrations/airtable-integration.md`](integrations/airtable-integration.md).
+- **Automation = n8n** AI-agents (Digital Jonathan, Gavekort-selger). All email is drafted, never
+  auto-sent.
+- **Notion = ARCHIVED** old CRM — never write to it. See
+  [ADR 0002](docs/decisions/0002-faktisk-systemarkitektur.md).
+- Pipeline status values (Avtaler.Status): `Ny lead → I dialog → Tilbud sendt → Pending →
+  Bekreftet → Gjennomført`, plus `Tapt`. Use these exact strings.
 
 ## The one rule you must not get wrong: language
 **Norwegian (Bokmål) is the default.** Everything business- and user-facing — prompts, templates,
@@ -29,8 +40,8 @@ recipient is explicitly international.
 | Document templates (tilbud, signatur) | [`templates/`](templates/) |
 | AI agent definitions | [`agents/`](agents/) |
 | Sales strategy (ICP, method, playbooks) | [`sales/`](sales/) |
-| Data model & pipeline stages | [`crm/`](crm/) |
-| Tool connections | [`integrations/`](integrations/) |
+| Airtable CRM schema & pipeline | [`crm/`](crm/) |
+| Tool connections (Airtable, Gmail, …) | [`integrations/`](integrations/) |
 | Automations | [`workflows/`](workflows/) |
 | Key decisions & why | [`docs/decisions/`](docs/decisions/) |
 

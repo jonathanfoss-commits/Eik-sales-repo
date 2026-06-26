@@ -2,11 +2,13 @@
 
 > Den sentrale hjernen i AI-økosystemet til **Jonathan Foss**, Sales Manager i **Eik & Friends** (Norge).
 
-Dette repoet er et **AI-operativsystem** for B2B-salg på høyt nivå. Det er ikke en applikasjon du
-kjører — det er en strukturert, versjonskontrollert kunnskapsbase som AI-agenter (Claude, ChatGPT)
-og automatiseringsverktøy (n8n, Zapier) leser fra og skriver til for å gjøre ekte salgsarbeid:
-prospektering, henvendelser, oppfølging, møteforberedelse, forhandling, partnerutvikling og
-rapportering.
+Dette repoet er et **AI-operativsystem** for salget i Eik & Friends — et **restaurantkollektiv**
+med ~22 spisesteder i Oslo-området. Det er ikke en applikasjon du kjører — det er en strukturert,
+versjonskontrollert kunnskapsbase som AI-agenter (Claude, ChatGPT) og automatiseringen i **n8n**
+leser fra og skriver til for å gjøre ekte salgsarbeid: prospektering, henvendelser, oppfølging,
+tilbud, forhandling, partnerutvikling og rapportering. Det levende CRM-et er en **Airtable**-base;
+dette repoet er «hjernen» som dokumenterer og styrer hvordan arbeidet gjøres
+([ADR 0002](docs/decisions/0002-faktisk-systemarkitektur.md)).
 
 Den bærende idéen: **alt som gjør Jonathan god på salg skal ligge her som gjenbrukbare,
 sammensettbare og dokumenterte byggeklosser** — slik at både mennesker og AI-agenter kan forstå
@@ -26,7 +28,7 @@ arbeidet, gjenta det og forbedre det over tid.
 | [`prompts/`](prompts/) | Gjenbrukbart, utprøvd promptbibliotek for salgsoppgaver. |
 | [`templates/`](templates/) | Gjenbrukbare dokumentmaler (tilbud, e-postsignatur). |
 | [`sales/`](sales/) | Salgs-playbooks: ICP, metodikk, arrangements- og partnerprosesser. |
-| [`crm/`](crm/) | Datamodellen for kunder og avtaler, pipeline-steg og synk-konvensjoner. |
+| [`crm/`](crm/) | Dokumentasjon av det levende **Airtable**-CRM-et (tabeller, felter, pipeline). |
 | [`integrations/`](integrations/) | Hvordan systemet kobler seg til Gmail, Kalender, Notion, Drive m.m. |
 | [`workflows/`](workflows/) | Automatiseringer (n8n, Zapier) og dokumentasjonen av dem. |
 | [`config/`](config/) | Konfigurasjonskonvensjoner, miljø og delte innstillinger. |
@@ -62,5 +64,6 @@ konvensjoner.
 
 ## Status
 
-**Fase 1 — Koble til verktøyene.** Grunnmuren, dokumentasjonen og de første salgsressursene er på
-plass, og norsk er satt som standardspråk. Se [`docs/ROADMAP.md`](docs/ROADMAP.md) for hva som kommer.
+**Repoet er tilpasset det levende systemet.** CRM-dokumentasjonen speiler Airtable-basen, norsk er
+standardspråk, og integrasjonene (Airtable, Gmail, Kalender, Drive) er aktive. Se
+[`docs/ROADMAP.md`](docs/ROADMAP.md) for neste steg.

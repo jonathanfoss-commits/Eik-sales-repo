@@ -26,30 +26,34 @@ The system is a **knowledge-and-automation layer** that sits between Jonathan an
               reads/writes │                        │ triggers
                            ▼                        ▼
    ┌───────────────────────────────────┐   ┌────────────────────────┐
-   │  EXECUTION SURFACES               │   │  AUTOMATION ENGINES     │
-   │  Claude · ChatGPT                 │   │  n8n · Zapier           │
+   │  EXECUTION SURFACES               │   │  AUTOMATION ENGINE      │
+   │  Claude · ChatGPT                 │   │  n8n (AI-agents)        │
    └───────────────┬───────────────────┘   └───────────┬────────────┘
                    │                                    │
                    ▼                                    ▼
    ┌────────────────────────────────────────────────────────────────┐
    │  SYSTEMS OF RECORD                                              │
-   │  Gmail · Google Calendar · Notion · Google Drive/Docs/Sheets   │
+   │  Airtable (CRM) · Gmail · Google Calendar · Drive/Docs         │
+   │  (Notion = archived old CRM)                                   │
    └────────────────────────────────────────────────────────────────┘
 ```
 
 Key insight: **this repository is the source of truth for *how the work is done*. The external
-tools remain the source of truth for *the live data* (emails, events, documents).** We do not
-duplicate live data here; we describe the model, the process, and the instructions.
+tools remain the source of truth for *the live data*** — the **Airtable** CRM holds deals/venues,
+Gmail holds conversations, Calendar holds meetings. We do not duplicate live data here; we describe
+the model, the process, and the instructions. See
+[ADR 0002](decisions/0002-faktisk-systemarkitektur.md) for why Airtable (not Notion) is the CRM.
 
 ## 2. The layers
 
 The repository is organized into clear layers, each with a single responsibility.
 
 ### Knowledge layer — *what we know*
-- **`sales/`** — Ideal Customer Profile, sales methodology, playbooks for B2B deals, corporate
-  events, restaurant partnerships, and marketing collaborations.
-- **`crm/`** — the data model: what a contact, account, and deal look like; pipeline stages;
-  how records map onto Notion / Google Sheets.
+- **`sales/`** — Ideal Customer Profile, sales methodology, the seasonal calendar, and playbooks
+  for corporate events and venue/restaurant partnerships. Eik & Friends is a **restaurant
+  collective** (~22 venues) selling event/private/gavekort/Amex bookings.
+- **`crm/`** — documentation of the live **Airtable** CRM: the tables (Avtaler, Venues,
+  Partneravtaler, Kampanjer, Agentlogg), their fields, and the real status pipeline.
 
 ### Instruction layer — *how to act*
 - **`prompts/`** — a versioned library of reusable prompts for concrete sales tasks.
@@ -57,10 +61,10 @@ The repository is organized into clear layers, each with a single responsibility
   tools they may call, and guardrails.
 
 ### Connection layer — *how we reach the world*
-- **`integrations/`** — conventions and notes for each connected tool (Gmail, Calendar, Notion,
+- **`integrations/`** — conventions and notes for each connected tool (Airtable, Gmail, Calendar,
   Drive). Describes *what each integration is allowed to do* and the data it exposes.
-- **`workflows/`** — automations that run in n8n or Zapier, documented so they are
-  understandable and reproducible even though they execute outside this repo.
+- **`workflows/`** — the n8n automations and AI-agents (Digital Jonathan, Gavekort-selger),
+  documented so they are understandable and reproducible even though they execute outside this repo.
 
 ### Foundation layer — *how everything is governed*
 - **`config/`** — shared settings, environment conventions, and non-secret configuration.
@@ -68,17 +72,21 @@ The repository is organized into clear layers, each with a single responsibility
 
 ## 3. Data flow examples
 
-**Outbound prospecting**
-1. A prospect/account is defined per the `crm/` model.
-2. The `sales-development-agent` (`agents/`) selects an outreach prompt from `prompts/outreach/`.
-3. It drafts a personalized email using the `sales/` ICP and messaging.
-4. The draft is created in Gmail via an `integrations/` connection (human reviews before send).
-5. The activity and next step are logged to the CRM (Notion/Sheets).
+**Inbound lead (the real flow)**
+1. An n8n agent ("Digital Jonathan") watches the Gmail inbox.
+2. A new enquiry is captured as a row in the **Avtaler** table (status `Ny lead`), with the
+   `Gmail-tråd` link back to the source email.
+3. A reply is drafted in Gmail (never auto-sent) using the `prompts/` library and `sales/` context.
+4. The action is logged in the **Agentlogg** table; anything uncertain is flagged for Jonathan.
 
-**Inbound triage**
-1. An n8n `workflow` watches the Gmail inbox.
-2. New messages are classified using a `prompts/` triage prompt.
-3. Hot leads create a CRM record and a calendar hold; routine messages get a draft reply.
+**Proposal (tilbud)**
+1. For a qualified deal, the n8n Tilbud-agent generates a proposal draft (see
+   `prompts/proposals/tilbud.md`) and sets `Tilbudsutkast laget` so it isn't done twice.
+2. Jonathan reviews and sends; the deal moves to `Tilbud sendt`.
+
+**Weekly rhythm**
+- 08:00 morning briefing (draft replies + auto-leads); Monday adds a pipeline review; Tuesday adds
+  Apollo lead-fetch. 12:00/15:00 inbox triage. 21:00 meeting follow-up + next-day task list.
 
 ## 4. Design rules
 
