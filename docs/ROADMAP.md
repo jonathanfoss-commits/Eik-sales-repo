@@ -59,7 +59,9 @@ Ideer verdt å gjøre når de stiger til topps. Ennå ikke planlagt.
 
 - ~~Tospråklige (norsk/engelsk) promptvarianter~~ → erstattet av ADR 0001: norsk er standard,
   engelsk variant kun ved behov.
-- Maler for tilbud & prisoppsett generert inn i Google Docs.
+- ~~Tilbudsmal~~ → levert: [`templates/tilbud-bedriftsarrangement.md`](../templates/tilbud-bedriftsarrangement.md)
+  + generator [`prompts/proposals/tilbud.md`](../prompts/proposals/tilbud.md). Neste: auto-generering
+  rett inn i Google Docs.
 - Partner-/lokaledatabase med sesongbasert arrangementskalender.
 - Sesongkampanjer (sommerfest, julebord, kickoff) som ferdige ressurser.
 - LinkedIn-henvendelses-playbook (hvis/når den kanalen tas i bruk).

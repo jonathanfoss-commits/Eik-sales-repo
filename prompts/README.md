@@ -16,6 +16,7 @@ Prompter er gruppert etter salgsfase:
 | [`outreach/`](outreach/) | Førstegangskontakt — kald og varm utgående. |
 | [`follow-up/`](follow-up/) | Bevege eller gjenopplive samtaler. |
 | [`meetings/`](meetings/) | Forberede og følge opp møter. |
+| [`proposals/`](proposals/) | Generere tilbud. |
 | [`negotiation/`](negotiation/) | Jobbe mot betingelser og signering. |
 
 ## Mal for promptfil
@@ -25,7 +26,7 @@ Hver prompt følger denne strukturen:
 ---
 id: <stabil-kebab-id>
 title: <Tittel>
-stage: outreach | follow-up | meetings | negotiation
+stage: outreach | follow-up | meetings | proposals | negotiation
 inputs: [liste, over, inndata]
 version: 1
 lang: no
@@ -65,4 +66,5 @@ Et kort, utfylt eksempel på inndata → output.
 | Oppfølgingssekvens | follow-up | [`follow-up-sequence.md`](follow-up/follow-up-sequence.md) | [`.en`](follow-up/follow-up-sequence.en.md) |
 | Møteforberedelse | meetings | [`meeting-prep.md`](meetings/meeting-prep.md) | — |
 | Oppfølging etter møte | meetings | [`meeting-followup.md`](meetings/meeting-followup.md) | — |
+| Generer tilbud | proposals | [`tilbud.md`](proposals/tilbud.md) | — |
 | Forhandlingsforberedelse | negotiation | [`negotiation-prep.md`](negotiation/negotiation-prep.md) | — |

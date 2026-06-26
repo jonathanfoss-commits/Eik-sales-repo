@@ -24,6 +24,7 @@ arbeidet, gjenta det og forbedre det over tid.
 | --- | --- |
 | [`agents/`](agents/) | Definisjoner av AI-agenter (rolle, instruksjoner, verktøy, sikkerhetsgjerder). |
 | [`prompts/`](prompts/) | Gjenbrukbart, utprøvd promptbibliotek for salgsoppgaver. |
+| [`templates/`](templates/) | Gjenbrukbare dokumentmaler (tilbud, e-postsignatur). |
 | [`sales/`](sales/) | Salgs-playbooks: ICP, metodikk, arrangements- og partnerprosesser. |
 | [`crm/`](crm/) | Datamodellen for kunder og avtaler, pipeline-steg og synk-konvensjoner. |
 | [`integrations/`](integrations/) | Hvordan systemet kobler seg til Gmail, Kalender, Notion, Drive m.m. |

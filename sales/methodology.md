@@ -30,7 +30,8 @@ hvert steg, og hva «ferdig» betyr før vi går videre. Pipeline-stegene i
 ### 4. Tilbud
 **Mål:** presentere et skreddersydd tilbud som matcher de uttalte behovene.
 **Ferdig når:** tilbudet er levert og bekreftet mottatt.
-**Nøkkelprompt:** [`meetings/meeting-followup.md`](../prompts/meetings/meeting-followup.md).
+**Nøkkelprompt:** [`proposals/tilbud.md`](../prompts/proposals/tilbud.md) (genererer tilbudet fra
+[tilbudsmalen](../templates/tilbud-bedriftsarrangement.md)).
 
 ### 5. Forhandling
 **Mål:** bli enige om betingelser samtidig som verdi og relasjon beskyttes.
