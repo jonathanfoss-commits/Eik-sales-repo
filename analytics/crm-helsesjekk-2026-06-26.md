@@ -1,8 +1,21 @@
 # CRM-helsesjekk — 26.06.2026
 
-Øyeblikksbilde av Airtable-tabellen **Avtaler** (127 rader) per 26.06.2026. Lesebasert — ingen data
-er endret. Tallene er hentet via Airtable-API og kan reproduseres. Anbefalingene nederst er forslag
-til godkjenning.
+Øyeblikksbilde av Airtable-tabellen **Avtaler** (127 rader) per 26.06.2026. Tallene er hentet via
+Airtable-API og kan reproduseres.
+
+> ## ✅ Tiltak utført 26.06.2026 (etter godkjenning)
+> 1. **86 avtaler flyttet `Bekreftet` → `Gjennomført`** (alle med passert arrangementsdato).
+>    Pipelinen skiller nå bekreftet-kommende fra levert.
+> 2. **10 oppfølgingsutkast laget i Gmail** (2. kontakt, vinkel «før fellesferien») som trådsvar på
+>    de opprinnelige sommergave-e-postene: Kvale, Arntzen de Besche, BAHR, SANDS (cc HR), Codex,
+>    Haavind, Conscia, Arkwright, CatalystOne, Worldwiders. **Utkast — ikke sendt.** `Neste
+>    oppfølging` satt til 2026-07-01 på disse.
+> 3. **3 store Pending-avtaler** (1,5 MNOK) fikk oppfølgingsdato: Autopay (01.08), ABG Sundal
+>    Collier ×2 (15.08).
+> 4. Begge AI-handlinger logget i **Agentlogg**.
+>
+> Gjenstår (krever Jonathan): sende de 10 utkastene; DNB, Plus Arkitektur og Janteloppet — se
+> «Neste steg» nederst.
 
 ## Sammendrag (det viktigste)
 1. **86 avtaler står som `Bekreftet` med en arrangementsdato som er passert.** De er etter all
@@ -65,6 +78,19 @@ lav innsats.
    planlagt neste handling.
 4. **Regel fremover:** ingen åpen avtale uten «Neste oppfølging»; ingen `Bekreftet` med passert dato.
    Begge kan håndheves automatisk i n8n.
+
+## Neste steg (gjenstår — krever Jonathan eller mer info)
+1. **Send de 10 oppfølgingsutkastene** (ligger klare i Gmail). 2 minutter per stk å se over.
+2. **Janteloppet – Afterparty 500+ (600k, 22.08)** — størst enkeltmulighet. To blokkeringer:
+   (a) finn lokale 500+ — kandidater: Brød & Sirkus (500), Fyrhuset Kuba (500), Tårnet;
+   (b) skaff arrangørens kontaktinfo (etterspurt fra Sentralen / booking@sentralen.no).
+3. **DNB – VM-event Heim Gjøvik** (Sindre Ringli) — går via Heimgruppen/Calle. Følg opp **etter**
+   eventet; potensial for en bredere bedriftsavtale på tvers av lokasjoner.
+4. **Plus Arkitektur – Lunsj (37 pers, 27.08)** — Tripleseat web-lead, ingen e-post i CRM. Svar via
+   leadet: https://rengroupas.tripleseat.com/leads/53492644
+5. **Automatiser hygienen (anbefalt n8n-regel):** flytt `Bekreftet → Gjennomført` når «Dato for
+   selskap» passerer, og varsle om åpne avtaler uten «Neste oppfølging». Da holder pipelinen seg ren
+   uten manuell opprydding.
 
 ## Metode
 Tall hentet 26.06.2026 via Airtable-API mot basen `appzIFWfzob6WEhnq`, tabell Avtaler. «Passert» =

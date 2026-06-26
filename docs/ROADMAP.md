@@ -73,11 +73,10 @@ Ideer verdt å gjøre når de stiger til topps. Ennå ikke planlagt.
 ## Kjent teknisk gjeld
 Ærlig oversikt over snarveier og hull å se på igjen.
 
-- **CRM-datahygiene:** 86 avtaler står som `Bekreftet` med passert dato og bør flyttes til
-  `Gjennomført` (krever godkjenning — stor endring). Se
-  [analytics/crm-helsesjekk-2026-06-26.md](../analytics/crm-helsesjekk-2026-06-26.md). Bør
-  automatiseres med en n8n-/Airtable-regel.
-- **13 forfalte oppfølginger + 3 store Pending uten oppfølgingsdato** — handles i drift, ikke kode.
+- **CRM-datahygiene:** ✅ ryddet 26.06 (86 avtaler `Bekreftet → Gjennomført`; 10 oppfølgingsutkast
+  laget; 3 Pending fikk oppfølgingsdato). Se
+  [analytics/crm-helsesjekk-2026-06-26.md](../analytics/crm-helsesjekk-2026-06-26.md). **Gjenstår:**
+  automatisere med en n8n-/Airtable-regel så det ikke gjentar seg (lagt i Fase 2).
 - `sales/`-playbooks og ICP er under tilpasning til restaurantkollektiv-virkeligheten (ADR 0002).
 
 > Når du oppdager gjeld eller en mulighet, legg den til her i samme endring fremfor å utvide den
