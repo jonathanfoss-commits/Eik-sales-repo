@@ -31,7 +31,11 @@ automatisk.
    [`prompts/proposals/tilbud.md`](../prompts/proposals/tilbud.md)) og `Tilbudsutkast laget` settes
    så samme avtale ikke behandles to ganger. Status → `Tilbud sendt` når Jonathan har sendt.
 4. **CRM-oppdatering:** status, neste oppfølging og notater holdes à jour.
-5. **Logging:** hver handling logges i **Agentlogg** med kategori; usikre saker flagges med «Trenger
+5. **Pipeline-hygiene (daglig):** flytt avtaler der `Status` = `Bekreftet` og `Dato for selskap` er
+   passert → `Gjennomført`. Bruk `Pipeline-hygiene`-flagget i Avtaler som kilde (se
+   [`workflows/crm-hygiene-automation.md`](../workflows/crm-hygiene-automation.md)). Løft samtidig
+   frem åpne avtaler som flagges «🔔 Oppfølging mangler/forfalt» i morgenbriefen.
+6. **Logging:** hver handling logges i **Agentlogg** med kategori; usikre saker flagges med «Trenger
    menneskelig vurdering».
 
 ## Verktøy & integrasjoner

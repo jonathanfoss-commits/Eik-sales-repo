@@ -30,6 +30,7 @@ Alle leads, tilbud og bekreftede bestillinger. Én rad per avtale/event. **Kjern
 | Dager til selskap | formula | Antall dager til «Dato for selskap». |
 | Forfalt oppfølging | formula | Flagger om «Neste oppfølging» er passert. |
 | Vektet verdi | formula | Totalbudsjett × sannsynlighet (avledet av Status). |
+| Pipeline-hygiene | formula | Auto-flagg (oppdateres daglig): «⚠️ Sett til Gjennomført» eller «🔔 Oppfølging mangler/forfalt». Se [`workflows/crm-hygiene-automation.md`](../workflows/crm-hygiene-automation.md). |
 | Gmail-tråd | url | Lenke til kilde-eposten. **Settes automatisk av n8n** ved lead-intake. |
 | Tilbudsutkast laget | checkbox | **Settes av n8n Tilbud-agenten** når et utkast er generert (hindrer dobbeltbehandling). |
 

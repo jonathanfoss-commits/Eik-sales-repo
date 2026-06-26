@@ -32,9 +32,11 @@ Få systemet til å handle på ekte data gjennom Jonathans daglige verktøy.
 ## Fase 2 — Automatisere det repeterende
 Redusere manuelt arbeid på gjentakende salgsbevegelser.
 
-- [ ] **CRM-hygiene-regel:** auto-flytt `Bekreftet → Gjennomført` når «Dato for selskap» passerer
-  (fjerner 86-rad-problemet permanent — se [helsesjekk](../analytics/crm-helsesjekk-2026-06-26.md))
-- [ ] **Håndhev «Neste oppfølging»:** ingen åpen avtale uten dato; varsle ved forfall
+- [x] **CRM-hygiene-flagg live:** `Pipeline-hygiene`-formelfelt deployet i Avtaler (oppdateres
+  daglig) — flagger både `Bekreftet`-med-passert-dato og manglende/forfalt oppfølging. Se
+  [`workflows/crm-hygiene-automation.md`](../workflows/crm-hygiene-automation.md).
+- [ ] **Aktiver auto-flip** `Bekreftet → Gjennomført` (regel lagt til Digital Jonathan; alternativt
+  Airtable-script — 2 min i UI)
 - [ ] Automatisert oppfølgingssekvensering med godkjenningsporter
 - [ ] Møteforberedelses-brief auto-generert før hvert kalendermøte
 - [x] Dokumentere ukentlig pipeline-sammendrag (prompt + arbeidsflyt) — se `workflows/weekly-pipeline-digest.md`
