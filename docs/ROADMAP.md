@@ -8,7 +8,8 @@ Teknisk gjeld og muligheter som oppdages underveis fanges nederst.
 > initiativene under er forankret der og i ADR-ene.
 
 ## Strategiske initiativer (fra STRATEGY.md)
-- [ ] **Relasjonell CRM-kjerne** (Bedrifter som navet) — [ADR 0003](decisions/0003-relasjonell-crm-kjerne.md). *Pågår: struktur.*
+- [x] **Relasjonell CRM-kjerne** (Bedrifter som navet) — [ADR 0003](decisions/0003-relasjonell-crm-kjerne.md).
+  Struktur + backfill ✅ (57 bedrifter, 93 avtaler lenket). *Gjenstår:* rollups (samlet verdi/gjentakelse) + «Strategiske kontoer»-visning.
 - [ ] **Gavekort-produktifisering** (årsavtaler + sesongtriggere) — [ADR 0004](decisions/0004-gavekort-gjentakende-inntekt.md).
   *Pågår:* playbook + årsavtale-prompt levert; gjenstår `Gavekortavtaler`-tabell + n8n-triggere.
 - [ ] **Måle-loop** (utfall per AI-handling → forbedring) — komponerende kvalitet.

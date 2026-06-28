@@ -1,6 +1,6 @@
 # 0003 — Relasjonell CRM-kjerne med Bedrifter som navet
 
-- **Status:** Vedtatt (struktur), migrering faseinndelt
+- **Status:** Vedtatt — struktur + backfill utført; rollups/visninger gjenstår
 - **Dato:** 2026-06-26
 - **Besluttet av:** CTO-agenten, etter simulert ledergruppevurdering
 
@@ -54,12 +54,14 @@ koblet til omsetning; risikoen er lav fordi endringen er additiv og reversibel. 
 1. **Struktur** ✅ (utført 26.06.2026): `Bedrifter`-tabell (`tblta9yg4zK7Uzzxi`) + lenkefeltet
    `Bedrift (lenke)` (`fldDNx9qG041noBzh`) på Avtaler opprettet. Fritekstfeltet beholdt.
    *(Reversibelt: kan slettes uten datatap i eksisterende felt.)*
-2. **Backfill** — *metoden er forbedret*: i stedet for å opprette Bedrifter manuelt og spore id-er,
-   bruker vi Airtables **`typecast`** ved oppdatering av lenkefeltet med bedriftsnavnet som streng —
-   Airtable oppretter/matcher Bedrift-raden automatisk på navn (auto-dedup). 93 bedriftsavtaler
-   (ekskl. «Privatkunde» og tomme) skal lenkes; privatkunder forblir ulenket (korrekt).
-   *Status: klar til å kjøres; gjenstår pga. forbigående ustabilitet i Airtable-MCP-en under økten.*
-   Verifiser etterpå at n8n-intake fortsatt fungerer.
+2. **Backfill** ✅ (utført 28.06.2026) — *metoden ble forbedret*: i stedet for å opprette Bedrifter
+   manuelt og spore id-er, brukte vi Airtables **`typecast`** ved oppdatering av lenkefeltet med
+   bedriftsnavnet som streng — Airtable oppretter/matcher Bedrift-raden automatisk på navn
+   (auto-dedup). **Resultat: 57 Bedrifter opprettet, 93 bedriftsavtaler lenket.** Toppkontoer:
+   American Express (12 avtaler), Krogsveen Årvoll (7), PwC/Akademikerne/Circle K/Oslo Elektriske (3).
+   Privatkunder forble ulenket (korrekt). Fritekstfeltet er beholdt uendret.
+   *Læring: store skrivekall (~48 rader) feilet på MCP-permission-strømmen; batcher på ~10 (gjerne
+   parallelt) var stabile.*
 3. **Dual-write:** oppdater [`digital-jonathan`](../../agents/digital-jonathan.md) og
    [`gavekort-selger`](../../agents/gavekort-selger.md) til å sette *både* fritekst og lenke ved nye
    leads, og opprette Bedrift-rad om den mangler.
