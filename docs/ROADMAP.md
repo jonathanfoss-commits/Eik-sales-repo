@@ -53,7 +53,8 @@ Redusere manuelt arbeid på gjentakende salgsbevegelser.
   [`workflows/crm-hygiene-automation.md`](../workflows/crm-hygiene-automation.md).
 - [ ] **Aktiver auto-flip** `Bekreftet → Gjennomført` (regel lagt til Digital Jonathan; alternativt
   Airtable-script — 2 min i UI)
-- [ ] Automatisert oppfølgingssekvensering med godkjenningsporter
+- [~] Automatisert oppfølgingssekvensering med godkjenningsporter — *agent spesifisert*
+  ([`agents/oppfolgingsagent.md`](../agents/oppfolgingsagent.md) + prompt + test S-13/14/15); gjenstår n8n-flyt.
 - [ ] Møteforberedelses-brief auto-generert før hvert kalendermøte
 - [x] Dokumentere ukentlig pipeline-sammendrag (prompt + arbeidsflyt) — se `workflows/weekly-pipeline-digest.md`
 - [ ] Bygge & validere ukentlig pipeline-sammendrag + helsesjekk i n8n

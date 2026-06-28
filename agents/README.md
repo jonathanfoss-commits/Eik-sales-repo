@@ -115,7 +115,7 @@ Status: **active** (kjører) · **draft** (fil finnes, ikke i drift) · **spec**
 | Research/Berikelse | Berike konto/kontakt (Apollo/Clay/nyheter) | auto-safe | spec |
 | Outreach-agent | Personaliserte førstegangshenvendelser | draft-only | spec → Digital Jonathan |
 | Tilbudsagent | Generere tilbudsutkast fra avtale + lokaler | draft-only | spec → Digital Jonathan |
-| Oppfølgingsagent | Sekvensert oppfølging m/ godkjenningsport | draft-only | spec |
+| **Oppfølgingsagent** | Sekvensert oppfølging m/ godkjenningsport | draft-only | [draft](oppfolgingsagent.md) |
 | Kalender-/Bookingagent | Foreslå tider, reservere lokale, unngå dobbeltbooking | auto-with-approval | spec |
 | Account-/Partneragent | Pleie strategiske kontoer + partneravtaler, fornyelse | draft-only | spec |
 | Analyse-/Rapportagent | KPI-er, måle-loop-rapport, ukentlig digest | auto-safe (les) | spec → weekly-digest workflow |
@@ -130,4 +130,6 @@ STRATEGY tese 5 og Q4-planen) — ikke før. Registeret holder målbildet skarpt
    *rundt* den uten å splitte den.
 2. **Q4 (ved volum):** løft ut de tyngste evnene til egne agenter (research, oppfølging,
    tilbud) — én om gangen, hver med kontrakt + utfallsmåling før den settes i drift (skala-prinsipp 3).
+   **Først ut:** [`oppfolgingsagent`](oppfolgingsagent.md) — kontrakt + prompt + test klart; lukker
+   «forfalte oppfølginger».
 3. **År 2:** prediktive agenter (lead-scoring, gavekort-fornyelse/churn) på toppen av måledataene.

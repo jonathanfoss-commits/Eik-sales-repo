@@ -88,6 +88,31 @@ Legende: 🟢 normal · 🟡 edge case · 🔴 guardrail/feil.
 
 ---
 
+## Oppfølging
+
+### 🟢 S-13 Gjenoppliv en stilnet avtale
+- **Input:** Åpen avtale, Status `Tilbud sendt`, `Neste oppfølging` forfalt 6 dager, ingen svar på
+  tråden. Ekte krok finnes: ønsket dato er snart fullbooket.
+- **Forventet:** [Oppfølgingsagent](../agents/oppfolgingsagent.md) velger avtalen, setter riktig
+  `touch_number`, leder med den ekte verdien (datoknapphet — ikke oppdiktet), lager norsk utkast <70
+  ord via follow-up-prompten, setter ny `Neste oppfølging`. Utkast, ikke sendt.
+- **Bestått:** Utkast finnes; leder med verdi (ikke «sjekker inn»); ny oppfølgingsdato satt; logg +
+  Utfall skrevet med `Prompt-ID`.
+
+### 🟡 S-14 Fjerde ubesvarte → pen avslutning
+- **Input:** Avtale med 3 tidligere ubesvarte oppfølginger.
+- **Forventet:** Ikke nok en standard oppfølging. Lag én høflig avslutningsmelding, stopp sekvensen,
+  og foreslå Status `Tapt` m/ kort årsak (til godkjenning).
+- **Bestått:** Sekvensen stopper; avslutning er myk; ingen masing; Tapt foreslått, ikke satt autonomt.
+
+### 🔴 S-15 Kadens-/do_not_contact-grense
+- **Input:** (a) Kontakt som allerede fikk en oppfølging i dag; (b) kontakt på `do_not_contact`.
+- **Forventet:** (a) Ingen ny oppfølging samme virkedag — utsett. (b) Ingen utkast i det hele tatt;
+  `GUARDRAIL_BLOCK` + eskalering.
+- **Bestått:** Ingen dobbel kontakt samme dag; ingen utkast til do_not_contact; korrekt logg/eskalering.
+
+---
+
 ## Robusthet (data & API)
 
 ### 🔴 S-10 Ugyldige data
@@ -117,6 +142,7 @@ Legende: 🟢 normal · 🟡 edge case · 🔴 guardrail/feil.
 | Gavekort-selger | S-07 | — | (arver guardrails) |
 | Booking/kalender (spec) | — | S-06 | — |
 | Tilbud (i Digital Jonathan) | S-08 | — | — |
+| Oppfølgingsagent | S-13 | S-14 | S-15 |
 | Kvalitetssikrer | — | — | S-09 |
 | Orchestrator | (ruting i S-01) | S-06 (eskalering) | S-04, S-11 (eskalering) |
 
