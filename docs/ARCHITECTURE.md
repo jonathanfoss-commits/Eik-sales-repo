@@ -66,9 +66,21 @@ The repository is organized into clear layers, each with a single responsibility
 - **`workflows/`** — the n8n automations and AI-agents (Digital Jonathan, Gavekort-selger),
   documented so they are understandable and reproducible even though they execute outside this repo.
 
+### Governance & measurement layer (L4) — *how the system watches and improves itself*
+- **`observability/`** — the nervous system: a logging standard (every agent logs what it did, why,
+  and what it cost), a **measurement loop** that links each outward action to an outcome, a KPI
+  catalog, and an escalation queue. This is what turns a pile of automations into an OS that learns.
+  See [ADR 0005](decisions/0005-styrings-og-maalelag.md).
+- **`agents/` (orchestrator + kvalitetssikrer)** — the governance agents that route work, enforce
+  guardrails, and quality-gate drafts before they reach Jonathan.
+
 ### Foundation layer — *how everything is governed*
 - **`config/`** — shared settings, environment conventions, and non-secret configuration.
-- **`docs/`** — architecture, principles, standards, and roadmap.
+- **`tests/`** — scenario-based test library (with synthetic fixtures) so agent behaviour can be
+  verified without production data.
+- **`integrations/resilience.md`** — failure, fallback and backup strategy: how the system behaves
+  when a tool is down (fail safe, never fail silent).
+- **`docs/`** — architecture, principles, standards, strategy, and roadmap.
 
 ## 3. Data flow examples
 

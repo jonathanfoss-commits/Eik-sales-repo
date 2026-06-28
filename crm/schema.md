@@ -124,6 +124,20 @@ AI-aktivitetslogg: hva n8n-agentene har gjort, besluttet og trenger hjelp til.
 | Trenger menneskelig vurdering | checkbox | Flagg for at Jonathan bør se på det. |
 | Relatert avtale/bedrift | singleLineText | Kobling til avtale/bedrift. |
 
+> **Planlagt utvidelse (ADR 0005, L4):** felt for `Modell`, `Tokens inn/ut`, `Estimert kostnad`,
+> `Latens (ms)`, `Konfidens`, `Beslutning`, `Prompt-ID` og `Feilkode` — så hver handling blir fullt
+> sporbar (hvorfor + kostnad). Settes opp i UI. Se
+> [`observability/logging-standard.md`](../observability/logging-standard.md).
+
+## Planlagte L4-tabeller (ADR 0005 — må opprettes i UI)
+Definert i [`observability/`](../observability/), ennå ikke i basen. Når de opprettes, flytt dem opp
+som fullverdige tabeller her.
+
+- **Utfall** — kobler hver utadrettet AI-handling til et resultat (sendt/forkastet → svar → vunnet/
+  tapt) for [måle-loopen](../observability/maaleloop.md). Felter: se den filen.
+- **Eskaleringer** — kø for saker som krever menneske, med alvorlighet og SLA. Felter: se
+  [`observability/logging-standard.md`](../observability/logging-standard.md#eskaleringskø-eskaleringer).
+
 ---
 
 ## Konvensjoner

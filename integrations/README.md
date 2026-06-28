@@ -37,6 +37,11 @@ den eksponerer — slik at agenter handler trygt og forutsigbart. Jf.
 | [`calendar-integration.md`](calendar-integration.md) | Google Kalender | Live — lese/reservasjoner |
 | [`notion-integration.md`](notion-integration.md) | Notion | ⚠️ Arkivert — kun historikk |
 
+## Når noe feiler
+Feil-, fallback- og backup-strategi for alle integrasjonene er samlet i
+[`resilience.md`](resilience.md): hva hver agent gjør per feilkode, hvem som eier dataene, hva
+fallbacken er, og hvordan vi tar backup. Grunnregel: **fail safe, ikke fail silent.**
+
 ## Legge til en ny integrasjon
 1. Bekreft at den fortjener plassen (et reelt, gjentakende behov).
 2. Dokumenter den her før den kobles til.

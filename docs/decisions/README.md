@@ -38,3 +38,4 @@ Hva betyr dette fremover (positivt og negativt)?
 | [0002](0002-faktisk-systemarkitektur.md) | Faktisk systemarkitektur: Airtable-CRM + n8n-agenter | Vedtatt |
 | [0003](0003-relasjonell-crm-kjerne.md) | Relasjonell CRM-kjerne med Bedrifter som navet | Vedtatt — struktur + backfill ✅ |
 | [0004](0004-gavekort-gjentakende-inntekt.md) | Gavekort som gjentakende inntekt (produktifisering) | Vedtatt (modell) |
+| [0005](0005-styrings-og-maalelag.md) | Styrings- og målelag (agent-kontrakter, observabilitet, måle-loop) | Vedtatt |

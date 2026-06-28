@@ -12,8 +12,12 @@ Teknisk gjeld og muligheter som oppdages underveis fanges nederst.
   Struktur + backfill ✅ (57 bedrifter, 93 avtaler lenket). *Gjenstår:* rollups (samlet verdi/gjentakelse) + «Strategiske kontoer»-visning.
 - [ ] **Gavekort-produktifisering** (årsavtaler + sesongtriggere) — [ADR 0004](decisions/0004-gavekort-gjentakende-inntekt.md).
   *Pågår:* playbook + årsavtale-prompt levert; gjenstår `Gavekortavtaler`-tabell + n8n-triggere.
-- [ ] **Måle-loop** (utfall per AI-handling → forbedring) — komponerende kvalitet.
-- [ ] **Agent-mesh + kunnskapslag** — fra én monolitt til spesialiserte, styrte agenter.
+- [~] **Måle-loop** (utfall per AI-handling → forbedring) — komponerende kvalitet. *Definert*
+  ([ADR 0005](decisions/0005-styrings-og-maalelag.md), [`observability/maaleloop.md`](../observability/maaleloop.md));
+  gjenstår: `Utfall`-tabell i Airtable + n8n-utledning + `Prompt-ID` i promptfiler.
+- [~] **Agent-mesh + kunnskapslag** — fra én monolitt til spesialiserte, styrte agenter. *Styringslag
+  startet:* kontraktsformat + mesh-register + orkestrator + kvalitetssikrer ([ADR 0005](decisions/0005-styrings-og-maalelag.md));
+  gjenstår: splitte ut spesialiserte agenter ved volum (Q4).
 - [ ] **Venue-matchemodell** — anbefal lokale automatisk fra gjestetall/type/sesong.
 
 ---
@@ -61,11 +65,20 @@ Skjerpe målretting og personalisering.
 - [ ] ICP-scoringsmodell for innkommende og utgående leads
 - [ ] Skanner for restaurantpartnerskap-muligheter
 
-## Fase 4 — Analyse & kontinuerlig forbedring
-Måle og forbedre hele systemet.
+## Fase 4 — Analyse & kontinuerlig forbedring (styrings- & målelag, L4)
+Måle og forbedre hele systemet. Rammeverket er definert i [`observability/`](../observability/)
+([ADR 0005](decisions/0005-styrings-og-maalelag.md)); her gjøres det levende i Airtable.
 
+- [x] **Loggstandard, KPI-katalog, måle-loop & feiltaksonomi definert** — [`observability/`](../observability/).
+- [x] **Agent-kontraktsformat + mesh-register + styringsagenter** (orkestrator, kvalitetssikrer).
+- [x] **Scenario-basert testbibliotek** med syntetiske fixtures — [`tests/`](../tests/).
+- [x] **Feil-, fallback- og backup-strategi** dokumentert — [`integrations/resilience.md`](../integrations/resilience.md).
+- [ ] **Opprett `Utfall`- og `Eskaleringer`-tabeller** + utvid `Agentlogg` med modell/tokens/kostnad/konfidens/beslutning (Airtable-UI).
+- [ ] Legg `Prompt-ID` i front-matter på de mest brukte promptene (outreach, tilbud, oppfølging).
+- [ ] n8n-jobb som utleder utfall (sendt/svar/vunnet) fra Gmail + Avtaler.
+- [ ] KPI-dashboard som Airtable-interface (L5) når `Utfall` har data.
 - [ ] Pipeline- og konverteringsanalyse fra CRM
-- [ ] Sporing og iterasjon av prompt-/agentytelse
+- [ ] Sporing og iterasjon av prompt-/agentytelse (mandagsbrief leser `Utfall`)
 - [ ] Kvartalsvis gjennomgangs-playbook
 
 ---
@@ -92,6 +105,12 @@ Ideer verdt å gjøre når de stiger til topps. Ennå ikke planlagt.
   [analytics/crm-helsesjekk-2026-06-26.md](../analytics/crm-helsesjekk-2026-06-26.md). **Gjenstår:**
   automatisere med en n8n-/Airtable-regel så det ikke gjentar seg (lagt i Fase 2).
 - `sales/`-playbooks og ICP er under tilpasning til restaurantkollektiv-virkeligheten (ADR 0002).
+- **Observabilitet er definert, ikke materialisert:** `Utfall`/`Eskaleringer`-tabeller og de nye
+  `Agentlogg`-feltene må opprettes i Airtable-UI før måle-loopen kan kjøre på ekte data (Fase 4).
+- **Backup delvis dekket:** Airtable-snapshots + Git er aktivt; ukentlig CSV-eksport og kvartalsvis
+  Google Takeout er fortsatt *spec* — se [`integrations/resilience.md`](../integrations/resilience.md).
+- **Testdekning har hull:** booking-agent (happy path) og research/berikelse mangler scenarier til de
+  agentene materialiseres — se [`tests/scenarios.md`](../tests/scenarios.md).
 
 > Når du oppdager gjeld eller en mulighet, legg den til her i samme endring fremfor å utvide den
 > nåværende oppgavens omfang.

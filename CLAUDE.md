@@ -43,6 +43,9 @@ recipient is explicitly international.
 | Airtable CRM schema & pipeline | [`crm/`](crm/) |
 | Tool connections (Airtable, Gmail, …) | [`integrations/`](integrations/) |
 | Automations | [`workflows/`](workflows/) |
+| Logging, metrics, measurement loop, escalation | [`observability/`](observability/) |
+| Tests & synthetic fixtures | [`tests/`](tests/) |
+| Failure / fallback / backup strategy | [`integrations/resilience.md`](integrations/resilience.md) |
 | Key decisions & why | [`docs/decisions/`](docs/decisions/) |
 
 Every module has a `README.md` documenting its own conventions — read it before working in that module.

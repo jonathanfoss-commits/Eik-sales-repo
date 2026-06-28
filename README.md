@@ -31,6 +31,8 @@ arbeidet, gjenta det og forbedre det over tid.
 | [`crm/`](crm/) | Dokumentasjon av det levende **Airtable**-CRM-et (tabeller, felter, pipeline). |
 | [`integrations/`](integrations/) | Hvordan systemet kobler seg til Gmail, Kalender, Notion, Drive m.m. |
 | [`workflows/`](workflows/) | Automatiseringer (n8n, Zapier) og dokumentasjonen av dem. |
+| [`observability/`](observability/) | Styrings- og målelaget: logging, måle-loop, KPI-er, eskalering ([ADR 0005](docs/decisions/0005-styrings-og-maalelag.md)). |
+| [`tests/`](tests/) | Scenario-basert testbibliotek med syntetiske data — verifiser agenter uten produksjonsdata. |
 | [`analytics/`](analytics/) | Datadrevne helsesjekker og analyser av CRM-et. |
 | [`config/`](config/) | Konfigurasjonskonvensjoner, miljø og delte innstillinger. |
 | [`docs/`](docs/) | Strategi, arkitektur, veikart, prinsipper og standarder. |
