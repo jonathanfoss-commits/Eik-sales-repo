@@ -65,8 +65,17 @@ koblet til omsetning; risikoen er lav fordi endringen er additiv og reversibel. 
 3. **Dual-write:** oppdater [`digital-jonathan`](../../agents/digital-jonathan.md) og
    [`gavekort-selger`](../../agents/gavekort-selger.md) til å sette *både* fritekst og lenke ved nye
    leads, og opprette Bedrift-rad om den mangler.
-4. **Rollups & visninger:** samlet verdi/gjentakelse per bedrift; «Strategiske kontoer»-visning.
-5. **Avvikling (valgfritt, senere):** når dual-write er stabil, gjør lenken til primær og faser ut
+4. **Segmentering** ✅ (28.06.2026): de 17 gjentakende kontoene (2+ avtaler) er satt til
+   `Segment = Strategisk`. Resten står åpne til manuell vurdering.
+5. **Rollups & visninger** — *må settes opp i Airtable-UI* (API-en støtter ikke rollup-felt). På
+   Bedrifter, legg til rollup over `Avtaler`-lenken:
+   - **Samlet verdi** = SUM(`Totalbudsjett`)
+   - **Antall avtaler** = COUNT
+   - **Vunnet verdi** = SUM(`Totalbudsjett`) med betingelse `Status = Gjennomført`
+   - **Siste kontakt** = MAX(`Dato for selskap`)
+   Lag deretter en visning **«Strategiske kontoer»** filtrert på `Segment = Strategisk`, sortert på
+   Samlet verdi. *(2 min i UI.)*
+6. **Avvikling (valgfritt, senere):** når dual-write er stabil, gjør lenken til primær og faser ut
    fritekstfeltet.
 
 ## Konsekvenser
