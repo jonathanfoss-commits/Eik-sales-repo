@@ -13,6 +13,7 @@ konsistent og forankret i strategi — ikke improvisert hver gang.
 | [`lokaler.md`](lokaler.md) | Venue-guide: match arrangement til riktig lokale (speiler Airtable Venues). |
 | [`playbook-corporate-events.md`](playbook-corporate-events.md) | Salg av bedriftsarrangementer. |
 | [`playbook-restaurant-partnerships.md`](playbook-restaurant-partnerships.md) | Bygge løpende partnerskap med restauranter/lokaler. |
+| [`playbook-gavekort.md`](playbook-gavekort.md) | Gjøre gavekort til gjentakende inntekt (årsavtaler + sesongtriggere). |
 
 ## Slik bruker du modulen
 - Skal du skrive en henvendelse? Sjekk [`icp.md`](icp.md) for treff og

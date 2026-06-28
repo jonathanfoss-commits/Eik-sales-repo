@@ -9,7 +9,8 @@ Teknisk gjeld og muligheter som oppdages underveis fanges nederst.
 
 ## Strategiske initiativer (fra STRATEGY.md)
 - [ ] **Relasjonell CRM-kjerne** (Bedrifter som navet) — [ADR 0003](decisions/0003-relasjonell-crm-kjerne.md). *Pågår: struktur.*
-- [ ] **Gavekort-produktifisering** (årsavtaler + sesongtriggere) — gjentakende inntekt.
+- [ ] **Gavekort-produktifisering** (årsavtaler + sesongtriggere) — [ADR 0004](decisions/0004-gavekort-gjentakende-inntekt.md).
+  *Pågår:* playbook + årsavtale-prompt levert; gjenstår `Gavekortavtaler`-tabell + n8n-triggere.
 - [ ] **Måle-loop** (utfall per AI-handling → forbedring) — komponerende kvalitet.
 - [ ] **Agent-mesh + kunnskapslag** — fra én monolitt til spesialiserte, styrte agenter.
 - [ ] **Venue-matchemodell** — anbefal lokale automatisk fra gjestetall/type/sesong.
