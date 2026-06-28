@@ -58,6 +58,10 @@ Et kort, utfylt eksempel på inndata → output.
 - **Identifikatorer på engelsk:** `id`, `stage` og `inputs`-nøkler holdes på engelsk (teknisk
   standard, jf. ADR 0001). Selve innholdet er norsk.
 - Øk `version` ved meningsfulle endringer; hold `id` stabil.
+- **Prompt-ID for måling:** måle-loopen identifiserer en prompt som `{id}-v{version}` (f.eks.
+  `cold-outreach-v1`). Den utledes av front-matteren — vi dupliserer den *ikke* som eget felt. Når du
+  bumper `version`, får den nye varianten automatisk ny Prompt-ID, så gammel og ny kan måles mot
+  hverandre i [`Utfall`](../observability/maaleloop.md).
 
 ## Register
 | Prompt | Fase | Norsk (standard) | Engelsk variant |

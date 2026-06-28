@@ -63,8 +63,9 @@ forbedringssignalet vi har.
 | **Månedlig** | Vunnet-rate per segment/linje; tapsårsaker; revider playbook. | Jonathan + Analyseagent |
 | **Kvartalsvis** | Gjennomgang av hele prompt-/agentbiblioteket mot utfall. | Jonathan (CTO-hatt) |
 
-Hver promptfil får et `Prompt-ID` i front-matter (f.eks. `outreach-julebord-v2`). Når en prompt
-revideres vesentlig, **bump versjonen** så gammelt og nytt kan måles mot hverandre. Se
+`Prompt-ID` utledes av promptens eksisterende front-matter som `{id}-v{version}` (f.eks.
+`cold-outreach-v1`) — vi dupliserer den ikke som eget felt (prinsipp 5). Når en prompt revideres
+vesentlig, **bump `version`** så gammelt og nytt kan måles mot hverandre. Se
 [`prompts/README.md`](../prompts/README.md).
 
 ## Hvorfor dette er en moat
@@ -74,8 +75,8 @@ revideres vesentlig, **bump versjonen** så gammelt og nytt kan måles mot hvera
 
 ## Airtable-oppsett
 1. Opprett `Utfall`-tabellen (feltene over) i basen `appzIFWfzob6WEhnq`.
-2. Legg `Prompt-ID` i front-matter på promptfilene (start med de mest brukte: outreach, tilbud,
-   oppfølging).
+2. ✅ Ingen ny front-matter nødvendig — `Prompt-ID` = `{id}-v{version}` fra promptfilenes
+   eksisterende front-matter (se [`prompts/README.md`](../prompts/README.md)).
 3. Bygg en n8n-jobb som utleder `Sendt-beslutning`/`Respons`/`Resultat` fra Gmail + Avtaler der mulig.
 4. Mandagsbriefen (Digital Jonathan) leser `Utfall` og rapporterer ukens svake/sterke prompter.
 5. Oppdater [`crm/schema.md`](../crm/schema.md) og statustabellen i [`README.md`](README.md).

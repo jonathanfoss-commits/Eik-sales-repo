@@ -73,9 +73,11 @@ Måle og forbedre hele systemet. Rammeverket er definert i [`observability/`](..
 - [x] **Agent-kontraktsformat + mesh-register + styringsagenter** (orkestrator, kvalitetssikrer).
 - [x] **Scenario-basert testbibliotek** med syntetiske fixtures — [`tests/`](../tests/).
 - [x] **Feil-, fallback- og backup-strategi** dokumentert — [`integrations/resilience.md`](../integrations/resilience.md).
-- [ ] **Opprett `Utfall`- og `Eskaleringer`-tabeller** + utvid `Agentlogg` med modell/tokens/kostnad/konfidens/beslutning (Airtable-UI).
-- [ ] Legg `Prompt-ID` i front-matter på de mest brukte promptene (outreach, tilbud, oppfølging).
-- [ ] n8n-jobb som utleder utfall (sendt/svar/vunnet) fra Gmail + Avtaler.
+- [x] **`Utfall`- og `Eskaleringer`-tabeller live + `Agentlogg` utvidet** med modell/tokens/kostnad/latens/konfidens/beslutning/prompt-id/feilkode (28.06.2026).
+- [x] **Operative agenter koblet til loggstandarden** — digital-jonathan + gavekort-selger oppgradert til full kontrakt og skriver Agentlogg/Utfall/Eskaleringer.
+- [x] **Prompt-ID-konvensjon** = `{id}-v{version}` (utledet, ingen duplisering) — se [`prompts/README.md`](../prompts/README.md).
+- [ ] n8n-jobb som faktisk skriver de nye feltene + utleder utfall (sendt/svar/vunnet) fra Gmail + Avtaler.
+- [ ] UI-finesser: kostnadsrollup per uke + varsel ved `Alvorlighet = Kritisk`.
 - [ ] KPI-dashboard som Airtable-interface (L5) når `Utfall` har data.
 - [ ] Pipeline- og konverteringsanalyse fra CRM
 - [ ] Sporing og iterasjon av prompt-/agentytelse (mandagsbrief leser `Utfall`)
@@ -105,8 +107,9 @@ Ideer verdt å gjøre når de stiger til topps. Ennå ikke planlagt.
   [analytics/crm-helsesjekk-2026-06-26.md](../analytics/crm-helsesjekk-2026-06-26.md). **Gjenstår:**
   automatisere med en n8n-/Airtable-regel så det ikke gjentar seg (lagt i Fase 2).
 - `sales/`-playbooks og ICP er under tilpasning til restaurantkollektiv-virkeligheten (ADR 0002).
-- **Observabilitet er definert, ikke materialisert:** `Utfall`/`Eskaleringer`-tabeller og de nye
-  `Agentlogg`-feltene må opprettes i Airtable-UI før måle-loopen kan kjøre på ekte data (Fase 4).
+- **Observabilitet er materialisert (28.06.2026), men ikke fôret ennå:** tabeller/felt er live og
+  agentene er spesifisert til å logge — men en n8n-jobb må faktisk skrive radene før måle-loopen gir
+  innsikt. Det er det siste leddet (Fase 4).
 - **Backup delvis dekket:** Airtable-snapshots + Git er aktivt; ukentlig CSV-eksport og kvartalsvis
   Google Takeout er fortsatt *spec* — se [`integrations/resilience.md`](../integrations/resilience.md).
 - **Testdekning har hull:** booking-agent (happy path) og research/berikelse mangler scenarier til de
