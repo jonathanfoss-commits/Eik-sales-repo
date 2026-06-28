@@ -84,12 +84,13 @@ Med `Modell` + `Tokens` + `Estimert kostnad` per rad kan vi aggregere:
 Kostnad estimeres fra tokens × gjeldende pris for modellen. Prisene holdes i
 [`config/`](../config/README.md) (ikke hardkodet i agentene), så et prisbytte er ett sted.
 
-## Airtable-oppsett
-Felttyper som API-et ikke kan opprette (singleSelect-valg, formler) settes i Airtable-UI. Sjekkliste:
-1. Legg til utvidelsesfeltene over i `Agentlogg` (`tblvJbS3hvhC1C4cY`).
-2. Opprett tabellen `Eskaleringer` med feltene over.
-3. Opprett tabellen `Utfall` — se [`maaleloop.md`](maaleloop.md#airtable-oppsett).
-4. Oppdater [`crm/schema.md`](../crm/schema.md) og statustabellen i [`README.md`](README.md) når gjort.
+## Airtable-oppsett ✅ (live 28.06.2026)
+Hele standarden er nå i basen:
+1. ✅ Alle utvidelsesfelt lagt til i `Agentlogg` (`tblvJbS3hvhC1C4cY`): `Modell`, `Tokens inn/ut`,
+   `Estimert kostnad`, `Latens (ms)`, `Konfidens`, `Beslutning`, `Prompt-ID`, `Feilkode`.
+2. ✅ Tabellen `Eskaleringer` (`tblWOneeFROVhtCmS`) opprettet.
+3. ✅ Tabellen `Utfall` (`tbl19725pjhkGu7LT`) opprettet — se [`maaleloop.md`](maaleloop.md).
+4. ✅ [`crm/schema.md`](../crm/schema.md) oppdatert med live felt og tabeller.
 
-> Inntil feltene finnes: agentene logger kjernefeltene (som i dag) og legger `Modell`/`Beslutning`/
-> `Konfidens` i `Resultat`-fritekst som overgang. Additivt — ingenting brytes.
+> **Gjenstår (UI, valgfritt):** ev. formel-/rollup-felt for aggregering (kostnad per uke o.l.) og
+> et automatisk varsel ved `Alvorlighet = Kritisk`. Selve loggingen kan starte nå.

@@ -52,10 +52,10 @@ blindt på. Forankret i [ADR 0005](../docs/decisions/0005-styrings-og-maalelag.m
 | Komponent | Status |
 | --- | --- |
 | Loggstandard (definisjon) | ✅ Definert her |
-| `Agentlogg`-utvidelse (nye felt i Airtable) | ⏳ Må settes opp i UI — se [`logging-standard.md`](logging-standard.md#airtable-oppsett) |
-| Måle-loop (`Utfall`-tabell + kadens) | ⏳ Tabell må opprettes — se [`maaleloop.md`](maaleloop.md#airtable-oppsett) |
+| `Agentlogg`-utvidelse (nye felt i Airtable) | ✅ Live 28.06.2026 (alle 8 felt) |
+| Måle-loop (`Utfall`-tabell + kadens) | ✅ Tabell live (`tbl19725pjhkGu7LT`); kadens gjenstår |
 | KPI-katalog (definisjon) | ✅ Definert i [`metrics.md`](metrics.md) |
-| Eskaleringskø (`Eskaleringer`-tabell) | ⏳ Tabell må opprettes |
+| Eskaleringskø (`Eskaleringer`-tabell) | ✅ Live (`tblWOneeFROVhtCmS`) |
 | KPI-dashboard (L5, Airtable-interface) | 🔜 Når `Utfall` har data |
 
 Når et felt eller en tabell er opprettet i Airtable, oppdater statusen her og i

@@ -123,20 +123,31 @@ AI-aktivitetslogg: hva n8n-agentene har gjort, besluttet og trenger hjelp til.
 | Resultat | multilineText | Hva som kom ut av handlingen. |
 | Trenger menneskelig vurdering | checkbox | Flagg for at Jonathan bør se på det. |
 | Relatert avtale/bedrift | singleLineText | Kobling til avtale/bedrift. |
+| Utfall | multipleRecordLinks | Lenke til Utfall-tabellen (måle-loopen). |
+| Modell | singleSelect | Hvilken modell utførte handlingen (kost/kvalitet, modellbytte). |
+| Tokens inn / Tokens ut | number | Ressursforbruk. |
+| Estimert kostnad | currency (NOK) | tokens × modellpris → kostnad per vunnet avtale. |
+| Latens (ms) | number | Ytelse; fanger trege steg. |
+| Konfidens | singleSelect | `Høy`, `Middels`, `Lav` — lav rutes til menneske. |
+| Beslutning | multilineText | Kort *hvorfor* (regel/kontekst bak valget). |
+| Prompt-ID | singleLineText | Hvilken prompt/versjon → kobling til Utfall. |
+| Feilkode | singleSelect | Feiltaksonomi (`API_TIMEOUT`, `API_AUTH`, … `UNKNOWN`). |
 
-> **Planlagt utvidelse (ADR 0005, L4):** felt for `Modell`, `Tokens inn/ut`, `Estimert kostnad`,
-> `Latens (ms)`, `Konfidens`, `Beslutning`, `Prompt-ID` og `Feilkode` — så hver handling blir fullt
-> sporbar (hvorfor + kostnad). Settes opp i UI. Se
-> [`observability/logging-standard.md`](../observability/logging-standard.md).
+> **L4-utvidelse (ADR 0005) — live 28.06.2026.** Hele loggstandarden er nå i basen, så hver handling
+> er fullt sporbar (hvorfor + kostnad + kvalitet). Standard: [`observability/logging-standard.md`](../observability/logging-standard.md).
 
-## Planlagte L4-tabeller (ADR 0005 — må opprettes i UI)
-Definert i [`observability/`](../observability/), ennå ikke i basen. Når de opprettes, flytt dem opp
-som fullverdige tabeller her.
+## Eskaleringer  `tblWOneeFROVhtCmS`
+Eskaleringskø (L4): saker AI-agentene trenger menneske til, med alvorlighet og SLA (Kritisk=1t,
+Høy=4t, Normal=1 arb.dag). Felter: `Sak`, `Opprettet`, `Agent`, `Årsak`, `Alvorlighet`,
+`Relatert avtale` (lenke), `Status`, `Løsning`. Se
+[`observability/logging-standard.md`](../observability/logging-standard.md#eskaleringskø-eskaleringer).
 
-- **Utfall** — kobler hver utadrettet AI-handling til et resultat (sendt/forkastet → svar → vunnet/
-  tapt) for [måle-loopen](../observability/maaleloop.md). Felter: se den filen.
-- **Eskaleringer** — kø for saker som krever menneske, med alvorlighet og SLA. Felter: se
-  [`observability/logging-standard.md`](../observability/logging-standard.md#eskaleringskø-eskaleringer).
+## Utfall  `tbl19725pjhkGu7LT`
+Måle-loopen (L4): kobler hver utadrettet AI-handling til et utfall (sendt/forkastet → svar →
+vunnet/tapt), per `Prompt-ID` og `Segment`. Felter: `Handling`, `Agentlogg-ref` (lenke), `Avtale`
+(lenke), `Prompt-ID`, `Segment`, `Sendt-beslutning`, `Respons`, `Resultat`, `Tapsårsak`, `Notat`.
+Grunnlag for systematisk forbedring av prompter/agenter. Se
+[`observability/maaleloop.md`](../observability/maaleloop.md).
 
 ---
 
