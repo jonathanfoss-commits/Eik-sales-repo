@@ -76,7 +76,8 @@ Måle og forbedre hele systemet. Rammeverket er definert i [`observability/`](..
 - [x] **`Utfall`- og `Eskaleringer`-tabeller live + `Agentlogg` utvidet** med modell/tokens/kostnad/latens/konfidens/beslutning/prompt-id/feilkode (28.06.2026).
 - [x] **Operative agenter koblet til loggstandarden** — digital-jonathan + gavekort-selger oppgradert til full kontrakt og skriver Agentlogg/Utfall/Eskaleringer.
 - [x] **Prompt-ID-konvensjon** = `{id}-v{version}` (utledet, ingen duplisering) — se [`prompts/README.md`](../prompts/README.md).
-- [ ] n8n-jobb som faktisk skriver de nye feltene + utleder utfall (sendt/svar/vunnet) fra Gmail + Avtaler.
+- [~] n8n-jobb som faktisk skriver feltene + modner utfall (sendt/svar/vunnet) fra Gmail + Avtaler —
+  *implementasjonsguide m/ eksakte felt-ID-er klar* ([`workflows/agentlogg-maaleloop.md`](../workflows/agentlogg-maaleloop.md)); gjenstår å bygge i n8n + fylle modellpriser i config.
 - [ ] UI-finesser: kostnadsrollup per uke + varsel ved `Alvorlighet = Kritisk`.
 - [ ] KPI-dashboard som Airtable-interface (L5) når `Utfall` har data.
 - [ ] Pipeline- og konverteringsanalyse fra CRM

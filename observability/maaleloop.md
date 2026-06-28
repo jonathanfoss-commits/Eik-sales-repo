@@ -74,9 +74,10 @@ vesentlig, **bump `version`** så gammelt og nytt kan måles mot hverandre. Se
 - Loopen komponerer: jo lengre den kjører, jo større forspranget. Data-fordelen er kumulativ.
 
 ## Airtable-oppsett
-1. Opprett `Utfall`-tabellen (feltene over) i basen `appzIFWfzob6WEhnq`.
+1. ✅ `Utfall`-tabellen (`tbl19725pjhkGu7LT`) er live i basen `appzIFWfzob6WEhnq`.
 2. ✅ Ingen ny front-matter nødvendig — `Prompt-ID` = `{id}-v{version}` fra promptfilenes
    eksisterende front-matter (se [`prompts/README.md`](../prompts/README.md)).
-3. Bygg en n8n-jobb som utleder `Sendt-beslutning`/`Respons`/`Resultat` fra Gmail + Avtaler der mulig.
+3. ⏳ Bygg n8n-jobben som skriver/modner radene — node-for-node-guide m/ eksakte felt-ID-er i
+   [`workflows/agentlogg-maaleloop.md`](../workflows/agentlogg-maaleloop.md).
 4. Mandagsbriefen (Digital Jonathan) leser `Utfall` og rapporterer ukens svake/sterke prompter.
-5. Oppdater [`crm/schema.md`](../crm/schema.md) og statustabellen i [`README.md`](README.md).
+5. ✅ [`crm/schema.md`](../crm/schema.md) og statustabellen i [`README.md`](README.md) oppdatert.

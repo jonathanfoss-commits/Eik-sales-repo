@@ -48,5 +48,6 @@ If a workflow's JSON is exported, commit it next to its doc as `<name>.json`.
 | [`inbound-lead-triage`](inbound-lead-triage.md) | Draft (Phase 1) | Gmail trigger → classify → label + propose CRM record + draft reply (approval gate). |
 | [`weekly-pipeline-digest`](weekly-pipeline-digest.md) | Draft (Phase 2) | Monday schedule → read CRM → generate Norwegian pipeline summary → deliver to Jonathan. |
 | [`crm-hygiene-automation`](crm-hygiene-automation.md) | ✅ Flag live | Daily auto-flag (deployed) + auto-flip Bekreftet→Gjennomført rule for the n8n agent. |
+| [`agentlogg-maaleloop`](agentlogg-maaleloop.md) | Draft (Phase 4) | Skriver Agentlogg/Utfall/Eskaleringer per handling + modner utfall — lukker måle-loopen (L4). Eksakte felt-ID-er. |
 
 See [Phase 1–2 of the roadmap](../docs/ROADMAP.md) for what's next.
