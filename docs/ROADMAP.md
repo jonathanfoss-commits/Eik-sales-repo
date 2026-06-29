@@ -87,7 +87,8 @@ Måle og forbedre hele systemet. Rammeverket er definert i [`observability/`](..
 - [~] n8n-jobb som faktisk skriver feltene + modner utfall (sendt/svar/vunnet) fra Gmail + Avtaler —
   *implementasjonsguide m/ eksakte felt-ID-er klar* ([`workflows/agentlogg-maaleloop.md`](../workflows/agentlogg-maaleloop.md)); gjenstår å bygge i n8n + fylle modellpriser i config.
 - [ ] UI-finesser: kostnadsrollup per uke + varsel ved `Alvorlighet = Kritisk`.
-- [ ] KPI-dashboard som Airtable-interface (L5) når `Utfall` har data.
+- [~] KPI-dashboard som Airtable-interface (L5) — *byggeklar spec* ([`observability/dashboard.md`](../observability/dashboard.md));
+  side 1–2 (drift + pipeline) kan bygges nå, resten når data finnes.
 - [ ] Pipeline- og konverteringsanalyse fra CRM
 - [~] Sporing og iterasjon av prompt-/agentytelse — analyse-rapportagent spesifisert til å lese
   `Utfall` i mandagsbriefen; aktiveres når n8n fôrer `Utfall`.

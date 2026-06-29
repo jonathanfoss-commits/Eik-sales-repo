@@ -56,7 +56,8 @@ Forankret i [ADR 0005](../docs/decisions/0005-styrings-og-maalelag.md) og KPI-ra
 2. Effektivitet/kvalitet venter på `Utfall`-tabellen (se [`maaleloop.md`](maaleloop.md)).
 3. Gjentakelse venter på Bedrifter-rollups (ADR 0003, fase 5).
 4. Bygg dashboardet som et **Airtable-interface** (L5) — ikke et nytt verktøy — så lenge det holder.
-   Vurder eksport til Google Sheets/Looker først når kryss-base-rapportering trengs.
+   Konkret, byggeklar side-for-side-spesifikasjon: [`dashboard.md`](dashboard.md). Vurder eksport til
+   Google Sheets/Looker først når kryss-base-rapportering trengs.
 
 > Hold denne katalogen og [STRATEGY-KPI-tabellen](../docs/STRATEGY.md) i sync. Endrer du en
 > definisjon, oppdater begge.

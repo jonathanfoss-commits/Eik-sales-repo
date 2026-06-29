@@ -16,6 +16,7 @@ blindt på. Forankret i [ADR 0005](../docs/decisions/0005-styrings-og-maalelag.m
 | Hvordan står forretningen? (KPI-er) | [`metrics.md`](metrics.md) |
 | Hva gikk galt, og hvem fanger det opp? | [`logging-standard.md`](logging-standard.md#feiltaksonomi) → `Eskaleringer` |
 | Hva koster systemet? (tokens, API, tid) | [`logging-standard.md`](logging-standard.md#kostnad--ressurs) |
+| Hvordan står det til — visuelt? (dashboard) | [`dashboard.md`](dashboard.md) |
 
 ## Hvordan det henger sammen
 ```
@@ -56,7 +57,7 @@ blindt på. Forankret i [ADR 0005](../docs/decisions/0005-styrings-og-maalelag.m
 | Måle-loop (`Utfall`-tabell + kadens) | ✅ Tabell live (`tbl19725pjhkGu7LT`); kadens gjenstår |
 | KPI-katalog (definisjon) | ✅ Definert i [`metrics.md`](metrics.md) |
 | Eskaleringskø (`Eskaleringer`-tabell) | ✅ Live (`tblWOneeFROVhtCmS`) |
-| KPI-dashboard (L5, Airtable-interface) | 🔜 Når `Utfall` har data |
+| KPI-dashboard (L5, Airtable-interface) | 📋 Spesifisert ([`dashboard.md`](dashboard.md)); side 1–2 byggbar nå |
 
 Når et felt eller en tabell er opprettet i Airtable, oppdater statusen her og i
 [`crm/schema.md`](../crm/schema.md).
