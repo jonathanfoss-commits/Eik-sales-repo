@@ -40,7 +40,7 @@ feilkonfigurasjon, en feilsletting eller en kontosperre ikke er katastrofal.
 
 | Hva | Hvordan | Kadens | Eier |
 | --- | --- | --- | --- |
-| **Airtable-base** | Airtable snapshots (innebygd) + ukentlig CSV-/JSON-eksport av hver tabell til Drive (`/backups/airtable/ÅÅÅÅ-Uke`) | Snapshot: løpende. Eksport: ukentlig | n8n-jobb (spec) |
+| **Airtable-base** | Airtable snapshots (innebygd) + ukentlig CSV-/JSON-eksport av hver tabell til Drive (`/backups/airtable/ÅÅÅÅ-Uke`) — se [`workflows/airtable-backup.md`](../workflows/airtable-backup.md) | Snapshot: løpende. Eksport: ukentlig | n8n-jobb (spec klar) |
 | **Repoet** | Git + GitHub remote (allerede distribuert) | Hver commit | GitHub |
 | **Prompt-/agentdefinisjoner** | Bor i repoet → dekkes av Git | — | — |
 | **Gmail/Drive** | Google Takeout kvartalsvis (Jonathans konto) | Kvartal | Jonathan |
@@ -49,9 +49,10 @@ feilkonfigurasjon, en feilsletting eller en kontosperre ikke er katastrofal.
 **Gjenopprettingsprinsipp:** En tabell skal kunne gjenskapes fra siste ukentlige eksport med maks én
 ukes tap — og strukturen fra [`crm/schema.md`](../crm/schema.md). Repoet er «som-bygd»-tegningen.
 
-> **Status:** Airtable-snapshots er på (innebygd). Den ukentlige eksport-jobben og Takeout-rutinen er
-> **spec** — se [ROADMAP](../docs/ROADMAP.md). Inntil de er bygget er Airtables egne snapshots +
-> Git den faktiske dekningen.
+> **Status:** Airtable-snapshots er på (innebygd). Den ukentlige eksport-jobben er **spesifisert og
+> byggeklar** ([`workflows/airtable-backup.md`](../workflows/airtable-backup.md)); Takeout-rutinen er
+> fortsatt en manuell spec. Inntil eksport-jobben er bygd i n8n er Airtables egne snapshots + Git den
+> faktiske dekningen.
 
 ## Sikker degradering (graceful degradation)
 Når et lag faller bort, skal systemet falle ned til neste nivå, ikke stoppe helt:

@@ -120,8 +120,9 @@ Ideer verdt å gjøre når de stiger til topps. Ennå ikke planlagt.
 - **Observabilitet er materialisert (28.06.2026), men ikke fôret ennå:** tabeller/felt er live og
   agentene er spesifisert til å logge — men en n8n-jobb må faktisk skrive radene før måle-loopen gir
   innsikt. Det er det siste leddet (Fase 4).
-- **Backup delvis dekket:** Airtable-snapshots + Git er aktivt; ukentlig CSV-eksport og kvartalsvis
-  Google Takeout er fortsatt *spec* — se [`integrations/resilience.md`](../integrations/resilience.md).
+- **Backup delvis dekket:** Airtable-snapshots + Git er aktivt; ukentlig CSV/JSON-eksport er nå
+  *spesifisert og byggeklar* ([`workflows/airtable-backup.md`](../workflows/airtable-backup.md)) —
+  gjenstår å bygge i n8n. Kvartalsvis Google Takeout er fortsatt manuell spec.
 - **Testdekning har hull:** booking-agent (happy path) og research/berikelse mangler scenarier til de
   agentene materialiseres — se [`tests/scenarios.md`](../tests/scenarios.md).
 
