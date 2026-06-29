@@ -65,14 +65,18 @@ The single source of truth is the [agent-mesh register](../agents/README.md#agen
 What exists today:
 
 ```
-  STYRING        orchestrator (ruter + eskaleringskø) · kvalitetssikrer (kvalitetsport)
+  STYRING     orchestrator (ruter + eskaleringskø) · kvalitetssikrer (kvalitetsport)
      │
-  HANDLER        digital-jonathan (intake/svar/CRM/rytme — paraply)
-     │           gavekort-selger · oppfolgingsagent · booking-kalenderagent
+  HANDLER     digital-jonathan (intake/svar/CRM/rytme — paraply)
+     │         research-berikelse → outreach/gavekort → booking-kalender → oppfølging
+     │         account-partner (kryss-salg/fornyelse) · markeds-kampanje · møteforberedelse
      │
-  MÅLER          analyse-rapportagent (KPI + måle-loop-rapport → forbedring)
+  STEWARD     crm-datakvalitet (hygiene/validering/dedup — autonom der trygt)
+     │
+  MÅLER       analyse-rapportagent (KPI + måle-loop-rapport → forbedring)
 ```
-Kjernekjeden **lead → tilbud → booking → gjennomført** dekkes nå ende-til-ende. Spesialiserte agenter
+Kjernekjeden **lead → tilbud → booking → gjennomført** dekkes ende-til-ende, med research foran og
+account/marked/måling rundt. Alle har maskinlesbar kontrakt og logger til L4. Spesialiserte agenter
 skilles ut fra Digital Jonathan-monolitten etter hvert som volum krever det (STRATEGY tese 5);
 `spec`-rader i registeret er målbildet uten tomt stillas.
 
