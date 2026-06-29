@@ -57,8 +57,24 @@ The repository is organized into clear layers, each with a single responsibility
 
 ### Instruction layer — *how to act*
 - **`prompts/`** — a versioned library of reusable prompts for concrete sales tasks.
-- **`agents/`** — composed roles that bundle a purpose, instructions, the prompts they use, the
-  tools they may call, and guardrails.
+- **`agents/`** — composed roles (contracts) that bundle purpose, authority, limits, the prompts they
+  use, the tools they may call, guardrails, and the metrics they're judged on.
+
+#### The agent organisation (L3 — current state)
+The single source of truth is the [agent-mesh register](../agents/README.md#agent-mesh-registeret).
+What exists today:
+
+```
+  STYRING        orchestrator (ruter + eskaleringskø) · kvalitetssikrer (kvalitetsport)
+     │
+  HANDLER        digital-jonathan (intake/svar/CRM/rytme — paraply)
+     │           gavekort-selger · oppfolgingsagent · booking-kalenderagent
+     │
+  MÅLER          analyse-rapportagent (KPI + måle-loop-rapport → forbedring)
+```
+Kjernekjeden **lead → tilbud → booking → gjennomført** dekkes nå ende-til-ende. Spesialiserte agenter
+skilles ut fra Digital Jonathan-monolitten etter hvert som volum krever det (STRATEGY tese 5);
+`spec`-rader i registeret er målbildet uten tomt stillas.
 
 ### Connection layer — *how we reach the world*
 - **`integrations/`** — conventions and notes for each connected tool (Airtable, Gmail, Calendar,
@@ -88,13 +104,21 @@ The repository is organized into clear layers, each with a single responsibility
 1. An n8n agent ("Digital Jonathan") watches the Gmail inbox.
 2. A new enquiry is captured as a row in the **Avtaler** table (status `Ny lead`), with the
    `Gmail-tråd` link back to the source email.
-3. A reply is drafted in Gmail (never auto-sent) using the `prompts/` library and `sales/` context.
-4. The action is logged in the **Agentlogg** table; anything uncertain is flagged for Jonathan.
+3. A reply is drafted in Gmail (never auto-sent) using the `prompts/` library and `sales/` context;
+   the **kvalitetssikrer** scores it before it reaches Jonathan.
+4. The action is logged in **Agentlogg** (model, cost, confidence, reason) and an **Utfall** row is
+   opened; anything uncertain becomes an **Eskalering** with an SLA.
 
-**Proposal (tilbud)**
-1. For a qualified deal, the n8n Tilbud-agent generates a proposal draft (see
-   `prompts/proposals/tilbud.md`) and sets `Tilbudsutkast laget` so it isn't done twice.
-2. Jonathan reviews and sends; the deal moves to `Tilbud sendt`.
+**Booking (closes the chain)**
+1. For a confirmed-interest deal, the **booking-kalenderagent** matches a venue (Venues capacity +
+   suitability), checks calendar + existing Avtaler, and creates a *hold* (no autonomous invite).
+2. A double-booking on the same venue+date is blocked (`DATA_CONFLICT`) and escalated with an
+   alternative. On confirmation the deal moves to `Bekreftet`.
+
+**Follow-up & measurement (the loop)**
+1. The **oppfolgingsagent** works overdue/missing follow-ups toward zero, value-first, with auto-stop.
+2. The **analyse-rapportagent** reads Agentlogg/Utfall weekly and reports which prompts win — feeding
+   prompt/agent improvement (the måle-loop).
 
 **Weekly rhythm**
 - 08:00 morning briefing (draft replies + auto-leads); Monday adds a pipeline review; Tuesday adds
