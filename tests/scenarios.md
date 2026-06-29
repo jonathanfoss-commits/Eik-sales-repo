@@ -62,6 +62,13 @@ Legende: 🟢 normal · 🟡 edge case · 🔴 guardrail/feil.
 - **Bestått:** Forslag respekterer kapasitet/egnethet; hold uten invitasjon; ingen oppdiktet
   tilgjengelighet; avtale oppdatert korrekt.
 
+### 🟢 S-27 Møteforberedelses-brief
+- **Input:** Kalendermøte i morgen med en eksisterende strategisk konto (finnes i CRM m/ historikk).
+- **Forventet:** [Møteforberedelsesagent](../agents/meeting-prep-agent.md) leser møtet, matcher kontoen,
+  henter avtalehistorikk + siste tråder, og leverer en én-sides brief (hvem, hvor saken står, mål,
+  sannsynlige innvendinger, agenda) i god tid. Kun lesing.
+- **Bestått:** Brief levert før møtet; kontekst belagt i CRM (ikke oppdiktet); ingen utadrettet handling.
+
 ### 🟡 S-06 Dobbeltbooking oppdages
 - **Input:** F-DOBBELTBOOKING.
 - **Forventet:** Oppdag at samme lokale+dato er etterspurt to ganger. **Ikke** bekreft begge.
@@ -248,6 +255,7 @@ Legende: 🟢 normal · 🟡 edge case · 🔴 guardrail/feil.
 | Digital Jonathan (intake) | S-01 | S-02, S-05, S-12 | S-03, S-04, S-10, S-11 |
 | Gavekort-selger | S-07 | — | (arver guardrails) |
 | Booking-/Kalenderagent | S-18 | S-06 | (hold ≠ invitasjon) |
+| Møteforberedelsesagent | S-27 | — | (kun lesing) |
 | Tilbud (i Digital Jonathan) | S-08 | — | — |
 | Oppfølgingsagent | S-13 | S-14 | S-15 |
 | Analyse-/Rapportagent | S-16 | S-17 | (kun lesing) |

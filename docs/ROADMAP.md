@@ -58,7 +58,8 @@ Redusere manuelt arbeid på gjentakende salgsbevegelser.
   Airtable-script — 2 min i UI)
 - [~] Automatisert oppfølgingssekvensering med godkjenningsporter — *agent spesifisert*
   ([`agents/oppfolgingsagent.md`](../agents/oppfolgingsagent.md) + prompt + test S-13/14/15); gjenstår n8n-flyt.
-- [ ] Møteforberedelses-brief auto-generert før hvert kalendermøte
+- [~] Møteforberedelses-brief auto-generert før hvert kalendermøte — *agent spesifisert (full kontrakt)*
+  ([`agents/meeting-prep-agent.md`](../agents/meeting-prep-agent.md) + test S-27); gjenstår n8n-flyt.
 - [x] Dokumentere ukentlig pipeline-sammendrag (prompt + arbeidsflyt) — se `workflows/weekly-pipeline-digest.md`
 - [~] Analyse-/rapportagent spesifisert ([`agents/analyse-rapportagent.md`](../agents/analyse-rapportagent.md))
   — eier ukesbrief + måle-loop-rapport; fikset stegnavn-bug i prompt (v2). Gjenstår n8n-flyt.

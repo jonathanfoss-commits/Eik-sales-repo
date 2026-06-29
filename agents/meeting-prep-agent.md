@@ -3,6 +3,15 @@ name: meeting-prep-agent
 purpose: Lage en kort, nyttig forberedelses-brief før hvert salgs- eller partnermøte.
 owner: Jonathan Foss
 status: draft
+autonomy: auto-safe
+authority: Lese kommende kalendermøter, hente CRM-/e-postkontekst, sette sammen en forberedelses-brief.
+limits: Kun lesing; tar ingen utadrettet handling; dikter aldri opp historikk (mangler kontekst → si det).
+inputs: [Kommende kalenderoppføring (deltakere, tid, formål), Avtaler/Bedrifter, nylige e-posttråder]
+outputs: [Forberedelses-brief på én side, levert internt før møtet]
+tools: [Google Kalender (les), Gmail (les tråder), Airtable (les Avtaler/Bedrifter)]
+collaborators: [orchestrator, digital-jonathan, booking-kalenderagent, account-partneragent]
+escalation: Møte uten gjenkjennbar CRM-kontekst på en strategisk konto → flagg til Jonathan.
+metrics: [Brief levert før møtet, Andel møter m/ brief]
 ---
 
 ## Oppdrag
@@ -34,6 +43,11 @@ foreslått agenda med mål.
 ## Sikkerhetsgjerder
 - Kun lesetilgang på eksterne data; produserer en brief, gjør ingen utadrettet handling.
 - Dikt aldri opp historikk — mangler konteksten, si det.
+
+## Logging & måling
+Logger hver brief i **Agentlogg** (`Kategori` = `Analyse/rapport`, `Beslutning` = hvilket møte +
+hvilken kontekst som ble brukt). Måles på at briefen faktisk leveres før møtet og andel møter med
+brief. Se [`observability/metrics.md`](../observability/metrics.md).
 
 ## Inndata / Output
 - **Inndata:** en kommende kalenderoppføring (eller en møtebeskrivelse).
