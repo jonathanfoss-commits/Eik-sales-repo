@@ -27,9 +27,11 @@ Friends' stemme og prospektets kontekst — og lar alltid sendebeslutningen ligg
 
 ## Verktøy & integrasjoner
 - **Gmail** — opprette utkast og sette etiketter. **Skal ikke sende.**
-- **Notion / Google Sheets** — lese og foreslå CRM-oppdateringer.
+- **Airtable (CRM)** — lese og foreslå CRM-oppdateringer (Avtaler/Bedrifter). Jf.
+  [ADR 0002](../docs/decisions/0002-faktisk-systemarkitektur.md). *(Notion er arkivert — skriv aldri dit.)*
 - **Google Kalender** — lese tilgjengelighet for å foreslå møtetider når relevant.
-- Valgfri research via tilgjengelige webverktøy for offentlig selskapskontekst.
+- Kontekst/berikelse kommer fra [`research-berikelsesagent`](research-berikelsesagent.md) der den er
+  tilgjengelig — gjenbruk den fremfor å gjøre research på nytt.
 
 ## Prompter som brukes
 - [`prompts/outreach/cold-outreach.md`](../prompts/outreach/cold-outreach.md)

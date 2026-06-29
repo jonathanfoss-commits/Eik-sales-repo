@@ -66,8 +66,10 @@ Redusere manuelt arbeid på gjentakende salgsbevegelser.
 ## Fase 3 — Innsikt & research
 Skjerpe målretting og personalisering.
 
-- [ ] Research-agent for konto & kontakt (selskapsnyheter, treff-scoring)
-- [ ] ICP-scoringsmodell for innkommende og utgående leads
+- [~] Research-agent for konto & kontakt (selskapsnyheter, treff-scoring) — *spesifisert*
+  ([`agents/research-berikelsesagent.md`](../agents/research-berikelsesagent.md) + test S-19/20); gjenstår n8n-flyt.
+- [~] ICP-scoringsmodell for innkommende og utgående leads — *lett modell definert* i research-agenten
+  (firmografi + trigger + gjentakelse → Høy/Middels/Lav); foredles med ekte vunnet/tapt-data.
 - [ ] Skanner for restaurantpartnerskap-muligheter
 
 ## Fase 4 — Analyse & kontinuerlig forbedring (styrings- & målelag, L4)

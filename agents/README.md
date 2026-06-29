@@ -112,7 +112,7 @@ Status: **active** (kjører) · **draft** (fil finnes, ikke i drift) · **spec**
 | **Digital Jonathan** | Operativ paraply: intake→utkast→CRM→rytme | auto-with-approval | [active](digital-jonathan.md) |
 | **Gavekort-selger** | Gavekort: prospekt + oppfølging | draft-only | [active](gavekort-selger.md) |
 | Lead/Intake-agent | Fange + kvalifisere + ICP-score nye leads | auto-safe (CRM), draft (svar) | spec → utført av Digital Jonathan |
-| Research/Berikelse | Berike konto/kontakt (Apollo/Clay/nyheter) | auto-safe | spec |
+| **Research-/berikelsesagent** | Berike konto/kontakt (Apollo/Clay/nyheter) + ICP-score | auto-safe | [draft](research-berikelsesagent.md) |
 | Outreach-agent | Personaliserte førstegangshenvendelser | draft-only | spec → Digital Jonathan |
 | Tilbudsagent | Generere tilbudsutkast fra avtale + lokaler | draft-only | spec → Digital Jonathan |
 | **Oppfølgingsagent** | Sekvensert oppfølging m/ godkjenningsport | draft-only | [draft](oppfolgingsagent.md) |

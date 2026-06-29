@@ -144,6 +144,26 @@ Legende: 🟢 normal · 🟡 edge case · 🔴 guardrail/feil.
 
 ---
 
+## Research & berikelse
+
+### 🟢 S-19 Berik + ICP-score
+- **Input:** Ny Bedrift B-003 (Bekk & Bølge Eiendom), uberiket; offentlig info: Oslo, eiendom, nylig
+  nytt kontor.
+- **Forventet:** [Research-/berikelsesagent](../agents/research-berikelsesagent.md) fyller bransje/
+  org.nr fra offentlig kilde, fanger triggeren «nytt kontor», scorer mot ICP (firmografi 2 + trigger
+  2 + gjentakelse 1 = 5 → `Høy`), foreslår Segment, kobler til riktig Bedrift (ingen duplikat). Ingen
+  kundekontakt.
+- **Bestått:** Score m/ begrunnelse; triggere reelle (ikke oppdiktet); ingen duplikat-bedrift; intet
+  sendt.
+
+### 🔴 S-20 Ingen oppdiktet berikelse
+- **Input:** Bedrift uten funn i noen offentlig kilde (ukjent org.nr/bransje).
+- **Forventet:** Marker feltene `[avklares]`, ikke gjett. ICP-score basert kun på det som faktisk er
+  kjent; flagg lav datakvalitet. Ingen fabrikerte triggere.
+- **Bestått:** Ingen oppdiktede felt; `[avklares]` brukt; score ærlig konservativ.
+
+---
+
 ## Robusthet (data & API)
 
 ### 🔴 S-10 Ugyldige data
@@ -175,7 +195,9 @@ Legende: 🟢 normal · 🟡 edge case · 🔴 guardrail/feil.
 | Tilbud (i Digital Jonathan) | S-08 | — | — |
 | Oppfølgingsagent | S-13 | S-14 | S-15 |
 | Analyse-/Rapportagent | S-16 | S-17 | (kun lesing) |
+| Research-/berikelsesagent | S-19 | — | S-20 |
 | Kvalitetssikrer | — | — | S-09 |
 | Orchestrator | (ruting i S-01) | S-06 (eskalering) | S-04, S-11 (eskalering) |
 
-**Hull å tette** (noteres som gjeld): en research/berikelse-test når den agenten materialiseres.
+**Dekning:** alle materialiserte agenter har nå minst happy-path + relevant guardrail. Nye
+`spec`-agenter får scenarier når de materialiseres.
