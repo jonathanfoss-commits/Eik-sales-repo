@@ -25,13 +25,23 @@ selgere: **Jonathan Foss** og **Christopher Erstad**.
 | Tabell | Hva den holder |
 | --- | --- |
 | **Avtaler** | Alle leads, tilbud og bekreftede bestillinger. Én rad per avtale/event. Kjernen. |
+| **Bedrifter** | Kjerneentitet for kunderelasjoner (ADR 0003): kontooversikt, livstidsverdi, kryss-salg. |
 | **Venues** | Register over de ~22 spisestedene (kapasitet, konsept, egnethet, kontakt). |
 | **Partneravtaler** | Samarbeids-/partneravtaler med fornyelsessyklus (medlemsfordeler, sponsor, gavekort-distribusjon). |
 | **Kampanjer** | Salgs- og markedskampanjer (julebord, sommer, gavekort, Amex, events). |
-| **Agentlogg** | AI-aktivitetslogg: hva n8n-agentene har gjort og hva som trenger menneskelig vurdering. |
+| **Agentlogg** | AI-aktivitetslogg (L4): hva agentene gjorde, hvorfor, kostnad, og hva som trenger menneske. |
+| **Utfall** | Måle-loopen (L4): kobler hver AI-handling til et resultat (sendt→svar→vunnet/tapt). |
+| **Eskaleringer** | Kø (L4) for saker som krever menneske, med alvorlighet og SLA. |
 
 Detaljerte felter og utvalgsverdier: [`schema.md`](schema.md). Pipeline (Avtaler.Status):
-[`pipeline-stages.md`](pipeline-stages.md).
+[`pipeline-stages.md`](pipeline-stages.md). L4-tabellene (Agentlogg/Utfall/Eskaleringer) er forankret
+i [ADR 0005](../docs/decisions/0005-styrings-og-maalelag.md) og [`observability/`](../observability/).
+
+## Bygge et CRM-grensesnitt
+Vil du ha et visuelt CRM-cockpit (L5) som speiler dette skjemaet? Lim
+[`crm-artifact-prompt.md`](crm-artifact-prompt.md) inn i Claude (med Artifacts på) — den genererer et
+fungerende grensesnitt med samme tabeller, pipeline og agent-/måle-lag, klart til å koble på Airtable
+senere.
 
 ## Slik bruker agentene dette
 - **Les skjemaet** i `schema.md` før du oppretter eller oppdaterer en rad — bruk eksakte feltnavn
