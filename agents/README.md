@@ -116,7 +116,7 @@ Status: **active** (kjører) · **draft** (fil finnes, ikke i drift) · **spec**
 | Outreach-agent | Personaliserte førstegangshenvendelser | draft-only | spec → Digital Jonathan |
 | Tilbudsagent | Generere tilbudsutkast fra avtale + lokaler | draft-only | spec → Digital Jonathan |
 | **Oppfølgingsagent** | Sekvensert oppfølging m/ godkjenningsport | draft-only | [draft](oppfolgingsagent.md) |
-| Kalender-/Bookingagent | Foreslå tider, reservere lokale, unngå dobbeltbooking | auto-with-approval | spec |
+| **Booking-/Kalenderagent** | Foreslå tider, matche/reservere lokale, unngå dobbeltbooking | auto-with-approval | [draft](booking-kalenderagent.md) |
 | Account-/Partneragent | Pleie strategiske kontoer + partneravtaler, fornyelse | draft-only | spec |
 | **Analyse-/Rapportagent** | KPI-er, måle-loop-rapport, ukentlig digest | auto-safe (les) | [draft](analyse-rapportagent.md) |
 | CRM-/Datakvalitetsagent | Hygiene, dedup, flagg, backfill | auto-safe | [active](../workflows/crm-hygiene-automation.md) (workflow) |

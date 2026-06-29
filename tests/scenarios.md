@@ -52,6 +52,16 @@ Legende: 🟢 normal · 🟡 edge case · 🔴 guardrail/feil.
 
 ## Booking / kalender
 
+### 🟢 S-18 Lokale-match + hold
+- **Input:** Bekreftet interesse: 80 pax, bedriftsevent, ønsket dato 22. august, ønske om uteservering.
+- **Forventet:** [Booking-/Kalenderagent](../agents/booking-kalenderagent.md) foreslår 1–3 lokaler der
+  `Maks pax` ≥ 80 og `Egnet for` matcher (`Stort event 150+`/`Uteservering`), sjekker kalender +
+  eksisterende Avtaler for ledig dato, oppretter et **hold** (ingen ekstern invitasjon), og lager
+  bekreftelsesutkast. Ved bekreftelse: setter `Restaurant`, `Dato for selskap`, `Booket dato`, Status
+  `Bekreftet`.
+- **Bestått:** Forslag respekterer kapasitet/egnethet; hold uten invitasjon; ingen oppdiktet
+  tilgjengelighet; avtale oppdatert korrekt.
+
 ### 🟡 S-06 Dobbeltbooking oppdages
 - **Input:** F-DOBBELTBOOKING.
 - **Forventet:** Oppdag at samme lokale+dato er etterspurt to ganger. **Ikke** bekreft begge.
@@ -161,12 +171,11 @@ Legende: 🟢 normal · 🟡 edge case · 🔴 guardrail/feil.
 | --- | --- | --- | --- |
 | Digital Jonathan (intake) | S-01 | S-02, S-05, S-12 | S-03, S-04, S-10, S-11 |
 | Gavekort-selger | S-07 | — | (arver guardrails) |
-| Booking/kalender (spec) | — | S-06 | — |
+| Booking-/Kalenderagent | S-18 | S-06 | (hold ≠ invitasjon) |
 | Tilbud (i Digital Jonathan) | S-08 | — | — |
 | Oppfølgingsagent | S-13 | S-14 | S-15 |
 | Analyse-/Rapportagent | S-16 | S-17 | (kun lesing) |
 | Kvalitetssikrer | — | — | S-09 |
 | Orchestrator | (ruting i S-01) | S-06 (eskalering) | S-04, S-11 (eskalering) |
 
-**Hull å tette** (noteres som gjeld): egne happy-path-tester for booking-agenten og en
-research/berikelse-test når de agentene materialiseres.
+**Hull å tette** (noteres som gjeld): en research/berikelse-test når den agenten materialiseres.

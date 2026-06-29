@@ -18,7 +18,9 @@ Teknisk gjeld og muligheter som oppdages underveis fanges nederst.
 - [~] **Agent-mesh + kunnskapslag** — fra én monolitt til spesialiserte, styrte agenter. *Styringslag
   startet:* kontraktsformat + mesh-register + orkestrator + kvalitetssikrer ([ADR 0005](decisions/0005-styrings-og-maalelag.md));
   gjenstår: splitte ut spesialiserte agenter ved volum (Q4).
-- [ ] **Venue-matchemodell** — anbefal lokale automatisk fra gjestetall/type/sesong.
+- [~] **Venue-matchemodell** — anbefal lokale automatisk fra gjestetall/type/sesong. *Startet:*
+  regelbasert lokale-match i [`booking-kalenderagent`](../agents/booking-kalenderagent.md) (kapasitet
+  + egnethet); neste steg er scoring/optimalisering på tvers av porteføljen.
 
 ---
 
