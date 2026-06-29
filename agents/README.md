@@ -119,6 +119,7 @@ Status: **active** (kjører) · **draft** (fil finnes, ikke i drift) · **spec**
 | **Booking-/Kalenderagent** | Foreslå tider, matche/reservere lokale, unngå dobbeltbooking | auto-with-approval | [draft](booking-kalenderagent.md) |
 | **Account-/Partneragent** | Pleie strategiske kontoer + partneravtaler, fornyelse, kryss-salg | draft-only | [draft](account-partneragent.md) |
 | **Analyse-/Rapportagent** | KPI-er, måle-loop-rapport, ukentlig digest | auto-safe (les) | [draft](analyse-rapportagent.md) |
+| **Markeds-/kampanjeagent** | Planlegge + spore sesongkampanjer (julebord/sommer/gavekort/Amex) | auto-with-approval | [draft](markeds-kampanjeagent.md) |
 | CRM-/Datakvalitetsagent | Hygiene, dedup, flagg, backfill | auto-safe | [active](../workflows/crm-hygiene-automation.md) (workflow) |
 
 **Hvorfor ikke alle som egne filer nå:** Digital Jonathan utfører i praksis intake/outreach/tilbud i
