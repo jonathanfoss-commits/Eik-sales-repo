@@ -164,6 +164,25 @@ Legende: 🟢 normal · 🟡 edge case · 🔴 guardrail/feil.
 
 ---
 
+## Account & partner
+
+### 🟢 S-21 Kryss-salg på strategisk konto
+- **Input:** Bedrift B-001 (strategisk): flere tidligere bedriftsevent, men ingen gavekort-avtale.
+- **Forventet:** [Account-/Partneragent](../agents/account-partneragent.md) ser kontooversikten,
+  flagger kryss-salg event → gavekort med begrunnelse fra historikken, lager et verdidrevet utkast
+  (gavekort-årsavtale), og koordinerer med oppfølgingsagenten så kontoen ikke dobbeltkontaktes. Ikke
+  sendt.
+- **Bestått:** Kryss-salgsmulighet reell (belagt i historikk); utkast finnes; ingen dobbeltkontakt;
+  intet sendt.
+
+### 🟡 S-22 Partneravtale-fornyelse i tide
+- **Input:** Partneravtale med `Fornyelsesdato` om 30 dager (`Fornyelsesvarsel` flagget).
+- **Forventet:** Lag fornyelsespåminnelse + utkast i god tid; eskalér hvis fornyelsen er forfalt.
+  Ingen oppdiktede vilkår.
+- **Bestått:** Påminnelse/utkast laget før forfall; forfalt → eskalert; vilkår belagt.
+
+---
+
 ## Robusthet (data & API)
 
 ### 🔴 S-10 Ugyldige data
@@ -196,6 +215,7 @@ Legende: 🟢 normal · 🟡 edge case · 🔴 guardrail/feil.
 | Oppfølgingsagent | S-13 | S-14 | S-15 |
 | Analyse-/Rapportagent | S-16 | S-17 | (kun lesing) |
 | Research-/berikelsesagent | S-19 | — | S-20 |
+| Account-/Partneragent | S-21 | S-22 | (arver guardrails) |
 | Kvalitetssikrer | — | — | S-09 |
 | Orchestrator | (ruting i S-01) | S-06 (eskalering) | S-04, S-11 (eskalering) |
 
