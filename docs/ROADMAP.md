@@ -57,6 +57,8 @@ Redusere manuelt arbeid på gjentakende salgsbevegelser.
   ([`agents/oppfolgingsagent.md`](../agents/oppfolgingsagent.md) + prompt + test S-13/14/15); gjenstår n8n-flyt.
 - [ ] Møteforberedelses-brief auto-generert før hvert kalendermøte
 - [x] Dokumentere ukentlig pipeline-sammendrag (prompt + arbeidsflyt) — se `workflows/weekly-pipeline-digest.md`
+- [~] Analyse-/rapportagent spesifisert ([`agents/analyse-rapportagent.md`](../agents/analyse-rapportagent.md))
+  — eier ukesbrief + måle-loop-rapport; fikset stegnavn-bug i prompt (v2). Gjenstår n8n-flyt.
 - [ ] Bygge & validere ukentlig pipeline-sammendrag + helsesjekk i n8n
 
 ## Fase 3 — Innsikt & research
@@ -82,7 +84,8 @@ Måle og forbedre hele systemet. Rammeverket er definert i [`observability/`](..
 - [ ] UI-finesser: kostnadsrollup per uke + varsel ved `Alvorlighet = Kritisk`.
 - [ ] KPI-dashboard som Airtable-interface (L5) når `Utfall` har data.
 - [ ] Pipeline- og konverteringsanalyse fra CRM
-- [ ] Sporing og iterasjon av prompt-/agentytelse (mandagsbrief leser `Utfall`)
+- [~] Sporing og iterasjon av prompt-/agentytelse — analyse-rapportagent spesifisert til å lese
+  `Utfall` i mandagsbriefen; aktiveres når n8n fôrer `Utfall`.
 - [ ] Kvartalsvis gjennomgangs-playbook
 
 ---

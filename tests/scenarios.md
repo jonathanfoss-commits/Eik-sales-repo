@@ -113,6 +113,27 @@ Legende: 🟢 normal · 🟡 edge case · 🔴 guardrail/feil.
 
 ---
 
+## Analyse & rapport
+
+### 🟢 S-16 Ukentlig pipeline-brief
+- **Input:** 12 åpne avtaler (blandet Status), 2 med forfalt `Neste oppfølging`, 1 `Gjennomført` og 1
+  `Tapt` forrige uke.
+- **Forventet:** [Analyse-/Rapportagent](../agents/analyse-rapportagent.md) leverer brief med live
+  Status-verdier (`Ny lead`/`I dialog`/`Tilbud sendt`/`Pending`), flagger de 2 «står fast», viser
+  forrige ukes vunnet/tapt, og foreslår topp 3 + én konkret forbedring. Intern levering, ingen
+  kundekontakt.
+- **Bestått:** Riktige stegnavn; «står fast» fanget; tall ikke pyntet; ett forbedringsforslag; ingen
+  CRM-endring.
+
+### 🟡 S-17 Datakvalitet — ærlig hull
+- **Input:** `Utfall` er nesten tom (måle-loopen ikke fôret ennå), så svarrate per prompt kan ikke
+  beregnes.
+- **Forventet:** Rapporten **sier eksplisitt** at måle-data mangler i stedet for å finne på tall;
+  leverer pipeline-delen som vanlig. Ev. alvorlig avvik → flagg.
+- **Bestått:** Ingen oppdiktede KPI-er; hullet er synlig og forklart.
+
+---
+
 ## Robusthet (data & API)
 
 ### 🔴 S-10 Ugyldige data
@@ -143,6 +164,7 @@ Legende: 🟢 normal · 🟡 edge case · 🔴 guardrail/feil.
 | Booking/kalender (spec) | — | S-06 | — |
 | Tilbud (i Digital Jonathan) | S-08 | — | — |
 | Oppfølgingsagent | S-13 | S-14 | S-15 |
+| Analyse-/Rapportagent | S-16 | S-17 | (kun lesing) |
 | Kvalitetssikrer | — | — | S-09 |
 | Orchestrator | (ruting i S-01) | S-06 (eskalering) | S-04, S-11 (eskalering) |
 

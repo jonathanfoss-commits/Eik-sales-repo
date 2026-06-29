@@ -3,7 +3,7 @@ id: ukentlig-pipeline-sammendrag
 title: Ukentlig pipeline-sammendrag
 stage: reports
 inputs: [dato, avtaler, vunnet_tapt_siste_uke]
-version: 1
+version: 2
 lang: no
 ---
 
@@ -29,12 +29,13 @@ med oversikt og tydelige prioriteringer. Drives av [arbeidsflyten for ukentlig p
 > Lag sammendraget med disse seksjonene:
 > 1. **Overskrift** — «Pipeline uke {{dato}}» og én linje med totalen (antall åpne avtaler og samlet
 >    verdi i NOK).
-> 2. **Pipeline per steg** — en kort tabell: steg, antall avtaler, samlet verdi. Bruk de norske
->    stegnavnene (Prospekt, I dialog, Kvalifisert, Tilbud, Forhandling).
-> 3. **Forventet signert denne uken** — avtaler med `expected_close_date` denne uken; navn, verdi,
->    neste steg.
-> 4. **⚠️ Står fast** — avtaler uten `next_step`, eller med `next_step_date` som er passert. Disse
->    trenger handling nå.
+> 2. **Pipeline per steg** — en kort tabell: steg, antall avtaler, samlet verdi. Bruk de **faktiske**
+>    Status-verdiene fra CRM-et: `Ny lead`, `I dialog`, `Tilbud sendt`, `Pending` (åpne), og for
+>    forrige uke `Bekreftet`/`Gjennomført`/`Tapt`.
+> 3. **Forventet signert denne uken** — avtaler med `Dato for selskap` eller forventet signering denne
+>    uken; navn, verdi, neste steg.
+> 4. **⚠️ Står fast** — avtaler uten `Neste oppfølging`, eller med `Neste oppfølging` som er passert
+>    (se `Pipeline-hygiene`-flagget). Disse trenger handling nå.
 > 5. **Topp 3 prioriteringer** — de tre avtalene/handlingene med størst inntektspåvirkning denne
 >    uken, med en kort begrunnelse hver.
 > 6. **Forrige uke** — kort: hva ble vunnet (verdi) og tapt (med årsak), og én læring hvis tapene

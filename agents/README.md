@@ -118,7 +118,7 @@ Status: **active** (kjører) · **draft** (fil finnes, ikke i drift) · **spec**
 | **Oppfølgingsagent** | Sekvensert oppfølging m/ godkjenningsport | draft-only | [draft](oppfolgingsagent.md) |
 | Kalender-/Bookingagent | Foreslå tider, reservere lokale, unngå dobbeltbooking | auto-with-approval | spec |
 | Account-/Partneragent | Pleie strategiske kontoer + partneravtaler, fornyelse | draft-only | spec |
-| Analyse-/Rapportagent | KPI-er, måle-loop-rapport, ukentlig digest | auto-safe (les) | spec → weekly-digest workflow |
+| **Analyse-/Rapportagent** | KPI-er, måle-loop-rapport, ukentlig digest | auto-safe (les) | [draft](analyse-rapportagent.md) |
 | CRM-/Datakvalitetsagent | Hygiene, dedup, flagg, backfill | auto-safe | [active](../workflows/crm-hygiene-automation.md) (workflow) |
 
 **Hvorfor ikke alle som egne filer nå:** Digital Jonathan utfører i praksis intake/outreach/tilbud i

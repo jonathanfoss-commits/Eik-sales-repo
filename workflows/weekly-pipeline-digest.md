@@ -22,7 +22,10 @@ avtaler som står fast og forventede signeringer — slik at ingenting glir ut u
 5. **Lever:** send sammendraget til Jonathan (e-postutkast eller Slack-melding).
 
 ## Prompter / agenter som brukes
-- Prompt: [`ukentlig-pipeline-sammendrag`](../prompts/reports/ukentlig-pipeline-sammendrag.md)
+- Agent: [`analyse-rapportagent`](../agents/analyse-rapportagent.md) — den operative eieren av denne
+  flyten; legger til måle-loop-seksjonen (svake/sterke prompter fra `Utfall`).
+- Prompt: [`ukentlig-pipeline-sammendrag`](../prompts/reports/ukentlig-pipeline-sammendrag.md) (v2 —
+  bruker live Status-verdier).
 
 ## Bivirkninger
 - **Leser:** Airtable-CRM (Avtaler).
