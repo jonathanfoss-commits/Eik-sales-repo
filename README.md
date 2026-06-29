@@ -61,12 +61,25 @@ arbeidet, gjenta det og forbedre det over tid.
 Er du en AI-agent som jobber i dette repoet, start med
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) og [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md), og last
 deretter `README.md` for den relevante modulen før du handler. Hver modul dokumenterer sine egne
-konvensjoner.
+konvensjoner. Skal du **handle som en agent**, les din egen kontrakt i
+[`agents/`](agents/) og logg etter [`observability/logging-standard.md`](observability/logging-standard.md).
+Skal du **endre noe**, sjekk at det finnes et test-scenario i [`tests/`](tests/).
 
 ---
 
 ## Status
 
-**Repoet er tilpasset det levende systemet.** CRM-dokumentasjonen speiler Airtable-basen, norsk er
-standardspråk, og integrasjonene (Airtable, Gmail, Kalender, Drive) er aktive. Se
-[`docs/ROADMAP.md`](docs/ROADMAP.md) for neste steg.
+**Et fungerende operativsystem, ikke bare dokumentasjon.** CRM-dokumentasjonen speiler Airtable-basen,
+norsk er standardspråk, og integrasjonene (Airtable, Gmail, Kalender, Drive) er aktive.
+
+Bygd så langt:
+- **Agent-mesh:** styringsagenter (orkestrator, kvalitetssikrer), handler-agenter (Digital Jonathan,
+  gavekort, oppfølging, booking, research, account) og en analyse-/rapportagent — alle på
+  maskinlesbar kontrakt. Kjernekjeden **lead → tilbud → booking → gjennomført** dekkes ende-til-ende.
+- **Styrings- & målelag (L4):** loggstandard, måle-loop, KPI-er og eskaleringskø — **live i Airtable**
+  (tabellene `Utfall`/`Eskaleringer` + utvidet `Agentlogg`). Se [`observability/`](observability/) + [ADR 0005](docs/decisions/0005-styrings-og-maalelag.md).
+- **Robusthet:** test-bibliotek ([`tests/`](tests/)), feil-/fallback-/backup-strategi
+  ([`integrations/resilience.md`](integrations/resilience.md)).
+
+**Neste:** materialisere agentene og måle-loopen som n8n-flyter (oppskrifter er byggeklare i
+[`workflows/`](workflows/)). Se [`docs/ROADMAP.md`](docs/ROADMAP.md).
