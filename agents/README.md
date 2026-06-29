@@ -120,7 +120,7 @@ Status: **active** (kjører) · **draft** (fil finnes, ikke i drift) · **spec**
 | **Account-/Partneragent** | Pleie strategiske kontoer + partneravtaler, fornyelse, kryss-salg | draft-only | [draft](account-partneragent.md) |
 | **Analyse-/Rapportagent** | KPI-er, måle-loop-rapport, ukentlig digest | auto-safe (les) | [draft](analyse-rapportagent.md) |
 | **Markeds-/kampanjeagent** | Planlegge + spore sesongkampanjer (julebord/sommer/gavekort/Amex) | auto-with-approval | [draft](markeds-kampanjeagent.md) |
-| CRM-/Datakvalitetsagent | Hygiene, dedup, flagg, backfill | auto-safe | [active](../workflows/crm-hygiene-automation.md) (workflow) |
+| **CRM-/Datakvalitetsagent** | Hygiene, validering, dedup, backfill, flagg | auto-safe | [draft](crm-datakvalitetsagent.md) (hygiene live som [workflow](../workflows/crm-hygiene-automation.md)) |
 
 **Hvorfor ikke alle som egne filer nå:** Digital Jonathan utfører i praksis intake/outreach/tilbud i
 dag. Å splitte dem i separate kjørende agenter er en **refaktor vi gjør når volum krever det** (jf.
