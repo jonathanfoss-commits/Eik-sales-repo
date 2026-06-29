@@ -25,11 +25,14 @@ the work (Claude, ChatGPT, n8n, Zapier), **not** stored in this repo. See
 integration is permitted to do.
 
 Tools in scope:
+- **Airtable** — the live CRM (base `appzIFWfzob6WEhnq`): read/create/update, no deletes. See
+  [ADR 0002](decisions/0002-faktisk-systemarkitektur.md).
 - **Gmail** — read, draft, label (sending is human-approved by default).
 - **Google Calendar** — read availability, create holds and events.
-- **Notion** — the CRM and knowledge databases.
-- **Google Drive / Docs / Sheets** — documents, proposals, lightweight CRM tables.
+- **Google Drive / Docs** — documents and proposals (and backup exports).
+- **Apollo / Clay** — lead generation and enrichment.
 - **n8n / Zapier** — automation engines that trigger workflows.
+- **Notion** — ⚠️ archived old CRM; read-only history, never written to.
 
 ## 4. Secrets
 - Secrets (API keys, OAuth tokens) live in the execution environment, never in this repo.

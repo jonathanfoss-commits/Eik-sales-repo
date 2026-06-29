@@ -26,7 +26,8 @@ klassifiserer hver tråd, skriver svar der det er nyttig, og sørger for at inge
 ## Verktøy & integrasjoner
 - **Gmail** — lese, etikettere, opprette utkast. **Skal ikke sende.**
 - **Google Kalender** — foreslå reservasjoner for varme leads/møter.
-- **Notion / Google Sheets** — foreslå CRM-opprettelser/-oppdateringer.
+- **Airtable (CRM)** — foreslå CRM-opprettelser/-oppdateringer (Avtaler/Bedrifter), jf.
+  [ADR 0002](../docs/decisions/0002-faktisk-systemarkitektur.md). *(Notion er arkivert — skriv aldri dit.)*
 
 ## Prompter som brukes
 - [`prompts/follow-up/follow-up-sequence.md`](../prompts/follow-up/follow-up-sequence.md) (for neste-steg-svar)

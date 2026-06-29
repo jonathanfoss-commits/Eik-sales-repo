@@ -17,7 +17,7 @@ kunder/partnere skrives på naturlig norsk som standard:
 
 - Brukervendt tekst, e-postmaler, prompter, rapporter og AI-output.
 - Dokumentasjon ment for Jonathan (README, veikart, salgsplaybooks, ICP, ordliste).
-- CRM-ets **synlige feltnavn** (f.eks. Notion-egenskaper) og utvalgsverdier.
+- CRM-ets **synlige feltnavn** (Airtable-feltnavn) og utvalgsverdier.
 
 **Engelsk beholdes kun der det følger bransjestandard for teknisk implementasjon:**
 

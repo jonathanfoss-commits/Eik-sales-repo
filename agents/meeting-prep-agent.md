@@ -25,7 +25,8 @@ foreslått agenda med mål.
 ## Verktøy & integrasjoner
 - **Google Kalender** — lese kommende oppføringer.
 - **Gmail** — lese relevante tråder for kontekst.
-- **Notion / Google Sheets** — lese CRM-posten.
+- **Airtable (CRM)** — lese CRM-posten (Avtaler/Bedrifter), jf.
+  [ADR 0002](../docs/decisions/0002-faktisk-systemarkitektur.md).
 
 ## Prompter som brukes
 - [`prompts/meetings/meeting-prep.md`](../prompts/meetings/meeting-prep.md)

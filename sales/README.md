@@ -25,4 +25,5 @@ konsistent og forankret i strategi — ikke improvisert hver gang.
 
 ## Om data
 Dette er **strategi- og prosessdokumenter**. Levende kunde- og avtaledata ligger i CRM-et
-(Notion / Google Sheets), modellert i [`crm/`](../crm/) — ikke her.
+(**Airtable**, jf. [ADR 0002](../docs/decisions/0002-faktisk-systemarkitektur.md)), modellert i
+[`crm/`](../crm/) — ikke her.
