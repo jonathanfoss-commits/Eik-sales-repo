@@ -73,9 +73,10 @@ Skal du **endre noe**, sjekk at det finnes et test-scenario i [`tests/`](tests/)
 norsk er standardspråk, og integrasjonene (Airtable, Gmail, Kalender, Drive) er aktive.
 
 Bygd så langt:
-- **Agent-mesh:** styringsagenter (orkestrator, kvalitetssikrer), handler-agenter (Digital Jonathan,
-  gavekort, oppfølging, booking, research, account) og en analyse-/rapportagent — alle på
-  maskinlesbar kontrakt. Kjernekjeden **lead → tilbud → booking → gjennomført** dekkes ende-til-ende.
+- **Agent-mesh:** styring (orkestrator, kvalitetssikrer), handlere (Digital Jonathan, gavekort,
+  research, oppfølging, booking, account, marked, møteforberedelse), en datasteward
+  (CRM-/datakvalitet) og en analyse-/rapportagent — alle på maskinlesbar kontrakt. Kjernekjeden
+  **lead → tilbud → booking → gjennomført** dekkes ende-til-ende.
 - **Styrings- & målelag (L4):** loggstandard, måle-loop, KPI-er og eskaleringskø — **live i Airtable**
   (tabellene `Utfall`/`Eskaleringer` + utvidet `Agentlogg`). Se [`observability/`](observability/) + [ADR 0005](docs/decisions/0005-styrings-og-maalelag.md).
 - **Robusthet:** test-bibliotek ([`tests/`](tests/)), feil-/fallback-/backup-strategi
