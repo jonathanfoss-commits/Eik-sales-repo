@@ -47,6 +47,8 @@ kampanjen**, den spammer ikke.
 
 ## Prompter som brukes
 - [`prompts/outreach/julebord-henvendelse.md`](../prompts/outreach/julebord-henvendelse.md)
+- [`prompts/outreach/sommerfest-henvendelse.md`](../prompts/outreach/sommerfest-henvendelse.md)
+- [`prompts/outreach/kickoff-henvendelse.md`](../prompts/outreach/kickoff-henvendelse.md)
 - [`prompts/outreach/gavekort-aarsavtale.md`](../prompts/outreach/gavekort-aarsavtale.md)
 - [`prompts/outreach/cold-outreach.md`](../prompts/outreach/cold-outreach.md) (generell kampanjevinkel)
 

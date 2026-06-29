@@ -108,8 +108,8 @@ Ideer verdt å gjøre når de stiger til topps. Ennå ikke planlagt.
 - Partner-/lokaledatabase med sesongbasert arrangementskalender.
 - ~~Sesongkampanjer~~ → **operasjonalisert:** [`markeds-kampanjeagent`](../agents/markeds-kampanjeagent.md)
   eier kampanjeplanlegging + -oppfølging mot Kampanjer-tabellen, bygd på
-  [sesongkalenderen](../sales/sesongkalender.md). Neste: sommerfest- og kickoff-promptvarianter når de
-  sesongene nærmer seg.
+  [sesongkalenderen](../sales/sesongkalender.md). Sesongprompter komplett: julebord, **sommerfest**,
+  **kickoff**, gavekort.
 - LinkedIn-henvendelses-playbook (hvis/når den kanalen tas i bruk).
 
 ## Kjent teknisk gjeld

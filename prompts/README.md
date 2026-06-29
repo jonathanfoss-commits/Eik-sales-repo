@@ -68,6 +68,8 @@ Et kort, utfylt eksempel på inndata → output.
 | --- | --- | --- | --- |
 | Kald henvendelse | outreach | [`cold-outreach.md`](outreach/cold-outreach.md) | [`.en`](outreach/cold-outreach.en.md) |
 | Julebord-henvendelse (sesong) | outreach | [`julebord-henvendelse.md`](outreach/julebord-henvendelse.md) | — |
+| Sommerfest-henvendelse (sesong) | outreach | [`sommerfest-henvendelse.md`](outreach/sommerfest-henvendelse.md) | — |
+| Kickoff-henvendelse (sesong) | outreach | [`kickoff-henvendelse.md`](outreach/kickoff-henvendelse.md) | — |
 | Gavekort — årsavtale | outreach | [`gavekort-aarsavtale.md`](outreach/gavekort-aarsavtale.md) | — |
 | Partnerskap / samarbeid | outreach | [`partnership-pitch.md`](outreach/partnership-pitch.md) | [`.en`](outreach/partnership-pitch.en.md) |
 | Oppfølgingssekvens | follow-up | [`follow-up-sequence.md`](follow-up/follow-up-sequence.md) | [`.en`](follow-up/follow-up-sequence.en.md) |
