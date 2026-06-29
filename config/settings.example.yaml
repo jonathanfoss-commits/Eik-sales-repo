@@ -1,0 +1,41 @@
+# Eik Sales OS — eksempelkonfigurasjon (IKKE hemmeligheter)
+#
+# Kopier til settings.local.yaml og tilpass. settings.local.* er git-ignorert.
+# Hemmeligheter (API-nøkler, tokens) settes ALDRI her — de leveres av kjøremiljøet
+# og refereres kun ved navn under `secrets`. Se docs/decisions/0001-sprakpolicy.md
+# og docs/CODING_STANDARDS.md (Secrets & privacy).
+
+# Delte standarder
+defaults:
+  timezone: "Europe/Oslo"
+  currency: "NOK"
+  language: "no"            # norsk (bokmål) som standard, jf. ADR 0001
+  owner: "Jonathan Foss"
+  date_format: "YYYY-MM-DD"
+
+# Referanser til hemmeligheter — KUN navn, aldri verdier.
+# De faktiske verdiene bor i kjøremiljøet (Claude/ChatGPT/n8n/Zapier).
+secrets:
+  airtable_api_key: "AIRTABLE_API_KEY"   # CRM-base appzIFWfzob6WEhnq
+  gmail_oauth: "GMAIL_OAUTH"
+  calendar_oauth: "GCAL_OAUTH"
+
+# Integrasjonsinnstillinger (ikke-hemmelige)
+integrations:
+  gmail:
+    allow_send: false        # utkast som standard; mennesket sender (jf. integrations/gmail-integration.md)
+    label_prefix: "Sales/"
+  calendar:
+    default_calendar: "primary"
+    create_invites: false    # lag reservasjoner; ikke inviter eksterne uten bekreftelse
+  airtable:
+    base_id: "appzIFWfzob6WEhnq"   # Salgspipeline – Restaurant CRM
+    tables: ["Avtaler", "Venues", "Partneravtaler", "Kampanjer", "Agentlogg"]
+
+# Leveranse av rapporter
+reports:
+  weekly_pipeline_digest:
+    enabled: true
+    day: "monday"
+    time: "07:00"
+    channel: "email"         # email | slack
