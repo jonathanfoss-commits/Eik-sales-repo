@@ -69,6 +69,26 @@ Mikrofon-tilgang krever HTTPS, så enklest er **GitHub Pages**:
 - Eller aktiver **våkneord** i oppsettet og si «Jarvis, hva er klokka i Tokyo?»
 - Bytt språk og stemme under ⚙ OPPSETT (tips: stemmen «Daniel (English UK)» gir klassisk Jarvis-følelse)
 
+## 🌍 Styr «alt» med integrasjoner (MCP)
+
+Jarvis kan kobles til eksterne **MCP-servere** (Model Context Protocol) og får da verktøyene
+deres — kjørt sikkert på Anthropic sin serverside. Legg til under ⚙ OPPSETT → «Integrasjoner»:
+
+**Zapier MCP → styr 8000+ apper** (kalender, Gmail, Slack, Teams, Notion, smarthjem via
+Zapier-integrasjoner, m.m.):
+1. Gå til [mcp.zapier.com](https://mcp.zapier.com), logg inn og opprett en MCP-server
+2. Velg hvilke apper/handlinger Jarvis skal få (f.eks. «Google Calendar: Create Event»)
+3. Kopier din personlige server-URL og lim inn i Jarvis (navn: `zapier`)
+4. Si: *«Jarvis, legg inn møte med Ola i morgen klokka ti»* 🤯
+
+**Home Assistant → styr huset direkte** (lys, varme, låser):
+1. I Home Assistant: installer/aktiver MCP Server-integrasjonen
+2. Lim inn URL-en + en langtidstilgangstoken i Jarvis
+3. Si: *«Jarvis, slå av alle lysene i stua»*
+
+Alle MCP-tjenester med Streamable HTTP-endepunkt fungerer (Todoist, Linear, GitHub, …).
+Jarvis er instruert til å bekrefte før handlinger som er vanskelige å angre (sende e-post o.l.).
+
 ## Filstruktur
 
 | Fil | Hva |

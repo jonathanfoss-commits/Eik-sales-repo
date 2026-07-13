@@ -6,6 +6,9 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var apiKey = Keychain.load("jarvis_api_key")
+    @State private var mcpToken = Keychain.load("jarvis_mcp_token")
+    @AppStorage("jarvis_mcp_name") private var mcpName = ""
+    @AppStorage("jarvis_mcp_url") private var mcpURL = ""
     @AppStorage("jarvis_model") private var model = "claude-opus-4-8"
     @AppStorage("jarvis_lang") private var language = "nb-NO"
     @AppStorage("jarvis_voice") private var voice = ""
@@ -54,6 +57,21 @@ struct SettingsView: View {
                         .font(.footnote).foregroundColor(.secondary)
                 }
 
+                Section("Integrasjon (MCP) – la Jarvis styre andre tjenester") {
+                    TextField("Navn (f.eks. zapier)", text: $mcpName)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                    TextField("https://…/mcp", text: $mcpURL)
+                        .font(.system(.footnote, design: .monospaced))
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .keyboardType(.URL)
+                    SecureField("Token (valgfri)", text: $mcpToken)
+                        .textInputAutocapitalization(.never)
+                    Text("Lim inn en MCP-server-URL, f.eks. din personlige Zapier MCP-URL (mcp.zapier.com – styrer 8000+ apper) eller Home Assistant sin MCP-server. Kjøres på Anthropic sin serverside.")
+                        .font(.footnote).foregroundColor(.secondary)
+                }
+
                 Section("Jarvis' hukommelse om deg") {
                     if engine.memory.isEmpty {
                         Text("Ingen lagrede fakta enda. Si f.eks. «Jarvis, husk at …»")
@@ -79,6 +97,7 @@ struct SettingsView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Lagre") {
                         Keychain.save(apiKey.trimmingCharacters(in: .whitespacesAndNewlines), for: "jarvis_api_key")
+                        Keychain.save(mcpToken.trimmingCharacters(in: .whitespacesAndNewlines), for: "jarvis_mcp_token")
                         dismiss()
                     }
                 }

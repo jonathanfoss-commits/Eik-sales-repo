@@ -28,6 +28,9 @@ final class JarvisEngine: ObservableObject {
     var voiceSetting: String { defaults.string(forKey: "jarvis_voice") ?? "" }
     var speakSetting: Bool { defaults.object(forKey: "jarvis_speak") as? Bool ?? true }
     var searchSetting: Bool { defaults.object(forKey: "jarvis_search") as? Bool ?? true }
+    var mcpName: String { defaults.string(forKey: "jarvis_mcp_name") ?? "" }
+    var mcpURL: String { defaults.string(forKey: "jarvis_mcp_url") ?? "" }
+    var mcpToken: String { Keychain.load("jarvis_mcp_token") }
     var apiKey: String { Keychain.load("jarvis_api_key") }
     var isNorsk: Bool { languageSetting.hasPrefix("nb") || languageSetting.hasPrefix("no") }
 
@@ -152,21 +155,42 @@ final class JarvisEngine: ObservableObject {
                 "max_uses": .number(3),
             ]))
         }
+        // (MCP toolset + servers are appended below when configured.)
 
-        let body: JSONValue = .object([
+        let mcpActive = mcpURL.lowercased().hasPrefix("https://")
+        let serverName = mcpName.isEmpty ? "ekstern" : mcpName
+        if mcpActive {
+            tools.append(.object([
+                "type": .string("mcp_toolset"),
+                "mcp_server_name": .string(serverName),
+            ]))
+        }
+
+        var bodyDict: [String: JSONValue] = [
             "model": .string(modelSetting),
             "max_tokens": .number(4096),
             "stream": .bool(true),
             "system": .string(systemPrompt()),
             "tools": .array(tools),
             "messages": .array(apiHistory),
-        ])
+        ]
+        if mcpActive {
+            var server: [String: JSONValue] = [
+                "type": .string("url"),
+                "url": .string(mcpURL),
+                "name": .string(serverName),
+            ]
+            if !mcpToken.isEmpty { server["authorization_token"] = .string(mcpToken) }
+            bodyDict["mcp_servers"] = .array([.object(server)])
+        }
+        let body: JSONValue = .object(bodyDict)
 
         var request = URLRequest(url: URL(string: "https://api.anthropic.com/v1/messages")!)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "content-type")
         request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
         request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
+        if mcpActive { request.setValue("mcp-client-2025-11-20", forHTTPHeaderField: "anthropic-beta") }
         request.httpBody = body.encoded()
         request.timeoutInterval = 300
 
@@ -226,9 +250,17 @@ final class JarvisEngine: ObservableObject {
             case "content_block_start":
                 guard let index = event["index"]?.doubleValue.map({ Int($0) }),
                       var block = event["content_block"] else { break }
-                if block["type"]?.stringValue == "tool_use" || block["type"]?.stringValue == "server_tool_use" {
+                let blockType = block["type"]?.stringValue ?? ""
+                if blockType == "tool_use" || blockType == "server_tool_use" || blockType == "mcp_tool_use" {
                     partialJSON[index] = ""
-                    if let name = block["name"]?.stringValue { status = JarvisTools.statusText(for: name) }
+                    if let name = block["name"]?.stringValue {
+                        if blockType == "mcp_tool_use" {
+                            status = "Utfører \(name) …"
+                            appendMessage(role: "tool", text: "⚙ Utfører \(name)")
+                        } else {
+                            status = JarvisTools.statusText(for: name)
+                        }
+                    }
                     if block["input"] == nil { block["input"] = .object([:]) }
                 }
                 blocks[index] = block
@@ -283,7 +315,7 @@ final class JarvisEngine: ObservableObject {
         if isNorsk {
             prompt = "Du er JARVIS (Just A Rather Very Intelligent System), Tony Starks AI-butler fra Iron Man – nå personlig assistent for brukeren via en iPhone-app. Svar på norsk. Tiltal brukeren som «sir» med tørr, britisk-aktig vidd og upåklagelig høflighet, men vær alltid genuint hjelpsom og presis. "
                 + "Svarene dine leses høyt med talesyntese: hold dem korte og muntlige (typisk 1–3 setninger), uten markdown, punktlister, URL-er eller kodeblokker med mindre brukeren eksplisitt ber om noe langt eller teknisk. "
-                + "Du har verktøy – bruk dem proaktivt uten å spørre om lov: web_search for fersk eller ukjent informasjon, get_weather for vær, get_datetime for dato/tid, set_timer for nedtellinger (leveres som iOS-varsel), open_url for å åpne nettsider, og remember for å lagre varige fakta brukeren forteller om seg selv. Ikke gjett på ting du kan slå opp."
+                + "Du har verktøy – bruk dem proaktivt uten å spørre om lov: web_search for fersk eller ukjent informasjon, get_weather for vær, get_datetime for dato/tid, set_timer for nedtellinger (leveres som iOS-varsel), open_url for å åpne nettsider, og remember for å lagre varige fakta brukeren forteller om seg selv. Har brukeren koblet til en ekstern integrasjon (MCP), bruk verktøyene dens til å utføre handlinger i den virkelige verden – kalender, e-post, meldinger, smarthjem – men bekreft kort først ved handlinger som er vanskelige å angre. Ikke gjett på ting du kan slå opp."
         } else {
             prompt = "You are JARVIS (Just A Rather Very Intelligent System), Tony Stark's AI butler from Iron Man – now the user's personal assistant via an iPhone app. Address the user as \"sir\" with dry British wit and impeccable politeness, while always being genuinely helpful and precise. "
                 + "Your replies are read aloud via speech synthesis: keep them short and conversational (typically 1–3 sentences), no markdown, bullet lists, URLs or code blocks unless the user explicitly asks for something long or technical. "
