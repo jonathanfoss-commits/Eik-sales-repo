@@ -25,3 +25,4 @@ AI-nybegynnere i små og mellomstore bedrifter: håndverkere, klinikker, butikke
 | [04 – Go-to-market](konsept/04-go-to-market.md) | Målgrupper, kanaler, pilotstrategi |
 | [05 – Roadmap og MVP](konsept/05-roadmap-mvp.md) | 12-ukers plan fra konsept til betalende kunder |
 | [Pitch / landingsside](pitch/landing.html) | Salgbar landingsside-prototype |
+| [Pilot #1 — Ole Fabian / OP Bygg](pilot/ole-fabian-op-bygg/README.md) | Første testkunde: 14-dagers opplegg for prosjektleder i totalentreprenør |
