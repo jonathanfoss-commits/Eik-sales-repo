@@ -99,12 +99,12 @@ fordi [grunn]» — prompt 5 holder tonen fast og profesjonell så han slipper �
 | **8–9** | Ta i bruk **verktøy 3**: dokumentér ALLE endringer skriftlig samme dag. | 5 min/stk |
 | **10** | **Verktøy 5**: send de tre purringene som har ligget og ventet. | 10 min |
 | **12 (fre)** | Ukesrapport nr. 2 — nå går den på autopilot. | 10 min |
-| **14** | **Evaluering med Eik:** Hvilke verktøy brukte han? Timer spart? Hva manglet? | 30 min |
+| **14** | **Evalueringsmøte med Jonathan:** Hvilke verktøy brukte han? Timer spart? Hva manglet? | 30 min |
 
 **Realistisk gevinst etter 14 dager:** 4–7 timer spart per uke, alle endringer dokumentert,
 og null kveldsarbeid på referater og rapporter.
 
-## Hva Eik & Friends måler i piloten (Lærling-validering)
+## Hva selskapet måler i piloten (Lærling-validering)
 
 1. Hvilke av de 5 verktøyene ble faktisk brukt daglig? (= hvilke maler Lærling bygger først)
 2. Selvrapportert tid spart per uke (= tallet i ukesrapporten/prisingen)

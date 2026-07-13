@@ -25,7 +25,7 @@ Bygg minst mulig teknologi før verdien er bevist. Alt som kan gjøres manuelt b
 
 ## Uke 7–8: Pilot-start
 
-- [ ] 10 pilotkunder onboardet (fra Eiks nettverk).
+- [ ] 10 pilotkunder onboardet (fra eget nettverk og henvisninger).
 - [ ] Læringslogg: hver korrigering lagres og brukes i neste utkast.
 - [ ] Ukesrapport v1 (kan være halvmanuell).
 

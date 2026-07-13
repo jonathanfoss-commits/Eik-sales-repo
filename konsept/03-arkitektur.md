@@ -45,7 +45,7 @@ Der «utvikler»-løftet innfris — uten at kunden ser kode.
 - **Bransjemal-bibliotek:** 8–12 velprøvde verktøysmaler per vertikal (tilbudsgenerator, booking-svar, purreflyt, innholdskalender …). Maler = agentflyt + promptskjelett + integrasjonskrav.
 - **Skreddersøm-agent:** en byggeagent (Claude Agent SDK) instansierer malen med kundens bedriftsprofil, kobler integrasjoner, og genererer testkjøringer på kundens egne historiske data («slik ville tilbudet til Hansen sett ut»).
 - **Godkjenningsflyt:** kunden ser 2–3 testeksempler og aktiverer med ett klikk. Ingen konfigurasjonsskjermer.
-- **Egendefinerte verktøy (Pro):** byggeagenten kan komponere nye flyter utenfor malbiblioteket, med menneskelig kvalitetssjekk fra Eik-teamet før aktivering.
+- **Egendefinerte verktøy (Pro):** byggeagenten kan komponere nye flyter utenfor malbiblioteket, med menneskelig kvalitetssjekk før aktivering.
 
 ## 4. Driftsmotoren (Operations Runtime)
 

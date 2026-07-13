@@ -21,7 +21,7 @@ Prising forankres i **timer spart**, ikke i teknologi. Referansepunkt: en ansatt
 - **Oppstartspakke** (valgfri, engang): 4 900 kr — prioritert onboarding med menneske i loopen. Dekker CAC og øker aktivering.
 - **Enterprise/kjede**: fra 25 000 kr/mnd — flere avdelinger, felles profil, SLA, databehandleravtale tilpasset konsern.
 
-## Partnerspor (viktig for Eik & Friends)
+## Partnerspor (viktigste vekstkanal)
 
 - **Byrå-/regnskapspartner:** partneren selger Lærling til sin kundeportefølje, 20 % livstids-revshare. Regnskapsførere og byråer *er* distribusjonskanalen til SMB-Norge.
 - **White label** (fase 2): partnere kan tilby «[Byrånavn] AI-assistent» drevet av Lærling.

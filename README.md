@@ -1,6 +1,6 @@
 # Lærling — AI-medarbeideren som bygger seg selv rundt bedriften din
 
-> Abonnementstjeneste fra Eik & Friends (arbeidstittel: **Lærling**)
+> Abonnementstjeneste under utvikling som eget selskap (arbeidstittel: **Lærling**)
 
 **Én setning:** Lærling er en AI-agent som undersøker bedriften din, lærer hvordan du jobber, og deretter *utvikler og drifter* skreddersydde AI-verktøy og automasjoner for deg — helt uten at du trenger å kunne noe om AI.
 
@@ -26,3 +26,14 @@ AI-nybegynnere i små og mellomstore bedrifter: håndverkere, klinikker, butikke
 | [05 – Roadmap og MVP](konsept/05-roadmap-mvp.md) | 12-ukers plan fra konsept til betalende kunder |
 | [Pitch / landingsside](pitch/landing.html) | Salgbar landingsside-prototype |
 | [Pilot #1 — Ole Fabian / OP Bygg](pilot/ole-fabian-op-bygg/README.md) | Første testkunde: 14-dagers opplegg for prosjektleder i totalentreprenør |
+
+## Eget selskap (start her)
+
+Konseptet realiseres som Jonathans eget selskap — adskilt fra arbeidsgiver.
+Oppstartsplanen ligger i [`eget-selskap/`](eget-selskap/README.md):
+
+| Dokument | Innhold |
+|---|---|
+| [Oppstartsplan](eget-selskap/README.md) | Steg for steg fra idé til første faktura |
+| [Tjenester og priser](eget-selskap/tjenester-og-priser.md) | Tjenestetrapp: oppstartspakke → abonnement → automasjon |
+| [Første 90 dager](eget-selskap/forste-90-dager.md) | Uke-for-uke-plan med milepæler og beslutningspunkt |

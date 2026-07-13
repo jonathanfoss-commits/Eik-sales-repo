@@ -11,13 +11,13 @@ Vi selger ikke «AI-verktøy» — vi selger **en ansettelse**. Språket i all m
 1. **Håndverksbedrifter (2–20 ansatte).** Høy timepris, mye repetitiv admin (tilbud, purring, dokumentasjon), lav digital modenhet = størst opplevd magi. Tydelig ROI-historie.
 2. **Klinikker og salonger.** Booking-tunge, taper penger på no-shows, skriver samme meldinger daglig.
 3. **Regnskapsførere og rådgivere.** Både kunde *og* distribusjonskanal (partnerspor).
-4. **Små byråer og kreative.** Eik & Friends' eget nettverk — naturlig pilotgruppe.
+4. **Små byråer og kreative.** Nære nettverk — naturlig pilotgruppe.
 
 ## Fase 1: Pilot (måned 1–3)
 
-- **10 pilotkunder** fra Eiks eksisterende nettverk og kundeportefølje, 2–3 per vertikal.
+- **10 pilotkunder** fra eget nettverk og henvisninger, 2–3 per vertikal. Pilot #1 (OP Bygg) er allerede i gang.
 - Gratis i 8 uker mot: ukentlig tilbakemelding, målt tidsbruk før/etter, og case-historie med navn og tall.
-- «Concierge-MVP»: der teknologien ikke er ferdig, gjør Eik-teamet jobben manuelt bak kulissene. Kunden opplever sluttproduktet; vi lærer hva som må automatiseres først.
+- «Concierge-MVP»: der teknologien ikke er ferdig, gjøres jobben manuelt bak kulissene. Kunden opplever sluttproduktet; vi lærer hva som må automatiseres først.
 - **Suksesskriterium:** ≥7 av 10 piloter vil betale Vekst-pris ved pilotslutt.
 
 ## Fase 2: Betalt lansering (måned 4–9)
