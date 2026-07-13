@@ -70,6 +70,8 @@
      display:none;white-space:pre-line}
   .utkast.open .full{display:block}
   .utkast.open .prev{display:none}
+  .mailknapp{display:none;text-align:center;margin-top:10px}
+  .utkast.open .mailknapp{display:block}
   .rad{display:flex;gap:10px;margin-top:12px}
   .knapp{flex:1;text-align:center;font-weight:650;font-size:.88rem;padding:11px 8px;
      border-radius:11px;color:#04110B;
@@ -248,6 +250,11 @@
 </head>
 <body>
 
+<!-- Netlify Forms: fanger pilotlogg-hendelser uten backend -->
+<form name="pilotlogg" netlify netlify-honeypot="bot-field" hidden>
+  <input name="bot-field"><input name="hendelse"><input name="detalj"><input name="tid">
+</form>
+
 <div class="app">
 
   <div class="topp">
@@ -385,6 +392,21 @@ Mvh Ole Fabian, OP Bygg AS</div>
         <li><span class="hake"></span>1 ukesrapport til byggherre<span class="auto">AUTO</span></li>
       </ul>
     </div>
+    <a class="knapp svak" id="rapport-lenke" href="rapport.html"
+       style="display:none;text-align:center;margin-top:4px">Se hele mulighetsrapporten din</a>
+
+    <div class="sek-tittel">Din tilbakemelding lærer opp Lærling</div>
+    <div class="kort" id="tilbake">
+      <div class="rad" style="margin-top:0">
+        <button class="knapp svak" data-tommel="Nyttig 👍">👍 Nyttig</button>
+        <button class="knapp svak" data-tommel="Ikke helt 👎">👎 Ikke helt</button>
+      </div>
+      <textarea id="tilbake-tekst" placeholder="Hva savner du? Hva var bra? (valgfritt)"
+        style="width:100%;margin-top:10px;background:rgba(0,0,0,.25);border:1px solid var(--strek);
+        border-radius:10px;color:var(--lys);font:inherit;font-size:.86rem;padding:10px 12px;
+        min-height:64px;resize:vertical"></textarea>
+      <button class="knapp" id="tilbake-send" style="width:100%;margin-top:10px">Send til Jonathan</button>
+    </div>
   </div>
 
   <!-- ── VERKTØY ── -->
@@ -422,6 +444,8 @@ Mvh Ole Fabian, OP Bygg AS</div>
     <div class="sek-tittel">Prompter — kopier, lim i Claude, dikter</div>
     <div class="kort" id="prompt-liste"></div>
 
+    <a class="nullstill" style="margin-bottom:-16px"
+       href="mailto:jonathan.foss@eikandfriends.no?subject=L%C3%A6rling-pilot%20%E2%80%94%20sp%C3%B8rsm%C3%A5l">Trenger du hjelp? Send melding til Jonathan</a>
     <button class="nullstill" id="nullstill">Nullstill demoen</button>
   </div>
 
@@ -467,6 +491,8 @@ Mvh Ole Fabian, OP Bygg AS</div>
     <p>Hei Ole Fabian! Dette er din nye <b>AI-medarbeider</b>. Skjermene viser hvordan
     hverdagen blir — og <b>veiviseren gjør deg klar til å teste på ordentlig i dag</b>,
     helt gratis.</p>
+    <p style="font-size:.72rem;margin-top:-12px">Pilotversjonen logger anonym bruksstatistikk
+    (hvilke verktøy som brukes — aldri innhold), så Lærling lærer av testingen din.</p>
     <button class="knapp" id="velkomst-start" style="width:100%;margin-bottom:10px">Start veiviseren (2 min)</button>
     <button class="knapp svak" id="velkomst-lukk" style="width:100%">Utforsk demoen først</button>
   </div>
@@ -535,25 +561,56 @@ Mvh Ole Fabian, OP Bygg AS</div>
   function lagre(){ try{ localStorage.setItem("laerling", JSON.stringify(lager)); }catch(e){} }
 
   /* ── innhold: bedriftsprofil og prompter (det som gjør appen ekte) ── */
-  var PROFIL = "Du er assistenten til Ole Fabian Foss, prosjektleder i OP Bygg AS - en totalentreprenor i Oslo med rundt 11 ansatte. OP Bygg leverer renovering, oppussing og nybygg for bolig, kontor og naering, og profilerer seg pa ryddig prosjektstyring. Ole Fabian har bakgrunn som tomrer og snakker praktisk og direkte.\n\nDIN JOBB: Hjelpe med skriftlig arbeid: e-poster til kunder og byggherrer, tilbudsgrunnlag etter befaring, motereferater, endringsmeldinger, ukesrapporter, byggedagbok og purringer til underentreprenorer. Ole Fabian dikterer ofte ratt og ustrukturert - gjor det om til ryddig, profesjonell tekst.\n\nSKRIVESTIL: Norsk bokmal. Kort, tydelig og jordnaer. Hoflig men rett pa sak. E-poster starter med 'Hei [navn]' og slutter med 'Mvh, Ole Fabian Foss, Prosjektleder, OP Bygg AS'.\n\nFAGREGLER:\n- Skill mellom kundetyper: proffkunder folger NS-kontrakten (NS 8407/8417 totalentreprise, NS 8405/8406 ellers). Forbrukerkunder beskyttes av ufravikelige regler (bustadoppforingslova for nybygg, handverkertjenesteloven for arbeid pa bolig). Ukjent kundetype? Sporr.\n- Endringer mot proffkunde: noytralt varsel forst, SAMME DAG - fristen 'uten ugrunnet opphold' i NS 8407 er dager, ikke uker. Varsle alltid konsekvens for pris OG fremdrift.\n- Tilbud: skill tydelig mellom 'inkludert', 'forutsetninger' og 'forbehold'. Ta med forbehold om skjulte feil ved renovering av eldre bygg.\n- Motereferater: nummererte aksjonspunkter med ansvarlig og frist. Avslutt med 'Innsigelser til referatet meldes innen 3 virkedager.'\n- Ukesrapport: 1) Utfort denne uken 2) Fremdrift mot plan 3) Avvik 4) Plan neste uke 5) Avklaringer vi trenger.\n- Byggedagbok: dato/prosjekt, vaer, mannskap, utfort arbeid, leveranser, hindringer, beskjeder fra byggherre. Kort og faktabasert.\n\nALLTID: Lever ferdig tekst som kan sendes. Mangler noe (navn, datoer, belop), sett [KLAMMER] i stedet for a gjette. Maks ett oppklarende sporsmal.";
+  var PROFIL = "Du er assistenten til Ole Fabian Foss, prosjektleder i OP Bygg AS — en totalentreprenør i Oslo med rundt 11 ansatte. OP Bygg leverer renovering, oppussing og nybygg for bolig, kontor og næring, og profilerer seg på ryddig prosjektstyring. Ole Fabian har bakgrunn som tømrer og snakker praktisk og direkte.\n\nDIN JOBB: Hjelpe med skriftlig arbeid: e-poster til kunder og byggherrer, tilbudsgrunnlag etter befaring, møtereferater, endringsmeldinger, ukesrapporter, byggedagbok og purringer til underentreprenører. Ole Fabian dikterer ofte rått og ustrukturert — gjør det om til ryddig, profesjonell tekst.\n\nSKRIVESTIL: Norsk bokmål. Kort, tydelig og jordnær. Høflig men rett på sak. E-poster starter med «Hei [navn]» og slutter med «Mvh, Ole Fabian Foss, Prosjektleder, OP Bygg AS».\n\nFAGREGLER:\n- Skill mellom kundetyper: proffkunder følger NS-kontrakten (NS 8407/8417 totalentreprise, NS 8405/8406 ellers). Forbrukerkunder beskyttes av ufravikelige regler (bustadoppføringslova for nybygg, håndverkertjenesteloven for arbeid på bolig). Ukjent kundetype? Spør.\n- Endringer mot proffkunde: nøytralt varsel først, SAMME DAG — fristen «uten ugrunnet opphold» i NS 8407 er dager, ikke uker. Varsle alltid konsekvens for pris OG fremdrift.\n- Tilbud: skill tydelig mellom «inkludert», «forutsetninger» og «forbehold». Ta med forbehold om skjulte feil ved renovering av eldre bygg.\n- Møtereferater: nummererte aksjonspunkter med ansvarlig og frist. Avslutt med «Innsigelser til referatet meldes innen 3 virkedager.»\n- Ukesrapport: 1) Utført denne uken 2) Fremdrift mot plan 3) Avvik 4) Plan neste uke 5) Avklaringer vi trenger.\n- Byggedagbok: dato/prosjekt, vær, mannskap, utført arbeid, leveranser, hindringer, beskjeder fra byggherre. Kort og faktabasert.\n\nALLTID: Lever ferdig tekst som kan sendes. Mangler noe (navn, datoer, beløp), sett [KLAMMER] i stedet for å gjette. Maks ett oppklarende spørsmål.";
   var PROMPTER = [
     { t:"Befaring → tilbud", s:"Diktér notatene fra befaringen",
-      p:"Jeg har vaert pa befaring. Her er notatene mine (diktert, ustrukturert): [dikter alt du husker: adresse, hva som skal gjores, mal, tilstand, kundens onsker, mulige problemer]. Lag 1) en oppsummerings-e-post til kunden og 2) et internt tilbudsgrunnlag med omfang, forutsetninger og forbehold." },
+      p:"Jeg har vært på befaring. Her er notatene mine (diktert, ustrukturert): [dikter alt du husker: adresse, hva som skal gjøres, mål, tilstand, kundens ønsker, mulige problemer]. Lag 1) en oppsummerings-e-post til kunden og 2) et internt tilbudsgrunnlag med omfang, forutsetninger og forbehold." },
     { t:"Byggemøte → referat", s:"Diktér hovedpunktene etter møtet",
-      p:"Byggemote [dato] pa [prosjekt]. Til stede: [navn/firma]. Notater: [dikter hovedpunktene]. Lag et byggemotereferat med nummererte aksjonspunkter (ansvarlig + frist), klart til a sendes alle deltakere." },
+      p:"Byggemøte [dato] på [prosjekt]. Til stede: [navn/firma]. Notater: [dikter hovedpunktene]. Lag et byggemøtereferat med nummererte aksjonspunkter (ansvarlig + frist), klart til å sendes alle deltakere." },
     { t:"Endringsmelding", s:"Bruk SAMME DAG som endringen oppstår",
-      p:"Det har oppstatt en endring pa [prosjekt]. Kontraktstype: [NS 8407 / annet / vet ikke]. Hva som er endret: [dikter: hva, hvorfor, konsekvens for pris og tid]. Skriv en formell endringsmelding til byggherren. Ukjent belop? Varsle at konsekvens folger nar det er avklart." },
+      p:"Det har oppstått en endring på [prosjekt]. Kontraktstype: [NS 8407 / annet / vet ikke]. Hva som er endret: [dikter: hva, hvorfor, konsekvens for pris og tid]. Skriv en formell endringsmelding til byggherren. Ukjent beløp? Varsle at konsekvens følger når det er avklart." },
     { t:"Ukesrapport", s:"Fredag ettermiddag, 2 min diktering",
-      p:"Ukesrapport for [prosjekt], uke [nr]: [dikter: hva som ble gjort, status mot plan, avvik, plan neste uke, hva du venter pa fra byggherren]. Sett opp i standard ukesrapport-struktur." },
+      p:"Ukesrapport for [prosjekt], uke [nr]: [dikter: hva som ble gjort, status mot plan, avvik, plan neste uke, hva du venter på fra byggherren]. Sett opp i standard ukesrapport-struktur." },
     { t:"Purring til UE", s:"Vennlig, men tydelig",
       p:"Skriv en purring til [firma/navn] om [pristilbud/tegninger/leveranse]. Bakgrunn: [dikter kort historikk og hvorfor det haster]. Vennlig tone, men tydelig frist [dato] og konsekvens." },
     { t:"Byggedagbok", s:"30 sekunder på slutten av dagen",
-      p:"Byggedagbok [prosjekt], [dato]: [dikter: hvem som var pa plassen, hva som ble gjort, vaer, leveranser, hindringer, beskjeder fra byggherre]. For dette som strukturert dagboknotat." }
+      p:"Byggedagbok [prosjekt], [dato]: [dikter: hvem som var på plassen, hva som ble gjort, vær, leveranser, hindringer, beskjeder fra byggherre]. Før dette som strukturert dagboknotat." }
   ];
+
+  /* ── pilotlogg: lærer automatisk av testingen (Netlify Forms, gratis) ──
+     Logger kun hendelsestyper — aldri innholdet i utkast eller dikteringer. */
+  function loggHendelse(hendelse, detalj){
+    if(location.protocol === "file:") return;
+    var post = { "form-name": "pilotlogg", hendelse: hendelse,
+                 detalj: detalj || "", tid: new Date().toISOString() };
+    var kropp = Object.keys(post).map(function(k){
+      return encodeURIComponent(k) + "=" + encodeURIComponent(post[k]); }).join("&");
+    fetch("/", { method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: kropp
+    }).then(function(svar){ if(!svar.ok) buffre(post); }, function(){ buffre(post); });
+  }
+  function buffre(post){ lager.logg = (lager.logg || []).concat([post]); lagre(); }
+  /* send bufrede hendelser når nettet er tilbake */
+  function tomBuffer(){
+    var ventende = lager.logg || [];
+    if(!ventende.length || location.protocol === "file:") return;
+    lager.logg = []; lagre();
+    ventende.forEach(function(post){
+      var kropp = Object.keys(post).map(function(k){
+        return encodeURIComponent(k) + "=" + encodeURIComponent(post[k]); }).join("&");
+      fetch("/", { method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: kropp
+      }).then(function(svar){ if(!svar.ok) buffre(post); }, function(){ buffre(post); });
+    });
+  }
+  addEventListener("online", tomBuffer);
+  tomBuffer();
+  loggHendelse("åpnet", navigator.standalone ? "hjemskjerm" : "nettleser");
 
   /* kopier-hjelper med fallback for eldre Safari */
   function kopier(tekst, hva){
-    function bekreft(){ siFra("<b>✓</b> " + hva + " kopiert — lim inn i Claude"); }
+    function bekreft(){ siFra("<b>✓</b> " + hva + " kopiert — lim inn i Claude");
+      loggHendelse("kopiert", hva); }
     if(navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(tekst).then(bekreft, fallback);
     } else { fallback(); }
@@ -575,7 +632,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
     rad.innerHTML = '<div class="t">' + pr.t + '<small>' + pr.s + '</small></div>';
     var kn = document.createElement("button");
     kn.className = "kopier"; kn.textContent = "KOPIER";
-    kn.addEventListener("click", function(){ kopier(pr.p, "Prompten"); });
+    kn.addEventListener("click", function(){ kopier(pr.p, "«" + pr.t + "»"); });
     rad.appendChild(kn);
     prListe.appendChild(rad);
   });
@@ -596,7 +653,8 @@ Mvh Ole Fabian, OP Bygg AS</div>
     document.getElementById("hjem-tekst").innerHTML =
       "<b>✓ Allerede gjort</b> — du er i fullskjerm-appen nå.";
   }
-  function stegGjort(navn){ lager.veiviser[navn] = 1; lagre(); visSteg(); }
+  function stegGjort(navn){ lager.veiviser[navn] = 1; lagre(); visSteg();
+    loggHendelse("veiviser-steg", navn); }
   document.querySelectorAll("[data-steg]").forEach(function(el){
     el.addEventListener("click", function(){ stegGjort(el.dataset.steg); });
   });
@@ -615,6 +673,32 @@ Mvh Ole Fabian, OP Bygg AS</div>
     siFra("<b>✓</b> Lærling er klar — lykke til!");
   });
   visSteg();
+
+  /* tilbakemeldingskortet */
+  var tommel = "";
+  document.querySelectorAll("[data-tommel]").forEach(function(k){
+    k.addEventListener("click", function(){
+      tommel = k.dataset.tommel;
+      document.querySelectorAll("[data-tommel]").forEach(function(x){
+        x.style.borderColor = x === k ? "rgba(57,226,155,.6)" : ""; });
+    });
+  });
+  document.getElementById("tilbake-send").addEventListener("click", function(){
+    var tekst = document.getElementById("tilbake-tekst").value.trim();
+    if(!tommel && !tekst){ siFra("Velg 👍/👎 eller skriv noen ord først"); return; }
+    loggHendelse("tilbakemelding", (tommel + " " + tekst).trim());
+    document.getElementById("tilbake").innerHTML =
+      '<p style="text-align:center;color:var(--dis);font-size:.9rem;padding:8px 0">' +
+      '<b style="color:var(--lys)">Takk!</b> Tilbakemeldingen er sendt til Jonathan ' +
+      'og brukes til å gjøre Lærling bedre.</p>';
+  });
+
+  /* vis rapport-lenken kun der rapporten faktisk er publisert sammen med appen */
+  if(location.protocol !== "file:"){
+    fetch("rapport.html", { method: "HEAD" }).then(function(svar){
+      if(svar.ok) document.getElementById("rapport-lenke").style.display = "block";
+    }).catch(function(){});
+  }
 
   /* velkomst første gang */
   var velkomst = document.getElementById("velkomst");
@@ -677,6 +761,15 @@ Mvh Ole Fabian, OP Bygg AS</div>
   /* godkjenning */
   var antall = document.getElementById("antall");
   function kobleUtkast(kort){
+    /* broen til virkeligheten: utkastet rett inn i Mail-appen */
+    var mailkn = document.createElement("a");
+    mailkn.className = "knapp svak mailknapp";
+    mailkn.textContent = "Åpne i Mail-appen";
+    mailkn.href = "mailto:?subject=" + encodeURIComponent(kort.querySelector("h3").textContent)
+      + "&body=" + encodeURIComponent(kort.querySelector(".full").textContent);
+    mailkn.addEventListener("click", function(){
+      loggHendelse("åpnet-i-mail", kort.querySelector(".badge").textContent); });
+    kort.querySelector(".full").insertAdjacentElement("afterend", mailkn);
     kort.querySelector(".se").addEventListener("click", function(){
       kort.classList.toggle("open");
       this.textContent = kort.classList.contains("open") ? "Skjul" : "Se utkast";
@@ -685,6 +778,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
       kort.classList.add("borte");
       lager.godkjent = (lager.godkjent || []).concat(kort.querySelector("h3").textContent);
       lagre();
+      loggHendelse("godkjent", kort.querySelector(".badge").textContent);
       setTimeout(function(){
         var li = document.createElement("li");
         li.innerHTML = '<span class="hake"></span>' + kort.querySelector("h3").textContent;
@@ -745,6 +839,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
       k.classList.toggle("auto", !auto);
       lager.moduser = lager.moduser || {};
       lager.moduser[navn] = k.dataset.modus; lagre();
+      loggHendelse("modus", navn + " → " + k.dataset.modus);
       siFra(auto ? "Verktøyet lager nå <b>utkast</b> du godkjenner"
                  : "<b>Autopilot på</b> — kjører uten godkjenning");
     });
@@ -771,6 +866,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
   function lukkArk(){ dikter.classList.remove("apen"); }
   document.getElementById("ark-bak").addEventListener("click", lukkArk);
   mik.addEventListener("click", function(){
+    loggHendelse("dikter-åpnet");
     dikter.classList.add("apen");
     transkript.innerHTML = '<span class="peker"></span>';
     lyttStatus.textContent = "Lytter …";

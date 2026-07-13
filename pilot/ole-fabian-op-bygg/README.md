@@ -127,6 +127,19 @@ fordi [grunn]» — prompt 5 holder tonen fast og profesjonell så han slipper �
 **Realistisk gevinst etter 14 dager:** 4–7 timer spart per uke, alle endringer dokumentert,
 og null kveldsarbeid på referater og rapporter.
 
+## Automatisk læring fra testingen (pilotloggen)
+
+Appen logger brukshendelser automatisk via **Netlify Forms** (gratis, ingen backend):
+åpninger, veiviser-fremdrift, hvilke prompter som kopieres, godkjenninger, modusbytter,
+«åpnet i Mail», og tilbakemeldinger fra 👍/👎-kortet på Rapport-fanen. Kun hendelsestyper
+logges — aldri innholdet i utkast eller dikteringer, og appen opplyser om loggingen i
+velkomstskjermen.
+
+**Slik leser du dataene:** Netlify-dashbordet → siten → **Forms → pilotlogg**. Slå på
+e-postvarsling (Form notifications) så hver tilbakemelding lander i innboksen din.
+Sjekk loggen før dag 14-evalueringen — den forteller deg hvilke verktøy han faktisk brukte,
+uavhengig av hva han husker å si.
+
 ## Hva selskapet måler i piloten (Lærling-validering)
 
 1. Hvilke av de 5 verktøyene ble faktisk brukt daglig? (= hvilke maler Lærling bygger først)
