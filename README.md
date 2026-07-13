@@ -26,6 +26,12 @@ innebygde talegjenkjenning og talesyntese.
 - 🗣️ **Våkneord** – valgfri «Jarvis …»-modus med kontinuerlig lytting
 - 👂 **Live-transkripsjon** – se ordene dine mens du snakker, radar-ringer rundt reaktoren
 - ⌨️ Tekstfelt som alternativ til tale
+- 🚀 **Boot-sekvens** – kinematisk oppstartsanimasjon à la Iron Man (én gang per økt, trykk for å hoppe over)
+- 📰 **Hurtigknapper** – «Dagens briefing» (dato + vær + nyheter opplest), været, timer, hjelp
+- 💸 **Kostnadsteller** – se tokens og estimert kostnad under ⚙ OPPSETT, med nullstilling
+- 🎚️ **Talehastighet** – juster hvor fort Jarvis snakker
+- 🔁 **Auto-retry** – prøver automatisk på nytt ved overbelastet API (429/5xx)
+- 📄 **Eksporter samtalen** som tekstfil; lenker i svar er klikkbare
 - 📵 Appskallet fungerer offline (API-kall krever selvsagt nett)
 - 🔐 API-nøkkelen lagres kun lokalt på enheten din
 
@@ -105,6 +111,19 @@ Jarvis er instruert til å bekrefte før handlinger som er vanskelige å angre (
 | `manifest.webmanifest` | PWA-manifest (gjør at den kan installeres som app) |
 | `sw.js` | Service worker – cacher appskallet for offline-oppstart |
 | `icons/` | Arc reactor-ikoner (192/512 px + apple-touch-icon) |
+
+## Testing 🧪
+
+`tests/e2e.js` er en full ende-til-ende-suite (Playwright) som mocker Claude API-strømmen
+og verifiserer hele den agentiske løkka uten API-nøkkel — 10 scenarier: tekststrømming,
+verktøykall med tool_result-runder, pause_turn-gjenopptak, feilhåndtering med rollback,
+historikk-trimming, auto-retry, kostnadsmåling, hurtigknapper, lenke-rendering og boot-sekvens.
+
+```bash
+python3 -m http.server 8130 &        # server appen
+npm i playwright                     # + nettlesere: npx playwright install chromium
+node tests/e2e.js                    # ALL TESTS PASSED
+```
 
 ## Vær oppmerksom på
 
