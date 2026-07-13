@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>Lærling</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lærling">
+<meta name="theme-color" content="#070D12">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+  :root{
+    --bunn:#070D12; --flate:#0D161E; --flate-2:#121F29;
+    --strek:rgba(140,190,190,.14); --lys:#E9F2EE; --dis:#93A8AA;
+    --aurora-a:#39E29B; --aurora-b:#2FC4D9;
+    --graf:#1F9E66; /* validert mot mørk flate */
+    --sans:-apple-system,"Segoe UI",system-ui,Roboto,sans-serif;
+    --mono:"SF Mono",ui-monospace,Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{background:var(--bunn);color:var(--lys);font-family:var(--sans);line-height:1.5;
+       overscroll-behavior:none}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;background:
+     radial-gradient(120% 50% at 50% 0%,rgba(31,158,102,.14),transparent 60%),var(--bunn)}
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+  button:focus-visible{outline:2px solid var(--aurora-a);outline-offset:2px;border-radius:8px}
+
+  .app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;
+       padding:calc(14px + env(safe-area-inset-top)) 18px calc(96px + env(safe-area-inset-bottom))}
+
+  /* topp */
+  .topp{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .hilsen b{display:block;font-size:1.35rem;font-weight:750;letter-spacing:-.02em}
+  .hilsen span{font-size:.8rem;color:var(--dis)}
+  .status{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);
+     font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--aurora-a);
+     border:1px solid rgba(57,226,155,.3);border-radius:99px;padding:6px 12px}
+  .puls{width:7px;height:7px;border-radius:50%;background:var(--aurora-a);
+     box-shadow:0 0 8px var(--aurora-a);animation:puls 2s ease-in-out infinite}
+  @keyframes puls{50%{opacity:.35}}
+
+  /* seksjoner */
+  .sek-tittel{font-family:var(--mono);font-size:.64rem;letter-spacing:.16em;
+     text-transform:uppercase;color:var(--dis);margin:22px 0 10px}
+  .sek-tittel b{color:var(--aurora-a);font-weight:600}
+  .kort{background:var(--flate);border:1px solid var(--strek);border-radius:16px;
+     padding:16px;margin-bottom:10px;transition:opacity .35s,transform .35s,margin .35s,max-height .35s}
+  .kort.borte{opacity:0;transform:translateX(60px)}
+
+  /* utkast-kort */
+  .badge{display:inline-block;font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;
+     color:var(--aurora-b);border:1px solid rgba(47,196,217,.35);border-radius:6px;
+     padding:2px 8px;margin-bottom:8px}
+  .utkast h3{font-size:.98rem;font-weight:650;margin-bottom:4px}
+  .utkast .prev{font-size:.86rem;color:var(--dis);display:-webkit-box;-webkit-line-clamp:2;
+     -webkit-box-orient:vertical;overflow:hidden}
+  .utkast .full{font-size:.86rem;color:#C9D8D3;background:rgba(0,0,0,.25);
+     border:1px solid var(--strek);border-radius:10px;padding:10px 12px;margin-top:10px;
+     display:none;white-space:pre-line}
+  .utkast.open .full{display:block}
+  .utkast.open .prev{display:none}
+  .rad{display:flex;gap:10px;margin-top:12px}
+  .knapp{flex:1;text-align:center;font-weight:650;font-size:.88rem;padding:11px 8px;
+     border-radius:11px;color:#04110B;
+     background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b))}
+  .knapp:active{transform:scale(.97)}
+  .knapp.svak{background:var(--flate-2);color:var(--lys);border:1px solid var(--strek)}
+
+  /* utført-liste */
+  .gjort{list-style:none}
+  .gjort li{display:flex;align-items:center;gap:10px;padding:9px 2px;font-size:.88rem;
+     color:var(--dis);border-bottom:1px solid var(--strek)}
+  .gjort li:last-child{border-bottom:none}
+  .hake{width:18px;height:18px;flex:none;border-radius:50%;
+     background:rgba(57,226,155,.15);position:relative}
+  .hake::after{content:"";position:absolute;left:5px;top:4px;width:7px;height:4px;
+     border-left:2px solid var(--aurora-a);border-bottom:2px solid var(--aurora-a);
+     transform:rotate(-45deg)}
+  .gjort .auto{margin-left:auto;font-family:var(--mono);font-size:.58rem;
+     letter-spacing:.1em;color:var(--aurora-b)}
+
+  /* rapport */
+  .hero-tall{background:var(--flate);border:1px solid var(--strek);border-radius:16px;
+     padding:20px;text-align:center;margin-bottom:10px}
+  .hero-tall .n{font-size:3rem;font-weight:800;letter-spacing:-.03em;
+     font-variant-numeric:tabular-nums;
+     background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b));
+     -webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero-tall .l{font-size:.82rem;color:var(--dis)}
+  .graf-kort{background:var(--flate);border:1px solid var(--strek);border-radius:16px;
+     padding:16px;margin-bottom:10px}
+  .graf-kort h3{font-size:.9rem;font-weight:650;margin-bottom:2px}
+  .graf-kort .sub{font-size:.76rem;color:var(--dis);margin-bottom:12px}
+  .graf{position:relative}
+  .graf svg{display:block;width:100%;height:auto}
+  .tips{position:absolute;pointer-events:none;background:var(--flate-2);
+     border:1px solid var(--strek);border-radius:8px;padding:5px 10px;font-size:.74rem;
+     transform:translate(-50%,-115%);white-space:nowrap;opacity:0;transition:opacity .15s;
+     font-variant-numeric:tabular-nums}
+  .tips.vis{opacity:1}
+  .graf .stolpe{cursor:pointer}
+
+  /* verktøy */
+  .vk{display:flex;align-items:center;gap:12px}
+  .vk .info{flex:1;min-width:0}
+  .vk h3{font-size:.95rem;font-weight:650}
+  .vk p{font-size:.8rem;color:var(--dis)}
+  .modus{flex:none;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;
+     padding:7px 12px;border-radius:99px;border:1px solid var(--strek);color:var(--dis)}
+  .modus.auto{color:#04110B;border-color:transparent;font-weight:700;
+     background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b))}
+  .forslag{border:1px dashed rgba(57,226,155,.4);background:rgba(57,226,155,.05)}
+
+  /* faner */
+  .fane{display:none}
+  .fane.aktiv{display:block;animation:inn .25s ease}
+  @keyframes inn{from{opacity:0;transform:translateY(8px)}}
+  nav{position:fixed;left:0;right:0;bottom:0;z-index:40;
+     background:rgba(7,13,18,.85);backdrop-filter:blur(16px);
+     border-top:1px solid var(--strek);
+     padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
+  .nav-indre{max-width:520px;margin:0 auto;display:grid;
+     grid-template-columns:1fr 1fr 76px 1fr;align-items:center}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:3px;
+     font-size:.62rem;color:var(--dis);padding:6px 0}
+  .tab svg{width:22px;height:22px;stroke:currentColor;stroke-width:1.8;fill:none;
+     stroke-linecap:round;stroke-linejoin:round}
+  .tab.aktiv{color:var(--aurora-a)}
+  .mik{width:60px;height:60px;border-radius:50%;margin:-26px auto 0;display:flex;
+     align-items:center;justify-content:center;color:#04110B;
+     background:linear-gradient(135deg,var(--aurora-a),var(--aurora-b));
+     box-shadow:0 6px 24px rgba(57,226,155,.4)}
+  .mik svg{width:26px;height:26px;stroke:#04110B;stroke-width:2;fill:none;
+     stroke-linecap:round;stroke-linejoin:round}
+  .mik:active{transform:scale(.94)}
+
+  /* dikter-ark */
+  .ark-bak{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.55);
+     opacity:0;pointer-events:none;transition:opacity .25s}
+  .ark{position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:520px;margin:0 auto;
+     background:var(--flate-2);border:1px solid var(--strek);border-bottom:none;
+     border-radius:22px 22px 0 0;padding:22px 20px calc(26px + env(safe-area-inset-bottom));
+     transform:translateY(105%);transition:transform .3s cubic-bezier(.3,.9,.3,1)}
+  .apen .ark{transform:none}
+  .apen .ark-bak{opacity:1;pointer-events:auto}
+  .ark .hank{width:38px;height:4px;border-radius:2px;background:var(--strek);margin:0 auto 18px}
+  .lytter{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+  .mik-stor{width:74px;height:74px;border-radius:50%;position:relative;display:flex;
+     align-items:center;justify-content:center;
+     background:linear-gradient(135deg,var(--aurora-a),var(--aurora-b))}
+  .mik-stor::before,.mik-stor::after{content:"";position:absolute;inset:0;border-radius:50%;
+     border:2px solid rgba(57,226,155,.5);animation:ring 2s ease-out infinite}
+  .mik-stor::after{animation-delay:1s}
+  @keyframes ring{to{transform:scale(1.9);opacity:0}}
+  .mik-stor svg{width:30px;height:30px;stroke:#04110B;stroke-width:2;fill:none;
+     stroke-linecap:round;stroke-linejoin:round}
+  .lytter .txt{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;
+     text-transform:uppercase;color:var(--aurora-a)}
+  .transkript{width:100%;min-height:74px;background:rgba(0,0,0,.3);border:1px solid var(--strek);
+     border-radius:12px;padding:12px 14px;font-size:.88rem;color:#C9D8D3;text-align:left}
+  .transkript .peker{display:inline-block;width:6px;height:13px;background:var(--aurora-a);
+     vertical-align:-2px;animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:calc(110px + env(safe-area-inset-bottom));z-index:70;
+     transform:translate(-50%,20px);background:var(--flate-2);border:1px solid rgba(57,226,155,.4);
+     color:var(--lys);border-radius:99px;padding:10px 20px;font-size:.86rem;font-weight:600;
+     opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap}
+  .toast.vis{opacity:1;transform:translate(-50%,0)}
+  .toast b{color:var(--aurora-a)}
+
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="topp">
+    <div class="hilsen"><b id="hilsen">God morgen, Ole Fabian</b>
+      <span id="dato"></span></div>
+    <div class="status"><span class="puls"></span>Arbeider</div>
+  </div>
+
+  <!-- ── I DAG ── -->
+  <div class="fane aktiv" id="fane-idag">
+    <div class="sek-tittel">Til godkjenning · <b id="antall">3</b></div>
+    <div id="utkast-liste">
+
+      <div class="kort utkast">
+        <span class="badge">E-POST</span>
+        <h3>Tilbud — vindusutskifting, Berg</h3>
+        <p class="prev">Hei, og takk for hyggelig befaring i dag. Dette ble vi enige om: utskifting av 12 vinduer, utbedring av råteskade…</p>
+        <div class="full">Hei, og takk for hyggelig befaring i dag.
+
+Dette ble vi enige om:
+• Utskifting av 12 vinduer
+• Utbedring av råteskade i to karmer, sørvegg
+• Stillas i ca. én uke
+
+Fastpris-tilbud kommer innen fredag, som avtalt før påske.
+
+Mvh Ole Fabian, OP Bygg AS</div>
+        <div class="rad">
+          <button class="knapp godkjenn">Godkjenn og send</button>
+          <button class="knapp svak se">Se utkast</button>
+        </div>
+      </div>
+
+      <div class="kort utkast">
+        <span class="badge">ENDRINGSMELDING</span>
+        <h3>Varsel — skjult feil, Christian Krohgs gate</h3>
+        <p class="prev">Ved åpning av vegg i 2. etasje er det avdekket fuktskade som ikke fremgikk av tilstandsrapporten. Dette varsles som endring…</p>
+        <div class="full">Til byggherre
+
+Ved åpning av vegg i 2. etasje er det avdekket fuktskade som ikke fremgikk av tilstandsrapporten.
+
+Dette varsles som endring iht. NS 8407. Konsekvens for pris og fremdrift avklares og oversendes så snart omfanget er kartlagt, senest innen 3 virkedager.
+
+Mvh Ole Fabian, OP Bygg AS</div>
+        <div class="rad">
+          <button class="knapp godkjenn">Godkjenn og send</button>
+          <button class="knapp svak se">Se utkast</button>
+        </div>
+      </div>
+
+      <div class="kort utkast">
+        <span class="badge">PURRING</span>
+        <h3>Purring — pristilbud fra Rørlegger'n AS</h3>
+        <p class="prev">Hei Kjetil, minner om pristilbudet på sanitæranlegget. Vi trenger svar innen onsdag for å holde fremdriftsplanen…</p>
+        <div class="full">Hei Kjetil,
+
+Minner om pristilbudet på sanitæranlegget. Vi trenger svar innen onsdag for å holde fremdriftsplanen — ellers må vi dessverre hente inn pris fra andre.
+
+Mvh Ole Fabian, OP Bygg AS</div>
+        <div class="rad">
+          <button class="knapp godkjenn">Godkjenn og send</button>
+          <button class="knapp svak se">Se utkast</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="sek-tittel">Utført i dag</div>
+    <div class="kort">
+      <ul class="gjort" id="gjort-liste">
+        <li><span class="hake"></span>Ukesrapport sendt til byggherre<span class="auto">AUTO</span></li>
+        <li><span class="hake"></span>2 booking-forespørsler besvart<span class="auto">AUTO</span></li>
+        <li><span class="hake"></span>Kvittering journalført på prosjekt 2411</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── RAPPORT ── -->
+  <div class="fane" id="fane-rapport">
+    <div class="hero-tall">
+      <div class="n">6,5 t</div>
+      <div class="l">spart denne uken · verdi ca. 3 900 kr</div>
+    </div>
+
+    <div class="graf-kort">
+      <h3>Timer spart per uke</h3>
+      <div class="sub">Siste 5 uker · trykk på en stolpe for detaljer</div>
+      <div class="graf" id="graf">
+        <svg viewBox="0 0 320 150" role="img" aria-label="Stolpediagram: timer spart per uke. Uke 24: 2,5. Uke 25: 3,5. Uke 26: 4,5. Uke 27: 5,5. Uke 28: 6,5 timer.">
+          <g stroke="rgba(140,190,190,.12)" stroke-width="1">
+            <line x1="8" y1="18" x2="312" y2="18"></line>
+            <line x1="8" y1="58" x2="312" y2="58"></line>
+            <line x1="8" y1="98" x2="312" y2="98"></line>
+            <line x1="8" y1="138" x2="312" y2="138"></line>
+          </g>
+          <g font-size="9" fill="#93A8AA" font-family="ui-monospace,monospace">
+            <text x="313" y="21" text-anchor="end" opacity=".8">6 t</text>
+            <text x="313" y="61" text-anchor="end" opacity=".8">4 t</text>
+            <text x="313" y="101" text-anchor="end" opacity=".8">2 t</text>
+          </g>
+          <!-- stolper: 20px brede, avrundet topp, forankret i grunnlinjen y=138. skala: 20px per time -->
+          <g id="stolper">
+            <path class="stolpe" data-uke="24" data-t="2,5" fill="#1F9E66" opacity=".45" d="M36 138 v-46 a4 4 0 0 1 4-4 h12 a4 4 0 0 1 4 4 v46 z"></path>
+            <path class="stolpe" data-uke="25" data-t="3,5" fill="#1F9E66" opacity=".45" d="M96 138 v-66 a4 4 0 0 1 4-4 h12 a4 4 0 0 1 4 4 v66 z"></path>
+            <path class="stolpe" data-uke="26" data-t="4,5" fill="#1F9E66" opacity=".45" d="M156 138 v-86 a4 4 0 0 1 4-4 h12 a4 4 0 0 1 4 4 v86 z"></path>
+            <path class="stolpe" data-uke="27" data-t="5,5" fill="#1F9E66" opacity=".45" d="M216 138 v-106 a4 4 0 0 1 4-4 h12 a4 4 0 0 1 4 4 v106 z"></path>
+            <path class="stolpe" data-uke="28" data-t="6,5" fill="#1F9E66" d="M276 138 v-126 a4 4 0 0 1 4-4 h12 a4 4 0 0 1 4 4 v126 z"></path>
+          </g>
+          <text x="286" y="2" font-size="10" fill="#E9F2EE" font-weight="600" text-anchor="middle" dominant-baseline="hanging">6,5 t</text>
+          <g font-size="9" fill="#93A8AA" text-anchor="middle">
+            <text x="46" y="149">u24</text><text x="106" y="149">u25</text>
+            <text x="166" y="149">u26</text><text x="226" y="149">u27</text>
+            <text x="286" y="149" fill="#E9F2EE">u28</text>
+          </g>
+        </svg>
+        <div class="tips" id="tips"></div>
+      </div>
+    </div>
+
+    <div class="sek-tittel">Utført denne uken</div>
+    <div class="kort">
+      <ul class="gjort">
+        <li><span class="hake"></span>23 e-poster besvart eller utkast levert</li>
+        <li><span class="hake"></span>4 tilbud sendt til kunder</li>
+        <li><span class="hake"></span>2 endringsmeldinger varslet samme dag</li>
+        <li><span class="hake"></span>1 ukesrapport til byggherre<span class="auto">AUTO</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── VERKTØY ── -->
+  <div class="fane" id="fane-verktoy">
+    <div class="sek-tittel">Aktive verktøy · trykk for å bytte modus</div>
+
+    <div class="kort vk"><div class="info"><h3>Befaring til tilbud</h3>
+      <p>Dikterte notater blir tilbuds-e-post</p></div>
+      <button class="modus" data-modus="utkast">UTKAST</button></div>
+
+    <div class="kort vk"><div class="info"><h3>Endringsmeldinger</h3>
+      <p>Varsler byggherre samme dag, NS 8407</p></div>
+      <button class="modus" data-modus="utkast">UTKAST</button></div>
+
+    <div class="kort vk"><div class="info"><h3>Ukesrapport</h3>
+      <p>Sendes byggherre hver fredag kl. 14</p></div>
+      <button class="modus auto" data-modus="auto">AUTO</button></div>
+
+    <div class="kort vk"><div class="info"><h3>UE-purringer</h3>
+      <p>Følger opp priser og leveranser</p></div>
+      <button class="modus" data-modus="utkast">UTKAST</button></div>
+
+    <div class="kort vk"><div class="info"><h3>Jobbdokumentasjon</h3>
+      <p>Bilder og notater til sluttrapport</p></div>
+      <button class="modus auto" data-modus="auto">AUTO</button></div>
+
+    <div class="kort vk forslag"><div class="info"><h3>Nytt forslag fra Lærling</h3>
+      <p>SJA-utkast før oppstart av nye arbeidsoperasjoner</p></div>
+      <button class="modus" id="aktiver-ny">AKTIVER</button></div>
+  </div>
+
+</div>
+
+<!-- tab-bar -->
+<nav>
+  <div class="nav-indre">
+    <button class="tab aktiv" data-fane="idag" aria-label="I dag">
+      <svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"></path></svg>
+      I dag</button>
+    <button class="tab" data-fane="rapport" aria-label="Rapport">
+      <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"></path></svg>
+      Rapport</button>
+    <button class="mik" id="mik" aria-label="Dikter til Lærling">
+      <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
+    </button>
+    <button class="tab" data-fane="verktoy" aria-label="Verktøy">
+      <svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4l-2.9 2.9-2.1-2.1z"></path></svg>
+      Verktøy</button>
+  </div>
+</nav>
+
+<!-- dikter-ark -->
+<div id="dikter">
+  <div class="ark-bak" id="ark-bak"></div>
+  <div class="ark" role="dialog" aria-label="Dikter til Lærling">
+    <div class="hank"></div>
+    <div class="lytter">
+      <div class="mik-stor"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg></div>
+      <div class="txt" id="lytt-status">Lytter …</div>
+      <div class="transkript" id="transkript"><span class="peker"></span></div>
+      <button class="knapp" id="lag-utkast" style="width:100%;display:none">Lag utkast av dette</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  /* dato og hilsen */
+  var no = ["søndag","mandag","tirsdag","onsdag","torsdag","fredag","lørdag"],
+      mnd = ["januar","februar","mars","april","mai","juni","juli","august","september","oktober","november","desember"],
+      d = new Date(), t = d.getHours();
+  document.getElementById("dato").textContent =
+    no[d.getDay()] + " " + d.getDate() + ". " + mnd[d.getMonth()];
+  document.getElementById("hilsen").textContent =
+    (t < 5 ? "God natt" : t < 10 ? "God morgen" : t < 18 ? "Hei" : "God kveld") + ", Ole Fabian";
+
+  /* toast */
+  var toast = document.getElementById("toast"), toastT;
+  function siFra(html){
+    toast.innerHTML = html; toast.classList.add("vis");
+    clearTimeout(toastT); toastT = setTimeout(function(){ toast.classList.remove("vis"); }, 2400);
+  }
+
+  /* faner */
+  var faner = document.querySelectorAll(".tab");
+  faner.forEach(function(tab){
+    tab.addEventListener("click", function(){
+      faner.forEach(function(x){ x.classList.remove("aktiv"); });
+      tab.classList.add("aktiv");
+      document.querySelectorAll(".fane").forEach(function(f){ f.classList.remove("aktiv"); });
+      document.getElementById("fane-" + tab.dataset.fane).classList.add("aktiv");
+      scrollTo(0, 0);
+    });
+  });
+
+  /* godkjenning */
+  var antall = document.getElementById("antall");
+  function kobleUtkast(kort){
+    kort.querySelector(".se").addEventListener("click", function(){
+      kort.classList.toggle("open");
+      this.textContent = kort.classList.contains("open") ? "Skjul" : "Se utkast";
+    });
+    kort.querySelector(".godkjenn").addEventListener("click", function(){
+      kort.classList.add("borte");
+      setTimeout(function(){
+        var li = document.createElement("li");
+        li.innerHTML = '<span class="hake"></span>' + kort.querySelector("h3").textContent;
+        document.getElementById("gjort-liste").prepend(li);
+        kort.remove();
+        var n = document.querySelectorAll(".utkast").length;
+        antall.textContent = n;
+        siFra(n === 0 ? "<b>✓</b> Alt sendt — innboksen er tom!" : "<b>✓</b> Godkjent og sendt");
+      }, 350);
+    });
+  }
+  document.querySelectorAll(".utkast").forEach(kobleUtkast);
+
+  /* graf-tooltip */
+  var tips = document.getElementById("tips"), graf = document.getElementById("graf");
+  document.querySelectorAll(".stolpe").forEach(function(s){
+    function visTips(e){
+      var b = s.getBoundingClientRect(), g = graf.getBoundingClientRect();
+      tips.textContent = "Uke " + s.dataset.uke + " · " + s.dataset.t + " t spart";
+      tips.style.left = (b.left - g.left + b.width / 2) + "px";
+      tips.style.top = (b.top - g.top) + "px";
+      tips.classList.add("vis");
+    }
+    s.addEventListener("pointerenter", visTips);
+    s.addEventListener("pointerdown", visTips);
+    s.addEventListener("pointerleave", function(){ tips.classList.remove("vis"); });
+  });
+
+  /* verktøy-modus */
+  document.querySelectorAll(".modus[data-modus]").forEach(function(k){
+    k.addEventListener("click", function(){
+      var auto = k.dataset.modus === "auto";
+      k.dataset.modus = auto ? "utkast" : "auto";
+      k.textContent = auto ? "UTKAST" : "AUTO";
+      k.classList.toggle("auto", !auto);
+      siFra(auto ? "Verktøyet lager nå <b>utkast</b> du godkjenner"
+                 : "<b>Autopilot på</b> — kjører uten godkjenning");
+    });
+  });
+  document.getElementById("aktiver-ny").addEventListener("click", function(){
+    var k = this;
+    k.textContent = "UTKAST"; k.removeAttribute("id"); k.dataset.modus = "utkast";
+    k.closest(".kort").classList.remove("forslag");
+    siFra("<b>✓</b> Nytt verktøy aktivert i utkast-modus");
+    k.addEventListener("click", function(){
+      var auto = k.dataset.modus === "auto";
+      k.dataset.modus = auto ? "utkast" : "auto";
+      k.textContent = auto ? "UTKAST" : "AUTO";
+      k.classList.toggle("auto", !auto);
+    });
+  });
+
+  /* dikter-arket */
+  var dikter = document.getElementById("dikter"), mik = document.getElementById("mik"),
+      transkript = document.getElementById("transkript"),
+      lyttStatus = document.getElementById("lytt-status"),
+      lagUtkast = document.getElementById("lag-utkast"),
+      demoTekst = "husk å bestille container til Krohgs gate før mandag… og send Berg en påminnelse om at vi trenger svar på fargevalg denne uka…";
+  function lukkArk(){ dikter.classList.remove("apen"); }
+  document.getElementById("ark-bak").addEventListener("click", lukkArk);
+  mik.addEventListener("click", function(){
+    dikter.classList.add("apen");
+    transkript.innerHTML = '<span class="peker"></span>';
+    lyttStatus.textContent = "Lytter …";
+    lagUtkast.style.display = "none";
+    var i = 0;
+    setTimeout(function skriv(){
+      if(!dikter.classList.contains("apen")) return;
+      if(i <= demoTekst.length){
+        transkript.innerHTML = demoTekst.slice(0, i) + '<span class="peker"></span>';
+        i += 2; setTimeout(skriv, 42);
+      } else {
+        transkript.textContent = demoTekst;
+        lyttStatus.textContent = "Forstått — to oppgaver";
+        lagUtkast.style.display = "block";
+      }
+    }, 700);
+  });
+  lagUtkast.addEventListener("click", function(){
+    lukkArk();
+    var kort = document.createElement("div");
+    kort.className = "kort utkast";
+    kort.innerHTML = '<span class="badge">E-POST</span>'
+      + '<h3>Påminnelse — fargevalg, Berg</h3>'
+      + '<p class="prev">Hei! En liten påminnelse om fargevalget for vinduene — vi trenger svaret ditt innen fredag for å holde leveringstiden…</p>'
+      + '<div class="full">Hei!\n\nEn liten påminnelse om fargevalget for vinduene — vi trenger svaret ditt innen fredag for å holde leveringstiden.\n\nGi meg gjerne en lyd om du vil ta det over telefon.\n\nMvh Ole Fabian, OP Bygg AS</div>'
+      + '<div class="rad"><button class="knapp godkjenn">Godkjenn og send</button>'
+      + '<button class="knapp svak se">Se utkast</button></div>';
+    document.getElementById("utkast-liste").prepend(kort);
+    kobleUtkast(kort);
+    antall.textContent = document.querySelectorAll(".utkast").length;
+    siFra("<b>✓</b> Utkast klart · påminnelse lagt i containerlista");
+  });
+})();
+</script>
+
+</body>
+</html>
