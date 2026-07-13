@@ -10,8 +10,17 @@ innebygde talegjenkjenning og talesyntese.
 
 - 🎙️ **Snakk til Jarvis** – trykk på arc-reactoren og snakk (norsk eller engelsk)
 - 🔊 **Jarvis svarer høyt** – svar leses opp setning for setning mens de strømmes inn
-- 🧠 **Claude som hjerne** – full samtalehukommelse innenfor økten, Jarvis-personlighet («God dag, sir»)
+- 🧠 **Claude som hjerne** – Jarvis-personlighet («God dag, sir»), valgfri modell i oppsettet
+- 🛠️ **Ekte verktøy (tool use):**
+  - 🌐 **Websøk** – Jarvis søker på nettet etter ferske nyheter, priser og fakta
+  - 🌤️ **Vær** – værmelding for din GPS-posisjon eller et hvilket som helst sted (Open-Meteo, gratis)
+  - 🕐 **Klokke/dato** – vet alltid hva klokka er
+  - ⏲️ **Timere** – «Jarvis, sett en timer på 10 minutter» → appen piper og sier ifra
+  - 🔗 **Åpne nettsider** – «Jarvis, åpne YouTube»
+  - 💾 **Langtidshukommelse** – «husk at …» → Jarvis husker det i alle fremtidige samtaler
+- 💬 **Samtalen overlever omstart** – historikken lagres lokalt på enheten
 - 🗣️ **Våkneord** – valgfri «Jarvis …»-modus med kontinuerlig lytting
+- 👂 **Live-transkripsjon** – se ordene dine mens du snakker, radar-ringer rundt reaktoren
 - ⌨️ Tekstfelt som alternativ til tale
 - 📵 Appskallet fungerer offline (API-kall krever selvsagt nett)
 - 🔐 API-nøkkelen lagres kun lokalt på enheten din
