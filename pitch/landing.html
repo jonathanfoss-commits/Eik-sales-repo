@@ -206,6 +206,33 @@
   footer{border-top:1px solid var(--strek);padding:30px 0;text-align:center;
      font-family:var(--mono);font-size:.72rem;color:var(--dis);letter-spacing:.05em}
 
+  /* ── levende lag: nettverk, tilt, lysflekk, tidslinje ────── */
+  .hero{position:relative}
+  #nett{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .hero .wrap{position:relative;z-index:1}
+  .demo{transition:transform .18s ease-out;will-change:transform}
+
+  /* lysflekk som følger pekeren over kort */
+  .fase::after,.bransje::after,.plan::after,.trygg > div::after{
+     content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+     opacity:0;transition:opacity .35s;
+     background:radial-gradient(230px circle at var(--mx,50%) var(--my,50%),
+        rgba(57,226,155,.13),transparent 65%)}
+  .bransje,.plan,.trygg > div{position:relative}
+  .fase:hover::after,.bransje:hover::after,.plan:hover::after,.trygg > div:hover::after{opacity:1}
+
+  /* nordlys-linjen som tegner seg gjennom fasene */
+  .ledning{height:2px;margin:0 22px 22px;border-radius:2px;position:relative;
+     background:rgba(140,190,190,.1);overflow:hidden}
+  .ledning i{display:block;height:100%;width:100%;
+     background:linear-gradient(90deg,var(--aurora-a),var(--aurora-b),var(--aurora-c));
+     box-shadow:0 0 14px rgba(57,226,155,.55)}
+  html.js .ledning i{width:0;transition:width 1.6s cubic-bezier(.22,.8,.3,1) .15s}
+  html.js .ledning.inne i{width:100%}
+  html.js .faser .fase:nth-child(2){transition-delay:.16s}
+  html.js .faser .fase:nth-child(3){transition-delay:.32s}
+  html.js .faser .fase:nth-child(4){transition-delay:.48s}
+
   /* scroll-reveal — skjules kun når JS kjører, så siden aldri kan bli tom */
   html.js .avslor{opacity:0;transform:translateY(18px);transition:opacity .6s,transform .6s}
   html.js .avslor.inne{opacity:1;transform:none}
@@ -239,6 +266,7 @@
 </header>
 
 <section class="hero">
+  <canvas id="nett" aria-hidden="true"></canvas>
   <div class="wrap">
     <div>
       <div class="eyebrow">AI — uten at du trenger å kunne AI</div>
@@ -254,9 +282,9 @@
 
     <div class="demo" aria-label="Demonstrasjon: diktert notat blir til ferdig e-post">
       <div class="demo-bar"><span class="puls" aria-hidden="true"></span>
-        LÆRLING · ARBEIDER FOR OP BYGG-PILOTEN <span style="margin-left:auto">DEMO</span></div>
+        LÆRLING · ARBEIDER AKKURAT NÅ <span style="margin-left:auto">DEMO</span></div>
       <div class="demo-body">
-        <div class="demo-inn"><span class="merk">Diktert fra bilen · 0:23</span><span id="inn"></span><span class="cursor" id="mark"></span></div>
+        <div class="demo-inn"><span class="merk" id="etikett">Diktert fra bilen · 0:23</span><span id="inn"></span><span class="cursor" id="mark"></span></div>
         <div class="demo-pil" id="pil">Lærling skriver utkastet</div>
         <div class="demo-ut" id="ut">
           <div class="felt">Til: <b>kunde@epost.no</b></div>
@@ -293,6 +321,7 @@
       <h2>Lærlings første arbeidsuke</h2>
       <p class="lead">Som en ny ansatt — bare raskere. Ingen oppsett, ingen kurs, ingen prompting.</p>
     </div>
+    <div class="ledning avslor" aria-hidden="true"><i></i></div>
     <div class="faser">
       <div class="fase avslor"><div class="tag">FASE 1 · DAG 1–3</div><h3>Undersøker</h3>
         <p>Leser nettsiden din, offentlige registre og — med din tillatelse — e-post og kalender.
@@ -401,33 +430,138 @@
     document.documentElement.classList.add("js");
   }
 
-  /* hero-demo: dikter → e-post */
-  var tekst = "eh, befaring hos Berg i dag… bytte tolv vinduer, fant råte i to karmer på sørveggen, trenger stillas ca en uke… kunden vil ha fastpris før påske…";
+  /* ── nettverket som lærer: hero-canvas med signalpulser ── */
+  var lerret = document.getElementById("nett");
+  if(lerret && lerret.getContext && !redusert){
+    var ctx = lerret.getContext("2d"), DPR = Math.min(window.devicePixelRatio || 1, 2),
+        W = 0, H = 0, pulser = [], mus = {x:-9999, y:-9999}, synligNett = true,
+        N = innerWidth < 700 ? 40 : 70, pkt = [];
+    function dim(){
+      var r = lerret.getBoundingClientRect(); W = r.width; H = r.height;
+      lerret.width = W * DPR; lerret.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    }
+    dim(); addEventListener("resize", dim);
+    for(var i = 0; i < N; i++) pkt.push({
+      x: Math.random() * innerWidth, y: Math.random() * 700,
+      vx: (Math.random() - .5) * .3, vy: (Math.random() - .5) * .3,
+      r: 1 + Math.random() * 1.7, c: Math.random() < .5 ? "57,226,155" : "47,196,217"
+    });
+    var hero = document.querySelector(".hero");
+    hero.addEventListener("pointermove", function(e){
+      var b = lerret.getBoundingClientRect();
+      mus.x = e.clientX - b.left; mus.y = e.clientY - b.top;
+    });
+    hero.addEventListener("pointerleave", function(){ mus.x = -9999; mus.y = -9999; });
+    new IntersectionObserver(function(o){ synligNett = o[0].isIntersecting; }, {threshold: 0}).observe(lerret);
+    setInterval(function(){
+      if(!synligNett || document.hidden || pulser.length > 2) return;
+      var a = pkt[Math.floor(Math.random() * N)], b = null, best = 150 * 150;
+      pkt.forEach(function(p){ if(p === a) return;
+        var d = (p.x - a.x) * (p.x - a.x) + (p.y - a.y) * (p.y - a.y);
+        if(d < best){ best = d; b = p; } });
+      if(b) pulser.push({a: a, b: b, t: 0});
+    }, 900);
+    (function tegn(){
+      requestAnimationFrame(tegn);
+      if(!synligNett || document.hidden) return;
+      ctx.clearRect(0, 0, W, H);
+      for(var i = 0; i < N; i++){
+        var p = pkt[i];
+        p.x += p.vx; p.y += p.vy;
+        if(p.x < 0) p.x = W; if(p.x > W) p.x = 0;
+        if(p.y < 0) p.y = H; if(p.y > H) p.y = 0;
+        for(var j = i + 1; j < N; j++){
+          var q = pkt[j], dx = p.x - q.x, dy = p.y - q.y, d = Math.sqrt(dx*dx + dy*dy);
+          if(d < 120){
+            ctx.strokeStyle = "rgba(97,210,190," + (.3 * (1 - d/120)) + ")";
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke();
+          }
+        }
+        var mdx = p.x - mus.x, mdy = p.y - mus.y, md = Math.sqrt(mdx*mdx + mdy*mdy);
+        if(md < 170 && md > 1){
+          ctx.strokeStyle = "rgba(57,226,155," + (.5 * (1 - md/170)) + ")";
+          ctx.lineWidth = 1.2;
+          ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(mus.x, mus.y); ctx.stroke();
+          p.x -= mdx / md * .18; p.y -= mdy / md * .18;
+        }
+        ctx.fillStyle = "rgba(" + p.c + ",.75)";
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill();
+      }
+      for(var k = pulser.length - 1; k >= 0; k--){
+        var u = pulser[k]; u.t += .02;
+        if(u.t >= 1){ pulser.splice(k, 1); continue; }
+        var x = u.a.x + (u.b.x - u.a.x) * u.t, y = u.a.y + (u.b.y - u.a.y) * u.t;
+        ctx.fillStyle = "rgba(57,226,155," + (.15 + .85 * (1 - Math.abs(u.t - .5) * 2)) + ")";
+        ctx.shadowColor = "rgba(57,226,155,.9)"; ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.arc(x, y, 2.4, 0, 7); ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    })();
+  }
+
+  /* ── hero-demo: veksler mellom bransje-scenarioer ── */
+  var scener = [
+    { merk: "Diktert fra bilen · 0:23",
+      raw: "eh, befaring hos Berg i dag… bytte tolv vinduer, fant råte i to karmer på sørveggen, trenger stillas ca en uke… kunden vil ha fastpris før påske…",
+      ut: '<div class="felt">Til: <b>kunde@epost.no</b></div><div class="felt">Emne: <b>Oppsummering etter befaring — utskifting av vinduer</b></div><hr><p>Hei, og takk for hyggelig befaring i dag. Dette ble vi enige om:</p><ul><li>Utskifting av 12 vinduer</li><li>Utbedring av råteskade i to karmer, sørvegg</li><li>Stillas i ca. én uke</li></ul><p>Fastpris-tilbud kommer innen fredag, som avtalt før påske.</p><p>Mvh Ole Fabian, OP Bygg AS</p>',
+      stempel: "✓ UTKAST KLART — DU LESER GJENNOM OG TRYKKER SEND" },
+    { merk: "Diktert mellom to kunder · 0:11",
+      raw: "Marte avlyste torsdag klokka to… send melding til de tre på ventelista og tilby timen, første som svarer får den…",
+      ut: '<div class="felt">SMS til: <b>3 kunder på venteliste</b></div><hr><p>Hei! Det ble akkurat ledig en time hos oss torsdag kl. 14.00. Første som svarer JA får timen.</p><p>Hilsen oss i salongen</p>',
+      stempel: "✓ TIMEN BLE FYLT PÅ 4 MINUTTER" }
+  ];
   var inn = document.getElementById("inn"), mark = document.getElementById("mark"),
       pil = document.getElementById("pil"), ut = document.getElementById("ut"),
-      stempel = document.getElementById("stempel");
+      stempel = document.getElementById("stempel"), etikett = document.getElementById("etikett"),
+      scene = 0;
   function spillDemo(){
+    var sc = scener[scene]; scene = (scene + 1) % scener.length;
+    etikett.textContent = sc.merk; ut.innerHTML = sc.ut; stempel.textContent = sc.stempel;
     inn.textContent = ""; mark.style.display = "inline-block";
     pil.classList.remove("vis"); ut.classList.remove("vis"); stempel.classList.remove("vis");
     var i = 0;
     (function skriv(){
-      if(i <= tekst.length){
-        inn.textContent = tekst.slice(0, i); i += 2;
+      if(i <= sc.raw.length){
+        inn.textContent = sc.raw.slice(0, i); i += 2;
         setTimeout(skriv, 34);
       } else {
-        inn.textContent = tekst;
+        inn.textContent = sc.raw;
         mark.style.display = "none";
         setTimeout(function(){ pil.classList.add("vis"); }, 350);
         setTimeout(function(){ ut.classList.add("vis"); }, 1100);
         setTimeout(function(){ stempel.classList.add("vis"); }, 1900);
-        setTimeout(spillDemo, 11000);
+        setTimeout(spillDemo, 10000);
       }
     })();
   }
   if(redusert){
-    inn.textContent = tekst; mark.style.display = "none";
+    inn.textContent = scener[0].raw; mark.style.display = "none";
     pil.classList.add("vis"); ut.classList.add("vis"); stempel.classList.add("vis");
   } else { spillDemo(); }
+
+  /* ── 3D-tilt på demo-panelet ── */
+  var demo = document.querySelector(".demo");
+  if(demo && !redusert){
+    demo.addEventListener("pointermove", function(e){
+      var b = demo.getBoundingClientRect(),
+          rx = ((e.clientY - b.top) / b.height - .5) * -5,
+          ry = ((e.clientX - b.left) / b.width - .5) * 7;
+      demo.style.transform = "perspective(900px) rotateX(" + rx + "deg) rotateY(" + ry + "deg)";
+    });
+    demo.addEventListener("pointerleave", function(){ demo.style.transform = ""; });
+  }
+
+  /* ── lysflekk som følger pekeren over kort ── */
+  if(!redusert){
+    document.querySelectorAll(".fase,.bransje,.plan,.trygg > div").forEach(function(k){
+      k.addEventListener("pointermove", function(e){
+        var b = k.getBoundingClientRect();
+        k.style.setProperty("--mx", (e.clientX - b.left) + "px");
+        k.style.setProperty("--my", (e.clientY - b.top) + "px");
+      });
+    });
+  }
 
   /* telleverk i tall-stripen */
   function tell(el){
