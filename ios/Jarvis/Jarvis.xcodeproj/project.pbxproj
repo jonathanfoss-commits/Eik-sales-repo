@@ -26,6 +26,7 @@
 		AA0000000000000000000006 /* Tools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tools.swift; sourceTree = "<group>"; };
 		AA0000000000000000000007 /* Support.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Support.swift; sourceTree = "<group>"; };
 		AA0000000000000000000008 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA0000000000000000000010 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA0000000000000000000009 /* Jarvis.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Jarvis.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -59,6 +60,7 @@
 				AA0000000000000000000006 /* Tools.swift */,
 				AA0000000000000000000007 /* Support.swift */,
 				AA0000000000000000000008 /* Assets.xcassets */,
+				AA0000000000000000000010 /* Info.plist */,
 			);
 			path = Jarvis;
 			sourceTree = "<group>";
@@ -212,6 +214,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Jarvis/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = JARVIS;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Jarvis bruker posisjonen din til lokale værmeldinger.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Jarvis trenger mikrofonen for å høre deg.";
@@ -243,6 +246,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Jarvis/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = JARVIS;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Jarvis bruker posisjonen din til lokale værmeldinger.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Jarvis trenger mikrofonen for å høre deg.";

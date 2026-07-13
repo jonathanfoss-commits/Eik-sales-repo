@@ -166,11 +166,11 @@
   }
   .mcp-row input.m-name { flex: 0 0 26%; }
   .mcp-row button { flex: none; background: none; border: 1px solid #5a2430; color: var(--danger); border-radius: 8px; padding: 0 10px; cursor: pointer; font: inherit; }
-  #addMcpBtn {
+  #addMcpBtn, #addHookBtn {
     background: none; border: 1px dashed var(--line); color: var(--muted); border-radius: 8px;
     padding: 8px 12px; font: inherit; font-size: 12px; cursor: pointer; width: 100%;
   }
-  #addMcpBtn:hover { color: var(--cyan); border-color: var(--cyan-dim); }
+  #addMcpBtn:hover, #addHookBtn:hover { color: var(--cyan); border-color: var(--cyan-dim); }
   #memoryList { font-size: 12px; color: var(--muted); line-height: 1.7; max-height: 120px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; background: var(--bg); }
   #memoryList:empty::before { content: "Ingen lagrede fakta enda. Si f.eks. «Jarvis, husk at …»"; }
   .settings-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
@@ -253,10 +253,16 @@
       <input id="wakeToggle" type="checkbox">
     </div>
     <div class="field">
-      <label>INTEGRASJONER (MCP) – LA JARVIS STYRE ANDRE TJENESTER</label>
+      <label>WEBHOOKS – DINE EGNE KOMMANDOER (uten mellomledd)</label>
+      <div id="hookList"></div>
+      <button type="button" id="addHookBtn">+ Legg til webhook</button>
+      <div class="note">Hver webhook blir et eget verktøy Jarvis kan utløse. Fungerer med <b>Home Assistant</b> (Innstillinger → Automatiseringer → utløser «Webhook»), selvhostet <b>n8n</b>, <b>IFTTT</b> m.m. Beskrivelsen forteller Jarvis når den skal brukes, f.eks. «slår på lysene i stua».</div>
+    </div>
+    <div class="field">
+      <label>INTEGRASJONER (MCP) – DIREKTEKOBLING TIL TJENESTER</label>
       <div id="mcpList"></div>
       <button type="button" id="addMcpBtn">+ Legg til integrasjon</button>
-      <div class="note">Lim inn en MCP-server-URL. Eksempler: din personlige <b>Zapier MCP</b>-URL (mcp.zapier.com → styrer 8000+ apper: kalender, e-post, Slack, smarthjem …) eller <b>Home Assistant</b> sin MCP-server (styr lys og varme direkte). Token er valgfritt (Bearer). Kjøres sikkert på Anthropic sin serverside.</div>
+      <div class="note">Lim inn en MCP-server-URL. Eksempler: <b>Home Assistant</b> sin MCP-server (styr lys og varme direkte), <b>GitHub</b> (api.githubcopilot.com/mcp/ med PAT som token), <b>Todoist</b>, <b>Linear</b> … Token er valgfritt (Bearer). Kjøres sikkert på Anthropic sin serverside.</div>
     </div>
     <div class="field">
       <label>JARVIS' HUKOMMELSE OM DEG</label>
@@ -291,6 +297,8 @@ const store = {
   set wake(v)     { localStorage.setItem("jarvis_wake", v ? "1" : "0"); },
   get mcp()       { try { return JSON.parse(localStorage.getItem("jarvis_mcp")) || []; } catch (_) { return []; } },
   set mcp(v)      { localStorage.setItem("jarvis_mcp", JSON.stringify(v)); },
+  get hooks()     { try { return JSON.parse(localStorage.getItem("jarvis_hooks")) || []; } catch (_) { return []; } },
+  set hooks(v)    { localStorage.setItem("jarvis_hooks", JSON.stringify(v)); },
   get memory()    { try { return JSON.parse(localStorage.getItem("jarvis_memory")) || []; } catch (_) { return []; } },
   set memory(v)   { localStorage.setItem("jarvis_memory", JSON.stringify(v)); },
   get history()   { try { return JSON.parse(localStorage.getItem("jarvis_history")) || []; } catch (_) { return []; } },
@@ -312,10 +320,10 @@ function systemPrompt() {
   const base = isNorsk()
     ? "Du er JARVIS (Just A Rather Very Intelligent System), Tony Starks AI-butler fra Iron Man – nå personlig assistent for brukeren. Svar på norsk. Tiltal brukeren som «sir» med tørr, britisk-aktig vidd og upåklagelig høflighet, men vær alltid genuint hjelpsom og presis. "
       + "Svarene dine leses høyt med talesyntese: hold dem korte og muntlige (typisk 1–3 setninger), uten markdown, punktlister, URL-er eller kodeblokker med mindre brukeren eksplisitt ber om noe langt eller teknisk. "
-      + "Du har verktøy – bruk dem proaktivt uten å spørre om lov: web_search for fersk eller ukjent informasjon (nyheter, priser, resultater), get_weather for vær, get_datetime for dato/tid, set_timer for nedtellinger, open_url for å åpne nettsider, og remember for å lagre varige fakta brukeren forteller om seg selv (navn, preferanser, viktige datoer). Har brukeren koblet til eksterne integrasjoner (MCP), bruk verktøyene deres til å utføre handlinger i den virkelige verden – kalender, e-post, meldinger, smarthjem – men bekreft kort først ved handlinger som er vanskelige å angre (sende e-post/meldinger, slette ting). Ikke gjett på ting du kan slå opp."
+      + "Du har verktøy – bruk dem proaktivt uten å spørre om lov: web_search for fersk eller ukjent informasjon (nyheter, priser, resultater), get_weather for vær, get_datetime for dato/tid, set_timer for nedtellinger, open_url for å åpne nettsider, run_shortcut for å kjøre brukerens Apple-snarveier (kan styre smarthjem, musikk, meldinger m.m. – spør om eksakt navn hvis du er usikker), hook_-verktøy for brukerens egne webhooks, og remember for å lagre varige fakta brukeren forteller om seg selv (navn, preferanser, viktige datoer). Har brukeren koblet til eksterne integrasjoner (MCP), bruk verktøyene deres til å utføre handlinger i den virkelige verden – men bekreft kort først ved handlinger som er vanskelige å angre (sende e-post/meldinger, slette ting). Ikke gjett på ting du kan slå opp."
     : "You are JARVIS (Just A Rather Very Intelligent System), Tony Stark's AI butler from Iron Man – now the user's personal assistant. Address the user as \"sir\" with dry British wit and impeccable politeness, while always being genuinely helpful and precise. "
       + "Your replies are read aloud via speech synthesis: keep them short and conversational (typically 1–3 sentences), no markdown, bullet lists, URLs or code blocks unless the user explicitly asks for something long or technical. "
-      + "You have tools – use them proactively without asking permission: web_search for fresh or unknown information, get_weather for weather, get_datetime for date/time, set_timer for countdowns, open_url to open websites, and remember to store lasting facts the user shares about themselves. If the user has connected external integrations (MCP), use their tools to act in the real world – calendar, email, messages, smart home – but briefly confirm first for hard-to-undo actions (sending email/messages, deleting things). Don't guess at things you can look up.";
+      + "You have tools – use them proactively without asking permission: web_search for fresh or unknown information, get_weather for weather, get_datetime for date/time, set_timer for countdowns, open_url to open websites, run_shortcut to run the user's Apple Shortcuts (can control smart home, music, messages – ask for the exact name if unsure), hook_ tools for the user's own webhooks, and remember to store lasting facts the user shares about themselves. If the user has connected external integrations (MCP), use their tools to act in the real world – but briefly confirm first for hard-to-undo actions (sending email/messages, deleting things). Don't guess at things you can look up.";
   const memText = mem.length
     ? (isNorsk() ? "\n\nTing du vet om brukeren fra tidligere samtaler:\n" : "\n\nFacts you know about the user from earlier conversations:\n")
       + mem.map(f => "- " + f).join("\n")
@@ -368,6 +376,18 @@ const clientToolDefs = [
       required: ["url"],
     },
   },
+  {
+    name: "run_shortcut",
+    description: "Run one of the user's Apple Shortcuts by its exact name (works on iPhone, iPad and Mac). Shortcuts can control smart home devices (HomeKit), send messages, play music, trigger automations and much more. Ask the user for the exact shortcut name if unsure.",
+    input_schema: {
+      type: "object",
+      properties: {
+        name: { type: "string", description: "Exact name of the shortcut in the Shortcuts app" },
+        input: { type: "string", description: "Optional text passed to the shortcut as input" },
+      },
+      required: ["name"],
+    },
+  },
 ];
 
 function toolStatusText(nameOrBlock) {
@@ -380,8 +400,10 @@ function toolStatusText(nameOrBlock) {
     set_timer: "Setter timer …",
     remember: "Noterer …",
     open_url: "Åpner nettside …",
+    run_shortcut: "Kjører snarvei …",
   };
   if (map[name]) return map[name];
+  if (name && name.startsWith("hook_")) return "Utløser " + name.slice(5) + " …";
   if (isBlock && nameOrBlock.type === "mcp_tool_use") {
     return "Utfører " + name + (nameOrBlock.server_name ? " via " + nameOrBlock.server_name : "") + " …";
   }
@@ -453,8 +475,30 @@ async function execTool(name, input) {
       }
       return "Åpnet " + url;
     }
-    default:
+    case "run_shortcut": {
+      const scName = String(input.name || "").trim();
+      if (!scName) return "Mangler snarvei-navn.";
+      let url = "shortcuts://run-shortcut?name=" + encodeURIComponent(scName);
+      if (input.input) url += "&input=text&text=" + encodeURIComponent(String(input.input));
+      location.href = url;
+      return "Kjørte snarveien «" + scName + "» (forutsetter at den finnes i Snarveier-appen på enheten).";
+    }
+    default: {
+      if (name.startsWith("hook_")) {
+        const hook = store.hooks.find((h) => "hook_" + h.name === name);
+        if (!hook) return "Ukjent webhook.";
+        const payload = String(input.payload || "");
+        try {
+          const r = await fetch(hook.url, { method: "POST", headers: { "content-type": "text/plain" }, body: payload });
+          return r.ok ? `Webhook «${hook.name}» utløst (HTTP ${r.status}).` : `Webhook «${hook.name}» svarte HTTP ${r.status}.`;
+        } catch (_) {
+          // CORS-blocked response: fire-and-forget still delivers the request
+          await fetch(hook.url, { method: "POST", mode: "no-cors", body: payload });
+          return `Webhook «${hook.name}» sendt (mottakeren svarer uten CORS-kvittering – normalt helt OK).`;
+        }
+      }
       return "Ukjent verktøy: " + name;
+    }
   }
 }
 
@@ -595,6 +639,17 @@ function renderHistory() {
 /* ---------- Claude API: streaming + agentic tool loop ---------- */
 function buildTools() {
   const tools = [...clientToolDefs];
+  for (const h of store.hooks) {
+    tools.push({
+      name: "hook_" + h.name,
+      description: "Trigger the user's own webhook «" + h.name + "»: " + (h.desc || "no description") +
+        ". Use when the user asks for exactly this. Optional text payload is sent as the POST body.",
+      input_schema: {
+        type: "object",
+        properties: { payload: { type: "string", description: "Optional text/JSON sent in the POST body" } },
+      },
+    });
+  }
   if (store.search) tools.push({ type: "web_search_20260209", name: "web_search", max_uses: 3 });
   for (const s of store.mcp) tools.push({ type: "mcp_toolset", mcp_server_name: s.name });
   return tools;
@@ -917,6 +972,36 @@ function collectMcp() {
 }
 $("addMcpBtn").addEventListener("click", () => $("mcpList").appendChild(mcpRow()));
 
+function hookRow(hook) {
+  const h = hook || { name: "", url: "", desc: "" };
+  const row = document.createElement("div");
+  row.className = "mcp-row";
+  const name = document.createElement("input");
+  name.className = "h-name"; name.placeholder = "navn"; name.value = h.name;
+  const url = document.createElement("input");
+  url.className = "h-url"; url.placeholder = "https://…/webhook/id"; url.value = h.url;
+  const desc = document.createElement("input");
+  desc.className = "h-desc"; desc.placeholder = "hva gjør den? (for Jarvis)"; desc.value = h.desc || "";
+  const del = document.createElement("button");
+  del.type = "button"; del.textContent = "✕"; del.onclick = () => row.remove();
+  row.append(name, url, desc, del);
+  return row;
+}
+function renderHooks() {
+  const el = $("hookList");
+  el.innerHTML = "";
+  for (const h of store.hooks) el.appendChild(hookRow(h));
+}
+function collectHooks() {
+  return [...document.querySelectorAll("#hookList .mcp-row")].map((row) => ({
+    name: row.querySelector(".h-name").value.trim().toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, "_").replace(/^_+|_+$/g, "") || "hook",
+    url: row.querySelector(".h-url").value.trim(),
+    desc: row.querySelector(".h-desc").value.trim(),
+  })).filter((h) => /^https:\/\//.test(h.url));
+}
+$("addHookBtn").addEventListener("click", () => $("hookList").appendChild(hookRow()));
+
 function openSettings() {
   $("apiKey").value = store.key;
   $("modelSelect").value = store.model;
@@ -926,6 +1011,7 @@ function openSettings() {
   $("wakeToggle").checked = store.wake;
   renderMemory();
   renderMcp();
+  renderHooks();
   $("settings").classList.add("open");
 }
 function closeSettings() {
@@ -936,6 +1022,7 @@ function closeSettings() {
   store.speak = $("speakToggle").checked;
   store.search = $("searchToggle").checked;
   store.mcp = collectMcp();
+  store.hooks = collectHooks();
   $("settings").classList.remove("open");
   tickClock();
   const wantWake = $("wakeToggle").checked;

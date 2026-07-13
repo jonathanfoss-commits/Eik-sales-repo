@@ -1,6 +1,7 @@
 import Foundation
 import UserNotifications
 import UIKit
+import EventKit
 
 /// Client-side tools JARVIS can invoke (mirrors the web app, but native:
 /// timers become real local notifications that fire even when the app is closed).
@@ -56,6 +57,44 @@ enum JarvisTools {
                 "required": .array([.string("url")]),
             ]),
         ]),
+        .object([
+            "name": .string("run_shortcut"),
+            "description": .string("Run one of the user's Apple Shortcuts by its exact name. Shortcuts can control smart home devices (HomeKit), send messages, play music, trigger automations and much more. Ask the user for the exact shortcut name if unsure."),
+            "input_schema": .object([
+                "type": .string("object"),
+                "properties": .object([
+                    "name": .object(["type": .string("string"), "description": .string("Exact name of the shortcut in the Shortcuts app")]),
+                    "input": .object(["type": .string("string"), "description": .string("Optional text passed to the shortcut as input")]),
+                ]),
+                "required": .array([.string("name")]),
+            ]),
+        ]),
+        .object([
+            "name": .string("add_calendar_event"),
+            "description": .string("Add an event to the user's calendar (Apple Calendar). Use get_datetime first if you need today's date to compute the start time."),
+            "input_schema": .object([
+                "type": .string("object"),
+                "properties": .object([
+                    "title": .object(["type": .string("string"), "description": .string("Event title")]),
+                    "start_iso": .object(["type": .string("string"), "description": .string("Start time as ISO 8601 with timezone offset, e.g. 2026-07-14T10:00:00+02:00")]),
+                    "duration_minutes": .object(["type": .string("number"), "description": .string("Duration in minutes (default 60)")]),
+                    "notes": .object(["type": .string("string"), "description": .string("Optional notes")]),
+                ]),
+                "required": .array([.string("title"), .string("start_iso")]),
+            ]),
+        ]),
+        .object([
+            "name": .string("add_reminder"),
+            "description": .string("Add a reminder to the user's Reminders app, optionally with a due time."),
+            "input_schema": .object([
+                "type": .string("object"),
+                "properties": .object([
+                    "title": .object(["type": .string("string"), "description": .string("Reminder text")]),
+                    "due_iso": .object(["type": .string("string"), "description": .string("Optional due time as ISO 8601 with timezone offset")]),
+                ]),
+                "required": .array([.string("title")]),
+            ]),
+        ]),
     ])
 
     static func statusText(for name: String) -> String {
@@ -66,6 +105,9 @@ enum JarvisTools {
         case "set_timer": return "Setter timer …"
         case "remember": return "Noterer …"
         case "open_url": return "Åpner nettside …"
+        case "run_shortcut": return "Kjører snarvei …"
+        case "add_calendar_event": return "Legger i kalenderen …"
+        case "add_reminder": return "Oppretter påminnelse …"
         default: return "Arbeider …"
         }
     }
@@ -124,12 +166,76 @@ enum JarvisTools {
                 UIApplication.shared.open(url)
                 return ("Åpnet \(urlString)", false)
 
+            case "run_shortcut":
+                guard let shortcutName = input["name"]?.stringValue, !shortcutName.isEmpty else {
+                    return ("Mangler snarvei-navn.", true)
+                }
+                var comps = URLComponents(string: "shortcuts://run-shortcut")!
+                var items = [URLQueryItem(name: "name", value: shortcutName)]
+                if let text = input["input"]?.stringValue, !text.isEmpty {
+                    items.append(URLQueryItem(name: "input", value: "text"))
+                    items.append(URLQueryItem(name: "text", value: text))
+                }
+                comps.queryItems = items
+                guard let url = comps.url else { return ("Ugyldig snarvei-navn.", true) }
+                UIApplication.shared.open(url)
+                return ("Kjørte snarveien «\(shortcutName)» (forutsetter at den finnes i Snarveier-appen).", false)
+
+            case "add_calendar_event":
+                guard let title = input["title"]?.stringValue,
+                      let startISO = input["start_iso"]?.stringValue,
+                      let start = parseISO(startISO) else {
+                    return ("Mangler eller ugyldig tittel/starttid (bruk ISO 8601 med tidssone).", true)
+                }
+                let eventStore = EKEventStore()
+                let granted = (try? await eventStore.requestWriteOnlyAccessToEvents()) ?? false
+                guard granted else { return ("Fikk ikke tilgang til kalenderen. Gi tillatelse i Innstillinger → Jarvis.", true) }
+                let minutes = input["duration_minutes"]?.doubleValue ?? 60
+                let event = EKEvent(eventStore: eventStore)
+                event.title = title
+                event.startDate = start
+                event.endDate = start.addingTimeInterval(max(5, minutes) * 60)
+                event.notes = input["notes"]?.stringValue
+                event.calendar = eventStore.defaultCalendarForNewEvents
+                try eventStore.save(event, span: .thisEvent)
+                let formatter = DateFormatter()
+                formatter.locale = Locale(identifier: engine.languageSetting)
+                formatter.dateStyle = .medium
+                formatter.timeStyle = .short
+                return ("Lagt i kalenderen: «\(title)» \(formatter.string(from: start)).", false)
+
+            case "add_reminder":
+                guard let title = input["title"]?.stringValue, !title.isEmpty else { return ("Mangler tittel.", true) }
+                let reminderStore = EKEventStore()
+                let ok = (try? await reminderStore.requestFullAccessToReminders()) ?? false
+                guard ok else { return ("Fikk ikke tilgang til Påminnelser. Gi tillatelse i Innstillinger → Jarvis.", true) }
+                let reminder = EKReminder(eventStore: reminderStore)
+                reminder.title = title
+                reminder.calendar = reminderStore.defaultCalendarForNewReminders()
+                if let dueISO = input["due_iso"]?.stringValue, let due = parseISO(dueISO) {
+                    reminder.dueDateComponents = Calendar.current.dateComponents(
+                        [.year, .month, .day, .hour, .minute], from: due)
+                }
+                try reminderStore.save(reminder, commit: true)
+                return ("Påminnelse opprettet: «\(title)».", false)
+
             default:
                 return ("Ukjent verktøy: \(name)", true)
             }
         } catch {
             return ("Verktøyfeil: \(error.localizedDescription)", true)
         }
+    }
+
+    private static func parseISO(_ text: String) -> Date? {
+        let iso = ISO8601DateFormatter()
+        if let d = iso.date(from: text) { return d }
+        // Fallback: no timezone offset — interpret as local time
+        let local = DateFormatter()
+        local.locale = Locale(identifier: "en_US_POSIX")
+        local.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        local.timeZone = TimeZone.current
+        return local.date(from: text)
     }
 
     // MARK: Weather via Open-Meteo (free, no API key)
