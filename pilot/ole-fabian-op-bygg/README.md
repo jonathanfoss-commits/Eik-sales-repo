@@ -25,6 +25,10 @@ støtte til firmaets eget salgsløfte.
 
 ---
 
+> **Salgsåpneren:** send ham [`mulighetsrapport.html`](mulighetsrapport.html) først — den viser
+> nøyaktig hvilke 11,5 timer/uke Lærling kan ta over, personlig for OP Bygg. (Ligger også som
+> `/rapport.html` på app-URL-en når den er publisert.)
+
 ## Slik kommer han i gang (dag 1 — 20 minutter, én gang)
 
 1. Last ned **Claude**-appen på mobilen (App Store/Google Play) og opprett konto

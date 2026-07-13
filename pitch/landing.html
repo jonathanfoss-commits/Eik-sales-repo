@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lærling — Ansett din første AI-medarbeider</title>
+<meta name="description" content="Lærling undersøker bedriften din, lærer hvordan du jobber, og bygger og drifter AI-verktøyene du trenger. Gratis mulighetsrapport innen 72 timer.">
+<meta property="og:title" content="Lærling — Ansett din første AI-medarbeider">
+<meta property="og:description" content="Den finner selv ut hva den skal gjøre. Gratis mulighetsrapport innen 72 timer.">
+<meta name="theme-color" content="#070D12">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='42' fill='%2339E29B'/%3E%3C/svg%3E">
 <style>
   /* ── Tokens: midnatt + nordlys ───────────────────────────── */
   :root{
@@ -369,18 +374,18 @@
       <div class="plan avslor">
         <h3>Start</h3><div class="pris">1 490</div><div class="per">KR / MND · EKS. MVA</div>
         <ul><li>2 aktive AI-verktøy</li><li>Bedriftsprofil og læring</li><li>Ukentlig rapport</li><li>2 integrasjoner</li></ul>
-        <a class="btn ghost" href="#">Kom i gang</a>
+        <a class="btn ghost cta-epost" data-emne="Lærling Start — jeg vil ha mulighetsrapporten" href="#">Kom i gang</a>
       </div>
       <div class="plan hoved avslor">
         <div class="merke">Mest valgt</div>
         <h3>Vekst</h3><div class="pris">3 990</div><div class="per">KR / MND · EKS. MVA</div>
         <ul><li>6 aktive AI-verktøy</li><li>Autopilot per verktøy</li><li>Månedlige verktøyforslag</li><li>6 integrasjoner</li><li>Onboarding med menneske</li></ul>
-        <a class="btn" href="#">Kom i gang</a>
+        <a class="btn cta-epost" data-emne="Lærling Vekst — jeg vil ha mulighetsrapporten" href="#">Kom i gang</a>
       </div>
       <div class="plan avslor">
         <h3>Pro</h3><div class="pris">8 990</div><div class="per">KR / MND · EKS. MVA</div>
         <ul><li>Ubegrensede verktøy</li><li>Full autopilot</li><li>Skreddersydde verktøy</li><li>Dedikert rådgiver</li></ul>
-        <a class="btn ghost" href="#">Kontakt oss</a>
+        <a class="btn ghost cta-epost" data-emne="Lærling Pro — fortell meg mer" href="#">Kontakt oss</a>
       </div>
     </div>
   </div>
@@ -415,7 +420,7 @@
     <h2>Få mulighetsrapporten. <span class="grad">Innen 72 timer.</span></h2>
     <p class="lead">Lærling undersøker bedriften din og viser deg nøyaktig hvilke timer den kan
     ta over — før du betaler en krone.</p>
-    <a class="btn" href="#">Start undersøkelsen</a>
+    <a class="btn cta-epost" data-emne="Start undersøkelsen av bedriften min" href="#">Start undersøkelsen</a>
   </div>
 </section>
 
@@ -425,6 +430,14 @@
 
 <script>
 (function(){
+  /* KONTAKT: bytt til firmaadressen når den er klar */
+  var KONTAKT = "jonathan.foss@eikandfriends.no";
+  document.querySelectorAll(".cta-epost").forEach(function(a){
+    a.href = "mailto:" + KONTAKT
+      + "?subject=" + encodeURIComponent(a.dataset.emne || "Lærling — jeg vil vite mer")
+      + "&body=" + encodeURIComponent("Hei!\n\nBedriften min: \nNettside: \nTelefon: \n\nMvh ");
+  });
+
   var redusert = matchMedia("(prefers-reduced-motion: reduce)").matches;
   if("IntersectionObserver" in window && !redusert){
     document.documentElement.classList.add("js");

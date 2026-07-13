@@ -181,6 +181,19 @@
   .toast.vis{opacity:1;transform:translate(-50%,0)}
   .toast b{color:var(--aurora-a)}
 
+  /* velkomst første gang */
+  .velkomst{position:fixed;inset:0;z-index:80;display:none;align-items:center;
+     justify-content:center;padding:28px;background:rgba(7,13,18,.92);backdrop-filter:blur(8px)}
+  .velkomst.vis{display:flex}
+  .velkomst .boks{max-width:400px;text-align:center;background:var(--flate-2);
+     border:1px solid rgba(57,226,155,.3);border-radius:20px;padding:34px 26px}
+  .velkomst .logo{font-size:2rem;font-weight:800;letter-spacing:-.02em;margin-bottom:12px}
+  .velkomst .logo b{color:var(--aurora-a)}
+  .velkomst p{font-size:.94rem;color:var(--dis);margin-bottom:22px}
+  .velkomst p b{color:var(--lys)}
+  .nullstill{display:block;text-align:center;margin:26px auto 0;font-size:.74rem;
+     color:var(--dis);text-decoration:underline}
+
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{animation:none!important;transition:none!important}
   }
@@ -353,6 +366,8 @@ Mvh Ole Fabian, OP Bygg AS</div>
     <div class="kort vk forslag"><div class="info"><h3>Nytt forslag fra Lærling</h3>
       <p>SJA-utkast før oppstart av nye arbeidsoperasjoner</p></div>
       <button class="modus" id="aktiver-ny">AKTIVER</button></div>
+
+    <button class="nullstill" id="nullstill">Nullstill demoen</button>
   </div>
 
 </div>
@@ -391,6 +406,16 @@ Mvh Ole Fabian, OP Bygg AS</div>
 
 <div class="toast" id="toast"></div>
 
+<div class="velkomst" id="velkomst" role="dialog" aria-label="Velkommen">
+  <div class="boks">
+    <div class="logo">Lærling<b>.</b></div>
+    <p>Hei! Dette er en smakebit på din nye <b>AI-medarbeider</b>.
+    Utkastene er ekte eksempler fra en OP Bygg-hverdag — men ingenting sendes noe sted,
+    så <b>trykk deg rundt</b>: godkjenn, dikter med mikrofonen, og se rapporten.</p>
+    <button class="knapp" id="velkomst-lukk" style="width:100%">Kom i gang</button>
+  </div>
+</div>
+
 <script>
 (function(){
   /* service worker: appen virker offline og åpner umiddelbart */
@@ -398,6 +423,23 @@ Mvh Ole Fabian, OP Bygg AS</div>
      (location.protocol === "https:" || location.hostname === "localhost")){
     navigator.serviceWorker.register("sw.js").catch(function(){});
   }
+
+  /* minne: appen husker hva brukeren har gjort */
+  var lager;
+  try{ lager = JSON.parse(localStorage.getItem("laerling") || "{}"); }catch(e){ lager = {}; }
+  function lagre(){ try{ localStorage.setItem("laerling", JSON.stringify(lager)); }catch(e){} }
+
+  /* velkomst første gang */
+  var velkomst = document.getElementById("velkomst");
+  if(!lager.velkommen){ velkomst.classList.add("vis"); }
+  document.getElementById("velkomst-lukk").addEventListener("click", function(){
+    velkomst.classList.remove("vis");
+    lager.velkommen = 1; lagre();
+  });
+  document.getElementById("nullstill").addEventListener("click", function(){
+    try{ localStorage.removeItem("laerling"); }catch(e){}
+    location.reload();
+  });
 
   /* levende status i toppen */
   var statuser = ["Arbeider", "Overvåker innboksen", "Følger kalenderen",
@@ -449,6 +491,8 @@ Mvh Ole Fabian, OP Bygg AS</div>
     });
     kort.querySelector(".godkjenn").addEventListener("click", function(){
       kort.classList.add("borte");
+      lager.godkjent = (lager.godkjent || []).concat(kort.querySelector("h3").textContent);
+      lagre();
       setTimeout(function(){
         var li = document.createElement("li");
         li.innerHTML = '<span class="hake"></span>' + kort.querySelector("h3").textContent;
@@ -462,6 +506,21 @@ Mvh Ole Fabian, OP Bygg AS</div>
     });
   }
   document.querySelectorAll(".utkast").forEach(kobleUtkast);
+
+  /* gjenopprett tidligere godkjente utkast fra minnet */
+  (lager.godkjent || []).forEach(function(tittel){
+    document.querySelectorAll(".utkast").forEach(function(kort){
+      if(kort.querySelector("h3").textContent === tittel){
+        var li = document.createElement("li");
+        li.innerHTML = '<span class="hake"></span>' + tittel;
+        document.getElementById("gjort-liste").prepend(li);
+        kort.remove();
+      }
+    });
+  });
+  antall.textContent = document.querySelectorAll(".utkast").length;
+  document.getElementById("tomt").classList.toggle("vis",
+    document.querySelectorAll(".utkast").length === 0);
 
   /* graf-tooltip */
   var tips = document.getElementById("tips"), graf = document.getElementById("graf");
@@ -478,13 +537,22 @@ Mvh Ole Fabian, OP Bygg AS</div>
     s.addEventListener("pointerleave", function(){ tips.classList.remove("vis"); });
   });
 
-  /* verktøy-modus */
+  /* verktøy-modus (huskes mellom besøk) */
   document.querySelectorAll(".modus[data-modus]").forEach(function(k){
+    var navn = k.closest(".vk").querySelector("h3").textContent,
+        husket = (lager.moduser || {})[navn];
+    if(husket && husket !== k.dataset.modus){
+      k.dataset.modus = husket;
+      k.textContent = husket.toUpperCase();
+      k.classList.toggle("auto", husket === "auto");
+    }
     k.addEventListener("click", function(){
       var auto = k.dataset.modus === "auto";
       k.dataset.modus = auto ? "utkast" : "auto";
       k.textContent = auto ? "UTKAST" : "AUTO";
       k.classList.toggle("auto", !auto);
+      lager.moduser = lager.moduser || {};
+      lager.moduser[navn] = k.dataset.modus; lagre();
       siFra(auto ? "Verktøyet lager nå <b>utkast</b> du godkjenner"
                  : "<b>Autopilot på</b> — kjører uten godkjenning");
     });
