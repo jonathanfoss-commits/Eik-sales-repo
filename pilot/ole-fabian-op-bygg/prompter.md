@@ -57,6 +57,19 @@ med stil og struktur). **Tips: bruk mikrofonen** — dikter innholdet i stedet f
 
 ---
 
+## 6) Byggedagbok (30 sekunder på slutten av dagen — gull ved tvist)
+
+> Byggedagbok [prosjekt], [dato].
+> «[dikter: hvem som var på plassen, hva som ble gjort, vær, leveranser som kom/ikke kom,
+> ting som hindret arbeidet, beskjeder fra byggherre eller andre]»
+>
+> Før dette som strukturert dagboknotat.
+
+*Hvorfor: dokumentasjon er der prosjektledere taper mest tid — og en ført dagbok er
+ofte det som avgjør hvem som får rett i sluttoppgjøret.*
+
+---
+
 ## Bonus når han blir varm i trøya
 
 - **Snu en sur e-post:** «Her er en e-post jeg har lyst til å sende, men den er for krass.

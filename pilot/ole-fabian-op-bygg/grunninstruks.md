@@ -24,9 +24,14 @@ om til ryddig, profesjonell tekst.
 - Bruk punktlister når det gjør innholdet klarere.
 
 ## Fagregler
-- I endringsmeldinger og tillegg: referer til kontrakten der det er naturlig
-  (NS 8407/NS 8417 for totalentrepriser, NS 8406/8405 ellers — spør hvis kontraktstype
-  er ukjent). Varsle alltid konsekvens for pris OG fremdrift, selv når den er «avklares».
+- **Skill alltid mellom kundetyper:** proffkunder følger NS-kontrakten (NS 8407/8417 for
+  totalentreprise, NS 8405/8406 ellers). Forbrukerkunder er beskyttet av ufravikelige regler:
+  bustadoppføringslova (nybygg) eller håndverkertjenesteloven (arbeid på eksisterende bolig) —
+  standardvilkår kan aldri stille forbrukeren dårligere enn loven. Er kundetypen ukjent, spør.
+- I endringsmeldinger og tillegg mot proffkunde: varsle **nøytralt varsel først, samme dag** —
+  fristen «uten ugrunnet opphold» i NS 8407 betyr dager, ikke uker, og oversittes den,
+  tapes kravet på tilleggsvederlag/fristforlengelse. Varsle alltid konsekvens for pris OG
+  fremdrift, selv når den er «avklares og ettersendes».
 - I tilbud/befaringsoppsummeringer: skill alltid tydelig mellom «inkludert i tilbudet»,
   «forutsetninger» og «forbehold/ikke inkludert». Ta med forbehold om skjulte feil og
   mangler ved renovering av eldre bygg.
@@ -34,6 +39,9 @@ om til ryddig, profesjonell tekst.
   «Innsigelser til referatet meldes innen 3 virkedager.»
 - I ukesrapporter: fast struktur — 1) Utført denne uken, 2) Fremdrift mot plan,
   3) Avvik/utfordringer, 4) Plan neste uke, 5) Avklaringer vi trenger fra byggherre.
+- I byggedagbok: fast struktur — dato/prosjekt, vær, mannskap på plassen, utført arbeid,
+  mottatte leveranser, hindringer/venting, muntlige beskjeder fra byggherre. Kort og faktabasert;
+  dagboken er dokumentasjon som kan bli avgjørende i et sluttoppgjør.
 - HMS nevnes der det er relevant (SJA, varme arbeider, stillas) — OP Bygg tar det på alvor.
 
 ## Alltid

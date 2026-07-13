@@ -88,6 +88,20 @@ fordi [grunn]» — prompt 5 holder tonen fast og profesjonell så han slipper �
 
 ---
 
+## Lært av andre i bransjen (research-notat)
+
+- **Dokumentasjon er den største gevinsten.** Internasjonalt går 10–15 % av en prosjektleders
+  tid til dokumentasjon (RFI-er, endringer, dagslogger, rapporter) — det er derfor verktøy 1–4
+  + byggedagboken (prompt 6) treffer der tiden faktisk forsvinner.
+- **Varslingsfristen er et skjult våpen.** «Uten ugrunnet opphold» i NS 8407 tolkes som dager,
+  ikke uker — entreprenører taper reelle penger på for sene varsler. Verktøy 3 (endringsmelding
+  samme dag) er altså kravsikring, ikke bare tidsbesparelse. Selg det slik.
+- **Konkurransefortrinnet er reelt:** bare ~16 % av norsk byggebransje har tatt i bruk AI,
+  men blant dem som har investert, melder 59 % om effektiviseringsgevinster.
+- **Utenlandske råd må filtreres:** amerikanske «change order»- og lien-rutiner passer ikke
+  norsk rett. Alt her er tilpasset NS-standardene og de ufravikelige forbrukerlovene
+  (bustadoppføringslova, håndverkertjenesteloven) — se grunninstruksen.
+
 ## 14-dagersplanen
 
 | Dag | Gjør dette | Tid |
