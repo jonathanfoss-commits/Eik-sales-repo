@@ -2,6 +2,10 @@
 
 En personlig stemmeassistent i Iron Man-stil som fungerer på **både Mac og iPhone** – som en app.
 
+> 📱 **Vil du ha den som ekte native iPhone-app?** Se [`ios/README.md`](ios/README.md) —
+> et komplett SwiftUI/Xcode-prosjekt med iOS-varsler for timere, Keychain-lagret nøkkel,
+> native talegjenkjenning og haptikk. Webversjonen under fungerer uansett på begge plattformer.
+
 Bygget som en **PWA (Progressive Web App)**: én kodebase, ingen App Store, ingen Xcode. Hjernen er
 [Claude](https://www.anthropic.com) (modellen `claude-opus-4-8`), stemmen og ørene er nettleserens
 innebygde talegjenkjenning og talesyntese.
