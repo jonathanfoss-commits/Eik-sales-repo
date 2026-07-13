@@ -87,6 +87,38 @@
   }
   .msg a { color: var(--cyan); }
 
+  /* Boot sequence overlay */
+  #boot {
+    position: fixed; inset: 0; background: var(--bg); z-index: 60;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity .5s; cursor: pointer;
+  }
+  #boot.off { opacity: 0; pointer-events: none; }
+  #boot pre {
+    font-family: inherit; font-size: 13px; line-height: 2;
+    color: var(--cyan); letter-spacing: 0.12em;
+    text-shadow: 0 0 12px rgba(55, 213, 255, 0.6);
+  }
+
+  /* Quick-action chips */
+  #chips {
+    flex: none; display: flex; gap: 8px; overflow-x: auto;
+    padding: 0 16px 8px; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  #chips::-webkit-scrollbar { display: none; }
+  .chip {
+    flex: none; background: var(--panel); border: 1px solid var(--line); color: var(--muted);
+    border-radius: 999px; padding: 7px 13px; font: inherit; font-size: 12px;
+    cursor: pointer; white-space: nowrap;
+  }
+  .chip:hover { color: var(--cyan); border-color: var(--cyan-dim); }
+
+  /* Thinking indicator */
+  .msg.jarvis.dots::after { content: "▍"; color: var(--cyan); animation: cursorblink .8s steps(1) infinite; }
+  @keyframes cursorblink { 50% { opacity: 0; } }
+
+  .field input[type=range] { width: 100%; accent-color: var(--cyan); }
+
   #status {
     flex: none; text-align: center; font-size: 11px; letter-spacing: 0.22em;
     color: var(--muted); min-height: 16px; padding: 2px 12px 6px;
@@ -201,6 +233,7 @@
 </header>
 
 <div id="log"></div>
+<div id="chips"></div>
 <div id="status"></div>
 
 <div id="controls">
@@ -240,6 +273,10 @@
       <select id="voiceSelect"><option value="">Automatisk</option></select>
       <div class="note">Tips: På Mac/iPhone gir «Daniel (English UK)» en klassisk Jarvis-følelse. For norske svar, velg en norsk stemme.</div>
     </div>
+    <div class="field">
+      <label for="rateSlider">TALEHASTIGHET: <span id="rateVal">1.0×</span></label>
+      <input id="rateSlider" type="range" min="0.8" max="1.4" step="0.05">
+    </div>
     <div class="field toggle">
       <label for="speakToggle">LES SVAR HØYT</label>
       <input id="speakToggle" type="checkbox" checked>
@@ -267,6 +304,14 @@
     <div class="field">
       <label>JARVIS' HUKOMMELSE OM DEG</label>
       <div id="memoryList"></div>
+    </div>
+    <div class="field">
+      <label>FORBRUK (DENNE ENHETEN)</label>
+      <div class="note" id="usageInfo">–</div>
+    </div>
+    <div class="settings-actions">
+      <button id="exportBtn">Eksporter samtale</button>
+      <button id="resetUsageBtn">Nullstill forbruk</button>
     </div>
     <div class="settings-actions">
       <button class="danger" id="clearMemBtn">Glem alt</button>
@@ -299,6 +344,10 @@ const store = {
   set mcp(v)      { localStorage.setItem("jarvis_mcp", JSON.stringify(v)); },
   get hooks()     { try { return JSON.parse(localStorage.getItem("jarvis_hooks")) || []; } catch (_) { return []; } },
   set hooks(v)    { localStorage.setItem("jarvis_hooks", JSON.stringify(v)); },
+  get rate()      { return parseFloat(localStorage.getItem("jarvis_rate")) || 1.0; },
+  set rate(v)     { localStorage.setItem("jarvis_rate", String(v)); },
+  get usage()     { try { return JSON.parse(localStorage.getItem("jarvis_usage")) || { tin: 0, tout: 0, cost: 0 }; } catch (_) { return { tin: 0, tout: 0, cost: 0 }; } },
+  set usage(v)    { localStorage.setItem("jarvis_usage", JSON.stringify(v)); },
   get memory()    { try { return JSON.parse(localStorage.getItem("jarvis_memory")) || []; } catch (_) { return []; } },
   set memory(v)   { localStorage.setItem("jarvis_memory", JSON.stringify(v)); },
   get history()   { try { return JSON.parse(localStorage.getItem("jarvis_history")) || []; } catch (_) { return []; } },
@@ -592,7 +641,7 @@ function speak(text) {
   const u = new SpeechSynthesisUtterance(clean);
   const v = pickVoice();
   if (v) u.voice = v;
-  u.rate = 1.02;
+  u.rate = store.rate;
   u.pitch = 0.95;
   speakQueueActive++;
   setMicState("speaking");
@@ -690,18 +739,23 @@ async function streamOnce(bubbleRef) {
   if (!res.ok) {
     let detail = "";
     try { detail = (await res.json()).error?.message || ""; } catch (_) {}
-    if (res.status === 401) throw new Error("Ugyldig API-nøkkel (401). Sjekk nøkkelen under ⚙ OPPSETT.");
-    if (res.status === 429) throw new Error("For mange forespørsler (429). Vent litt og prøv igjen.");
-    throw new Error(`API-feil ${res.status}. ${detail}`);
+    let err;
+    if (res.status === 401) err = new Error("Ugyldig API-nøkkel (401). Sjekk nøkkelen under ⚙ OPPSETT.");
+    else if (res.status === 429) err = new Error("For mange forespørsler (429). Vent litt og prøv igjen.");
+    else err = new Error(`API-feil ${res.status}. ${detail}`);
+    err.retryable = res.status === 429 || res.status >= 500;
+    throw err;
   }
 
   const blocks = [];
   let stopReason = null;
   let spokenUpTo = 0;
   let textSoFar = "";
+  let usageIn = 0, usageOut = 0;
 
   function bubble() {
     if (!bubbleRef.el) bubbleRef.el = addMsg("jarvis", "");
+    bubbleRef.el.classList.remove("dots");
     return bubbleRef.el;
   }
   function speakNewSentences(force) {
@@ -752,8 +806,11 @@ async function streamOnce(bubbleRef) {
             try { b.input = b._json ? JSON.parse(b._json) : {}; } catch (_) {}
             delete b._json;
           }
+        } else if (data.type === "message_start") {
+          usageIn = data.message?.usage?.input_tokens || 0;
         } else if (data.type === "message_delta") {
           if (data.delta && data.delta.stop_reason) stopReason = data.delta.stop_reason;
+          if (data.usage && data.usage.output_tokens) usageOut = data.usage.output_tokens;
         } else if (data.type === "error") {
           throw new Error(data.error?.message || "Ukjent strømmefeil.");
         }
@@ -761,7 +818,47 @@ async function streamOnce(bubbleRef) {
     }
   }
   speakNewSentences(true);
+  trackUsage(usageIn, usageOut);
+  if (bubbleRef.el) linkifyBubble(bubbleRef.el);
   return { content: blocks.filter(Boolean), stopReason };
+}
+
+const PRICES = { "claude-opus-4-8": [5, 25], "claude-sonnet-5": [3, 15] }; // USD per MTok in/out
+function trackUsage(tin, tout) {
+  if (!tin && !tout) return;
+  const p = PRICES[store.model] || [5, 25];
+  const u = store.usage;
+  u.tin += tin; u.tout += tout;
+  u.cost += (tin * p[0] + tout * p[1]) / 1e6;
+  store.usage = u;
+}
+
+function linkifyBubble(el) {
+  const text = el.textContent;
+  if (!/https?:\/\//.test(text)) return;
+  el.textContent = "";
+  for (const part of text.split(/(https?:\/\/[^\s)]+)/g)) {
+    if (/^https?:\/\//.test(part)) {
+      const a = document.createElement("a");
+      a.href = part; a.target = "_blank"; a.rel = "noopener"; a.textContent = part;
+      el.appendChild(a);
+    } else {
+      el.appendChild(document.createTextNode(part));
+    }
+  }
+}
+
+async function streamOnceWithRetry(bubbleRef) {
+  try {
+    return await streamOnce(bubbleRef);
+  } catch (e) {
+    if (e.retryable) {
+      setStatus("Overbelastet – prøver igjen …", true);
+      await new Promise((r) => setTimeout(r, 2500));
+      return await streamOnce(bubbleRef);
+    }
+    throw e;
+  }
 }
 
 async function askJarvis(userText) {
@@ -779,11 +876,14 @@ async function askJarvis(userText) {
   setStatus("Prosesserer …", true);
 
   const historyLenAtStart = history.length;
+  let currentBubble = null;
   try {
     let rounds = 0;
     while (rounds++ < 12) {
-      const bubbleRef = { el: null };
-      const { content, stopReason } = await streamOnce(bubbleRef);
+      const bubbleRef = { el: addMsg("jarvis", "") };
+      bubbleRef.el.classList.add("dots");
+      currentBubble = bubbleRef.el;
+      const { content, stopReason } = await streamOnceWithRetry(bubbleRef);
       if (!content.length) { if (bubbleRef.el) bubbleRef.el.remove(); break; }
       history.push({ role: "assistant", content });
       if (bubbleRef.el && !bubbleRef.el.textContent.trim()) bubbleRef.el.remove();
@@ -812,6 +912,7 @@ async function askJarvis(userText) {
     saveHistory();
   } catch (err) {
     history.length = historyLenAtStart - 1; // roll back the failed turn
+    if (currentBubble && !currentBubble.textContent.trim()) currentBubble.remove();
     const msg = (err instanceof TypeError)
       ? "Fikk ikke kontakt med Claude API. Sjekk internettforbindelsen."
       : (err.message || String(err));
@@ -1002,6 +1103,12 @@ function collectHooks() {
 }
 $("addHookBtn").addEventListener("click", () => $("hookList").appendChild(hookRow()));
 
+function renderUsage() {
+  const u = store.usage;
+  $("usageInfo").textContent = u.tin || u.tout
+    ? `${u.tin.toLocaleString("nb-NO")} tokens inn / ${u.tout.toLocaleString("nb-NO")} ut ≈ $${u.cost.toFixed(2)}`
+    : "Ingen forbruk registrert enda.";
+}
 function openSettings() {
   $("apiKey").value = store.key;
   $("modelSelect").value = store.model;
@@ -1009,11 +1116,33 @@ function openSettings() {
   $("speakToggle").checked = store.speak;
   $("searchToggle").checked = store.search;
   $("wakeToggle").checked = store.wake;
+  $("rateSlider").value = store.rate;
+  $("rateVal").textContent = store.rate.toFixed(2) + "×";
+  renderUsage();
   renderMemory();
   renderMcp();
   renderHooks();
   $("settings").classList.add("open");
 }
+$("rateSlider").addEventListener("input", (e) => {
+  $("rateVal").textContent = parseFloat(e.target.value).toFixed(2) + "×";
+});
+$("resetUsageBtn").addEventListener("click", () => {
+  store.usage = { tin: 0, tout: 0, cost: 0 };
+  renderUsage();
+});
+$("exportBtn").addEventListener("click", () => {
+  const text = [...document.querySelectorAll(".msg.user, .msg.jarvis")].map((el) =>
+    (el.classList.contains("user") ? "DU: " : "JARVIS: ") +
+    el.textContent.replace(/^J\.A\.R\.V\.I\.S\./, "").trim()
+  ).join("\n\n");
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "jarvis-samtale.txt";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+});
 function closeSettings() {
   store.key = $("apiKey").value.trim();
   store.model = $("modelSelect").value;
@@ -1023,8 +1152,10 @@ function closeSettings() {
   store.search = $("searchToggle").checked;
   store.mcp = collectMcp();
   store.hooks = collectHooks();
+  store.rate = parseFloat($("rateSlider").value) || 1.0;
   $("settings").classList.remove("open");
   tickClock();
+  renderChips();
   const wantWake = $("wakeToggle").checked;
   if (wantWake !== wakeMode) setWakeMode(wantWake);
 }
@@ -1043,15 +1174,90 @@ $("clearMemBtn").addEventListener("click", () => {
   renderMemory();
 });
 
+/* ---------- quick-action chips ---------- */
+function chipDefs() {
+  return isNorsk() ? [
+    ["📰 Dagens briefing", "Gi meg dagens briefing, Jarvis: dagens dato, været der jeg er nå, og de 3–4 viktigste nyhetene i Norge og verden akkurat nå. Kort og muntlig."],
+    ["🌤️ Været", "Hvordan er været her nå, og hvordan blir resten av dagen?"],
+    ["⏲️ Timer 5 min", "Sett en timer på 5 minutter."],
+    ["💡 Hva kan du?", "Hva kan du gjøre for meg? Gi meg en kort, muntlig oversikt over evnene dine."],
+  ] : [
+    ["📰 Daily briefing", "Give me today's briefing, Jarvis: the date, the weather where I am, and the 3–4 most important news stories right now. Short and conversational."],
+    ["🌤️ Weather", "What's the weather here right now, and how will the rest of the day be?"],
+    ["⏲️ 5 min timer", "Set a 5 minute timer."],
+    ["💡 What can you do?", "What can you do for me? Give me a short spoken overview of your capabilities."],
+  ];
+}
+function renderChips() {
+  const el = $("chips");
+  el.innerHTML = "";
+  for (const [label, prompt] of chipDefs()) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip";
+    b.textContent = label;
+    b.onclick = () => askJarvis(prompt);
+    el.appendChild(b);
+  }
+}
+
 /* ---------- boot ---------- */
+function bootSequence() {
+  if (sessionStorage.getItem("jarvis_booted")) return;
+  sessionStorage.setItem("jarvis_booted", "1");
+  const overlay = document.createElement("div");
+  overlay.id = "boot";
+  const pre = document.createElement("pre");
+  overlay.appendChild(pre);
+  document.body.appendChild(overlay);
+  const lines = [
+    "J.A.R.V.I.S.",
+    "JUST A RATHER VERY INTELLIGENT SYSTEM",
+    "",
+    "ARC-REAKTOR ............ ONLINE",
+    "TALEGJENKJENNING ....... KLAR",
+    "TALESYNTESE ............ KLAR",
+    "VERKTØYSYSTEMER ........ AKTIVE",
+    "HJERNE (CLAUDE) ........ TILKOBLET",
+    "",
+    "ALLE SYSTEMER OPERATIVE",
+  ];
+  let li = 0, ci = 0, finished = false;
+  function done() {
+    if (finished) return;
+    finished = true;
+    clearInterval(timer);
+    overlay.classList.add("off");
+    setTimeout(() => overlay.remove(), 550);
+  }
+  overlay.addEventListener("click", done);
+  const timer = setInterval(() => {
+    if (li >= lines.length) { setTimeout(done, 450); clearInterval(timer); return; }
+    ci += 4;
+    let out = lines.slice(0, li).join("\n");
+    if (li < lines.length) out += (li ? "\n" : "") + lines[li].slice(0, ci);
+    pre.textContent = out;
+    if (ci >= lines[li].length) { ci = 0; li++; }
+  }, 26);
+}
+
 function greet() {
   addMsg("hint", isNorsk()
-    ? "Trykk på reaktoren for å snakke – eller skriv under. Prøv: «Hva blir været i morgen?» eller «Sett en timer på 5 minutter»."
-    : "Tap the reactor to speak – or type below. Try: “What's the weather tomorrow?” or “Set a 5 minute timer”.");
-  addMsg("jarvis", isNorsk()
-    ? "God dag, sir. Alle systemer er operative. Hva kan jeg gjøre for Dem?"
-    : "Good day, sir. All systems operational. How may I be of service?");
+    ? "Trykk på reaktoren for å snakke, bruk hurtigknappene – eller skriv under."
+    : "Tap the reactor to speak, use the quick actions – or type below.");
+  const variants = isNorsk() ? [
+    "God dag, sir. Alle systemer er operative. Hva kan jeg gjøre for Dem?",
+    "Velkommen tilbake, sir. Reaktoren er ladet og jeg står til Deres tjeneste.",
+    "Systemsjekk fullført, sir. Hva står på agendaen i dag?",
+  ] : [
+    "Good day, sir. All systems operational. How may I be of service?",
+    "Welcome back, sir. The reactor is charged and I am at your service.",
+    "Systems check complete, sir. What is on the agenda today?",
+  ];
+  addMsg("jarvis", variants[Math.floor(Math.random() * variants.length)]);
 }
+bootSequence();
+renderChips();
 if (history.length) { renderHistory(); } else { greet(); }
 log.scrollTop = log.scrollHeight;
 if (!store.key) setTimeout(openSettings, 600);
