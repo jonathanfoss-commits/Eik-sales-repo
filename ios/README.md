@@ -10,7 +10,10 @@ En **ekte native iOS-app** (SwiftUI) av Jarvis — med alt PWA-en har, pluss det
 | 🔊 Stemmer | Alle iOS-stemmer, inkl. høykvalitets nedlastbare (Innstillinger → Tilgjengelighet → Opplest innhold) |
 | 📳 Haptikk | Følbar respons når du trykker på reaktoren |
 | 🌤️ Vær | `CoreLocation` GPS + Open-Meteo |
+| 📅 Kalender & påminnelser | «Legg inn møte i morgen kl. 10» → rett i Apple Kalender/Påminnelser via EventKit — ingen konto, ingen sky |
+| 🍎 Snarveier | `run_shortcut` kjører hvilken som helst Apple-snarvei på navn → styr HomeKit, meldinger, musikk, alt Snarveier kan |
 | 🌐 Websøk | Claudes serverside websøk, som i PWA-en |
+| 🔌 MCP | Valgfri direktekobling til f.eks. Home Assistant MCP (token i nøkkelringen) |
 | 💾 Hukommelse + historikk | Overlever omstart, «husk at …» fungerer på tvers av økter |
 
 ## Slik bygger og installerer du (krever Mac med Xcode)

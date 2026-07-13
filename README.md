@@ -69,24 +69,32 @@ Mikrofon-tilgang krever HTTPS, så enklest er **GitHub Pages**:
 - Eller aktiver **våkneord** i oppsettet og si «Jarvis, hva er klokka i Tokyo?»
 - Bytt språk og stemme under ⚙ OPPSETT (tips: stemmen «Daniel (English UK)» gir klassisk Jarvis-følelse)
 
-## 🌍 Styr «alt» med integrasjoner (MCP)
+## 🌍 Styr «alt» — uten mellomledd
 
-Jarvis kan kobles til eksterne **MCP-servere** (Model Context Protocol) og får da verktøyene
-deres — kjørt sikkert på Anthropic sin serverside. Legg til under ⚙ OPPSETT → «Integrasjoner»:
+Jarvis har fire veier til den virkelige verden. Ingen av dem krever Zapier eller andre
+betal-mellomledd:
 
-**Zapier MCP → styr 8000+ apper** (kalender, Gmail, Slack, Teams, Notion, smarthjem via
-Zapier-integrasjoner, m.m.):
-1. Gå til [mcp.zapier.com](https://mcp.zapier.com), logg inn og opprett en MCP-server
-2. Velg hvilke apper/handlinger Jarvis skal få (f.eks. «Google Calendar: Create Event»)
-3. Kopier din personlige server-URL og lim inn i Jarvis (navn: `zapier`)
-4. Si: *«Jarvis, legg inn møte med Ola i morgen klokka ti»* 🤯
+**1. 🍎 Apple Snarveier (`run_shortcut`) — den kraftigste.** Lag en snarvei i
+Snarveier-appen (iPhone/Mac) — snarveier kan styre HomeKit-lys og -varme, sende meldinger,
+spille musikk, starte apper, kalle URL-er … Jarvis kjører dem på navn:
+1. Lag f.eks. snarveien «Lys av» som slår av HomeKit-lysene
+2. Si: *«Jarvis, kjør snarveien Lys av»* — eller bare *«slå av lysene»* (Jarvis spør/husker navnet)
+3. Bonus: be Jarvis *huske* snarvei-navnene dine («husk at snarveien for leggetid heter God natt»)
 
-**Home Assistant → styr huset direkte** (lys, varme, låser):
-1. I Home Assistant: installer/aktiver MCP Server-integrasjonen
-2. Lim inn URL-en + en langtidstilgangstoken i Jarvis
-3. Si: *«Jarvis, slå av alle lysene i stua»*
+**2. 🪝 Egne webhooks — dine kommandoer.** Under ⚙ OPPSETT → «Webhooks» legger du inn
+navn + URL + beskrivelse; hver blir et eget verktøy Jarvis bruker når det passer:
+- **Home Assistant**: lag en automatisering med utløser «Webhook» → styr hva som helst i huset
+- **n8n** (selvhostet, åpen kildekode): bygg vilkårlige arbeidsflyter Jarvis kan utløse
+- **IFTTT** webhooks fungerer også
 
-Alle MCP-tjenester med Streamable HTTP-endepunkt fungerer (Todoist, Linear, GitHub, …).
+**3. 📅 Native Apple-integrasjon (iPhone-appen):** `add_calendar_event` og `add_reminder`
+legger avtaler og påminnelser rett i Apple Kalender/Påminnelser — ingen konto, ingen sky:
+*«Jarvis, legg inn tannlege torsdag klokka 14»*
+
+**4. 🔌 MCP-servere — direktekobling.** Under ⚙ OPPSETT → «Integrasjoner» kan du koble
+til tjenester som har egen MCP-server (kjøres på Anthropic sin serverside):
+Home Assistant MCP, GitHub (`api.githubcopilot.com/mcp/` + PAT som token), Todoist, Linear …
+
 Jarvis er instruert til å bekrefte før handlinger som er vanskelige å angre (sende e-post o.l.).
 
 ## Filstruktur
