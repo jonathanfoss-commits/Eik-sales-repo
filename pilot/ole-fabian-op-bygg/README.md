@@ -29,6 +29,11 @@ støtte til firmaets eget salgsløfte.
 > nøyaktig hvilke 11,5 timer/uke Lærling kan ta over, personlig for OP Bygg. (Ligger også som
 > `/rapport.html` på app-URL-en når den er publisert.)
 
+> **Selvbetjent oppstart:** appen har nå en innebygd **veiviser** («Gjør Lærling klar», 2 min)
+> som gjør stegene under selv: den lenker til gratis Claude-nedlasting, kopierer den ferdige
+> bedriftsprofilen med ett trykk, og har alle 6 promptene som kopier-knapper under Verktøy.
+> Ole Fabian kan altså starte testingen alene i dag — oppsettsmøtet blir kvalitetssikring.
+
 ## Slik kommer han i gang (dag 1 — 20 minutter, én gang)
 
 1. Last ned **Claude**-appen på mobilen (App Store/Google Play) og opprett konto

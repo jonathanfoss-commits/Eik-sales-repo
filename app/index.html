@@ -181,6 +181,53 @@
   .toast.vis{opacity:1;transform:translate(-50%,0)}
   .toast b{color:var(--aurora-a)}
 
+  /* veiviser */
+  .veiviser{position:fixed;inset:0;z-index:75;display:none;overflow-y:auto;
+     background:var(--bunn);padding:calc(16px + env(safe-area-inset-top)) 18px
+     calc(30px + env(safe-area-inset-bottom))}
+  .veiviser.vis{display:block}
+  .v-indre{max-width:520px;margin:0 auto}
+  .v-hode{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .v-hode b{font-size:1.3rem;font-weight:750;letter-spacing:-.02em}
+  .v-lukk{font-size:1.5rem;color:var(--dis);padding:4px 10px}
+  .v-sub{font-size:.86rem;color:var(--dis);margin-bottom:18px}
+  .v-steg{background:var(--flate);border:1px solid var(--strek);border-radius:16px;
+     padding:16px;margin-bottom:12px}
+  .v-steg.gjort{border-color:rgba(57,226,155,.4)}
+  .v-topp{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .v-num{flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;
+     justify-content:center;font-family:var(--mono);font-size:.72rem;font-weight:700;
+     color:#04110B;background:linear-gradient(135deg,var(--aurora-a),var(--aurora-b))}
+  .v-steg.gjort .v-num{background:var(--flate-2);color:var(--aurora-a);
+     border:1px solid rgba(57,226,155,.5)}
+  .v-topp h3{font-size:.98rem;font-weight:680;flex:1}
+  .v-ok{font-family:var(--mono);font-size:.62rem;color:var(--aurora-a);display:none}
+  .v-steg.gjort .v-ok{display:inline}
+  .v-steg p{font-size:.85rem;color:var(--dis);margin-bottom:12px}
+  .v-steg p b{color:var(--lys)}
+  .v-steg .knapp{width:100%;display:block}
+  .laas{display:flex;align-items:center;gap:10px;padding:9px 0;font-size:.88rem;
+     color:var(--dis);border-bottom:1px solid var(--strek)}
+  .laas:last-child{border-bottom:none}
+  .laas .chip{margin-left:auto;font-family:var(--mono);font-size:.56rem;letter-spacing:.1em;
+     border:1px solid var(--strek);border-radius:99px;padding:4px 10px;white-space:nowrap}
+  .banner{display:flex;align-items:center;gap:12px;background:
+     linear-gradient(135deg,rgba(57,226,155,.12),rgba(47,196,217,.07));
+     border:1px solid rgba(57,226,155,.4);border-radius:16px;padding:14px 16px;
+     margin-bottom:14px;width:100%;text-align:left}
+  .banner .t{flex:1}
+  .banner b{display:block;font-size:.95rem}
+  .banner span{font-size:.78rem;color:var(--dis)}
+  .banner .pil-h{color:var(--aurora-a);font-size:1.2rem}
+  /* prompt-bibliotek */
+  .pr{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--strek)}
+  .pr:last-child{border-bottom:none}
+  .pr .t{flex:1;font-size:.9rem}
+  .pr .t small{display:block;font-size:.72rem;color:var(--dis)}
+  .kopier{flex:none;font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;
+     padding:8px 14px;border-radius:99px;color:#04110B;font-weight:700;
+     background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b))}
+
   /* velkomst første gang */
   .velkomst{position:fixed;inset:0;z-index:80;display:none;align-items:center;
      justify-content:center;padding:28px;background:rgba(7,13,18,.92);backdrop-filter:blur(8px)}
@@ -211,6 +258,11 @@
 
   <!-- ── I DAG ── -->
   <div class="fane aktiv" id="fane-idag">
+    <button class="banner" id="banner-veiviser">
+      <div class="t"><b>Gjør Lærling klar for deg</b>
+      <span>Veiviser · 2 minutter · helt gratis</span></div>
+      <div class="pil-h">›</div>
+    </button>
     <div class="sek-tittel">Til godkjenning · <b id="antall">3</b></div>
     <div id="utkast-liste">
 
@@ -367,6 +419,9 @@ Mvh Ole Fabian, OP Bygg AS</div>
       <p>SJA-utkast før oppstart av nye arbeidsoperasjoner</p></div>
       <button class="modus" id="aktiver-ny">AKTIVER</button></div>
 
+    <div class="sek-tittel">Prompter — kopier, lim i Claude, dikter</div>
+    <div class="kort" id="prompt-liste"></div>
+
     <button class="nullstill" id="nullstill">Nullstill demoen</button>
   </div>
 
@@ -409,10 +464,60 @@ Mvh Ole Fabian, OP Bygg AS</div>
 <div class="velkomst" id="velkomst" role="dialog" aria-label="Velkommen">
   <div class="boks">
     <div class="logo">Lærling<b>.</b></div>
-    <p>Hei! Dette er en smakebit på din nye <b>AI-medarbeider</b>.
-    Utkastene er ekte eksempler fra en OP Bygg-hverdag — men ingenting sendes noe sted,
-    så <b>trykk deg rundt</b>: godkjenn, dikter med mikrofonen, og se rapporten.</p>
-    <button class="knapp" id="velkomst-lukk" style="width:100%">Kom i gang</button>
+    <p>Hei Ole Fabian! Dette er din nye <b>AI-medarbeider</b>. Skjermene viser hvordan
+    hverdagen blir — og <b>veiviseren gjør deg klar til å teste på ordentlig i dag</b>,
+    helt gratis.</p>
+    <button class="knapp" id="velkomst-start" style="width:100%;margin-bottom:10px">Start veiviseren (2 min)</button>
+    <button class="knapp svak" id="velkomst-lukk" style="width:100%">Utforsk demoen først</button>
+  </div>
+</div>
+
+<div class="veiviser" id="veiviser" role="dialog" aria-label="Kom i gang">
+  <div class="v-indre">
+    <div class="v-hode"><b>Gjør Lærling klar</b>
+      <button class="v-lukk" id="veiviser-lukk" aria-label="Lukk">×</button></div>
+    <p class="v-sub">Tre trykk, så tester du på ekte oppgaver i dag. Alt er gratis —
+    Jonathan tar regningen om noe koster.</p>
+
+    <div class="v-steg" id="steg-motor">
+      <div class="v-topp"><div class="v-num">1</div><h3>Hent motoren</h3><span class="v-ok">✓ GJORT</span></div>
+      <p>Lærling bruker <b>Claude</b> som hjerne. Gratisversjonen holder til hele testen.
+      Har du den? Hopp videre.</p>
+      <a class="knapp" href="https://claude.ai/download" target="_blank" rel="noopener" data-steg="motor">Last ned Claude-appen</a>
+    </div>
+
+    <div class="v-steg" id="steg-profil">
+      <div class="v-topp"><div class="v-num">2</div><h3>Lærlingen lærer OP Bygg</h3><span class="v-ok">✓ GJORT</span></div>
+      <p>Bedriftsprofilen din er <b>ferdig skrevet</b> — den lærer Claude hvordan OP Bygg
+      skriver tilbud, varsler etter NS 8407 og snakker med kunder. Kopier den, åpne Claude,
+      og lim inn som <b>første melding i en ny samtale</b>.</p>
+      <button class="knapp" id="kopier-profil" data-steg="profil">Kopier bedriftsprofilen min</button>
+    </div>
+
+    <div class="v-steg" id="steg-verktoy">
+      <div class="v-topp"><div class="v-num">3</div><h3>Test første verktøy</h3><span class="v-ok">✓ GJORT</span></div>
+      <p>Kopier <b>«Befaring → tilbud»</b>, lim inn i samme samtale, og hold inne
+      mikrofonen i Claude: snakk i 2 minutter om siste befaring. Se hva som kommer ut.</p>
+      <button class="knapp" id="kopier-forste" data-steg="verktoy">Kopier «Befaring → tilbud»</button>
+    </div>
+
+    <div class="v-steg" id="steg-hjem">
+      <div class="v-topp"><div class="v-num">4</div><h3>Legg Lærling på hjemskjermen</h3><span class="v-ok">✓ GJORT</span></div>
+      <p id="hjem-tekst">I Safari: trykk <b>Del-knappen</b> (firkant med pil opp) →
+      <b>«Legg til på Hjem-skjerm»</b>. Da åpner appen i fullskjerm og virker uten dekning.</p>
+      <button class="knapp svak" data-steg="hjem">Det har jeg gjort</button>
+    </div>
+
+    <div class="v-steg">
+      <div class="v-topp"><div class="v-num">·</div><h3>Tilganger</h3></div>
+      <p>I pilotperioden trenger Lærling <b>ingen tilganger</b> — ingenting sendes uten at
+      du gjør det selv. I fullversjonen kobles disse automatisk:</p>
+      <div class="laas">E-post (utkast rett i innboksen)<span class="chip">FULLVERSJON</span></div>
+      <div class="laas">Kalender (befaringer og frister)<span class="chip">FULLVERSJON</span></div>
+      <div class="laas">Regnskap / fagsystem<span class="chip">FULLVERSJON</span></div>
+    </div>
+
+    <button class="knapp" id="veiviser-ferdig" style="width:100%;margin-top:6px">Ferdig — vis meg appen</button>
   </div>
 </div>
 
@@ -429,12 +534,99 @@ Mvh Ole Fabian, OP Bygg AS</div>
   try{ lager = JSON.parse(localStorage.getItem("laerling") || "{}"); }catch(e){ lager = {}; }
   function lagre(){ try{ localStorage.setItem("laerling", JSON.stringify(lager)); }catch(e){} }
 
+  /* ── innhold: bedriftsprofil og prompter (det som gjør appen ekte) ── */
+  var PROFIL = "Du er assistenten til Ole Fabian Foss, prosjektleder i OP Bygg AS - en totalentreprenor i Oslo med rundt 11 ansatte. OP Bygg leverer renovering, oppussing og nybygg for bolig, kontor og naering, og profilerer seg pa ryddig prosjektstyring. Ole Fabian har bakgrunn som tomrer og snakker praktisk og direkte.\n\nDIN JOBB: Hjelpe med skriftlig arbeid: e-poster til kunder og byggherrer, tilbudsgrunnlag etter befaring, motereferater, endringsmeldinger, ukesrapporter, byggedagbok og purringer til underentreprenorer. Ole Fabian dikterer ofte ratt og ustrukturert - gjor det om til ryddig, profesjonell tekst.\n\nSKRIVESTIL: Norsk bokmal. Kort, tydelig og jordnaer. Hoflig men rett pa sak. E-poster starter med 'Hei [navn]' og slutter med 'Mvh, Ole Fabian Foss, Prosjektleder, OP Bygg AS'.\n\nFAGREGLER:\n- Skill mellom kundetyper: proffkunder folger NS-kontrakten (NS 8407/8417 totalentreprise, NS 8405/8406 ellers). Forbrukerkunder beskyttes av ufravikelige regler (bustadoppforingslova for nybygg, handverkertjenesteloven for arbeid pa bolig). Ukjent kundetype? Sporr.\n- Endringer mot proffkunde: noytralt varsel forst, SAMME DAG - fristen 'uten ugrunnet opphold' i NS 8407 er dager, ikke uker. Varsle alltid konsekvens for pris OG fremdrift.\n- Tilbud: skill tydelig mellom 'inkludert', 'forutsetninger' og 'forbehold'. Ta med forbehold om skjulte feil ved renovering av eldre bygg.\n- Motereferater: nummererte aksjonspunkter med ansvarlig og frist. Avslutt med 'Innsigelser til referatet meldes innen 3 virkedager.'\n- Ukesrapport: 1) Utfort denne uken 2) Fremdrift mot plan 3) Avvik 4) Plan neste uke 5) Avklaringer vi trenger.\n- Byggedagbok: dato/prosjekt, vaer, mannskap, utfort arbeid, leveranser, hindringer, beskjeder fra byggherre. Kort og faktabasert.\n\nALLTID: Lever ferdig tekst som kan sendes. Mangler noe (navn, datoer, belop), sett [KLAMMER] i stedet for a gjette. Maks ett oppklarende sporsmal.";
+  var PROMPTER = [
+    { t:"Befaring → tilbud", s:"Diktér notatene fra befaringen",
+      p:"Jeg har vaert pa befaring. Her er notatene mine (diktert, ustrukturert): [dikter alt du husker: adresse, hva som skal gjores, mal, tilstand, kundens onsker, mulige problemer]. Lag 1) en oppsummerings-e-post til kunden og 2) et internt tilbudsgrunnlag med omfang, forutsetninger og forbehold." },
+    { t:"Byggemøte → referat", s:"Diktér hovedpunktene etter møtet",
+      p:"Byggemote [dato] pa [prosjekt]. Til stede: [navn/firma]. Notater: [dikter hovedpunktene]. Lag et byggemotereferat med nummererte aksjonspunkter (ansvarlig + frist), klart til a sendes alle deltakere." },
+    { t:"Endringsmelding", s:"Bruk SAMME DAG som endringen oppstår",
+      p:"Det har oppstatt en endring pa [prosjekt]. Kontraktstype: [NS 8407 / annet / vet ikke]. Hva som er endret: [dikter: hva, hvorfor, konsekvens for pris og tid]. Skriv en formell endringsmelding til byggherren. Ukjent belop? Varsle at konsekvens folger nar det er avklart." },
+    { t:"Ukesrapport", s:"Fredag ettermiddag, 2 min diktering",
+      p:"Ukesrapport for [prosjekt], uke [nr]: [dikter: hva som ble gjort, status mot plan, avvik, plan neste uke, hva du venter pa fra byggherren]. Sett opp i standard ukesrapport-struktur." },
+    { t:"Purring til UE", s:"Vennlig, men tydelig",
+      p:"Skriv en purring til [firma/navn] om [pristilbud/tegninger/leveranse]. Bakgrunn: [dikter kort historikk og hvorfor det haster]. Vennlig tone, men tydelig frist [dato] og konsekvens." },
+    { t:"Byggedagbok", s:"30 sekunder på slutten av dagen",
+      p:"Byggedagbok [prosjekt], [dato]: [dikter: hvem som var pa plassen, hva som ble gjort, vaer, leveranser, hindringer, beskjeder fra byggherre]. For dette som strukturert dagboknotat." }
+  ];
+
+  /* kopier-hjelper med fallback for eldre Safari */
+  function kopier(tekst, hva){
+    function bekreft(){ siFra("<b>✓</b> " + hva + " kopiert — lim inn i Claude"); }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(tekst).then(bekreft, fallback);
+    } else { fallback(); }
+    function fallback(){
+      var ta = document.createElement("textarea");
+      ta.value = tekst; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand("copy"); bekreft(); }
+      catch(e){ siFra("Kunne ikke kopiere automatisk"); }
+      document.body.removeChild(ta);
+    }
+  }
+
+  /* prompt-biblioteket på Verktøy-fanen */
+  var prListe = document.getElementById("prompt-liste");
+  PROMPTER.forEach(function(pr){
+    var rad = document.createElement("div");
+    rad.className = "pr";
+    rad.innerHTML = '<div class="t">' + pr.t + '<small>' + pr.s + '</small></div>';
+    var kn = document.createElement("button");
+    kn.className = "kopier"; kn.textContent = "KOPIER";
+    kn.addEventListener("click", function(){ kopier(pr.p, "Prompten"); });
+    rad.appendChild(kn);
+    prListe.appendChild(rad);
+  });
+
+  /* ── veiviseren ── */
+  var veiviser = document.getElementById("veiviser"),
+      banner = document.getElementById("banner-veiviser");
+  lager.veiviser = lager.veiviser || {};
+  function visSteg(){
+    ["motor","profil","verktoy","hjem"].forEach(function(s){
+      document.getElementById("steg-" + s).classList.toggle("gjort", !!lager.veiviser[s]);
+    });
+    var ferdig = lager.veiviser.motor && lager.veiviser.profil && lager.veiviser.verktoy;
+    banner.style.display = ferdig ? "none" : "flex";
+  }
+  if(navigator.standalone){
+    lager.veiviser.hjem = 1;
+    document.getElementById("hjem-tekst").innerHTML =
+      "<b>✓ Allerede gjort</b> — du er i fullskjerm-appen nå.";
+  }
+  function stegGjort(navn){ lager.veiviser[navn] = 1; lagre(); visSteg(); }
+  document.querySelectorAll("[data-steg]").forEach(function(el){
+    el.addEventListener("click", function(){ stegGjort(el.dataset.steg); });
+  });
+  document.getElementById("kopier-profil").addEventListener("click", function(){
+    kopier(PROFIL, "Bedriftsprofilen");
+  });
+  document.getElementById("kopier-forste").addEventListener("click", function(){
+    kopier(PROMPTER[0].p, "Prompten");
+  });
+  function aapneVeiviser(){ veiviser.classList.add("vis"); visSteg(); }
+  function lukkVeiviser(){ veiviser.classList.remove("vis"); visSteg(); }
+  banner.addEventListener("click", aapneVeiviser);
+  document.getElementById("veiviser-lukk").addEventListener("click", lukkVeiviser);
+  document.getElementById("veiviser-ferdig").addEventListener("click", function(){
+    lukkVeiviser();
+    siFra("<b>✓</b> Lærling er klar — lykke til!");
+  });
+  visSteg();
+
   /* velkomst første gang */
   var velkomst = document.getElementById("velkomst");
   if(!lager.velkommen){ velkomst.classList.add("vis"); }
   document.getElementById("velkomst-lukk").addEventListener("click", function(){
     velkomst.classList.remove("vis");
     lager.velkommen = 1; lagre();
+  });
+  document.getElementById("velkomst-start").addEventListener("click", function(){
+    velkomst.classList.remove("vis");
+    lager.velkommen = 1; lagre();
+    aapneVeiviser();
   });
   document.getElementById("nullstill").addEventListener("click", function(){
     try{ localStorage.removeItem("laerling"); }catch(e){}
