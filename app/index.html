@@ -30,7 +30,14 @@
   button:focus-visible{outline:2px solid var(--aurora-a);outline-offset:2px;border-radius:8px}
 
   .app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;
-       padding:calc(14px + env(safe-area-inset-top)) 18px calc(96px + env(safe-area-inset-bottom))}
+       padding:calc(14px + env(safe-area-inset-top)) 18px calc(96px + env(safe-area-inset-bottom));
+       animation:start .5s ease}
+  @keyframes start{from{opacity:0;transform:translateY(10px)}}
+  #status-tekst{transition:opacity .4s}
+  .tomt{display:none;text-align:center;padding:26px 18px;border:1px dashed rgba(57,226,155,.35);
+     border-radius:16px;color:var(--dis);font-size:.9rem;background:rgba(57,226,155,.04)}
+  .tomt b{display:block;color:var(--lys);font-size:1rem;margin-bottom:4px}
+  .tomt.vis{display:block}
 
   /* topp */
   .topp{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
@@ -186,7 +193,7 @@
   <div class="topp">
     <div class="hilsen"><b id="hilsen">God morgen, Ole Fabian</b>
       <span id="dato"></span></div>
-    <div class="status"><span class="puls"></span>Arbeider</div>
+    <div class="status"><span class="puls"></span><span id="status-tekst">Arbeider</span></div>
   </div>
 
   <!-- ── I DAG ── -->
@@ -247,6 +254,9 @@ Mvh Ole Fabian, OP Bygg AS</div>
       </div>
 
     </div>
+
+    <div class="tomt" id="tomt"><b>Alt unnagjort ✓</b>
+      Lærling følger med videre og sier fra når noe nytt er klart for deg.</div>
 
     <div class="sek-tittel">Utført i dag</div>
     <div class="kort">
@@ -378,6 +388,25 @@ Mvh Ole Fabian, OP Bygg AS</div>
 
 <script>
 (function(){
+  /* service worker: appen virker offline og åpner umiddelbart */
+  if("serviceWorker" in navigator &&
+     (location.protocol === "https:" || location.hostname === "localhost")){
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  }
+
+  /* levende status i toppen */
+  var statuser = ["Arbeider", "Overvåker innboksen", "Følger kalenderen",
+                  "Lærer av dine svar", "Klargjør utkast"],
+      statusEl = document.getElementById("status-tekst"), sIdx = 0;
+  setInterval(function(){
+    statusEl.style.opacity = "0";
+    setTimeout(function(){
+      sIdx = (sIdx + 1) % statuser.length;
+      statusEl.textContent = statuser[sIdx];
+      statusEl.style.opacity = "1";
+    }, 400);
+  }, 4200);
+
   /* dato og hilsen */
   var no = ["søndag","mandag","tirsdag","onsdag","torsdag","fredag","lørdag"],
       mnd = ["januar","februar","mars","april","mai","juni","juli","august","september","oktober","november","desember"],
@@ -422,6 +451,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
         kort.remove();
         var n = document.querySelectorAll(".utkast").length;
         antall.textContent = n;
+        document.getElementById("tomt").classList.toggle("vis", n === 0);
         siFra(n === 0 ? "<b>✓</b> Alt sendt — innboksen er tom!" : "<b>✓</b> Godkjent og sendt");
       }, 350);
     });
@@ -506,6 +536,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
     document.getElementById("utkast-liste").prepend(kort);
     kobleUtkast(kort);
     antall.textContent = document.querySelectorAll(".utkast").length;
+    document.getElementById("tomt").classList.remove("vis");
     siFra("<b>✓</b> Utkast klart · påminnelse lagt i containerlista");
   });
 })();
