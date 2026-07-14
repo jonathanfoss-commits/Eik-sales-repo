@@ -1,5 +1,5 @@
 /* JARVIS service worker – cache app shell so the app opens offline (API calls still need network). */
-const CACHE = "jarvis-v5";
+const CACHE = "jarvis-v9";
 const SHELL = [
   ".",
   "index.html",
@@ -27,8 +27,13 @@ self.addEventListener("fetch", (e) => {
   const url = new URL(e.request.url);
   // Never intercept API calls
   if (url.origin !== location.origin) return;
+  // HTML/JS/CSS: always revalidate with the server (cheap ETag check) so
+  // deployed fixes take effect on the next open instead of after cache expiry.
+  const dest = e.request.destination;
+  const revalidate = e.request.mode === "navigate" || dest === "document" || dest === "script" || dest === "style";
+  const request = revalidate ? new Request(e.request, { cache: "no-cache" }) : e.request;
   e.respondWith(
-    fetch(e.request)
+    fetch(request)
       .then((res) => {
         const copy = res.clone();
         caches.open(CACHE).then((c) => c.put(e.request, copy));
