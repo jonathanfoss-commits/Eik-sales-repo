@@ -222,6 +222,26 @@ const Projects = {
     }
     return Store.saveProject(p);
   },
+  /* Kill-disiplin: parker/avslutt/reaktiver er eksplisitte, loggede eierhandlinger.
+     Allerede brukt tid er aldri et argument for å fortsette. */
+  park(p, reason) {
+    p.pausedFrom = p.status;
+    p.status = "parkert";
+    this.logDecision(p, { role: "eier", byOwner: true, decision: "PROSJEKT PARKERT", rationale: reason || "(ingen begrunnelse oppgitt)", revisit: "Revurderes ved ny informasjon" });
+    return Store.saveProject(p);
+  },
+  kill(p, reason) {
+    p.status = "avsluttet";
+    this.logDecision(p, { role: "eier", byOwner: true, decision: "PROSJEKT AVSLUTTET (KILL)", rationale: reason || "(ingen begrunnelse oppgitt)" });
+    return Store.saveProject(p);
+  },
+  reactivate(p) {
+    if (p.status !== "parkert" && p.status !== "avsluttet") throw new Error("Kun parkerte eller avsluttede prosjekter kan reaktiveres.");
+    p.status = p.pausedFrom || "idé";
+    delete p.pausedFrom;
+    this.logDecision(p, { role: "eier", byOwner: true, decision: "PROSJEKT REAKTIVERT", rationale: "Eieren har gjenopptatt prosjektet." });
+    return Store.saveProject(p);
+  },
   approveGate(p, gateId, byOwner = true) {
     p.gates[gateId] = { approved: true, byOwner, at: new Date().toISOString() };
     this.logDecision(p, { decision: "PORT GODKJENT: " + gateId, rationale: byOwner ? "Eksplisitt eiergodkjenning." : "Autogodkjent lavrisikoport.", byOwner });

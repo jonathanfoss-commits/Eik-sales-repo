@@ -228,7 +228,10 @@ function showProject(id) {
     `<button class="small" id="pReport">📄 Rapport</button>` +
     `<button class="small" id="pRetro">🔁 Retro</button>` +
     `<button class="small" id="pExport">Eksporter prosjekt</button>` +
-    `<button class="small" id="pDelete">Slett/avvikle</button></div></div>`;
+    (p.status === "parkert" || p.status === "avsluttet"
+      ? `<button class="small" id="pReactivate">▶ Reaktiver (eier)</button>`
+      : `<button class="small" id="pPark">⏸ Parker (eier)</button><button class="small" id="pKill">🛑 Avslutt (eier)</button>`) +
+    `<button class="small" id="pDelete">Slett data</button></div></div>`;
 
   if (p.intake) {
     html += `<div class="panel"><h3>FASE 0 – INNTAK</h3>Problem: ${esc(p.intake.problem)}\nMålgruppe: ${esc(p.intake.target_group)}\nLøsning: ${esc(p.intake.solution)}\nBetalingsvilje: ${esc(p.intake.willingness_to_pay)}\nMarked: ${esc(p.intake.market)}\nKanal: ${esc(p.intake.channel)}\nAbonnementspotensial: ${esc(p.intake.subscription_potential)}` +
@@ -574,6 +577,26 @@ function showProject(id) {
     a.download = p.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() + ".json";
     a.click();
   };
+  const pPark = $("pPark");
+  if (pPark) pPark.onclick = () => {
+    const reason = prompt("Hvorfor parkeres prosjektet? (logges)", "") ?? null;
+    if (reason === null) return;
+    Projects.park(Projects.get(p.id), reason);
+    showProject(p.id); renderPortfolio();
+  };
+  const pKill = $("pKill");
+  if (pKill) pKill.onclick = () => {
+    const reason = prompt("Hvorfor avsluttes prosjektet? Allerede brukt tid er ikke et argument for å fortsette – men heller ikke for å avslutte. (logges)", "") ?? null;
+    if (reason === null) return;
+    Projects.kill(Projects.get(p.id), reason);
+    showProject(p.id); renderPortfolio();
+  };
+  const pReactivate = $("pReactivate");
+  if (pReactivate) pReactivate.onclick = () => {
+    try { Projects.reactivate(Projects.get(p.id)); showProject(p.id); renderPortfolio(); }
+    catch (e) { alert(e.message); }
+  };
+
   $("pDelete").onclick = () => {
     if (!confirm(`Slette/avvikle «${p.name}»? Eksporter først hvis prosjektet har verdi.`)) return;
     Projects.remove(p.id);

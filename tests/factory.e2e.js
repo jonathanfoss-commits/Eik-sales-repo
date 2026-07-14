@@ -389,6 +389,18 @@ async function freshPage(browser) {
     });
     check("demo-score konsistent med scoringsmodellen", scoreOk, null);
     check("idempotent: ny lasting dupliserer ikke", await page.evaluate(() => { window.CF.Demo.load(); return window.CF.Projects.list().length === 1; }), null);
+
+    /* Kill-disiplin: parker → reaktiver → avslutt, alt logget som eierbeslutninger */
+    page.on("dialog", (d) => d.accept("Testbegrunnelse"));
+    await page.click("#pPark");
+    let kp = await page.evaluate(() => window.CF.Projects.list()[0]);
+    check("parkering logget med begrunnelse", kp.status === "parkert" && kp.decisions[0].decision === "PROSJEKT PARKERT" && kp.decisions[0].rationale === "Testbegrunnelse" && kp.decisions[0].byOwner, kp.decisions[0]);
+    await page.click("#pReactivate");
+    kp = await page.evaluate(() => window.CF.Projects.list()[0]);
+    check("reaktivering gjenoppretter forrige status", kp.status === "validering" && kp.decisions[0].decision === "PROSJEKT REAKTIVERT", kp.status);
+    await page.click("#pKill");
+    kp = await page.evaluate(() => window.CF.Projects.list()[0]);
+    check("kill setter avsluttet uten å slette data", kp.status === "avsluttet" && kp.decisions[0].decision.includes("KILL") && kp.evaluation !== null, kp.status);
     check("ingen JS-feil", errors.length === 0, errors);
     await page.close();
   }

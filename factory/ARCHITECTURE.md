@@ -208,6 +208,22 @@ Utvidelsesregler (arvet fra AEIS): nye moduler = eget navnerom + egen Store-nøk
 alle LLM-flyter definerer JSON-skjema og går via `CF.LLM`; kontraktsendringer krever
 versjonsbump her.
 
+## Status mot definisjonen av ferdig (v1.4)
+
+Alle punktene i oppdragets «definisjon av ferdig» for første reelle versjon er oppfylt:
+arkitektur besluttet og dokumentert; systemet kjører (statisk app, ingen bygg-steg);
+idéer registreres og blir prosjekter med strukturert, isolert lagring; pipelinen har
+tydelige faser med porter; Executive Board brukes (AEIS-roller + fabrikkroller, kun
+relevante per sak); idéer analyseres kritisk og scores; anbefalinger, beslutninger og
+antakelser lagres og vises; status/portefølje finnes; modulene er testet (67 sjekker,
+mocket API); sikkerhetsgrenser er definert (cf_*-navnerom, eier-porter, lese-kun mot
+AEIS/JARVIS); eksempelprosjekt er kjørt gjennom og merket TEST; begrensninger er
+dokumentert under; neste utviklingsfase er prioritert i planen over.
+
+Bevisst utelatt (ikke glemt): salgsmotor (Fase 12) bygges først når et prosjekt faktisk
+krever B2B-salg – hovedfokuset er B2C/selvbetjente abonnementer, og dokumentasjon som
+ikke brukes er avfall. Drift/kundeservice-motor (Fase 13) står i F5.
+
 ## Kjente begrensninger (v1)
 
 - Persistens per enhet (localStorage) — migreringsvei: Store-kontrakten → synk-backend (F4).
