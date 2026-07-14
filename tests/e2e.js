@@ -1,5 +1,5 @@
 /*
- * JARVIS end-to-end tests (Playwright + mocked Claude API SSE stream).
+ * SAGA end-to-end tests (Playwright + mocked Claude API SSE stream).
  * Runs the full agentic loop without a real API key.
  *
  * Run:  npm i playwright && node tests/e2e.js [baseURL]
@@ -7,7 +7,7 @@
  */
 const { chromium } = require("playwright");
 
-const BASE = process.argv[2] || "http://localhost:8130/";
+const BASE = (process.argv[2] || "http://localhost:8130/") + "saga/modules/assistant/";
 let failures = 0;
 function check(name, cond, detail) {
   const ok = !!cond;

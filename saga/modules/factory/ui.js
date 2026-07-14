@@ -914,7 +914,8 @@ $("cmpBtn").onclick = () => {
 /* ---------- SYSTEM ---------- */
 $("apiKey").value = Store.apiKey;
 $("saveKeyBtn").onclick = () => {
-  /* jarvis_api_key eies av JARVIS – delt identitetskontrakt, eneste bevisste unntak fra cf_*-regelen */
+  /* Delt identitetskontrakt: kanonisk saga_api_key + legacy jarvis_api_key (bakoverkompatibilitet) */
+  localStorage.setItem("saga_api_key", $("apiKey").value.trim());
   localStorage.setItem("jarvis_api_key", $("apiKey").value.trim());
   $("saveKeyBtn").textContent = "Lagret ✓";
   setTimeout(() => $("saveKeyBtn").textContent = "Lagre nøkkel", 1500);

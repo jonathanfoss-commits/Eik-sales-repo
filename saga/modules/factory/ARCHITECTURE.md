@@ -79,7 +79,7 @@ UI-laget er skilt fra motoren og bygget som operativt kontrollsenter:
 
 AI-drevet startup-studio: fra idé → kritisk vurdering → validering → forretningsmodell →
 MVP-brief → (neste fase: bygging, betaling, lansering, vekst). Del av Eik-plattformen
-sammen med JARVIS (personlig AI-OS) og AEIS (Executive Board).
+sammen med SAGA (personlig AI-OS) og AEIS (Executive Board).
 
 ---
 
@@ -89,9 +89,9 @@ sammen med JARVIS (personlig AI-OS) og AEIS (Executive Board).
 
 | Komponent | Hva det er | Tilstand |
 |---|---|---|
-| `index.html` (JARVIS) | Klientside-PWA: stemmeassistent, Claude-streaming, verktøy (websøk, vær, timere, webhooks, MCP), minne og historikk i `localStorage` | God. Fungerer, testet (`tests/e2e.js`, 10 scenarier, mocket API) |
+| `index.html` (SAGA) | Klientside-PWA: stemmeassistent, Claude-streaming, verktøy (websøk, vær, timere, webhooks, MCP), minne og historikk i `localStorage` | God. Fungerer, testet (`tests/e2e.js`, 10 scenarier, mocket API) |
 | `aeis/` (AEIS) | Executive Board: 13 dynamiske roller, 14-stegs beslutningspipeline med Devil's Advocate-veto, pre-mortem, Brier-kalibrert autoritet, læringssløyfe | God. Modulær (Store/Roles/Scoring/LLM/Engine/Ledger/Radar/SelfReview), kontrakter i `ARCHITECTURE.md`, testet (`tests/aeis.e2e.js`) |
-| `ios/` | Native SwiftUI-versjon av JARVIS | Parallell klient, deler ikke kode med web |
+| `ios/` | Native SwiftUI-versjon av SAGA | Parallell klient, deler ikke kode med web |
 | `.github/workflows/pages.yml` | Deploy til GitHub Pages | Fungerer; hele plattformen er statisk hosting |
 | `sw.js`, `manifest.webmanifest`, `icons/` | PWA-skall | OK |
 
@@ -113,7 +113,7 @@ sammen med JARVIS (personlig AI-OS) og AEIS (Executive Board).
 - **Persistens er per enhet** (localStorage, ~5 MB-grense). Dokumentert i AEIS som kjent
   begrensning med migreringsvei (Store er eneste persistenslag → kan byttes til synk-backend).
   Factory arver både begrensningen og migreringsveien.
-- **Ingen duplisering funnet** som må ryddes; JARVIS og AEIS deler nøkkel/modell-konvensjon
+- **Ingen duplisering funnet** som må ryddes; SAGA og AEIS deler nøkkel/modell-konvensjon
   men har adskilte navnerom. Ingenting arkiveres eller slettes i denne leveransen.
 - **AEIS' LLM-modul er ikke pakket som delt bibliotek** — den lever i `aeis.js`.
   Beslutning: Factory implementerer samme kontrakt i eget navnerom i stedet for å
@@ -125,7 +125,7 @@ sammen med JARVIS (personlig AI-OS) og AEIS (Executive Board).
 ## B. Arkitekturbeslutning
 
 **Beslutning: Alternativ C med B-trekk (hybrid).** Company Factory bygges som en
-selvstendig, modulær applikasjon (`factory/`) på toppen av plattformen, der JARVIS/AEIS
+selvstendig, modulær applikasjon (`factory/`) på toppen av plattformen, der SAGA/AEIS
 forblir det personlige laget. Delingen skjer gjennom definerte kontrakter, ikke delt kode:
 
 - **Identitet/tilgang:** deler `jarvis_api_key` + `jarvis_model` (lese-kontrakt).
@@ -139,9 +139,9 @@ forblir det personlige laget. Delingen skjer gjennom definerte kontrakter, ikke 
 
 | | Vurdering |
 |---|---|
-| **A. Inn i JARVIS** | Avvist. Gjør PWA-en monolittisk (54 kB index.html allerede), blander personlig assistent med selskapsproduksjon, umulig å feilisolere eller spinne ut. |
+| **A. Inn i SAGA** | Avvist. Gjør PWA-en monolittisk (54 kB index.html allerede), blander personlig assistent med selskapsproduksjon, umulig å feilisolere eller spinne ut. |
 | **B. Eget repo/system med API-er** | Avvist *for v1*. Det finnes ingen API-er å kommunisere over — å bygge en backend nå er infrastruktur før behov. Riktig som migreringsvei: når et prosjekt får reell kodebase/kunder, får det eget repo; når synk-backend kommer, blir Store-kontrakten til et API. |
-| **C. Modul på toppen av Jarvis-plattformen** | **Valgt.** Matcher den faktiske plattformen (statiske søsterapper med kontrakts-deling), gjenbruker styret og nøkkelhåndteringen, gir feilisolering (Factory kan ikke ødelegge JARVIS/AEIS-data), og holder veien åpen mot B. |
+| **C. Modul på toppen av Jarvis-plattformen** | **Valgt.** Matcher den faktiske plattformen (statiske søsterapper med kontrakts-deling), gjenbruker styret og nøkkelhåndteringen, gir feilisolering (Factory kan ikke ødelegge SAGA/AEIS-data), og holder veien åpen mot B. |
 | **D. Annen hybrid** | Dekket av C+B-trekkene over. |
 
 Eierens hypotese (Jarvis som overordnet OS, Factory som separat modulær plattform) er
@@ -153,13 +153,13 @@ Begrunnelse mot 5–10-årskriteriene: modularitet og feilisolering (egne navner
 flere fremtidige fabrikker (mønsteret `<app>/`+kontrakter er repeterbart), flere samtidige
 prosjekter (prosjekt-isolert lagring), ulike teknologistacker per selskap (prosjektkode skal
 bo i egne repoer, fabrikken holder kun metadata/beslutninger), salg/utspinning/avvikling
-(per-prosjekt eksport + statuser), unngår at Jarvis blir monolitt (ingenting legges i JARVIS).
+(per-prosjekt eksport + statuser), unngår at Jarvis blir monolitt (ingenting legges i SAGA).
 
 ## C. Målarkitektur
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│ JARVIS (personlig AI-OS)          AEIS (Executive Board)        │
+│ SAGA (personlig AI-OS)          AEIS (Executive Board)        │
 │  identitet: jarvis_api_key ──────► roller/autoritet: aeis_roles │
 └──────────────┬───────────────────────────┬─────────────────────┘
         leser (aldri skriver)       leser (aldri skriver)
@@ -199,7 +199,7 @@ kostbare tjenester, høyrisiko produksjonsendringer, sensitive data, offentlig l
 kan aldri auto-godkjennes — de krever eksplisitt eierklikk og logges.
 
 **Sikkerhet og isolasjon:** ingen hemmeligheter i kode eller repo (nøkkel kun i
-localStorage); Factory skriver aldri til JARVIS/AEIS-navnerom; prosjekter er isolert per
+localStorage); Factory skriver aldri til SAGA/AEIS-navnerom; prosjekter er isolert per
 Store-nøkkel med egen eksport; LLM-modulen er eneste nettverkspunkt med maks-runder,
 begrenset parallellitet og retry-tak; eier-porter for alt med penger/juss/publisering.
 
@@ -303,7 +303,7 @@ tydelige faser med porter; Executive Board brukes (AEIS-roller + fabrikkroller, 
 relevante per sak); idéer analyseres kritisk og scores; anbefalinger, beslutninger og
 antakelser lagres og vises; status/portefølje finnes; modulene er testet (67 sjekker,
 mocket API); sikkerhetsgrenser er definert (cf_*-navnerom, eier-porter, lese-kun mot
-AEIS/JARVIS); eksempelprosjekt er kjørt gjennom og merket TEST; begrensninger er
+AEIS/SAGA); eksempelprosjekt er kjørt gjennom og merket TEST; begrensninger er
 dokumentert under; neste utviklingsfase er prioritert i planen over.
 
 Bevisst utelatt (ikke glemt): salgsmotor (Fase 12) bygges først når et prosjekt faktisk

@@ -13,8 +13,9 @@ const Store = {
     localStorage.setItem(key, JSON.stringify(value));
     if (key === "aeis_roles" || key === "aeis_ledger") { try { Backup.maybeAuto(); } catch (_) {} }
   },
-  get apiKey() { return localStorage.getItem("jarvis_api_key") || ""; },
-  set apiKey(v) { localStorage.setItem("jarvis_api_key", v); },
+  /* Kanonisk saga_api_key med fallback til legacy jarvis_api_key; dobbel-skriv for bakoverkompatibilitet */
+  get apiKey() { return localStorage.getItem("saga_api_key") || localStorage.getItem("jarvis_api_key") || ""; },
+  set apiKey(v) { localStorage.setItem("saga_api_key", v); localStorage.setItem("jarvis_api_key", v); },
   get profile() { return localStorage.getItem("aeis_profile") || ""; },
   set profile(v) {
     localStorage.setItem("aeis_profile", v);

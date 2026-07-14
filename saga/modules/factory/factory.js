@@ -40,9 +40,9 @@ const Store = {
     if (!key.startsWith("cf_")) throw new Error("Store sletter kun i cf_*-navnerommet: " + key);
     localStorage.removeItem(key);
   },
-  /* Lese-kontrakter mot plattformen (aldri skriv) */
-  get apiKey() { return localStorage.getItem("jarvis_api_key") || ""; },
-  get model() { return localStorage.getItem("jarvis_model") || "claude-opus-4-8"; },
+  /* Lese-kontrakter mot plattformen (aldri skriv). Kanonisk saga_* med legacy-fallback jarvis_*. */
+  get apiKey() { return localStorage.getItem("saga_api_key") || localStorage.getItem("jarvis_api_key") || ""; },
+  get model() { return localStorage.getItem("saga_model") || localStorage.getItem("jarvis_model") || "claude-opus-4-8"; },
   get ownerProfile() { return localStorage.getItem("aeis_profile") || ""; },
   aeisRoles() { return this.get("aeis_roles", null); },
 
@@ -94,7 +94,7 @@ const LLM = {
   /* Settes av modulene før kall – gir kostnadsmåleren prosjekt/modul-kontekst */
   context: null,
   async call({ system, user, schema, tools, maxTokens = 8192, onStatus }) {
-    if (!Store.apiKey) throw new Error("Ingen API-nøkkel. Lim inn under SYSTEM-fanen (deles med JARVIS/AEIS).");
+    if (!Store.apiKey) throw new Error("Ingen API-nøkkel. Lim inn under SYSTEM-fanen (deles med SAGA/AEIS).");
     let messages = [{ role: "user", content: user }];
     for (let round = 0; round < 6; round++) {
       const body = { model: Store.model, max_tokens: maxTokens, system: PHILOSOPHY + "\n\n" + system, messages };

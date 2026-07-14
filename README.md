@@ -1,4 +1,4 @@
-# J.A.R.V.I.S. 🤖⚡
+# S.A.G.A. 🤖⚡
 
 En personlig stemmeassistent i Iron Man-stil som fungerer på **både Mac og iPhone** – som en app.
 
@@ -12,24 +12,24 @@ innebygde talegjenkjenning og talesyntese.
 
 ## Funksjoner
 
-- 🎙️ **Snakk til Jarvis** – trykk på arc-reactoren og snakk (norsk eller engelsk)
-- 🔊 **Jarvis svarer høyt** – svar leses opp setning for setning mens de strømmes inn
-- 🧠 **Claude som hjerne** – Jarvis-personlighet («God dag, sir»), valgfri modell i oppsettet
+- 🎙️ **Snakk til Saga** – trykk på arc-reactoren og snakk (norsk eller engelsk)
+- 🔊 **Saga svarer høyt** – svar leses opp setning for setning mens de strømmes inn
+- 🧠 **Claude som hjerne** – Saga-personlighet («God dag, sir»), valgfri modell i oppsettet
 - 🛠️ **Ekte verktøy (tool use):**
-  - 🌐 **Websøk** – Jarvis søker på nettet etter ferske nyheter, priser og fakta
+  - 🌐 **Websøk** – Saga søker på nettet etter ferske nyheter, priser og fakta
   - 🌤️ **Vær** – værmelding for din GPS-posisjon eller et hvilket som helst sted (Open-Meteo, gratis)
   - 🕐 **Klokke/dato** – vet alltid hva klokka er
-  - ⏲️ **Timere** – «Jarvis, sett en timer på 10 minutter» → appen piper og sier ifra
-  - 🔗 **Åpne nettsider** – «Jarvis, åpne YouTube»
-  - 💾 **Langtidshukommelse** – «husk at …» → Jarvis husker det i alle fremtidige samtaler
+  - ⏲️ **Timere** – «Saga, sett en timer på 10 minutter» → appen piper og sier ifra
+  - 🔗 **Åpne nettsider** – «Saga, åpne YouTube»
+  - 💾 **Langtidshukommelse** – «husk at …» → Saga husker det i alle fremtidige samtaler
 - 💬 **Samtalen overlever omstart** – historikken lagres lokalt på enheten
-- 🗣️ **Våkneord** – valgfri «Jarvis …»-modus med kontinuerlig lytting
+- 🗣️ **Våkneord** – valgfri «Saga …»-modus med kontinuerlig lytting
 - 👂 **Live-transkripsjon** – se ordene dine mens du snakker, radar-ringer rundt reaktoren
 - ⌨️ Tekstfelt som alternativ til tale
 - 🚀 **Boot-sekvens** – kinematisk oppstartsanimasjon à la Iron Man (én gang per økt, trykk for å hoppe over)
 - 📰 **Hurtigknapper** – «Dagens briefing» (dato + vær + nyheter opplest), været, timer, hjelp
 - 💸 **Kostnadsteller** – se tokens og estimert kostnad under ⚙ OPPSETT, med nullstilling
-- 🎚️ **Talehastighet** – juster hvor fort Jarvis snakker
+- 🎚️ **Talehastighet** – juster hvor fort Saga snakker
 - 🔁 **Auto-retry** – prøver automatisk på nytt ved overbelastet API (429/5xx)
 - 📄 **Eksporter samtalen** som tekstfil; lenker i svar er klikkbare
 - 📵 Appskallet fungerer offline (API-kall krever selvsagt nett)
@@ -59,7 +59,7 @@ Mikrofon-tilgang krever HTTPS, så enklest er **GitHub Pages**:
 1. Åpne app-URL-en i Safari
 2. Trykk **Del-knappen** (firkant med pil opp)
 3. Velg **«Legg til på Hjem-skjerm»**
-4. Jarvis ligger nå som egen app med arc reactor-ikon 🎉
+4. Saga ligger nå som egen app med arc reactor-ikon 🎉
 
 **Mac (Chrome/Edge):**
 1. Åpne app-URL-en
@@ -69,39 +69,39 @@ Mikrofon-tilgang krever HTTPS, så enklest er **GitHub Pages**:
 1. Åpne app-URL-en
 2. **Arkiv → Legg til i Dock**
 
-### 4. Snakk med Jarvis
+### 4. Snakk med Saga
 
-- Trykk på **reaktoren** og snakk – Jarvis svarer med tale
-- Eller aktiver **våkneord** i oppsettet og si «Jarvis, hva er klokka i Tokyo?»
-- Bytt språk og stemme under ⚙ OPPSETT (tips: stemmen «Daniel (English UK)» gir klassisk Jarvis-følelse)
+- Trykk på **reaktoren** og snakk – Saga svarer med tale
+- Eller aktiver **våkneord** i oppsettet og si «Saga, hva er klokka i Tokyo?»
+- Bytt språk og stemme under ⚙ OPPSETT (tips: stemmen «Daniel (English UK)» gir klassisk Saga-følelse)
 
 ## 🌍 Styr «alt» — uten mellomledd
 
-Jarvis har fire veier til den virkelige verden. Ingen av dem krever Zapier eller andre
+Saga har fire veier til den virkelige verden. Ingen av dem krever Zapier eller andre
 betal-mellomledd:
 
 **1. 🍎 Apple Snarveier (`run_shortcut`) — den kraftigste.** Lag en snarvei i
 Snarveier-appen (iPhone/Mac) — snarveier kan styre HomeKit-lys og -varme, sende meldinger,
-spille musikk, starte apper, kalle URL-er … Jarvis kjører dem på navn:
+spille musikk, starte apper, kalle URL-er … Saga kjører dem på navn:
 1. Lag f.eks. snarveien «Lys av» som slår av HomeKit-lysene
-2. Si: *«Jarvis, kjør snarveien Lys av»* — eller bare *«slå av lysene»* (Jarvis spør/husker navnet)
-3. Bonus: be Jarvis *huske* snarvei-navnene dine («husk at snarveien for leggetid heter God natt»)
+2. Si: *«Saga, kjør snarveien Lys av»* — eller bare *«slå av lysene»* (Saga spør/husker navnet)
+3. Bonus: be Saga *huske* snarvei-navnene dine («husk at snarveien for leggetid heter God natt»)
 
 **2. 🪝 Egne webhooks — dine kommandoer.** Under ⚙ OPPSETT → «Webhooks» legger du inn
-navn + URL + beskrivelse; hver blir et eget verktøy Jarvis bruker når det passer:
+navn + URL + beskrivelse; hver blir et eget verktøy Saga bruker når det passer:
 - **Home Assistant**: lag en automatisering med utløser «Webhook» → styr hva som helst i huset
-- **n8n** (selvhostet, åpen kildekode): bygg vilkårlige arbeidsflyter Jarvis kan utløse
+- **n8n** (selvhostet, åpen kildekode): bygg vilkårlige arbeidsflyter Saga kan utløse
 - **IFTTT** webhooks fungerer også
 
 **3. 📅 Native Apple-integrasjon (iPhone-appen):** `add_calendar_event` og `add_reminder`
 legger avtaler og påminnelser rett i Apple Kalender/Påminnelser — ingen konto, ingen sky:
-*«Jarvis, legg inn tannlege torsdag klokka 14»*
+*«Saga, legg inn tannlege torsdag klokka 14»*
 
 **4. 🔌 MCP-servere — direktekobling.** Under ⚙ OPPSETT → «Integrasjoner» kan du koble
 til tjenester som har egen MCP-server (kjøres på Anthropic sin serverside):
 Home Assistant MCP, GitHub (`api.githubcopilot.com/mcp/` + PAT som token), Todoist, Linear …
 
-Jarvis er instruert til å bekrefte før handlinger som er vanskelige å angre (sende e-post o.l.).
+Saga er instruert til å bekrefte før handlinger som er vanskelige å angre (sende e-post o.l.).
 
 ## Filstruktur
 
@@ -114,9 +114,9 @@ Jarvis er instruert til å bekrefte før handlinger som er vanskelige å angre (
 
 ## 🏛 AEIS – Adaptive Executive Intelligence System
 
-I [`aeis/`](aeis/) ligger noe større enn en assistent: et **digitalt styrerom** som fungerer
+I [`aeis/`](saga/modules/aeis/) ligger noe større enn en assistent: et **digitalt styrerom** som fungerer
 som strategisk partner for selskapsbygging, investeringer og store beslutninger.
-Nås fra JARVIS-appen (🏛 AEIS-knappen) eller direkte på `…/aeis/`.
+Nås fra SAGA-appen (🏛 AEIS-knappen) eller direkte på `…/aeis/`.
 
 - **Executive Board med 13 roller** (CEO, CFO, CSO, Devil's Advocate m.fl.) — hver rolle er
   en uavhengig Claude-agent med eget mandat. Dynamisk organisasjon: roller kan opprettes,
@@ -142,24 +142,24 @@ Nås fra JARVIS-appen (🏛 AEIS-knappen) eller direkte på `…/aeis/`.
 - **Kryptert sky-backup**: hovedbok, roller, vekter og profil krypteres på enheten
   (AES-256-GCM med din passordfrase) og lagres i en privat GitHub-gist — localStorage
   er ikke lenger eneste kopi av systemets hukommelse. Valgfri auto-backup ved endringer.
-- **Selvforbedring**: systemet leser sin egen [arkitektur](aeis/ARCHITECTURE.md) og foreslår
+- **Selvforbedring**: systemet leser sin egen [arkitektur](saga/modules/aeis/ARCHITECTURE.md) og foreslår
   migreringsplaner. Grunnloven i hvert kall: *ha rett, ikke vær hyggelig* — aldri gjett, aldri
   bekreft en idé fordi eieren liker den, aldri uttrykk mer sikkerhet enn dataene tilsier.
 
 **Eierprofilen din** limes inn under **AEIS → SYSTEM → Eierprofil** (hvem du er, hva du eier,
 mål, risikotoleranse, kapital, mandat og grenser). Den lagres **kun lokalt på enheten** — aldri
-i repoet eller på noen server — og injiseres automatisk i alle AEIS-vurderinger. JARVIS på samme
+i repoet eller på noen server — og injiseres automatisk i alle AEIS-vurderinger. SAGA på samme
 enhet leser den samme profilen som stille bakgrunnskunnskap. I iPhone-appen limes profilen inn
 under Oppsett → Eierprofil.
 
-Arkitektur, modulkontrakter og utvidelsesregler: [`aeis/ARCHITECTURE.md`](aeis/ARCHITECTURE.md).
+Arkitektur, modulkontrakter og utvidelsesregler: [`aeis/ARCHITECTURE.md`](saga/modules/aeis/ARCHITECTURE.md).
 Testet i `tests/aeis.e2e.js` (mocket API): hele pipelinen, veto-runden, kalibrering av vekter
 og læringssløyfen.
 
 ## 🏭 Company Factory – AI-drevet startup-studio
 
-I [`factory/`](factory/) ligger fabrikken som tar en enkel idé og driver den mot et
-lanseringsklart digitalt selskap. Nås fra JARVIS-appen (🏭 FACTORY-knappen) eller på `…/factory/`.
+I [`factory/`](saga/modules/factory/) ligger fabrikken som tar en enkel idé og driver den mot et
+lanseringsklart digitalt selskap. Nås fra SAGA-appen (🏭 FACTORY-knappen) eller på `…/factory/`.
 
 **Control Center (v2.0):** grensesnittet er et operativt kontrollsenter, ikke et
 dashboard – seks områder (Command, Idélab, Selskaper, Godkjenninger, Bibliotek,
@@ -220,7 +220,7 @@ rådgivning), driftsgrunnlag (Fase 13), nedlastbar prosjektrapport (Markdown), o
 kill-disiplin: parker/avslutt/reaktiver som loggede eierbeslutninger.
 
 Arkitektur (systemrevisjon, arkitekturbeslutning, målarkitektur, plan):
-[`factory/ARCHITECTURE.md`](factory/ARCHITECTURE.md). Testet i `tests/factory.e2e.js`
+[`factory/ARCHITECTURE.md`](saga/modules/factory/ARCHITECTURE.md). Testet i `tests/factory.e2e.js`
 (mocket API, 67 sjekker i 7 scenarier): full pipeline med byggekjede, svak idé → stopp,
 eksempelprosjekt (isolert TEST), valideringssløyfen, håndverifisert økonomimatte,
 python-verifisert ZIP, læringssløyfe, modenhetsporter, eier-porter, navneromsisolasjon

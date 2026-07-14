@@ -8,7 +8,7 @@
  */
 const { chromium } = require("playwright");
 
-const BASE = (process.argv[2] || "http://localhost:8130/") + "aeis/";
+const BASE = (process.argv[2] || "http://localhost:8130/") + "saga/modules/aeis/";
 let failures = 0;
 function check(name, cond, detail) {
   console.log((cond ? "  ✅ " : "  ❌ ") + name + (cond ? "" : "  → " + JSON.stringify(detail)));
