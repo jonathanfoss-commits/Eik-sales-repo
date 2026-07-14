@@ -156,8 +156,55 @@ const VALIDATION = {
   next_steps: ["Revider MVP-brief med valideringsdata", "Behold landingssiden som konverteringsside"],
 };
 
+const BIZMODEL = {
+  value_prop: "Vedlikeholdsplan som forebygger dyre boligskader.",
+  icp: "Førstegangs eneboligeiere 30–50 år.",
+  buyer: "Boligeieren", user: "Boligeieren",
+  revenue_model: "B2C-abonnement",
+  plans: [
+    { name: "Basis", price_month: 79, price_year: 790, target_share: 0.7, includes: ["Vedlikeholdsplan", "Sesongvarsler"] },
+    { name: "Pluss", price_month: 149, price_year: 1490, target_share: 0.3, includes: ["Alt i Basis", "Prioritert support"] },
+  ],
+  free_tier: "Gratis sjekkliste for én sesong",
+  trial: "14 dager gratis",
+  assumptions: { visitors_m1: 2000, visitor_growth_pct_m: 0.1, signup_rate: 0.05, paid_conversion: 0.3, churn_monthly: 0.05, cac: 300, fixed_costs_monthly: 5000, variable_cost_per_user: 5 },
+  assumption_notes: ["Signup 5 % basert på falsk-dør-resultatet", "Churn 5 %/mnd er bransjesnitt for B2C – uvalidert"],
+  risks: ["Churn etter første sesong kan være langt høyere"],
+};
+
+const SITE = {
+  brand: { name: "BoligPuls", slogan: "Boligen din, i rute", tone: "jordnær og konkret", color_primary: "#0b6e6e", color_ink: "#15222e", color_bg: "#f7f9fa", color_accent: "#d97706" },
+  seo_title: "BoligPuls – vedlikeholdsplan for boligen",
+  seo_description: "Sesongvarsler og sjekklister tilpasset din bolig.",
+  hero_headline: "Slutt å gjette hva boligen trenger",
+  hero_sub: "Få en plan tilpasset din bolig, med varsler når det faktisk er tid.",
+  cta_text: "Se pris og kom i gang",
+  features: [
+    { title: "Plan for din bolig", text: "Basert på boligtype og byggeår." },
+    { title: "Sesongvarsler", text: "Beskjed når oppgaven må gjøres." },
+    { title: "Sjekklister", text: "Steg for steg, uten fagsjargong." },
+  ],
+  how_it_works: ["Registrer boligen", "Få planen", "Motta varsler og kryss av"],
+  pricing_faq: [{ q: "Kan jeg si opp når som helst?", a: "Ja, abonnementet løper måned for måned." }],
+  faq: [{ q: "Passer det for leilighet?", a: "Foreløpig er planene laget for småhus." }],
+  about_story: "BoligPuls ble startet fordi småfeil ble dyre skader.",
+  about_values: ["Konkret framfor generelt", "Forebygging framfor reparasjon"],
+  terms_outline: ["Avtalens parter", "Abonnement og betaling", "Oppsigelse", "Ansvarsbegrensning"],
+  privacy_outline: ["Hvilke data vi lagrer", "Behandlingsgrunnlag", "Lagringstid", "Dine rettigheter"],
+};
+
+const RETRO = {
+  what_worked: ["Falsk-dør-testen ga tydelig signal"],
+  what_failed: ["Intervjurekruttering tok for lang tid"],
+  wrong_assumptions: ["Antok at churn-bekymringen var størst – det var betalingsvilje"],
+  process_improvements: ["Start intervjurekruttering i fase 0"],
+  reusable: ["Landingsside-malen", "Eksperimentterskel-formatet"],
+  not_reusable: ["Boligspesifikk copy"],
+  lesson: "Valider betalingsvilje med falsk dør før MVP besluttes.",
+};
+
 function mockRouter(overrides = {}) {
-  const counts = { intake: 0, framing: 0, verdict: 0, synthesis: 0, plan: 0, brief: 0, landing: 0, validation: 0, review: 0, total: 0 };
+  const counts = { intake: 0, framing: 0, verdict: 0, synthesis: 0, plan: 0, brief: 0, landing: 0, validation: 0, bizmodel: 0, site: 0, retro: 0, review: 0, total: 0 };
   const bodies = [];
   const handler = (route) => {
     const body = JSON.parse(route.request().postData());
@@ -176,6 +223,9 @@ function mockRouter(overrides = {}) {
     if (sys.includes("MVP-brief-modulen")) { counts.brief++; return route.fulfill(respond(overrides.brief || BRIEF)); }
     if (sys.includes("landingsside-modulen")) { counts.landing++; return route.fulfill(respond(overrides.landing || LANDING)); }
     if (sys.includes("valideringsmodulen i Company Factory")) { counts.validation++; return route.fulfill(respond(overrides.validation || VALIDATION)); }
+    if (sys.includes("forretningsmodell-modulen")) { counts.bizmodel++; return route.fulfill(respond(overrides.bizmodel || BIZMODEL)); }
+    if (sys.includes("nettsted-modulen")) { counts.site++; return route.fulfill(respond(overrides.site || SITE)); }
+    if (sys.includes("retro-modulen")) { counts.retro++; return route.fulfill(respond(overrides.retro || RETRO)); }
     if (sys.includes("selvevalueringsmodul")) {
       counts.review++;
       return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ content: [{ type: "text", text: "Selvevaluering: fabrikken fungerer; forbedre X." }], stop_reason: "end_turn", usage: { input_tokens: 1, output_tokens: 1 } }) });
@@ -221,17 +271,20 @@ async function freshPage(browser) {
     });
     check("prosjekt opprettet og lagret strukturert", !!p && p.name === "BoligPuls", p && p.name);
     check("inntak lagret (problem/målgruppe/betalingsvilje)", p.intake && p.intake.problem.includes("vedlikehold") && p.intake.target_group.length > 0, null);
-    check("antakelser logget fra inntak + vurdering (2+1)", p.assumptions.length === 3 && p.assumptions.some((a) => a.type === "krever_ekstern_validering"), p.assumptions.length);
+    check("antakelser logget fra inntak + vurdering + modell (2+1+2)", p.assumptions.length === 5 && p.assumptions.some((a) => a.type === "krever_ekstern_validering"), p.assumptions.length);
     check("score beregnet i kode: alle 8/10 → 80/100", p.evaluation.totalScore === 80, p.evaluation.totalScore);
     check("beslutning MVP med begrunnelse", p.evaluation.synthesis.decision === "mvp" && p.evaluation.synthesis.decision_rationale.length > 10, null);
     check("status oppdatert til bygging", p.status === "bygging", p.status);
     check("faseplan lagret med relevans-filter", p.phasePlan.phases.filter((f) => f.relevant).length === 2, null);
     check("MVP-brief lagret med ikke-bygges-liste", p.brief.working_name === "BoligPuls" && p.brief.not_building.length === 3, null);
-    check("beslutningslogg: inntak + vurdering + plan + brief", p.decisions.length === 4, p.decisions.map((d) => d.decision));
+    check("byggekjeden kjørte: forretningsmodell + nettsted generert automatisk", counts.bizmodel === 1 && counts.site === 1, counts);
+    check("snittpris vektet korrekt (79×0,7 + 149×0,3 = 100)", p.bizmodel.computed.price_avg === 100, p.bizmodel.computed.price_avg);
+    check("nettstedet har alle 7 filer", Object.keys(p.site.files).length === 7 && p.site.files["pris.html"].includes("79 kr"), Object.keys(p.site.files));
+    check("beslutningslogg: inntak + vurdering + plan + brief + modell + nettsted", p.decisions.length === 6, p.decisions.map((d) => d.decision));
 
     const detail = await page.evaluate(() => document.getElementById("detail").textContent);
-    check("prosjektstatus vises (score, beslutning, brief, logger)",
-      detail.includes("80") && detail.includes("MVP-BRIEF") && detail.includes("BESLUTNINGSLOGG") && detail.includes("ANTAKELSESLOGG") && detail.includes("FASEPLAN"), null);
+    check("prosjektstatus vises (score, beslutning, brief, modell, nettsted, logger)",
+      detail.includes("80") && detail.includes("MVP-BRIEF") && detail.includes("FORRETNINGSMODELL") && detail.includes("NETTSTED") && detail.includes("BESLUTNINGSLOGG") && detail.includes("ANTAKELSESLOGG") && detail.includes("FASEPLAN"), null);
     check("ingen JS-feil", errors.length === 0, errors);
     await page.close();
   }
@@ -382,6 +435,77 @@ async function freshPage(browser) {
     await page.waitForFunction(() => document.getElementById("detail").textContent.includes("MVP-BRIEF"), null, { timeout: 10000 });
     p = await page.evaluate(() => window.CF.Projects.list()[0]);
     check("MVP-brief generert etter bestått validering", counts.brief === 1 && p.brief.working_name === "BoligPuls", counts);
+    check("ingen JS-feil", errors.length === 0, errors);
+    await page.close();
+  }
+
+  /* ---------- Scenario 6: F3 – økonomimatte, ZIP-integritet, retro + læringssløyfe ---------- */
+  console.log("FACTORY 6: økonomimodell (håndverifisert), ZIP (python-verifisert), retro → lærdom injiseres");
+  {
+    const fs = require("fs");
+    const { execSync } = require("child_process");
+    const { page, errors } = await freshPage(browser);
+    const { handler, counts, bodies } = mockRouter();
+    await page.route("**/v1/messages", handler);
+    await page.click('nav button[data-tab="system"]');
+    await page.click("#demoBtn");
+    await page.waitForFunction(() => document.getElementById("detail").textContent.includes("BoligPuls"), null, { timeout: 5000 });
+
+    /* Håndverifisert regneeksempel: m1 profit 0, m2 profit 800, break-even mnd 2, LTV 500, LTV/CAC 10 */
+    const fin = await page.evaluate(() => window.CF.Finance.project({ visitors_m1: 100, visitor_growth_pct_m: 0, signup_rate: 0.1, paid_conversion: 1, churn_monthly: 0.2, cac: 50, fixed_costs_monthly: 500, variable_cost_per_user: 0, price_avg: 100 }, 2));
+    check("økonomimodellen regner riktig (håndverifisert case)",
+      fin.rows[0].profit === 0 && fin.rows[1].customers === 18 && fin.rows[1].mrr === 1800 && fin.breakEvenMonth === 2 && fin.ltv === 500 && fin.ltvCac === 10 && fin.capitalNeed === 0, fin);
+
+    /* Forretningsmodell + lokal rekalkulering uten LLM */
+    await page.evaluate(async () => { await window.CF.BizModel.run(window.CF.Projects.list()[0]); });
+    const apiAfterBm = counts.bizmodel;
+    let ltv = await page.evaluate(() => window.CF.Projects.list()[0].bizmodel.computed.scenarios.sannsynlig.ltv);
+    check("LTV ved churn 5 %: (100-5)/0,05 = 1900", ltv === 1900, ltv);
+    await page.evaluate(() => window.CF.BizModel.recompute(window.CF.Projects.list()[0], { churn_monthly: 0.1 }));
+    ltv = await page.evaluate(() => window.CF.Projects.list()[0].bizmodel.computed.scenarios.sannsynlig.ltv);
+    check("rekalkulering lokalt (churn 10 % → LTV 950) uten nye API-kall", ltv === 950 && counts.bizmodel === apiAfterBm, { ltv, calls: counts.bizmodel });
+
+    /* Nettsted → ZIP → verifiser med python zipfile */
+    await page.evaluate(async () => { await window.CF.SiteGen.run(window.CF.Projects.list()[0]); });
+    const zipB64 = await page.evaluate(() => {
+      const bytes = window.CF.SiteGen.zip(window.CF.Projects.list()[0]);
+      let s = "";
+      for (let i = 0; i < bytes.length; i += 8192) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+      return btoa(s);
+    });
+    const zipPath = "/tmp/claude-0/-home-user-Eik-sales-repo/7aa88781-c614-566c-b92e-efc1c1f79f4f/scratchpad/factory-site.zip";
+    fs.writeFileSync(zipPath, Buffer.from(zipB64, "base64"));
+    let zipOk = false, zipDetail = "";
+    try {
+      zipDetail = execSync(`python3 -c "
+import zipfile
+z = zipfile.ZipFile('${zipPath}')
+assert z.testzip() is None, 'korrupt'
+names = sorted(z.namelist())
+assert len(names) == 7, names
+idx = z.read('index.html').decode('utf-8')
+assert 'Slutt å gjette' in idx and '#0b6e6e' in idx, 'mangler innhold'
+assert 'advokat' in z.read('vilkar.html').decode('utf-8')
+assert '79 kr' in z.read('pris.html').decode('utf-8')
+print('OK', len(names))
+"`, { encoding: "utf-8" }).trim();
+      zipOk = zipDetail.startsWith("OK");
+    } catch (e) { zipDetail = e.message; }
+    check("ZIP er gyldig (python zipfile: CRC, 7 filer, innhold, juridisk disclaimer)", zipOk, zipDetail);
+
+    /* Retro → varig lærdom → injiseres i neste prosjekt */
+    await page.evaluate(async () => { await window.CF.Retro.run(window.CF.Projects.list()[0]); });
+    const lessons = await page.evaluate(() => JSON.parse(localStorage.getItem("cf_lessons")));
+    check("retro lagret lærdom i cf_lessons", lessons.length === 1 && lessons[0].lesson.includes("falsk dør"), lessons);
+
+    await page.click('nav button[data-tab="idea"]');
+    await page.fill("#ideaName", "Neste idé");
+    await page.fill("#ideaText", "Abonnement på digital hyttevedlikeholdsplan.");
+    await page.click("#runIdeaBtn");
+    await page.waitForFunction(() => document.getElementById("pipeline").textContent.includes("FERDIG"), null, { timeout: 30000 });
+    const lessonInjected = bodies.some((b) =>
+      (b.system || "").includes("inntaksmodul") && (b.messages?.[0]?.content || "").includes("VARIGE LÆRDOMMER") && (b.messages?.[0]?.content || "").includes("falsk dør"));
+    check("lærdommen injiseres i neste prosjekts inntak (læringssløyfe)", lessonInjected, null);
     check("ingen JS-feil", errors.length === 0, errors);
     await page.close();
   }

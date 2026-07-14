@@ -347,6 +347,85 @@ const SCHEMAS = {
     required: ["seo_title", "seo_description", "headline", "subheadline", "pain_points", "value_props", "offer", "price_line", "cta_text", "faq", "honest_disclaimer"],
     additionalProperties: false,
   },
+  bizmodel: {
+    type: "object",
+    properties: {
+      value_prop: { type: "string" },
+      icp: { type: "string" },
+      buyer: { type: "string" },
+      user: { type: "string" },
+      revenue_model: { type: "string" },
+      plans: { type: "array", items: {
+        type: "object",
+        properties: { name: { type: "string" }, price_month: { type: "number" }, price_year: { type: "number" }, target_share: { type: "number" }, includes: strArr },
+        required: ["name", "price_month", "price_year", "target_share", "includes"], additionalProperties: false } },
+      free_tier: { type: "string" },
+      trial: { type: "string" },
+      assumptions: { type: "object",
+        properties: {
+          visitors_m1: { type: "number" }, visitor_growth_pct_m: { type: "number" },
+          signup_rate: { type: "number" }, paid_conversion: { type: "number" },
+          churn_monthly: { type: "number" }, cac: { type: "number" },
+          fixed_costs_monthly: { type: "number" }, variable_cost_per_user: { type: "number" },
+        },
+        required: ["visitors_m1", "visitor_growth_pct_m", "signup_rate", "paid_conversion", "churn_monthly", "cac", "fixed_costs_monthly", "variable_cost_per_user"],
+        additionalProperties: false },
+      assumption_notes: strArr,
+      risks: strArr,
+    },
+    required: ["value_prop", "icp", "buyer", "user", "revenue_model", "plans", "free_tier", "trial", "assumptions", "assumption_notes", "risks"],
+    additionalProperties: false,
+  },
+  site: {
+    type: "object",
+    properties: {
+      brand: { type: "object",
+        properties: {
+          name: { type: "string" }, slogan: { type: "string" }, tone: { type: "string" },
+          color_primary: { type: "string" }, color_ink: { type: "string" }, color_bg: { type: "string" }, color_accent: { type: "string" },
+        },
+        required: ["name", "slogan", "tone", "color_primary", "color_ink", "color_bg", "color_accent"],
+        additionalProperties: false },
+      seo_title: { type: "string" },
+      seo_description: { type: "string" },
+      hero_headline: { type: "string" },
+      hero_sub: { type: "string" },
+      cta_text: { type: "string" },
+      features: { type: "array", items: {
+        type: "object",
+        properties: { title: { type: "string" }, text: { type: "string" } },
+        required: ["title", "text"], additionalProperties: false } },
+      how_it_works: strArr,
+      pricing_faq: { type: "array", items: {
+        type: "object",
+        properties: { q: { type: "string" }, a: { type: "string" } },
+        required: ["q", "a"], additionalProperties: false } },
+      faq: { type: "array", items: {
+        type: "object",
+        properties: { q: { type: "string" }, a: { type: "string" } },
+        required: ["q", "a"], additionalProperties: false } },
+      about_story: { type: "string" },
+      about_values: strArr,
+      terms_outline: strArr,
+      privacy_outline: strArr,
+    },
+    required: ["brand", "seo_title", "seo_description", "hero_headline", "hero_sub", "cta_text", "features", "how_it_works", "pricing_faq", "faq", "about_story", "about_values", "terms_outline", "privacy_outline"],
+    additionalProperties: false,
+  },
+  retro: {
+    type: "object",
+    properties: {
+      what_worked: strArr,
+      what_failed: strArr,
+      wrong_assumptions: strArr,
+      process_improvements: strArr,
+      reusable: strArr,
+      not_reusable: strArr,
+      lesson: { type: "string" },
+    },
+    required: ["what_worked", "what_failed", "wrong_assumptions", "process_improvements", "reusable", "not_reusable", "lesson"],
+    additionalProperties: false,
+  },
   plan: {
     type: "object",
     properties: {
@@ -393,13 +472,68 @@ const SCHEMAS = {
   },
 };
 
+/* ================= Lessons (varige lærdommer på tvers av prosjekter) ================= */
+const Lessons = {
+  list() { return Store.get("cf_lessons", []); },
+  add(lesson, projectName) {
+    const list = this.list();
+    list.unshift({ lesson, project: projectName, at: new Date().toISOString() });
+    Store.set("cf_lessons", list.slice(0, 20));
+  },
+  latest(n = 5) { return this.list().slice(0, n).map((l) => `- [${l.project}] ${l.lesson}`); },
+};
+
 function ownerContext() {
   const profile = Store.ownerProfile;
-  return profile ? `OM EIEREN (fra AEIS-profilen):\n${profile}\n\n` : "";
+  const lessons = Lessons.latest(5);
+  let ctx = profile ? `OM EIEREN (fra AEIS-profilen):\n${profile}\n\n` : "";
+  if (lessons.length) ctx += `VARIGE LÆRDOMMER FRA TIDLIGERE FABRIKKPROSJEKTER (retro):\n${lessons.join("\n")}\n\n`;
+  return ctx;
 }
 
 function escHtml(s) {
   return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+/* ================= ZIP-writer (ukomprimert/STORE – ingen avhengigheter) ================= */
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(bytes) {
+  let c = 0xffffffff;
+  for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xff] ^ (c >>> 8);
+  return (c ^ 0xffffffff) >>> 0;
+}
+/* makeZip({ "index.html": "<html>…", … }) → Uint8Array (gyldig .zip, STORE-metode) */
+function makeZip(files) {
+  const enc = new TextEncoder();
+  const chunks = [], central = [];
+  let offset = 0;
+  const u16 = (v) => [v & 0xff, (v >> 8) & 0xff];
+  const u32 = (v) => [v & 0xff, (v >>> 8) & 0xff, (v >>> 16) & 0xff, (v >>> 24) & 0xff];
+  for (const name of Object.keys(files)) {
+    const nameB = enc.encode(name);
+    const data = enc.encode(files[name]);
+    const crc = crc32(data);
+    /* Local file header: signatur, versjon 20, flagg 0x0800 (UTF-8 navn), metode 0, tid/dato 0 */
+    const lfh = new Uint8Array([0x50, 0x4b, 0x03, 0x04, ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(nameB.length), ...u16(0)]);
+    chunks.push(lfh, nameB, data);
+    central.push(new Uint8Array([0x50, 0x4b, 0x01, 0x02, ...u16(20), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(nameB.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(0), ...u32(offset)]), nameB);
+    offset += lfh.length + nameB.length + data.length;
+  }
+  const centralSize = central.reduce((n, c) => n + c.length, 0);
+  const eocd = new Uint8Array([0x50, 0x4b, 0x05, 0x06, ...u16(0), ...u16(0), ...u16(central.length / 2), ...u16(central.length / 2), ...u32(centralSize), ...u32(offset), ...u16(0)]);
+  const total = offset + centralSize + eocd.length;
+  const out = new Uint8Array(total);
+  let pos = 0;
+  for (const c of [...chunks, ...central, eocd]) { out.set(c, pos); pos += c.length; }
+  return out;
 }
 
 /* ================= Intake (Fase 0) ================= */
@@ -626,6 +760,241 @@ const Landing = {
   },
 };
 
+/* ================= SiteGen (Fase 6+8: fabrikken BYGGER nettstedet) ================= */
+const SiteGen = {
+  async run(p, onStatus) {
+    if (!p.intake || !p.evaluation) throw new Error("Kjør inntak og idévurdering først.");
+    if (onStatus) onStatus("Bygger nettstedet: merkevare, copy og sider …");
+    const plans = p.bizmodel ? p.bizmodel.model.plans : null;
+    const { json } = await LLM.call({
+      system: `Du er nettsted-modulen i Company Factory (Fase 6+8). Lever merkevare-tokens og komplett sideinnhold for produktets nettsted. Krav: copy er konkret, troverdig og skrevet for målgruppen – ingen tomme fraser («revolusjonerende», «sømløs», «kraftig», «fremtidens»). Farger som hex (god kontrast: ink mot bg). terms_outline og privacy_outline er UTKAST til punkter – de merkes automatisk som «må kvalitetssikres av advokat». Tone tilpasses målgruppen, ikke generisk SaaS.`,
+      user: `${ownerContext()}PROSJEKT: ${p.name}\n\nINNTAK:\n${JSON.stringify(p.intake, null, 2)}\n\nMVP-BRIEF:\n${JSON.stringify(p.brief || "(ikke laget – bruk inntaket)", null, 2)}${plans ? `\n\nPRISPLANER (bruk disse eksakt):\n${JSON.stringify(plans, null, 2)}` : ""}`,
+      schema: SCHEMAS.site,
+      maxTokens: 8192,
+    });
+    const files = this.renderSite(json, { plans, trial: p.bizmodel ? p.bizmodel.model.trial : "", freeTier: p.bizmodel ? p.bizmodel.model.free_tier : "" });
+    p.site = { content: json, files, at: new Date().toISOString() };
+    p.maturity = "prototype";
+    Projects.logDecision(p, { phase: 8, role: "nettsted-modul", decision: `Nettsted generert (${Object.keys(files).length} filer)`, rationale: `«${json.hero_headline}» – komplett statisk nettsted klart for deploy. Betalingsknapper er plassholdere til Stripe Payment Links legges inn (eier-port: betaling). Juridiske sider er utkast som krever advokat.` });
+    return Projects.save(p);
+  },
+
+  /* Deterministisk rendering: delt designsystem fra brand-tokens, ingen eksterne avhengigheter */
+  renderSite(c, opts = {}) {
+    const e = escHtml;
+    const b = c.brand;
+    const css = `
+  :root { --primary:${e(b.color_primary)}; --ink:${e(b.color_ink)}; --bg:${e(b.color_bg)}; --accent:${e(b.color_accent)}; --muted:#5f6f7d; --card:#ffffff; --line:#e2e8ee; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); line-height:1.65; }
+  header { border-bottom:1px solid var(--line); background:var(--card); }
+  .nav { max-width:960px; margin:0 auto; padding:14px 20px; display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+  .nav .logo { font-weight:700; font-size:18px; color:var(--primary); text-decoration:none; margin-right:auto; }
+  .nav a { color:var(--ink); text-decoration:none; font-size:14px; }
+  .nav a:hover { color:var(--primary); }
+  main { max-width:960px; margin:0 auto; padding:24px 20px 64px; }
+  .hero { text-align:center; padding:56px 0 40px; }
+  h1 { font-size:clamp(28px,5vw,42px); line-height:1.15; margin-bottom:14px; }
+  .sub { font-size:18px; color:var(--muted); max-width:600px; margin:0 auto 26px; }
+  .btn { display:inline-block; background:var(--primary); color:#fff; padding:14px 26px; border-radius:10px; text-decoration:none; font-size:16px; font-weight:600; border:0; cursor:pointer; }
+  .btn.alt { background:var(--card); color:var(--primary); border:2px solid var(--primary); }
+  h2 { font-size:24px; margin:44px 0 16px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; }
+  .card h3 { font-size:16px; margin-bottom:8px; }
+  .card p { font-size:14px; color:var(--muted); }
+  ol.steps { padding-left:24px; } ol.steps li { margin-bottom:10px; }
+  .plans { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; align-items:stretch; }
+  .plan { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; display:flex; flex-direction:column; }
+  .plan .price { font-size:30px; font-weight:700; color:var(--primary); margin:10px 0 2px; }
+  .plan .per { font-size:13px; color:var(--muted); margin-bottom:12px; }
+  .plan ul { padding-left:20px; font-size:14px; color:var(--muted); flex:1; margin-bottom:14px; }
+  details { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 16px; margin-bottom:8px; }
+  summary { cursor:pointer; font-weight:600; font-size:15px; }
+  details p { margin-top:8px; font-size:14px; color:var(--muted); }
+  .notice { background:#fff7e0; border:1px solid #eedc9a; border-radius:10px; padding:14px 16px; font-size:13px; margin:18px 0; }
+  footer { border-top:1px solid var(--line); text-align:center; font-size:13px; color:var(--muted); padding:26px 20px; }
+  footer a { color:var(--muted); }`;
+    const nav = `<header><div class="nav"><a class="logo" href="index.html">${e(b.name)}</a><a href="pris.html">Pris</a><a href="faq.html">FAQ</a><a href="om.html">Om oss</a></div></header>`;
+    const footer = `<footer>© ${e(b.name)} · <a href="vilkar.html">Vilkår</a> · <a href="personvern.html">Personvern</a><br>${e(b.slogan)}</footer>`;
+    const shell = (title, desc, body) => `<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${e(title)}</title>
+<meta name="description" content="${e(desc)}">
+<style>${css}</style>
+</head>
+<body>
+${nav}
+<main>
+${body}
+</main>
+${footer}
+</body>
+</html>`;
+
+    const legalNotice = `<div class="notice"><b>Merk:</b> Dette dokumentet er et automatisk generert utkast og er IKKE juridisk kvalitetssikret. Det må gjennomgås og godkjennes av advokat eller annen autorisert fagperson før publisering og bruk.</div>`;
+    const plans = opts.plans || [{ name: "Standard", price_month: 0, price_year: 0, target_share: 1, includes: ["Se pris ved lansering"] }];
+
+    const index = shell(c.seo_title, c.seo_description, `
+<section class="hero">
+  <h1>${e(c.hero_headline)}</h1>
+  <p class="sub">${e(c.hero_sub)}</p>
+  <a class="btn" href="pris.html">${e(c.cta_text)}</a>
+</section>
+<section><h2>Det du får</h2><div class="grid">${c.features.map((f) => `<div class="card"><h3>${e(f.title)}</h3><p>${e(f.text)}</p></div>`).join("")}</div></section>
+<section><h2>Slik fungerer det</h2><ol class="steps">${c.how_it_works.map((s) => `<li>${e(s)}</li>`).join("")}</ol></section>
+<section class="hero"><a class="btn" href="pris.html">${e(c.cta_text)}</a></section>`);
+
+    const pris = shell(`Pris – ${b.name}`, c.seo_description, `
+<h1>Pris</h1>
+${opts.trial ? `<p class="sub" style="margin:8px 0 20px; text-align:left">${e(opts.trial)}${opts.freeTier ? " · " + e(opts.freeTier) : ""}</p>` : ""}
+<div class="plans">${plans.map((pl) => `<div class="plan"><h3>${e(pl.name)}</h3><div class="price">${Math.round(pl.price_month)} kr</div><div class="per">per måned · ${Math.round(pl.price_year)} kr/år</div><ul>${(pl.includes || []).map((i) => `<li>${e(i)}</li>`).join("")}</ul><button class="btn" data-stripe-payment-link="ERSTATT-MED-STRIPE-PAYMENT-LINK" onclick="alert('Betaling aktiveres ved lansering.')">Velg ${e(pl.name)}</button></div>`).join("")}</div>
+<div class="notice"><b>Til eieren (fjernes før lansering):</b> knappene over er plassholdere. Opprett produkter i Stripe og lim inn Payment Links i data-stripe-payment-link-attributtene, eller koble til abonnementsflyten. Betaling er en eier-port i Company Factory.</div>
+<h2>Spørsmål om pris</h2>${c.pricing_faq.map((f) => `<details><summary>${e(f.q)}</summary><p>${e(f.a)}</p></details>`).join("")}`);
+
+    const faq = shell(`FAQ – ${b.name}`, c.seo_description, `<h1>Ofte stilte spørsmål</h1>${c.faq.map((f) => `<details><summary>${e(f.q)}</summary><p>${e(f.a)}</p></details>`).join("")}`);
+
+    const om = shell(`Om oss – ${b.name}`, c.seo_description, `<h1>Om ${e(b.name)}</h1><p style="max-width:640px">${e(c.about_story)}</p><h2>Det vi styrer etter</h2><div class="grid">${c.about_values.map((v) => `<div class="card"><p>${e(v)}</p></div>`).join("")}</div>`);
+
+    const vilkar = shell(`Vilkår – ${b.name}`, "Avtalevilkår", `<h1>Avtalevilkår</h1>${legalNotice}<ol class="steps">${c.terms_outline.map((t) => `<li>${e(t)}</li>`).join("")}</ol>`);
+
+    const personvern = shell(`Personvern – ${b.name}`, "Personvernerklæring", `<h1>Personvernerklæring</h1>${legalNotice}<ol class="steps">${c.privacy_outline.map((t) => `<li>${e(t)}</li>`).join("")}</ol>`);
+
+    const readme = `# ${b.name} – generert av Company Factory
+
+Statisk nettsted uten eksterne avhengigheter. Alle sider deler designsystemet
+(merkevare-tokens i CSS-variabler øverst i hver fil).
+
+## Deploy
+- GitHub Pages: legg filene i et repo → Settings → Pages → deploy fra branch.
+- Netlify/Vercel/Cloudflare Pages: dra og slipp mappen.
+
+## Før lansering (eier-porter i Company Factory)
+1. **Betaling:** opprett produkter i Stripe og lim inn Payment Links i
+   \`data-stripe-payment-link\`-attributtene i pris.html. Fjern eier-notisen.
+2. **Juridisk:** vilkar.html og personvern.html er UTKAST – må kvalitetssikres
+   av advokat/fagperson før publisering.
+3. **Domene og e-post:** kjøp/pek domene, sett opp e-post (eier-port).
+4. **Analyse:** legg inn valgfritt verktøy (f.eks. Plausible/Umami) – bevisst
+   ikke inkludert for å holde siden fri for tredjeparter som standard.
+
+Generert ${new Date().toISOString().slice(0, 10)}. Copy og struktur kan redigeres fritt.
+`;
+
+    return {
+      "index.html": index,
+      "pris.html": pris,
+      "faq.html": faq,
+      "om.html": om,
+      "vilkar.html": vilkar,
+      "personvern.html": personvern,
+      "README-deploy.md": readme,
+    };
+  },
+
+  zip(p) {
+    if (!p.site) throw new Error("Nettstedet er ikke generert.");
+    return makeZip(p.site.files);
+  },
+};
+
+/* ================= Retro (seksjon 12: selvevaluering per prosjekt) ================= */
+const Retro = {
+  async run(p, onStatus) {
+    if (onStatus) onStatus("Kjører retro på prosjektet …");
+    const { json } = await LLM.call({
+      system: `Du er retro-modulen i Company Factory. Evaluer prosjektgjennomføringen nøkternt: hva fungerte, hva feilet, hvilke antakelser var gale, hvilke prosessforbedringer bør gjøres, hva kan generaliseres til gjenbruksbiblioteket – og hva bør IKKE gjenbrukes. Formuler ÉN kort, generaliserbar lærdom («lesson») som fabrikken skal huske i alle fremtidige prosjekter. Ikke foreslå forbedringer som bare gjør systemet større uten målbar verdi.`,
+      user: `${ownerContext()}PROSJEKT: ${p.name} [status: ${p.status}, fase ${p.phase}]\nIDÉ: ${p.idea}\n\nVURDERING: ${p.evaluation ? `${p.evaluation.synthesis.decision} (score ${p.evaluation.totalScore}/100) – ${p.evaluation.synthesis.decision_rationale}` : "(ikke kjørt)"}\n\nEKSPERIMENTER:\n${JSON.stringify((p.experiments || []).map((x) => ({ antakelse: x.claim, status: x.status, bestått: x.passed, resultat: x.result })), null, 2)}\n\nVALIDERINGSPORT: ${p.validation ? `${p.validation.decision} – ${p.validation.decision_rationale}` : "(ikke kjørt)"}\n\nANTAKELSER (${p.assumptions.length}):\n${p.assumptions.slice(0, 15).map((a) => `- [${a.type}] ${a.claim}`).join("\n")}\n\nBESLUTNINGER (${p.decisions.length}):\n${p.decisions.slice(0, 15).map((d) => `- ${d.decision}`).join("\n")}`,
+      schema: SCHEMAS.retro,
+      maxTokens: 4096,
+    });
+    p.retro = { ...json, at: new Date().toISOString() };
+    Lessons.add(json.lesson, p.name);
+    Projects.logDecision(p, { role: "retro-modul", decision: "Retro gjennomført", rationale: "Lærdom: " + json.lesson });
+    return Projects.save(p);
+  },
+};
+
+/* ================= Finance (deterministisk økonomimodell – ingen LLM) ================= */
+const Finance = {
+  avgPrice(plans) {
+    let sum = 0, weight = 0;
+    for (const pl of plans || []) { sum += (pl.price_month || 0) * (pl.target_share || 0); weight += pl.target_share || 0; }
+    return weight ? sum / weight : (plans && plans[0] ? plans[0].price_month : 0);
+  },
+  /* 24-måneders fremskrivning fra antakelsene. All matematikk i kode – modellen gjetter aldri tall den kan regne ut. */
+  project(a, months = 24) {
+    let customers = 0, visitors = a.visitors_m1, cumulative = 0, breakEvenMonth = null;
+    const rows = [];
+    for (let m = 1; m <= months; m++) {
+      const newCustomers = visitors * a.signup_rate * a.paid_conversion;
+      customers = customers * (1 - a.churn_monthly) + newCustomers;
+      const mrr = customers * a.price_avg;
+      const costs = a.fixed_costs_monthly + customers * a.variable_cost_per_user + newCustomers * a.cac;
+      const profit = mrr - costs;
+      cumulative += profit;
+      if (breakEvenMonth === null && profit > 0) breakEvenMonth = m;
+      rows.push({ m, visitors: Math.round(visitors), newCustomers: Math.round(newCustomers * 10) / 10, customers: Math.round(customers), mrr: Math.round(mrr), profit: Math.round(profit), cumulative: Math.round(cumulative) });
+      visitors *= 1 + a.visitor_growth_pct_m;
+    }
+    const contribution = a.price_avg - a.variable_cost_per_user;
+    const ltv = a.churn_monthly > 0 ? contribution / a.churn_monthly : null;
+    const last = rows[rows.length - 1];
+    return {
+      rows, breakEvenMonth,
+      customers24: last.customers, mrr24: last.mrr, arr24: last.mrr * 12, cumulative24: last.cumulative,
+      ltv: ltv === null ? null : Math.round(ltv),
+      ltvCac: ltv !== null && a.cac > 0 ? Math.round((ltv / a.cac) * 10) / 10 : null,
+      capitalNeed: Math.round(Math.min(0, ...rows.map((r) => r.cumulative))) * -1,
+    };
+  },
+  /* Konservativ / sannsynlig / offensiv – faste multiplikatorer, tydelig dokumentert */
+  scenarios(a) {
+    const mk = (mult) => this.project({
+      ...a,
+      signup_rate: a.signup_rate * mult.conv,
+      paid_conversion: a.paid_conversion * mult.conv,
+      churn_monthly: Math.min(0.9, a.churn_monthly * mult.churn),
+      cac: a.cac * mult.cac,
+    });
+    return {
+      konservativ: mk({ conv: 0.6, churn: 1.5, cac: 1.4 }),
+      sannsynlig: mk({ conv: 1, churn: 1, cac: 1 }),
+      offensiv: mk({ conv: 1.4, churn: 0.7, cac: 0.8 }),
+    };
+  },
+};
+
+/* ================= BizModel (Fase 3: forretningsmodell) ================= */
+const BizModel = {
+  async run(p, onStatus) {
+    if (!p.intake || !p.evaluation) throw new Error("Kjør inntak og idévurdering først.");
+    if (onStatus) onStatus("Fase 3: bygger forretningsmodell …");
+    const { json } = await LLM.call({
+      system: `Du er forretningsmodell-modulen i Company Factory (Fase 3). Definer en konkret modell: verdi, ICP, kjøper/bruker, inntektsmodell, 1–3 abonnementsplaner med månedspris/årspris og forventet kundefordeling (target_share, summerer til ~1), gratisnivå/prøveperiode. Sett NØKTERNE talleantakelser (trafikk måned 1, månedlig vekst, registreringsrate, betalt konvertering, månedlig churn, CAC, faste kostnader, variabel kostnad per bruker) – all videre matematikk gjøres av kode, ikke av deg. Hver talleantakelse skal begrunnes kort i assumption_notes. Ikke pynt på tallene: modellen skal kunne avkreftes.`,
+      user: `${ownerContext()}PROSJEKT: ${p.name}\n\nINNTAK:\n${JSON.stringify(p.intake, null, 2)}\n\nFRA VURDERINGEN:\n${JSON.stringify({ beslutning: p.evaluation.synthesis.decision, score: p.evaluation.totalScore, svakheter: p.evaluation.synthesis.weaknesses }, null, 2)}${p.validation ? `\n\nVALIDERINGSRESULTATER:\n${JSON.stringify(p.validation.per_experiment, null, 2)}` : ""}`,
+      schema: SCHEMAS.bizmodel,
+      maxTokens: 4096,
+    });
+    p.bizmodel = { model: json, at: new Date().toISOString() };
+    this.recompute(p);
+    Projects.logAssumptions(p, json.assumption_notes.map((n) => ({ claim: n, type: "antakelse", confidence: "lav" })), "forretningsmodell");
+    Projects.logDecision(p, { phase: 3, role: "forretningsmodell-modul", decision: "Forretningsmodell etablert", rationale: `${json.revenue_model}. Snittpris ${Math.round(Finance.avgPrice(json.plans))} kr/mnd. Oppdateres med faktiske data etter lansering.` });
+    return Projects.save(p);
+  },
+  /* Rekalkuler lokalt (gratis) – f.eks. etter at eieren justerer antakelser */
+  recompute(p, patch) {
+    const m = p.bizmodel.model;
+    if (patch) m.assumptions = { ...m.assumptions, ...patch };
+    const a = { ...m.assumptions, price_avg: Finance.avgPrice(m.plans) };
+    p.bizmodel.computed = { scenarios: Finance.scenarios(a), price_avg: Math.round(a.price_avg), at: new Date().toISOString() };
+    return Projects.save(p);
+  },
+};
+
 /* ================= Planner (tilpasset faseplan) ================= */
 const Planner = {
   async run(p, onStatus) {
@@ -679,6 +1048,9 @@ const Pipeline = {
     const buildable = ["prototype", "mvp", "lansering"].includes(d);
     if ((buildable || d === "valider_mer") && !p.phasePlan) p = await Planner.run(p, (s) => say("plan", s));
     if (buildable && !p.brief) p = await Brief.run(p, (s) => say("brief", s));
+    /* Byggekjeden (F3): besluttet bygging → forretningsmodell → nettsted */
+    if (buildable && !p.bizmodel) p = await BizModel.run(p, (s) => say("bizmodel", s));
+    if (buildable && !p.site) p = await SiteGen.run(p, (s) => say("site", s));
     say("finished", d);
     return p;
   },
@@ -791,4 +1163,4 @@ const SelfReview = {
 };
 
 /* Eksponer modulene (også for tester) */
-window.CF = { Store, LLM, Board, Pipeline, Projects, Intake, Evaluation, Experiments, Landing, Planner, Brief, Demo, SelfReview, SCHEMAS, PHASES, OWNER_GATE_ACTIONS, FACTORY_ROLES, CRITERIA, pool };
+window.CF = { Store, LLM, Board, Pipeline, Projects, Intake, Evaluation, Experiments, Landing, BizModel, Finance, SiteGen, Retro, Lessons, Planner, Brief, Demo, SelfReview, SCHEMAS, PHASES, OWNER_GATE_ACTIONS, FACTORY_ROLES, CRITERIA, pool, makeZip, crc32 };

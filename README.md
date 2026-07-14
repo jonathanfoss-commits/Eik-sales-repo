@@ -157,6 +157,14 @@ lanseringsklart digitalt selskap. Nås fra JARVIS-appen (🏭 FACTORY-knappen) e
   konkluderer på resultatene — bestått slipper prosjektet videre til MVP, stryk stopper det.
 - **Leveranser per prosjekt**: tilpasset faseplan (17 standardfaser, små idéer får små planer),
   MVP-brief med eksplisitt «bygges ikke»-liste, antakelseslogg og full beslutningslogg.
+- **Byggekjeden**: ved byggebeslutning produserer fabrikken automatisk **forretningsmodell**
+  (LLM setter begrunnede antakelser, koden beregner 24-mnd MRR, break-even, LTV/CAC og
+  kapitalbehov i tre scenarier – rekalkuler gratis når du justerer tallene) og et **komplett
+  nettsted** (forside, pris fra planene, FAQ, om oss, vilkår/personvern som merkede utkast,
+  deploy-README) – lastes ned som ZIP, klart for GitHub Pages/Netlify. Betalingsknapper er
+  Stripe-plassholdere bak eier-porten.
+- **Læringssløyfe**: 🔁 Retro per prosjekt trekker ut én generaliserbar lærdom som injiseres
+  i alle fremtidige vurderinger – fabrikken blir bedre for hvert prosjekt.
 - **Portefølje**: flere parallelle prosjekter, isolert lagring per prosjekt (`cf_project_*`),
   per-prosjekt eksport for utspinning/avvikling, og enkel kill-disiplin.
 - **Eier-porter**: betalinger, publisering, domener, juss, masseutsendelser og offentlig

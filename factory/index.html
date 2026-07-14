@@ -131,6 +131,9 @@
   <div class="note">Følgende handlinger auto-godkjennes ALDRI – de krever alltid ditt eksplisitte klikk og logges i beslutningsloggen:</div>
   <div class="panel" id="gateList"></div>
 
+  <h2>VARIGE LÆRDOMMER (injiseres i alle fremtidige vurderinger)</h2>
+  <div id="lessonsList"></div>
+
   <h2>SELVEVALUERING</h2>
   <button class="primary" id="reviewBtn">🔄 Evaluer fabrikken</button>
   <div id="reviewOut"></div>
@@ -170,8 +173,16 @@ function certBadge(c) {
   return `<span class="badge ${cls}">${esc(c)} sikkerhet</span>`;
 }
 function phaseTitle(n) { const f = PHASES.find((x) => x.n === n); return f ? f.title : "–"; }
+function nok(n) { return n == null ? "–" : Math.round(n).toLocaleString("nb-NO") + " kr"; }
 
 /* ---------- PORTEFØLJE ---------- */
+function renderLessons() {
+  const list = window.CF.Lessons.list();
+  $("lessonsList").innerHTML = list.length
+    ? `<div class="panel">${list.map((l) => `• [${esc(l.project)}] ${esc(l.lesson)}`).join("\n")}</div>`
+    : `<div class="panel muted">Ingen lærdommer enda – kjør 🔁 Retro på et prosjekt.</div>`;
+}
+
 function renderPortfolio() {
   const list = Projects.list();
   if (!list.length) {
@@ -179,7 +190,9 @@ function renderPortfolio() {
     $("detail").innerHTML = "";
     return;
   }
-  $("portfolio").innerHTML = `<table><tr><th>PROSJEKT</th><th>STATUS</th><th>FASE</th><th>SCORE</th><th>NESTE BESLUTNING</th><th>OPPDATERT</th></tr>` +
+  const byStatus = list.reduce((m, p) => ((m[p.status] = (m[p.status] || 0) + 1), m), {});
+  $("portfolio").innerHTML = `<div class="note" style="margin-bottom:8px">${list.length} prosjekt${list.length === 1 ? "" : "er"} · ${Object.entries(byStatus).map(([k, v]) => `${k}: ${v}`).join(" · ")}</div>` +
+    `<table><tr><th>PROSJEKT</th><th>STATUS</th><th>FASE</th><th>SCORE</th><th>NESTE BESLUTNING</th><th>OPPDATERT</th></tr>` +
     list.map((p) => {
       const next = p.evaluation ? (p.evaluation.synthesis.decision === "valider_mer" ? "gjennomfør validering" : p.evaluation.synthesis.decision) : "kjør idévurdering";
       return `<tr class="proj-item" data-id="${p.id}"><td>${esc(p.name)}${p.test ? ' <span class="badge test">TEST</span>' : ""}</td><td>${esc(p.status)}</td><td>${p.phase}: ${esc(phaseTitle(p.phase))}</td><td>${p.evaluation ? p.evaluation.totalScore + "/100" : "–"}</td><td class="muted">${esc(next)}</td><td class="muted">${esc((p.updatedAt || "").slice(0, 10))}</td></tr>`;
@@ -198,6 +211,7 @@ function showProject(id) {
     `<div class="row" style="margin-top:10px">` +
     `<button class="small" id="pResume">▶ Kjør videre</button>` +
     `<button class="small" id="pGate">✅ Godkjenn port (eier): ${esc((PHASES.find((f) => f.n === p.phase) || {}).gate || "")}</button>` +
+    `<button class="small" id="pRetro">🔁 Retro</button>` +
     `<button class="small" id="pExport">Eksporter prosjekt</button>` +
     `<button class="small" id="pDelete">Slett/avvikle</button></div></div>`;
 
@@ -241,6 +255,44 @@ function showProject(id) {
     }
     html += v;
   }
+  /* FASE 3 – forretningsmodell (LLM setter antakelser, koden regner) */
+  const buildableNow = s && (["prototype", "mvp", "lansering"].includes(dec) || (p.validation && ["prototype", "mvp", "lansering"].includes(p.validation.decision)));
+  if (p.bizmodel || buildableNow) {
+    let v = `<div class="panel"><h3>FASE 3 – FORRETNINGSMODELL</h3>`;
+    if (!p.bizmodel) {
+      v += `<div class="note">LLM setter nøkterne antakelser med begrunnelse – all matematikk (MRR, break-even, LTV/CAC, kapitalbehov) beregnes deterministisk i kode og kan rekalkuleres gratis.</div><button class="small" id="bmGen" style="margin-top:8px">💰 Lag forretningsmodell</button>`;
+    } else {
+      const m = p.bizmodel.model, sc = p.bizmodel.computed.scenarios;
+      v += `${esc(m.value_prop)}\nICP: ${esc(m.icp)} · Kjøper: ${esc(m.buyer)} · Inntektsmodell: ${esc(m.revenue_model)}\nGratisnivå: ${esc(m.free_tier)} · Prøve: ${esc(m.trial)}` +
+        `<table><tr><th>PLAN</th><th>PRIS/MND</th><th>PRIS/ÅR</th><th>ANDEL</th><th>INKLUDERER</th></tr>${m.plans.map((pl) => `<tr><td>${esc(pl.name)}</td><td>${nok(pl.price_month)}</td><td>${nok(pl.price_year)}</td><td>${Math.round(pl.target_share * 100)}%</td><td class="muted">${pl.includes.map(esc).join("; ")}</td></tr>`).join("")}</table>` +
+        `<table><tr><th>SCENARIO (24 MND)</th><th>KUNDER</th><th>MRR</th><th>BREAK-EVEN</th><th>KAPITALBEHOV</th><th>LTV</th><th>LTV/CAC</th></tr>` +
+        ["konservativ", "sannsynlig", "offensiv"].map((k) => `<tr><td>${k}</td><td>${sc[k].customers24}</td><td>${nok(sc[k].mrr24)}</td><td>${sc[k].breakEvenMonth ? "mnd " + sc[k].breakEvenMonth : '<span class="badge l">ikke innen 24 mnd</span>'}</td><td>${nok(sc[k].capitalNeed)}</td><td>${nok(sc[k].ltv)}</td><td>${sc[k].ltvCac ?? "–"}${sc[k].ltvCac !== null ? (sc[k].ltvCac >= 3 ? ' <span class="badge h">ok</span>' : ' <span class="badge l">svak</span>') : ""}</td></tr>`).join("") + `</table>` +
+        `<div class="note">Antakelser (begrunnet):\n${m.assumption_notes.map((n) => "• " + esc(n)).join("\n")}</div>` +
+        `<div class="row" style="margin-top:10px">` +
+        [["visitors_m1", "Besøk mnd 1"], ["visitor_growth_pct_m", "Vekst/mnd (0–1)"], ["signup_rate", "Reg.rate (0–1)"], ["paid_conversion", "Betalt konv. (0–1)"], ["churn_monthly", "Churn/mnd (0–1)"], ["cac", "CAC (kr)"]].map(([k, lbl]) => `<div><div class="note">${lbl}</div><input type="text" class="bm-in" data-k="${k}" value="${m.assumptions[k]}"></div>`).join("") +
+        `</div><button class="small" id="bmUpdate" style="margin-top:8px">↻ Rekalkuler lokalt (gratis)</button>`;
+    }
+    html += v + `</div>`;
+  }
+
+  /* FASE 6+8 – nettstedet (fabrikken bygger det) */
+  if (p.site || buildableNow) {
+    let v = `<div class="panel"><h3>FASE 6+8 – NETTSTED</h3>`;
+    if (!p.site) {
+      v += `<div class="note">Genererer komplett statisk nettsted: forside, pris (fra forretningsmodellens planer), FAQ, om oss, vilkår/personvern (merket som utkast) og deploy-README. Selvstendig HTML uten eksterne avhengigheter.</div><button class="small" id="siteGen" style="margin-top:8px">🌐 Generer nettsted</button>`;
+    } else {
+      v += `«${esc(p.site.content.hero_headline)}» – ${esc(p.site.content.brand.slogan)}\nFiler: ${Object.keys(p.site.files).map(esc).join(", ")}` +
+        `<div class="row" style="margin-top:10px"><button class="small" id="sitePreview">👁 Forhåndsvis forsiden</button><button class="small" id="siteZip">⬇ Last ned nettstedet (ZIP)</button></div>` +
+        `<div class="note">Betalingsknappene er plassholdere til Stripe Payment Links legges inn (eier-port). Juridiske sider er utkast som krever advokat. Se README-deploy.md i pakken.</div>`;
+    }
+    html += v + `</div>`;
+  }
+
+  /* RETRO – læringssløyfe */
+  if (p.retro) {
+    html += `<div class="panel"><h3>RETRO</h3>Fungerte:\n- ${p.retro.what_worked.map(esc).join("\n- ") || "(ingen)"}\n\nFeilet:\n- ${p.retro.what_failed.map(esc).join("\n- ") || "(ingen)"}\n\nGale antakelser:\n- ${p.retro.wrong_assumptions.map(esc).join("\n- ") || "(ingen)"}\n\nKan gjenbrukes:\n- ${p.retro.reusable.map(esc).join("\n- ") || "(ingen)"}\n\nLærdom: <b style="color:var(--cyan)">${esc(p.retro.lesson)}</b></div>`;
+  }
+
   if (p.phasePlan) {
     html += `<div class="panel"><h3>FASEPLAN</h3><div class="note">${esc(p.phasePlan.sequencing_notes)}</div><table><tr><th>FASE</th><th>OMFANG</th><th>FØRSTE HANDLINGER</th><th>STOPPKRITERIER</th><th>EIER</th></tr>${p.phasePlan.phases.filter((f) => f.relevant).map((f) => `<tr><td>${f.phase}: ${esc(phaseTitle(f.phase))}</td><td class="muted">${esc(f.scope)}</td><td>${f.first_actions.map(esc).join("<br>")}</td><td class="muted">${esc(f.stop_criteria)}</td><td>${esc(f.owner_role)}</td></tr>`).join("")}</table></div>`;
   }
@@ -295,6 +347,54 @@ function showProject(id) {
     a.href = URL.createObjectURL(new Blob([Projects.get(p.id).landing.html], { type: "text/html" }));
     a.download = p.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() + "-landingsside.html";
     a.click();
+  };
+
+  /* FASE 3-handlinger */
+  const bmGen = $("bmGen");
+  if (bmGen) bmGen.onclick = async () => {
+    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
+    bmGen.disabled = true;
+    try { await window.CF.BizModel.run(Projects.get(p.id)); showProject(p.id); }
+    catch (e) { alert("Feil: " + e.message); bmGen.disabled = false; }
+  };
+  const bmUpdate = $("bmUpdate");
+  if (bmUpdate) bmUpdate.onclick = () => {
+    const patch = {};
+    document.querySelectorAll(".bm-in").forEach((i) => {
+      const v = parseFloat(String(i.value).replace(",", "."));
+      if (!isNaN(v)) patch[i.dataset.k] = v;
+    });
+    window.CF.BizModel.recompute(Projects.get(p.id), patch);
+    showProject(p.id);
+  };
+
+  /* FASE 6+8-handlinger */
+  const siteGen = $("siteGen");
+  if (siteGen) siteGen.onclick = async () => {
+    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
+    siteGen.disabled = true;
+    try { await window.CF.SiteGen.run(Projects.get(p.id)); showProject(p.id); }
+    catch (e) { alert("Feil: " + e.message); siteGen.disabled = false; }
+  };
+  const sitePreview = $("sitePreview");
+  if (sitePreview) sitePreview.onclick = () => {
+    window.open(URL.createObjectURL(new Blob([Projects.get(p.id).site.files["index.html"]], { type: "text/html" })));
+  };
+  const siteZip = $("siteZip");
+  if (siteZip) siteZip.onclick = () => {
+    const bytes = window.CF.SiteGen.zip(Projects.get(p.id));
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([bytes], { type: "application/zip" }));
+    a.download = p.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() + "-nettsted.zip";
+    a.click();
+  };
+
+  /* Retro */
+  $("pRetro").onclick = async () => {
+    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
+    $("pRetro").disabled = true;
+    try { await window.CF.Retro.run(Projects.get(p.id)); showProject(p.id); renderLessons(); }
+    catch (e) { alert("Feil: " + e.message); $("pRetro").disabled = false; }
   };
 
   $("pResume").onclick = async () => {
@@ -359,6 +459,8 @@ $("runIdeaBtn").onclick = async () => {
       if (step === "synthesis") pipe("<b>FASE 1</b> " + esc(detail));
       if (step === "plan") pipe("<b>PLAN</b> " + esc(detail));
       if (step === "brief") pipe("<b>BRIEF</b> " + esc(detail));
+      if (step === "bizmodel") pipe("<b>FASE 3</b> " + esc(detail));
+      if (step === "site") pipe("<b>FASE 6+8</b> " + esc(detail));
     });
     for (const v of p.evaluation.verdicts) {
       const el = cards[v.roleTitle];
@@ -421,6 +523,7 @@ $("importFile").onchange = async (e) => {
 };
 
 renderPortfolio();
+renderLessons();
 })();
 </script>
 </body>

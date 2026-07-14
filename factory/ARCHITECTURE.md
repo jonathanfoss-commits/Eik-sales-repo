@@ -1,4 +1,4 @@
-# Company Factory – Arkitektur v1.1
+# Company Factory – Arkitektur v1.2
 
 AI-drevet startup-studio: fra idé → kritisk vurdering → validering → forretningsmodell →
 MVP-brief → (neste fase: bygging, betaling, lansering, vekst). Del av Eik-plattformen
@@ -135,7 +135,8 @@ API. Kostnadskontroll: bevisst få og små kall per pipeline-kjøring (~6–9 ka
 |---|---|---|
 | **F1 (denne leveransen)** | Motor + UI + tester: idéinntak, kritisk vurdering m/styret, scoring, faseplan, MVP-brief, beslutnings-/antakelseslogg, porter, portefølje, eksempelprosjekt | ✅ Bygget og testet |
 | **F2 Validering** | Eksperimentkø avledet fra kritiske antakelser (terskel definert før resultat), resultatregistrering med eier-logg, falsk-dør-landingsside-generator (selvstendig deploybar HTML med ærlig venteliste-framing), valideringsport som konkluderer og slipper prosjektet videre/stopper det | ✅ Bygget og testet |
-| **F3 Bygging** | Fase 5–9: generere prosjekt-repo (mal: nettside + auth + Stripe-abonnement + e-post), «lanseringsklar»-sjekklister, QA-krav per modenhetsnivå | Neste |
+| **F3 Bygging (del 1)** | Fase 3: forretningsmodell med deterministisk økonomimodell (LLM setter begrunnede antakelser, koden beregner 24-mnd MRR/break-even/LTV/CAC/kapitalbehov i tre scenarier, gratis lokal rekalkulering). Fase 6+8: nettsted-generator – komplett statisk nettsted (forside, pris fra planene, FAQ, om, vilkår/personvern som merkede utkast, deploy-README) pakket med egen ZIP-writer. Læringssløyfe: retro per prosjekt → varige lærdommer (`cf_lessons`) injiseres i alle fremtidige LLM-kall. Byggekjeden kjøres automatisk ved byggebeslutning: brief → modell → nettsted | ✅ Bygget og testet |
+| **F3 Bygging (del 2)** | Fase 8–9 dypere: app-skall med auth + reell Stripe-abonnementsflyt (krever backend eller Stripe Payment Links + kundeportal), «lanseringsklar»-sjekklister, QA-krav per modenhetsnivå | Neste |
 | **F4 Plattform** | Trekk LLM/Store ut i `platform/`-bibliotek når tredje forbruker finnes; synk-backend bak Store-kontrakten; gjenbruksbibliotek (maler, moduler) med generalisering etter hvert prosjekt | Etter F3 |
 | **F5 Drift/vekst** | Fase 11–16-motorer: målinger inn i porteføljen, ukesrapport, radar-integrasjon mot AEIS | Etter F4 |
 
@@ -161,6 +162,20 @@ skjema-drift mellom AEIS-roller og Factory (mitigeres av lese-kun-kontrakt + fal
   LLM-kostnad), `registerResult(p, expId, result, passed)` (eier-logget),
   `review(p)` (valideringsporten: LLM-syntese av resultater → én beslutning som
   overstyrer idévurderingens beslutning i `Pipeline.resume`).
+- `CF.BizModel` — `run(p)` (LLM: modell + begrunnede talleantakelser),
+  `recompute(p, patch)` (deterministisk og gratis: `Finance.scenarios`).
+- `CF.Finance` — `avgPrice(plans)`, `project(assumptions, months)`,
+  `scenarios(assumptions)` (konservativ ×0,6 konv/×1,5 churn/×1,4 CAC; offensiv ×1,4/×0,7/×0,8 —
+  faste, dokumenterte multiplikatorer). All matematikk i kode; modellen gjetter aldri tall
+  som kan beregnes.
+- `CF.SiteGen` — `run(p)` (LLM: merkevare-tokens + sideinnhold; bruker forretningsmodellens
+  planer eksakt), `renderSite(content, opts)` (deterministisk: 6 HTML-sider + deploy-README,
+  delt designsystem fra brand-tokens, ingen eksterne avhengigheter, betalingsknapper som
+  Stripe-plassholdere bak eier-porten, juridiske sider merket «krever advokat»),
+  `zip(p)` (via `makeZip` – egen STORE-ZIP-writer uten avhengigheter).
+- `CF.Retro` / `CF.Lessons` — retro per prosjekt → én generaliserbar lærdom lagres i
+  `cf_lessons` (maks 20) og injiseres automatisk i alle fremtidige LLM-kall via
+  `ownerContext()` (samme læringssløyfe-mønster som AEIS).
 - `CF.Landing` — `run(p, {formEndpoint})` (copy via LLM + `renderHTML`),
   `renderHTML(content, opts)` (selvstendig, responsiv, deploybar HTML: ingen eksterne
   avhengigheter, pris synlig, ærlig disclaimer, schema.org PreOrder; uten
@@ -175,10 +190,13 @@ versjonsbump her.
 ## Kjente begrensninger (v1)
 
 - Persistens per enhet (localStorage) — migreringsvei: Store-kontrakten → synk-backend (F4).
-- Fase 2 (validering) har nå en utførende motor: eksperimenter, landingsside og port.
-  Fase 5–16-motorene som *bygger* selve produktet (repo-generering, betaling, kampanjer)
-  kommer i F3–F5. V1.1 produserer besluttet plan + MVP-brief + deploybar
-  valideringslandingsside, ikke ferdig produkt.
+- Fase 2 (validering), 3 (forretningsmodell) og 6+8 (nettsted) har utførende motorer.
+  Det genererte nettstedet er et **lanseringsklart utstillingsvindu med
+  betalingsplassholdere** – ikke en applikasjon med innlogging, dashboard og reell
+  abonnementsflyt (det krever backend/Stripe-oppsett bak eier-porten, F3 del 2).
+- Økonomimodellens scenariomultiplikatorer er faste og dokumenterte – de er et
+  rammeverk for følsomhet, ikke en prognose. Modellen skal oppdateres med faktiske
+  tall etter validering/lansering (lokal rekalkulering er gratis).
 - Landingssiden samler ikke e-poster uten et eksternt skjema-endepunkt (statisk side
   uten backend) — fabrikken sier dette eksplisitt i beslutningsloggen og UI.
 - «Lanseringsklart digitalt produkt» ≠ juridisk etablert/operativ/kommersielt validert
