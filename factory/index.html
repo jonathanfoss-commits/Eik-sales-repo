@@ -217,6 +217,30 @@ function showProject(id) {
     }
     html += `<div class="panel"><h3>ROLLENES VURDERINGER</h3><table><tr><th>ROLLE</th><th>POSISJON</th><th>STERKESTE MOTARGUMENT</th><th>ANBEFALING</th><th>P</th></tr>${p.evaluation.verdicts.map((v) => `<tr><td>${esc(v.roleTitle)}</td><td class="muted">${esc(v.position)}</td><td class="muted">${esc(v.strongest_argument_against)}</td><td>${esc(v.recommendation)}</td><td>${typeof v.probability_success === "number" ? Math.round(v.probability_success * 100) + "%" : "–"}</td></tr>`).join("")}</table></div>`;
   }
+  /* FASE 2 – markedsvalidering: eksperimenter, landingsside, valideringsport */
+  const dec = s && s.decision;
+  if (p.experiments || (s && ["valider_mer", "prototype", "mvp", "lansering"].includes(dec))) {
+    let v = `<div class="panel"><h3>FASE 2 – MARKEDSVALIDERING</h3>`;
+    if (!p.experiments) {
+      v += `<div class="note">Terskler defineres FØR resultatene finnes. Opprett eksperimentkøen direkte fra de kritiske antakelsene (ingen API-kostnad).</div><button class="small" id="expCreate" style="margin-top:8px">🧪 Opprett eksperimenter fra antakelsene</button>`;
+    } else {
+      v += `<table><tr><th>ANTAKELSE</th><th>TEST / TERSKEL</th><th>KOSTNAD / HORISONT</th><th>STATUS</th><th>RESULTAT</th></tr>` +
+        p.experiments.map((x) => `<tr><td>${esc(x.claim)}</td><td class="muted">${esc(x.test)}<br><b>Terskel:</b> ${esc(x.threshold)}</td><td class="muted">${esc(x.cost_estimate)} / ${esc(x.horizon)}</td><td>${x.status === "fullført" ? (x.passed ? '<span class="badge h">BESTÅTT</span>' : '<span class="badge l">IKKE BESTÅTT</span>') : esc(x.status)}</td><td>${x.status === "fullført" ? esc(x.result) : `<input type="text" class="exp-result" data-exp="${x.id}" placeholder="Faktisk resultat …"><div class="row" style="margin-top:6px"><button class="small exp-pass" data-exp="${x.id}">✓ Bestått</button><button class="small exp-fail" data-exp="${x.id}">✗ Ikke bestått</button></div>`}</td></tr>`).join("") + `</table>`;
+      if (p.experiments.some((x) => x.status === "fullført") && !p.validation) {
+        v += `<button class="small" id="valReview" style="margin-top:10px">⚖ Evaluer valideringen (port)</button>`;
+      }
+    }
+    v += `<div class="row" style="margin-top:10px">` +
+      (p.landing ? `<button class="small" id="lpPreview">👁 Forhåndsvis landingsside</button><button class="small" id="lpDownload">⬇ Last ned landingsside (HTML)</button>` : `<button class="small" id="lpGen">🌐 Generer falsk-dør-landingsside</button>`) + `</div>`;
+    if (p.landing) v += `<div class="note">«${esc(p.landing.content.headline)}» – ${esc(p.landing.content.price_line)}. Selvstendig HTML uten eksterne avhengigheter, klar for GitHub Pages/Netlify.${p.landing.formEndpoint ? "" : " NB: legg inn et skjema-endepunkt (f.eks. Formspree) før reell trafikk – uten det lagres påmeldinger kun i besøkerens nettleser."}</div>`;
+    v += `</div>`;
+    if (p.validation) {
+      v += `<div class="panel"><h3>VALIDERINGSPORT ${certBadge(p.validation.certainty)}</h3><b style="color:var(--cyan)">${esc(p.validation.decision.toUpperCase())}</b> – ${esc(p.validation.decision_rationale)}\n\n${esc(p.validation.summary)}` +
+        `<table><tr><th>ANTAKELSE</th><th>DOM</th><th>KONSEKVENS</th></tr>${p.validation.per_experiment.map((x) => `<tr><td>${esc(x.claim)}</td><td>${x.verdict === "bestått" ? '<span class="badge h">bestått</span>' : x.verdict === "ikke_bestått" ? '<span class="badge l">ikke bestått</span>' : '<span class="badge m">uklart</span>'}</td><td class="muted">${esc(x.implication)}</td></tr>`).join("")}</table>` +
+        `\nNeste steg:\n- ${p.validation.next_steps.map(esc).join("\n- ")}</div>`;
+    }
+    html += v;
+  }
   if (p.phasePlan) {
     html += `<div class="panel"><h3>FASEPLAN</h3><div class="note">${esc(p.phasePlan.sequencing_notes)}</div><table><tr><th>FASE</th><th>OMFANG</th><th>FØRSTE HANDLINGER</th><th>STOPPKRITERIER</th><th>EIER</th></tr>${p.phasePlan.phases.filter((f) => f.relevant).map((f) => `<tr><td>${f.phase}: ${esc(phaseTitle(f.phase))}</td><td class="muted">${esc(f.scope)}</td><td>${f.first_actions.map(esc).join("<br>")}</td><td class="muted">${esc(f.stop_criteria)}</td><td>${esc(f.owner_role)}</td></tr>`).join("")}</table></div>`;
   }
@@ -233,6 +257,45 @@ function showProject(id) {
     html += `<div class="panel"><h3>BESLUTNINGSLOGG</h3><table><tr><th>DATO</th><th>ROLLE</th><th>BESLUTNING</th><th>BEGRUNNELSE</th></tr>${p.decisions.map((d) => `<tr><td class="muted">${esc(d.at.slice(0, 10))}</td><td>${esc(d.role)}${d.byOwner ? ' <span class="badge test">EIER</span>' : ""}</td><td>${esc(d.decision)}</td><td class="muted">${esc(d.rationale)}</td></tr>`).join("")}</table></div>`;
   }
   $("detail").innerHTML = html;
+
+  /* FASE 2-handlinger */
+  const expCreate = $("expCreate");
+  if (expCreate) expCreate.onclick = () => { window.CF.Experiments.createFrom(Projects.get(p.id)); showProject(p.id); };
+  document.querySelectorAll(".exp-pass, .exp-fail").forEach((b) => {
+    b.onclick = () => {
+      const input = document.querySelector(`.exp-result[data-exp="${b.dataset.exp}"]`);
+      const result = (input && input.value.trim()) || "";
+      if (!result) { alert("Skriv inn det faktiske resultatet først."); return; }
+      window.CF.Experiments.registerResult(Projects.get(p.id), b.dataset.exp, result, b.classList.contains("exp-pass"));
+      showProject(p.id);
+    };
+  });
+  const valReview = $("valReview");
+  if (valReview) valReview.onclick = async () => {
+    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
+    valReview.disabled = true;
+    try { await window.CF.Experiments.review(Projects.get(p.id)); showProject(p.id); renderPortfolio(); }
+    catch (e) { alert("Feil: " + e.message); valReview.disabled = false; }
+  };
+  const lpGen = $("lpGen");
+  if (lpGen) lpGen.onclick = async () => {
+    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
+    lpGen.disabled = true;
+    const endpoint = prompt("Skjema-endepunkt for ventelisten (f.eks. Formspree-URL). La stå tomt for lokal testvariant:", "") || "";
+    try { await window.CF.Landing.run(Projects.get(p.id), { formEndpoint: endpoint.trim() }); showProject(p.id); }
+    catch (e) { alert("Feil: " + e.message); lpGen.disabled = false; }
+  };
+  const lpPreview = $("lpPreview");
+  if (lpPreview) lpPreview.onclick = () => {
+    window.open(URL.createObjectURL(new Blob([Projects.get(p.id).landing.html], { type: "text/html" })));
+  };
+  const lpDownload = $("lpDownload");
+  if (lpDownload) lpDownload.onclick = () => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([Projects.get(p.id).landing.html], { type: "text/html" }));
+    a.download = p.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() + "-landingsside.html";
+    a.click();
+  };
 
   $("pResume").onclick = async () => {
     if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }

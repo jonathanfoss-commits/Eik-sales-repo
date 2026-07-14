@@ -151,8 +151,10 @@ lanseringsklart digitalt selskap. Nås fra JARVIS-appen (🏭 FACTORY-knappen) e
   prototype | mvp | lansering`.
 - **Kritisk, ikke hyggelig**: fabrikken forsøker å avkrefte idéen før den anbefaler bygging —
   svake idéer får svakheter, forbedringer og alternative idéer, ikke en byggeplan.
-- **Valider billig først**: hver kritisk antakelse får billigste test, terskel, kostnad og
-  horisont før tung utvikling.
+- **Valider billig først – og faktisk**: hver kritisk antakelse blir et eksperiment med
+  terskel definert før resultatet finnes; fabrikken genererer en **deploybar falsk-dør-
+  landingsside** (selvstendig HTML, pris synlig, ærlig venteliste), og valideringsporten
+  konkluderer på resultatene — bestått slipper prosjektet videre til MVP, stryk stopper det.
 - **Leveranser per prosjekt**: tilpasset faseplan (17 standardfaser, små idéer får små planer),
   MVP-brief med eksplisitt «bygges ikke»-liste, antakelseslogg og full beslutningslogg.
 - **Portefølje**: flere parallelle prosjekter, isolert lagring per prosjekt (`cf_project_*`),

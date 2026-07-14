@@ -127,10 +127,37 @@ const BRIEF = {
   build_estimate: "2–3 uker for én utvikler",
 };
 
-const REVIEW_TEXT = { };
+const LANDING = {
+  seo_title: "BoligPuls – vedlikeholdsplan for boligen din",
+  seo_description: "Sesongbaserte varsler og sjekklister for boligvedlikehold.",
+  headline: "Slutt å gjette hva boligen trenger",
+  subheadline: "Få en vedlikeholdsplan tilpasset din bolig, med varsler når det faktisk er tid.",
+  pain_points: ["Du oppdager taklekkasjen etter at skaden har skjedd", "Sjekklister på nett passer ikke din bolig"],
+  value_props: [
+    { title: "Plan for din bolig", text: "Basert på boligtype og byggeår." },
+    { title: "Sesongvarsler", text: "Beskjed når oppgaven faktisk må gjøres." },
+  ],
+  offer: "Uforpliktende venteliste – først i køen ved lansering.",
+  price_line: "79 kr/mnd ved lansering",
+  cta_text: "Sett meg på ventelisten",
+  faq: [{ q: "Når lanserer dere?", a: "Vi bygger nå og varsler ventelisten først." }],
+  honest_disclaimer: "BoligPuls er under utvikling. Påmelding til ventelisten er gratis og uforpliktende.",
+};
+
+const VALIDATION = {
+  summary: "Begge kritiske antakelser holdt mot forhåndsdefinerte terskler.",
+  per_experiment: [
+    { claim: "≥3 % av besøkende legger inn kort/venteliste ved 79 kr/mnd", verdict: "bestått", implication: "Betalingsvilje sannsynliggjort ved prispunktet." },
+    { claim: "Problemet er topp-3-bekymring for nye eneboligeiere", verdict: "bestått", implication: "Målgruppen bekrefter smerten uoppfordret." },
+  ],
+  decision: "mvp",
+  decision_rationale: "Terskler satt før testen ble nådd; bygg minste betalbare versjon.",
+  certainty: "middels",
+  next_steps: ["Revider MVP-brief med valideringsdata", "Behold landingssiden som konverteringsside"],
+};
 
 function mockRouter(overrides = {}) {
-  const counts = { intake: 0, framing: 0, verdict: 0, synthesis: 0, plan: 0, brief: 0, review: 0, total: 0 };
+  const counts = { intake: 0, framing: 0, verdict: 0, synthesis: 0, plan: 0, brief: 0, landing: 0, validation: 0, review: 0, total: 0 };
   const bodies = [];
   const handler = (route) => {
     const body = JSON.parse(route.request().postData());
@@ -147,6 +174,8 @@ function mockRouter(overrides = {}) {
     if (sys.includes("scoringsmodulen i Company Factory")) { counts.synthesis++; return route.fulfill(respond(overrides.synthesis || SYNTHESIS_MVP)); }
     if (sys.includes("planmodulen i Company Factory")) { counts.plan++; return route.fulfill(respond(overrides.plan || PLAN)); }
     if (sys.includes("MVP-brief-modulen")) { counts.brief++; return route.fulfill(respond(overrides.brief || BRIEF)); }
+    if (sys.includes("landingsside-modulen")) { counts.landing++; return route.fulfill(respond(overrides.landing || LANDING)); }
+    if (sys.includes("valideringsmodulen i Company Factory")) { counts.validation++; return route.fulfill(respond(overrides.validation || VALIDATION)); }
     if (sys.includes("selvevalueringsmodul")) {
       counts.review++;
       return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ content: [{ type: "text", text: "Selvevaluering: fabrikken fungerer; forbedre X." }], stop_reason: "end_turn", usage: { input_tokens: 1, output_tokens: 1 } }) });
@@ -298,6 +327,61 @@ async function freshPage(browser) {
     /* Per-prosjekt eksport (utspinning/avvikling) */
     const exp = await page.evaluate(() => JSON.parse(window.CF.Store.exportProject(window.CF.Projects.list()[0].id)));
     check("prosjekt kan eksporteres isolert", exp.name === "BoligPuls (TEST)" && Array.isArray(exp.decisions), null);
+    check("ingen JS-feil", errors.length === 0, errors);
+    await page.close();
+  }
+
+  /* ---------- Scenario 5: Fase 2 – eksperimenter, landingsside, valideringsport → MVP ---------- */
+  console.log("FACTORY 5: validering → eksperimenter → landingsside → port → brief");
+  {
+    const { page, errors } = await freshPage(browser);
+    const { handler, counts } = mockRouter();
+    await page.route("**/v1/messages", handler);
+    page.on("dialog", (d) => d.accept(""));
+    await page.click('nav button[data-tab="system"]');
+    await page.click("#demoBtn");
+    await page.waitForFunction(() => document.getElementById("detail").textContent.includes("BoligPuls"), null, { timeout: 5000 });
+
+    /* Eksperimentkø fra antakelsene (ingen API-kostnad) */
+    await page.click("#expCreate");
+    let p = await page.evaluate(() => window.CF.Projects.list()[0]);
+    check("eksperimenter avledet fra kritiske antakelser (2 stk med terskel)",
+      p.experiments.length === 2 && p.experiments.every((e) => e.threshold.length > 0 && e.status === "planlagt"), p.experiments.length);
+    check("eksperimentkøen kostet ingen API-kall", counts.total === 0, counts.total);
+
+    /* Registrer resultater mot terskler */
+    await page.fill(".exp-result >> nth=0", "4,2 % konvertering til venteliste");
+    await page.click(".exp-pass >> nth=0");
+    await page.fill(".exp-result", "7 av 10 nevnte problemet uoppfordret");
+    await page.click(".exp-pass");
+    p = await page.evaluate(() => window.CF.Projects.list()[0]);
+    check("resultater registrert og logget med EIER-flagg",
+      p.experiments.every((e) => e.status === "fullført" && e.passed) && p.decisions[0].byOwner === true && p.decisions[0].decision.includes("BESTÅTT"), p.decisions[0]);
+
+    /* Falsk-dør-landingsside – fabrikken bygger den */
+    await page.click("#lpGen");
+    await page.waitForFunction(() => !!(window.CF.Projects.list()[0] || {}).landing, null, { timeout: 10000 });
+    p = await page.evaluate(() => window.CF.Projects.list()[0]);
+    check("landingsside generert med copy og pris synlig",
+      counts.landing === 1 && p.landing.html.includes("Slutt å gjette") && p.landing.html.includes("79 kr/mnd"), counts);
+    check("selvstendig HTML: ingen eksterne script/stiler/bilder",
+      !/<(script|link|img)[^>]+(src|href)=["']https?:/i.test(p.landing.html) && p.landing.html.includes("<!DOCTYPE html>"), null);
+    check("ærlig venteliste-framing (disclaimer + PreOrder)",
+      p.landing.html.includes("uforpliktende") && p.landing.html.includes("PreOrder"), null);
+
+    /* Valideringsporten slipper prosjektet videre */
+    await page.click("#valReview");
+    await page.waitForFunction(() => document.getElementById("detail").textContent.includes("VALIDERINGSPORT"), null, { timeout: 10000 });
+    p = await page.evaluate(() => window.CF.Projects.list()[0]);
+    check("valideringsport: MVP → status bygging, neste relevante fase (3)",
+      p.validation.decision === "mvp" && p.status === "bygging" && p.phase === 3, { status: p.status, phase: p.phase });
+    check("portbeslutningen er logget", p.decisions[0].decision.includes("Valideringsport: MVP"), p.decisions[0]);
+
+    /* «Kjør videre» produserer MVP-brief basert på validert beslutning */
+    await page.click("#pResume");
+    await page.waitForFunction(() => document.getElementById("detail").textContent.includes("MVP-BRIEF"), null, { timeout: 10000 });
+    p = await page.evaluate(() => window.CF.Projects.list()[0]);
+    check("MVP-brief generert etter bestått validering", counts.brief === 1 && p.brief.working_name === "BoligPuls", counts);
     check("ingen JS-feil", errors.length === 0, errors);
     await page.close();
   }

@@ -307,6 +307,46 @@ const SCHEMAS = {
     required: ["summary", "scorecard", "score_drivers_up", "score_drivers_down", "weaknesses", "improvements", "alternative_ideas", "scenarios", "decision", "decision_rationale", "certainty", "assumptions_to_validate"],
     additionalProperties: false,
   },
+  validation: {
+    type: "object",
+    properties: {
+      summary: { type: "string" },
+      per_experiment: { type: "array", items: {
+        type: "object",
+        properties: { claim: { type: "string" }, verdict: { type: "string", enum: ["bestått", "ikke_bestått", "uklart"] }, implication: { type: "string" } },
+        required: ["claim", "verdict", "implication"], additionalProperties: false } },
+      decision: { type: "string", enum: DECISIONS },
+      decision_rationale: { type: "string" },
+      certainty: { type: "string", enum: ["høy", "middels", "lav"] },
+      next_steps: strArr,
+    },
+    required: ["summary", "per_experiment", "decision", "decision_rationale", "certainty", "next_steps"],
+    additionalProperties: false,
+  },
+  landing: {
+    type: "object",
+    properties: {
+      seo_title: { type: "string" },
+      seo_description: { type: "string" },
+      headline: { type: "string" },
+      subheadline: { type: "string" },
+      pain_points: strArr,
+      value_props: { type: "array", items: {
+        type: "object",
+        properties: { title: { type: "string" }, text: { type: "string" } },
+        required: ["title", "text"], additionalProperties: false } },
+      offer: { type: "string" },
+      price_line: { type: "string" },
+      cta_text: { type: "string" },
+      faq: { type: "array", items: {
+        type: "object",
+        properties: { q: { type: "string" }, a: { type: "string" } },
+        required: ["q", "a"], additionalProperties: false } },
+      honest_disclaimer: { type: "string" },
+    },
+    required: ["seo_title", "seo_description", "headline", "subheadline", "pain_points", "value_props", "offer", "price_line", "cta_text", "faq", "honest_disclaimer"],
+    additionalProperties: false,
+  },
   plan: {
     type: "object",
     properties: {
@@ -356,6 +396,10 @@ const SCHEMAS = {
 function ownerContext() {
   const profile = Store.ownerProfile;
   return profile ? `OM EIEREN (fra AEIS-profilen):\n${profile}\n\n` : "";
+}
+
+function escHtml(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
 /* ================= Intake (Fase 0) ================= */
@@ -447,6 +491,141 @@ const Evaluation = {
   },
 };
 
+/* ================= Experiments (Fase 2: markedsvalidering) ================= */
+const Experiments = {
+  /* Eksperimentkøen avledes direkte fra de kritiske antakelsene – ingen LLM-kostnad */
+  createFrom(p) {
+    if (p.experiments && p.experiments.length) return p;
+    const src = (p.evaluation && p.evaluation.synthesis.assumptions_to_validate) || [];
+    if (!src.length) throw new Error("Ingen kritiske antakelser å validere – kjør idévurdering først.");
+    p.experiments = src.map((a, i) => ({
+      id: "e" + Date.now().toString(36) + i,
+      claim: a.claim, test: a.test, threshold: a.threshold,
+      cost_estimate: a.cost_estimate, horizon: a.horizon,
+      status: "planlagt", result: "", passed: null, at: null,
+    }));
+    Projects.logDecision(p, { phase: 2, role: "valideringsmodul", decision: `Eksperimentkø opprettet (${p.experiments.length} tester)`, rationale: "Avledet direkte fra de kritiske antakelsene – billigste test først, terskel definert før resultatet finnes." });
+    return Projects.save(p);
+  },
+  /* Eieren registrerer faktisk resultat mot forhåndsdefinert terskel */
+  registerResult(p, expId, result, passed) {
+    const e = (p.experiments || []).find((x) => x.id === expId);
+    if (!e) throw new Error("Fant ikke eksperimentet.");
+    e.result = result; e.passed = !!passed; e.status = "fullført"; e.at = new Date().toISOString();
+    Projects.logDecision(p, { phase: 2, role: "eier", byOwner: true, decision: `Eksperiment ${e.passed ? "BESTÅTT" : "IKKE BESTÅTT"}: ${e.claim}`, rationale: `Terskel: ${e.threshold}. Resultat: ${result}` });
+    return Projects.save(p);
+  },
+  /* Valideringsporten: syntetiser resultatene → én beslutning */
+  async review(p, onStatus) {
+    const done = (p.experiments || []).filter((e) => e.status === "fullført");
+    if (!done.length) throw new Error("Ingen fullførte eksperimenter å evaluere.");
+    if (onStatus) onStatus("Evaluerer valideringsresultatene …");
+    const { json } = await LLM.call({
+      system: `Du er valideringsmodulen i Company Factory (Fase 2-porten). Vurder eksperimentresultatene nøkternt mot tersklene som ble satt FØR resultatene fantes. Allerede brukt tid og penger er IKKE et argument for å fortsette. Konkluder med én beslutning (${DECISIONS.join("|")}): bestått validering kan gi prototype/mvp; delvis bestått kan gi endre_konsept eller valider_mer (kun hvis en NY, billig test finnes); ikke bestått skal normalt gi stopp eller parker.`,
+      user: `${ownerContext()}PROSJEKT: ${p.name}\nIDÉ: ${p.idea}\n\nBESLUTNING FRA IDÉVURDERING: ${p.evaluation.synthesis.decision} (score ${p.evaluation.totalScore}/100)\n\nEKSPERIMENTER OG RESULTATER:\n${JSON.stringify(p.experiments.map((e) => ({ antakelse: e.claim, test: e.test, terskel: e.threshold, status: e.status, resultat: e.result, bestått_iflg_eier: e.passed })), null, 2)}`,
+      schema: SCHEMAS.validation,
+      maxTokens: 4096,
+    });
+    p.validation = { ...json, at: new Date().toISOString() };
+    p.status = { stopp: "avsluttet", parker: "parkert", valider_mer: "validering", endre_konsept: "idé", prototype: "bygging", mvp: "bygging", lansering: "bygging" }[json.decision] || p.status;
+    if (["prototype", "mvp", "lansering"].includes(json.decision)) {
+      const next = ((p.phasePlan && p.phasePlan.phases) || []).filter((f) => f.relevant && f.phase > 2).map((f) => f.phase).sort((a, b) => a - b)[0];
+      p.phase = next ?? 3;
+    }
+    Projects.logDecision(p, { phase: 2, role: "valideringsmodul", decision: `Valideringsport: ${json.decision.toUpperCase()}`, options: DECISIONS, rationale: json.decision_rationale });
+    return Projects.save(p);
+  },
+};
+
+/* ================= Landing (falsk-dør-landingsside – fabrikken BYGGER den) ================= */
+const Landing = {
+  async run(p, opts = {}, onStatus) {
+    if (!p.intake || !p.evaluation) throw new Error("Kjør inntak og idévurdering først.");
+    if (onStatus) onStatus("Skriver copy og bygger landingssiden …");
+    const { json } = await LLM.call({
+      system: `Du er landingsside-modulen i Company Factory. Skriv komplett copy for en falsk-dør-landingsside som tester betalingsvilje FØR produktet bygges. Krav: copy er konkret, troverdig og basert på kundens problem – ingen tomme fraser («revolusjonerende», «sømløs», «kraftig», «fremtidens»). Prisen skal være tydelig (falsk dør uten pris måler ingenting). CTA er venteliste-påmelding. honest_disclaimer skal ærlig si at tjenesten er under utvikling og at påmelding er uforpliktende – vi lurer ikke folk til å tro de kjøper et ferdig produkt. Skriv for målgruppen, på norsk.`,
+      user: `${ownerContext()}PROSJEKT: ${p.name}\n\nINNTAK:\n${JSON.stringify(p.intake, null, 2)}\n\nFRA STYRETS VURDERING:\n${JSON.stringify({ svakheter: p.evaluation.synthesis.weaknesses, forbedringer: p.evaluation.synthesis.improvements, antakelser_som_testes: p.evaluation.synthesis.assumptions_to_validate.map((a) => a.claim) }, null, 2)}`,
+      schema: SCHEMAS.landing,
+      maxTokens: 4096,
+    });
+    p.landing = { content: json, formEndpoint: opts.formEndpoint || "", html: this.renderHTML(json, { formEndpoint: opts.formEndpoint || "" }), at: new Date().toISOString() };
+    Projects.logDecision(p, { phase: 2, role: "landingsside-modul", decision: "Falsk-dør-landingsside generert", rationale: `«${json.headline}» – pris synlig (${json.price_line}), venteliste som CTA.${opts.formEndpoint ? "" : " NB: uten skjema-endepunkt lagres påmeldinger kun i besøkerens nettleser – legg inn f.eks. et Formspree-endepunkt før reell trafikk."}` });
+    return Projects.save(p);
+  },
+  /* Selvstendig, responsiv, deploybar HTML – ingen eksterne avhengigheter */
+  renderHTML(c, opts = {}) {
+    const e = escHtml;
+    const form = opts.formEndpoint
+      ? `<form class="wl" action="${e(opts.formEndpoint)}" method="POST"><input type="email" name="email" required placeholder="din@epost.no" aria-label="E-post"><button type="submit">${e(c.cta_text)}</button></form>`
+      : `<form class="wl" id="wlForm"><input type="email" id="wlEmail" required placeholder="din@epost.no" aria-label="E-post"><button type="submit">${e(c.cta_text)}</button></form><p class="tiny" id="wlThanks" hidden>Takk! Du står på ventelisten.</p>`;
+    return `<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${e(c.seo_title)}</title>
+<meta name="description" content="${e(c.seo_description)}">
+<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "Product", name: c.seo_title, description: c.seo_description, offers: { "@type": "Offer", description: c.price_line, availability: "https://schema.org/PreOrder" } })}<\/script>
+<style>
+  :root { --ink:#15222e; --muted:#5a6b7a; --accent:#0b6e6e; --bg:#f7f9fa; --card:#ffffff; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); line-height:1.6; }
+  main { max-width:720px; margin:0 auto; padding:24px 20px 60px; }
+  .hero { text-align:center; padding:48px 0 32px; }
+  h1 { font-size:clamp(28px,5vw,40px); line-height:1.2; margin-bottom:14px; }
+  .sub { font-size:18px; color:var(--muted); max-width:560px; margin:0 auto 24px; }
+  .wl { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+  .wl input { flex:1 1 220px; max-width:320px; padding:13px 14px; font-size:16px; border:1px solid #c8d2da; border-radius:10px; }
+  .wl button { padding:13px 22px; font-size:16px; border:0; border-radius:10px; background:var(--accent); color:#fff; cursor:pointer; }
+  .price { text-align:center; font-size:17px; margin:14px 0 4px; font-weight:600; }
+  .tiny { text-align:center; font-size:13px; color:var(--muted); margin-top:8px; }
+  h2 { font-size:20px; margin:40px 0 14px; }
+  ul.pains { padding-left:22px; } ul.pains li { margin-bottom:8px; }
+  .props { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; }
+  .prop { background:var(--card); border:1px solid #e3e9ee; border-radius:12px; padding:16px; }
+  .prop h3 { font-size:15px; margin-bottom:6px; }
+  .prop p { font-size:14px; color:var(--muted); }
+  details { background:var(--card); border:1px solid #e3e9ee; border-radius:10px; padding:12px 16px; margin-bottom:8px; }
+  summary { cursor:pointer; font-weight:600; font-size:15px; }
+  details p { margin-top:8px; font-size:14px; color:var(--muted); }
+  footer { text-align:center; font-size:12px; color:var(--muted); padding:24px 20px; border-top:1px solid #e3e9ee; }
+</style>
+</head>
+<body>
+<main>
+  <section class="hero">
+    <h1>${e(c.headline)}</h1>
+    <p class="sub">${e(c.subheadline)}</p>
+    <p class="price">${e(c.price_line)}</p>
+    ${form}
+    <p class="tiny">${e(c.offer)}</p>
+  </section>
+  <section><h2>Kjenner du deg igjen?</h2><ul class="pains">${(c.pain_points || []).map((x) => `<li>${e(x)}</li>`).join("")}</ul></section>
+  <section><h2>Det du får</h2><div class="props">${(c.value_props || []).map((v) => `<div class="prop"><h3>${e(v.title)}</h3><p>${e(v.text)}</p></div>`).join("")}</div></section>
+  <section><h2>Spørsmål og svar</h2>${(c.faq || []).map((f) => `<details><summary>${e(f.q)}</summary><p>${e(f.a)}</p></details>`).join("")}</section>
+</main>
+<footer>${e(c.honest_disclaimer)}</footer>
+<script>
+(function () {
+  try { localStorage.setItem("cf_lp_views", (parseInt(localStorage.getItem("cf_lp_views") || "0", 10) + 1) + ""); } catch (_) {}
+  var f = document.getElementById("wlForm");
+  if (f) f.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    try {
+      var list = JSON.parse(localStorage.getItem("cf_waitlist") || "[]");
+      list.push({ email: document.getElementById("wlEmail").value, at: new Date().toISOString() });
+      localStorage.setItem("cf_waitlist", JSON.stringify(list));
+    } catch (_) {}
+    f.hidden = true;
+    document.getElementById("wlThanks").hidden = false;
+  });
+})();
+<\/script>
+</body>
+</html>`;
+  },
+};
+
 /* ================= Planner (tilpasset faseplan) ================= */
 const Planner = {
   async run(p, onStatus) {
@@ -495,7 +674,8 @@ const Pipeline = {
     if (!p) throw new Error("Fant ikke prosjektet.");
     if (!p.intake) p = await Intake.run(p, (s) => say("intake", s));
     if (!p.evaluation) p = await Evaluation.run(p, onProgress);
-    const d = p.evaluation.synthesis.decision;
+    /* Valideringsporten (Fase 2) overstyrer idévurderingens beslutning når den er kjørt */
+    const d = (p.validation && p.validation.decision) || p.evaluation.synthesis.decision;
     const buildable = ["prototype", "mvp", "lansering"].includes(d);
     if ((buildable || d === "valider_mer") && !p.phasePlan) p = await Planner.run(p, (s) => say("plan", s));
     if (buildable && !p.brief) p = await Brief.run(p, (s) => say("brief", s));
@@ -611,4 +791,4 @@ const SelfReview = {
 };
 
 /* Eksponer modulene (også for tester) */
-window.CF = { Store, LLM, Board, Pipeline, Projects, Intake, Evaluation, Planner, Brief, Demo, SelfReview, SCHEMAS, PHASES, OWNER_GATE_ACTIONS, FACTORY_ROLES, CRITERIA, pool };
+window.CF = { Store, LLM, Board, Pipeline, Projects, Intake, Evaluation, Experiments, Landing, Planner, Brief, Demo, SelfReview, SCHEMAS, PHASES, OWNER_GATE_ACTIONS, FACTORY_ROLES, CRITERIA, pool };

@@ -1,4 +1,4 @@
-# Company Factory – Arkitektur v1.0
+# Company Factory – Arkitektur v1.1
 
 AI-drevet startup-studio: fra idé → kritisk vurdering → validering → forretningsmodell →
 MVP-brief → (neste fase: bygging, betaling, lansering, vekst). Del av Eik-plattformen
@@ -134,8 +134,8 @@ API. Kostnadskontroll: bevisst få og små kall per pipeline-kjøring (~6–9 ka
 | Fase | Innhold | Status |
 |---|---|---|
 | **F1 (denne leveransen)** | Motor + UI + tester: idéinntak, kritisk vurdering m/styret, scoring, faseplan, MVP-brief, beslutnings-/antakelseslogg, porter, portefølje, eksempelprosjekt | ✅ Bygget og testet |
-| **F2 Validering** | Fase 2-verktøy: hypotese→test-planer, landingsside-generator (egen prosjektmappe/repo), venteliste, eksperimentlogg med terskler | Neste |
-| **F3 Bygging** | Fase 5–9: generere prosjekt-repo (mal: nettside + auth + Stripe-abonnement + e-post), «lanseringsklar»-sjekklister, QA-krav per modenhetsnivå | Etter F2 |
+| **F2 Validering** | Eksperimentkø avledet fra kritiske antakelser (terskel definert før resultat), resultatregistrering med eier-logg, falsk-dør-landingsside-generator (selvstendig deploybar HTML med ærlig venteliste-framing), valideringsport som konkluderer og slipper prosjektet videre/stopper det | ✅ Bygget og testet |
+| **F3 Bygging** | Fase 5–9: generere prosjekt-repo (mal: nettside + auth + Stripe-abonnement + e-post), «lanseringsklar»-sjekklister, QA-krav per modenhetsnivå | Neste |
 | **F4 Plattform** | Trekk LLM/Store ut i `platform/`-bibliotek når tredje forbruker finnes; synk-backend bak Store-kontrakten; gjenbruksbibliotek (maler, moduler) med generalisering etter hvert prosjekt | Etter F3 |
 | **F5 Drift/vekst** | Fase 11–16-motorer: målinger inn i porteføljen, ukesrapport, radar-integrasjon mot AEIS | Etter F4 |
 
@@ -157,6 +157,15 @@ skjema-drift mellom AEIS-roller og Factory (mitigeres av lese-kun-kontrakt + fal
 - `CF.Pipeline.PHASES` — kanonisk fasedefinisjon 0–16 (formål, leveranser, port, stoppkriterier, eierrolle).
 - `CF.Intake.run(project)` / `CF.Evaluation.run(project)` / `CF.Planner.run(project)` /
   `CF.Brief.run(project)` — hvert steg muterer prosjektet og returnerer det.
+- `CF.Experiments` — `createFrom(p)` (eksperimentkø fra `assumptions_to_validate`, ingen
+  LLM-kostnad), `registerResult(p, expId, result, passed)` (eier-logget),
+  `review(p)` (valideringsporten: LLM-syntese av resultater → én beslutning som
+  overstyrer idévurderingens beslutning i `Pipeline.resume`).
+- `CF.Landing` — `run(p, {formEndpoint})` (copy via LLM + `renderHTML`),
+  `renderHTML(content, opts)` (selvstendig, responsiv, deploybar HTML: ingen eksterne
+  avhengigheter, pris synlig, ærlig disclaimer, schema.org PreOrder; uten
+  `formEndpoint` lagres påmeldinger kun i besøkerens nettleser — reell trafikk krever
+  et skjema-endepunkt, og dette logges som advarsel på prosjektet).
 - `CF.OWNER_GATE_ACTIONS` — listen over handlinger som alltid krever eier.
 
 Utvidelsesregler (arvet fra AEIS): nye moduler = eget navnerom + egen Store-nøkkel;
@@ -166,9 +175,12 @@ versjonsbump her.
 ## Kjente begrensninger (v1)
 
 - Persistens per enhet (localStorage) — migreringsvei: Store-kontrakten → synk-backend (F4).
-- Fase 2–16 er planlagt/dokumentert per prosjekt, men motorene som *utfører* dem
-  (bygge nettside, sette opp betaling, kjøre kampanjer) kommer i F2–F5. V1 produserer
-  besluttet plan + MVP-brief, ikke ferdig produkt.
+- Fase 2 (validering) har nå en utførende motor: eksperimenter, landingsside og port.
+  Fase 5–16-motorene som *bygger* selve produktet (repo-generering, betaling, kampanjer)
+  kommer i F3–F5. V1.1 produserer besluttet plan + MVP-brief + deploybar
+  valideringslandingsside, ikke ferdig produkt.
+- Landingssiden samler ikke e-poster uten et eksternt skjema-endepunkt (statisk side
+  uten backend) — fabrikken sier dette eksplisitt i beslutningsloggen og UI.
 - «Lanseringsklart digitalt produkt» ≠ juridisk etablert/operativ/kommersielt validert
   virksomhet — statusmodellen skiller disse, og juridiske dokumenter merkes alltid
   «krever kvalitetssikring av autorisert fagperson».
