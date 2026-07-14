@@ -1,5 +1,5 @@
 /* JARVIS service worker – cache app shell so the app opens offline (API calls still need network). */
-const CACHE = "jarvis-v8";
+const CACHE = "jarvis-v9";
 const SHELL = [
   ".",
   "index.html",

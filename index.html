@@ -744,7 +744,9 @@ async function streamOnce(bubbleRef) {
     model: store.model,
     max_tokens: 4096,
     stream: true,
-    system: systemPrompt(),
+    // cache_control: systemprompt (persona + minne + eierprofil) er stabil mellom
+    // kall og caches – kutter inputkostnaden betydelig i lange samtaler.
+    system: [{ type: "text", text: systemPrompt(), cache_control: { type: "ephemeral" } }],
     tools: buildTools(),
     messages: history,
   };
@@ -773,7 +775,7 @@ async function streamOnce(bubbleRef) {
   let stopReason = null;
   let spokenUpTo = 0;
   let textSoFar = "";
-  let usageIn = 0, usageOut = 0;
+  let usageIn = 0, usageOut = 0, usageCacheW = 0, usageCacheR = 0;
 
   function bubble() {
     if (!bubbleRef.el) bubbleRef.el = addMsg("jarvis", "");
@@ -829,7 +831,10 @@ async function streamOnce(bubbleRef) {
             delete b._json;
           }
         } else if (data.type === "message_start") {
-          usageIn = data.message?.usage?.input_tokens || 0;
+          const u = data.message?.usage || {};
+          usageIn = u.input_tokens || 0;
+          usageCacheW = u.cache_creation_input_tokens || 0;
+          usageCacheR = u.cache_read_input_tokens || 0;
         } else if (data.type === "message_delta") {
           if (data.delta && data.delta.stop_reason) stopReason = data.delta.stop_reason;
           if (data.usage && data.usage.output_tokens) usageOut = data.usage.output_tokens;
@@ -840,18 +845,19 @@ async function streamOnce(bubbleRef) {
     }
   }
   speakNewSentences(true);
-  trackUsage(usageIn, usageOut);
+  trackUsage(usageIn, usageOut, usageCacheW, usageCacheR);
   if (bubbleRef.el) linkifyBubble(bubbleRef.el);
   return { content: blocks.filter(Boolean), stopReason };
 }
 
 const PRICES = { "claude-opus-4-8": [5, 25], "claude-sonnet-5": [3, 15] }; // USD per MTok in/out
-function trackUsage(tin, tout) {
-  if (!tin && !tout) return;
+function trackUsage(tin, tout, cacheW = 0, cacheR = 0) {
+  if (!tin && !tout && !cacheW && !cacheR) return;
   const p = PRICES[store.model] || [5, 25];
   const u = store.usage;
-  u.tin += tin; u.tout += tout;
-  u.cost += (tin * p[0] + tout * p[1]) / 1e6;
+  u.tin += tin + cacheW + cacheR; u.tout += tout;
+  // cache-skriving koster 1.25× input, cache-lesing 0.1× input
+  u.cost += (tin * p[0] + cacheW * p[0] * 1.25 + cacheR * p[0] * 0.1 + tout * p[1]) / 1e6;
   store.usage = u;
 }
 

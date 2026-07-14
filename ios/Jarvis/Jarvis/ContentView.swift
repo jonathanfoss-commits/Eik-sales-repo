@@ -4,6 +4,7 @@ struct ContentView: View {
     @EnvironmentObject var engine: JarvisEngine
     @State private var inputText = ""
     @State private var showSettings = false
+    @State private var showAEIS = false
 
     private let bg = Color(red: 0.024, green: 0.047, blue: 0.086)
     private let cyan = Color(red: 0.216, green: 0.835, blue: 1.0)
@@ -21,6 +22,7 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $showSettings) { SettingsView().environmentObject(engine) }
+        .fullScreenCover(isPresented: $showAEIS) { AEISView() }
         .onAppear {
             engine.speech.requestPermissions()
             if engine.apiKey.isEmpty {
@@ -47,14 +49,25 @@ struct ContentView: View {
                 Text(Date.now, style: .time)
                     .font(.system(size: 15, weight: .medium, design: .monospaced))
                     .foregroundColor(cyan)
-                Button {
-                    showSettings = true
-                } label: {
-                    Text("⚙ OPPSETT")
-                        .font(.system(size: 11, design: .monospaced))
-                        .foregroundColor(muted)
-                        .padding(.horizontal, 10).padding(.vertical, 5)
-                        .overlay(RoundedRectangle(cornerRadius: 7).stroke(cyan.opacity(0.25)))
+                HStack(spacing: 6) {
+                    Button {
+                        showAEIS = true
+                    } label: {
+                        Text("🏛 AEIS")
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundColor(muted)
+                            .padding(.horizontal, 10).padding(.vertical, 5)
+                            .overlay(RoundedRectangle(cornerRadius: 7).stroke(cyan.opacity(0.25)))
+                    }
+                    Button {
+                        showSettings = true
+                    } label: {
+                        Text("⚙ OPPSETT")
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundColor(muted)
+                            .padding(.horizontal, 10).padding(.vertical, 5)
+                            .overlay(RoundedRectangle(cornerRadius: 7).stroke(cyan.opacity(0.25)))
+                    }
                 }
             }
         }

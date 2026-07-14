@@ -83,7 +83,9 @@ async function freshPage(browser) {
     const hist = await page.evaluate(() => JSON.parse(localStorage.getItem("jarvis_history")));
     check("assistant text rendered", lastJarvis.includes("God kveld, sir"), lastJarvis);
     check("history has user+assistant", hist.length === 2 && hist[0].role === "user" && hist[1].role === "assistant", hist);
-    check("eierprofil injisert i systemprompten", bodies.length > 0 && bodies.every((b) => (b.system || "").includes("XPROFILMARKØRX")), null);
+    const sysText = (b) => (typeof b.system === "string" ? b.system : (b.system || []).map((x) => x.text).join("\n"));
+    check("eierprofil injisert i systemprompten", bodies.length > 0 && bodies.every((b) => sysText(b).includes("XPROFILMARKØRX")), null);
+    check("systemprompt markert for prompt caching", bodies.every((b) => Array.isArray(b.system) && b.system[0].cache_control?.type === "ephemeral"), null);
     check("no JS errors", errors.length === 0, errors);
     await page.close();
   }

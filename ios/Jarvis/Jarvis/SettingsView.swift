@@ -15,6 +15,7 @@ struct SettingsView: View {
     @AppStorage("jarvis_speak") private var speakAloud = true
     @AppStorage("jarvis_search") private var webSearch = true
     @AppStorage("jarvis_owner_profile") private var ownerProfile = ""
+    @AppStorage("jarvis_app_url") private var appURL = "https://jonathanfoss-commits.github.io/Eik-sales-repo/"
 
     private var voices: [AVSpeechSynthesisVoice] {
         AVSpeechSynthesisVoice.speechVoices()
@@ -92,6 +93,16 @@ struct SettingsView: View {
                         }
                         Button("Glem alt", role: .destructive) { engine.clearMemory() }
                     }
+                }
+
+                Section("AEIS (styrerommet)") {
+                    TextField("https://…", text: $appURL)
+                        .font(.system(.footnote, design: .monospaced))
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .keyboardType(.URL)
+                    Text("URL-en til den publiserte Jarvis-appen. 🏛 AEIS-knappen åpner styrerommet herfra (…/aeis/).")
+                        .font(.footnote).foregroundColor(.secondary)
                 }
 
                 Section {

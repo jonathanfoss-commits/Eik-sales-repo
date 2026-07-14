@@ -15,6 +15,7 @@
 		BB0000000000000000000006 /* Tools.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000006 /* Tools.swift */; };
 		BB0000000000000000000007 /* Support.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000007 /* Support.swift */; };
 		BB0000000000000000000008 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000008 /* Assets.xcassets */; };
+		BB0000000000000000000011 /* AEISView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000011 /* AEISView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		AA0000000000000000000007 /* Support.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Support.swift; sourceTree = "<group>"; };
 		AA0000000000000000000008 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA0000000000000000000010 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AA0000000000000000000011 /* AEISView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AEISView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000009 /* Jarvis.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Jarvis.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -59,6 +61,7 @@
 				AA0000000000000000000005 /* SpeechManager.swift */,
 				AA0000000000000000000006 /* Tools.swift */,
 				AA0000000000000000000007 /* Support.swift */,
+				AA0000000000000000000011 /* AEISView.swift */,
 				AA0000000000000000000008 /* Assets.xcassets */,
 				AA0000000000000000000010 /* Info.plist */,
 			);
@@ -149,6 +152,7 @@
 				BB0000000000000000000005 /* SpeechManager.swift in Sources */,
 				BB0000000000000000000006 /* Tools.swift in Sources */,
 				BB0000000000000000000007 /* Support.swift in Sources */,
+				BB0000000000000000000011 /* AEISView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
