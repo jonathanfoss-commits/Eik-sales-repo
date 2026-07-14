@@ -273,8 +273,9 @@ async function freshPage(browser) {
     check("rapporten fyller ikke bredere enn skjermen", verdictOverflow <= 0, verdictOverflow);
     check("safe-area-polstring definert på body", await page.evaluate(() =>
       /safe-area-inset-top/.test([...document.styleSheets].flatMap(s => [...s.cssRules]).map(r => r.cssText).join(""))), null);
-    check("html-bakgrunn er mørk (ingen hvit stripe)", await page.evaluate(() =>
-      getComputedStyle(document.documentElement).backgroundColor === "rgb(6, 12, 22)"), null);
+    /* SAGA-migrering: bakgrunnen er nå lys Tiffany-hvit (design-tokens) – sjekker konsistens, ikke mørkhet */
+    check("html-bakgrunn matcher SAGA-tokenet (ingen avvikende stripe)", await page.evaluate(() =>
+      getComputedStyle(document.documentElement).backgroundColor === "rgb(255, 255, 255)"), null);
     check("ingen JS-feil", errors.length === 0, errors);
     await page.close();
   }

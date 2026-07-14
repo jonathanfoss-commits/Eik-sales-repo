@@ -1,0 +1,35 @@
+/* SAGA designsystem – Tiffany Blue.
+ * ÉN kilde til sannhet for farger i hele systemet. Ingen komponent skal
+ * hardkode brandfarger – alt via disse tokens.
+ *
+ * WCAG-notat (decisions.md D8): #0ABAB5 (≈2,5:1) og #089490 (≈3,7:1) består
+ * ikke AA for liten tekst på hvit. Derfor finnes --saga-primary-text (#067a76,
+ * ≈4,6:1) for små tekstelementer; #0ABAB5 brukes til logo, flater, ikoner og
+ * store elementer – slik paletten foreskriver. */
+:root {
+  /* Foreskrevet palett */
+  --saga-primary:         #0ABAB5;
+  --saga-primary-dark:    #089490;
+  --saga-primary-light:   #7FDBD8;
+  --saga-primary-tint:    #E6F7F6;
+  --saga-text-on-primary: #FFFFFF;
+  --saga-text:            #1A2E2D;
+  --saga-bg:              #FFFFFF;
+  --saga-border:          #C9EAE8;
+
+  /* Avledede tokens (dokumentert i decisions.md) */
+  --saga-primary-text:    #067A76; /* AA-kompatibel for liten tekst/lenker */
+  --saga-muted:           #4A6866; /* sekundærtekst, ≥7:1 på hvit */
+  --saga-faint:           #6E8B89; /* svakeste tillatte tekst (labels) */
+  --saga-surface:         #F4FBFA; /* panelflate, hint av tint */
+  --saga-surface-2:       #FFFFFF; /* input-/kortflate */
+  --saga-glow:            10, 186, 181; /* rgb-triplet for skygger/glød */
+
+  /* Semantiske statusfarger (separat fra aksenten) */
+  --saga-ok:              #1E7F4F;
+  --saga-warn:            #8A6A00;
+  --saga-danger:          #B3261E;
+  --saga-ok-border:       rgba(30, 127, 79, .45);
+  --saga-warn-border:     rgba(138, 106, 0, .45);
+  --saga-danger-border:   rgba(179, 38, 30, .45);
+}
