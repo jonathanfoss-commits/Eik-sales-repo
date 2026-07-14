@@ -118,16 +118,21 @@ const LLM = {
     throw new Error("Avbrutt: for mange fortsettelsesrunder.");
   },
   async _post(body, attempt = 0) {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": Store.apiKey,
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true",
-      },
-      body: JSON.stringify(body),
-    });
+    let res;
+    try {
+      res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": Store.apiKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true",
+        },
+        body: JSON.stringify(body),
+      });
+    } catch (_) {
+      throw new Error("Fikk ikke kontakt med Claude API. Er du i FORHÅNDSVISNINGEN på claude.ai? Den blokkerer alle eksterne kall – AI-kjøringer krever den ekte appen (GitHub Pages eller lokalt).");
+    }
     if (!res.ok) {
       if ((res.status === 429 || res.status >= 500) && attempt < 2) {
         await new Promise((r) => setTimeout(r, 3000 * (attempt + 1)));
@@ -2151,11 +2156,17 @@ const Gh = {
   set pat(v) { v ? localStorage.setItem("cf_secret_pat", v) : localStorage.removeItem("cf_secret_pat"); },
   async request(method, path, body) {
     if (!this.pat) throw new Error("Ingen GitHub-PAT. Legg inn under System → Synk & publisering (se DIN TUR).");
-    const res = await fetch("https://api.github.com" + path, {
-      method,
-      headers: { authorization: "Bearer " + this.pat, accept: "application/vnd.github+json", "content-type": "application/json" },
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    let res;
+    try {
+      res = await fetch("https://api.github.com" + path, {
+        method,
+        headers: { authorization: "Bearer " + this.pat, accept: "application/vnd.github+json", "content-type": "application/json" },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+    } catch (_) {
+      /* fetch kastet før noe svar kom: sandkasse-CSP (forhåndsvisning), adblocker eller nettverk */
+      throw new Error("Fikk ikke kontakt med GitHub. Er du i FORHÅNDSVISNINGEN på claude.ai? Den blokkerer alle eksterne kall – bruk den ekte appen (GitHub Pages eller lokalt). Ellers: sjekk nett/adblocker (api.github.com må være tilgjengelig).");
+    }
     if (res.status === 404) return { status: 404, json: null };
     if (res.status === 401 || res.status === 403) throw new Error("GitHub avviste PAT-en (" + res.status + "). Sjekk at den er gyldig og har contents-tilgang til repoet.");
     const json = await res.json().catch(() => null);
