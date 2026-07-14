@@ -112,6 +112,33 @@ Jarvis er instruert til å bekrefte før handlinger som er vanskelige å angre (
 | `sw.js` | Service worker – cacher appskallet for offline-oppstart |
 | `icons/` | Arc reactor-ikoner (192/512 px + apple-touch-icon) |
 
+## 🏛 AEIS – Adaptive Executive Intelligence System
+
+I [`aeis/`](aeis/) ligger noe større enn en assistent: et **digitalt styrerom** som fungerer
+som strategisk partner for selskapsbygging, investeringer og store beslutninger.
+Nås fra JARVIS-appen (🏛 AEIS-knappen) eller direkte på `…/aeis/`.
+
+- **Executive Board med 13 roller** (CEO, CFO, CSO, Devil's Advocate m.fl.) — hver rolle er
+  en uavhengig Claude-agent med eget mandat. Dynamisk organisasjon: roller kan opprettes,
+  avvikles og spesialiseres; systemet oppretter selv midlertidige eksperter når en sak krever det.
+- **14-stegs beslutningsmodell**: problemdefinisjon → uavhengige analyser (agentene ser ikke
+  hverandres svar) → Devil's Advocate med **vetorett** (tvinger ny analyserunde) → **pre-mortem**
+  («om to år var dette en katastrofe») → scenarier med sannsynligheter → forventet verdi →
+  CEO-syntese → handlingsplan med falsifiserbare antakelser.
+- **Fortjent autoritet**: agentenes sannsynlighetsestimater kalibreres (Brier-score) mot faktiske
+  utfall du registrerer i hovedboken — treffsikre agenter får større vekt over tid. Ingen har
+  permanent autoritet.
+- **Læringssløyfe**: hvert utfall utløser automatisk post-mortem; lærdommene injiseres i alle
+  fremtidige beslutninger. Systemet blir smartere uten nye instrukser.
+- **Radar**: proaktiv skanning (websøk) etter muligheter, risiko og markedsendringer.
+- **Selvforbedring**: systemet leser sin egen [arkitektur](aeis/ARCHITECTURE.md) og foreslår
+  migreringsplaner. Grunnloven i hvert kall: *ha rett, ikke vær hyggelig* — aldri gjett, aldri
+  bekreft en idé fordi eieren liker den, aldri uttrykk mer sikkerhet enn dataene tilsier.
+
+Arkitektur, modulkontrakter og utvidelsesregler: [`aeis/ARCHITECTURE.md`](aeis/ARCHITECTURE.md).
+Testet i `tests/aeis.e2e.js` (mocket API): hele pipelinen, veto-runden, kalibrering av vekter
+og læringssløyfen.
+
 ## Testing 🧪
 
 `tests/e2e.js` er en full ende-til-ende-suite (Playwright) som mocker Claude API-strømmen

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AEIS – Executive Intelligence</title>
+<meta name="description" content="AEIS – Adaptive Executive Intelligence System.">
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<meta name="theme-color" content="#060c16">
+<style>
+  :root {
+    --bg: #060c16; --panel: #0b1626; --line: #12304a;
+    --cyan: #37d5ff; --cyan-dim: #1a9cc4; --text: #d7f3ff; --muted: #6d9db5;
+    --danger: #ff6b6b; --gold: #ffd166; --green: #7bd88f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(1400px 800px at 50% -10%, #0d2238 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: "SF Mono", ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
+    min-height: 100dvh;
+  }
+  header { padding: 18px 22px 12px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  h1 { font-size: 18px; letter-spacing: .35em; color: var(--cyan); text-shadow: 0 0 14px rgba(55,213,255,.55); }
+  header .sub { font-size: 9px; letter-spacing: .2em; color: var(--muted); margin-top: 3px; }
+  header a { color: var(--muted); font-size: 11px; text-decoration: none; border: 1px solid var(--line); padding: 6px 10px; border-radius: 8px; }
+  nav { display: flex; gap: 6px; padding: 12px 18px; overflow-x: auto; border-bottom: 1px solid var(--line); }
+  nav button {
+    background: none; border: 1px solid var(--line); color: var(--muted); font: inherit; font-size: 12px;
+    letter-spacing: .12em; padding: 8px 14px; border-radius: 8px; cursor: pointer; white-space: nowrap;
+  }
+  nav button.on { color: var(--cyan); border-color: var(--cyan-dim); box-shadow: 0 0 12px rgba(55,213,255,.2); }
+  main { padding: 18px; max-width: 1080px; margin: 0 auto; }
+  .tab { display: none; }
+  .tab.on { display: block; }
+  h2 { font-size: 12px; letter-spacing: .25em; color: var(--cyan-dim); margin: 18px 0 10px; }
+  textarea, input[type=text], input[type=password], input[type=number] {
+    width: 100%; background: var(--panel); border: 1px solid var(--line); color: var(--text);
+    border-radius: 10px; padding: 12px; font: inherit; font-size: 14px; outline: none;
+  }
+  textarea:focus, input:focus { border-color: var(--cyan-dim); }
+  button.primary {
+    background: #0d3a52; border: 1px solid var(--cyan-dim); color: #dff7ff; font: inherit; font-size: 13px;
+    letter-spacing: .08em; padding: 12px 20px; border-radius: 10px; cursor: pointer; margin-top: 10px;
+  }
+  button.primary:disabled { opacity: .5; cursor: default; }
+  button.small { background: none; border: 1px solid var(--line); color: var(--muted); font: inherit; font-size: 11px; padding: 6px 10px; border-radius: 8px; cursor: pointer; }
+  button.small:hover { color: var(--cyan); border-color: var(--cyan-dim); }
+  #pipeline { font-size: 11px; letter-spacing: .12em; color: var(--muted); margin: 14px 0; min-height: 16px; }
+  #pipeline b { color: var(--cyan); font-weight: 600; }
+  #board { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; font-size: 12px; }
+  .card.working { border-color: var(--cyan-dim); box-shadow: 0 0 16px rgba(55,213,255,.15); animation: cardpulse 1.4s ease-in-out infinite; }
+  @keyframes cardpulse { 50% { box-shadow: 0 0 26px rgba(55,213,255,.35); } }
+  .card h3 { font-size: 11px; letter-spacing: .12em; color: var(--cyan); margin-bottom: 6px; }
+  .card .st { color: var(--muted); font-size: 10px; letter-spacing: .1em; }
+  .card .rec { margin-top: 8px; line-height: 1.5; white-space: pre-wrap; }
+  .badge { display: inline-block; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; font-size: 10px; color: var(--muted); margin-left: 6px; }
+  .badge.h { color: var(--green); border-color: rgba(123,216,143,.4); }
+  .badge.m { color: var(--gold); border-color: rgba(255,209,102,.4); }
+  .badge.l { color: var(--danger); border-color: rgba(255,107,107,.4); }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-top: 12px; font-size: 13px; line-height: 1.65; white-space: pre-wrap; }
+  .panel.danger { border-color: #5a2430; }
+  .panel h3 { font-size: 11px; letter-spacing: .2em; color: var(--cyan-dim); margin-bottom: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-size: 10px; letter-spacing: .15em; }
+  .ledger-item { cursor: pointer; }
+  .ledger-item:hover { background: rgba(55,213,255,.04); }
+  .muted { color: var(--muted); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row > * { flex: 1; min-width: 160px; }
+  .note { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+  a { color: var(--cyan); }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>A.E.I.S.</h1>
+    <div class="sub">ADAPTIVE EXECUTIVE INTELLIGENCE SYSTEM</div>
+  </div>
+  <a href="../">← JARVIS</a>
+</header>
+
+<nav>
+  <button data-tab="boardroom" class="on">STYREROM</button>
+  <button data-tab="ledger">HOVEDBOK</button>
+  <button data-tab="roles">ROLLER</button>
+  <button data-tab="radar">RADAR</button>
+  <button data-tab="system">SYSTEM</button>
+</nav>
+
+<main>
+
+<!-- ============ STYREROM ============ -->
+<section class="tab on" id="tab-boardroom">
+  <h2>NY SAK TIL STYRET</h2>
+  <input type="text" id="decTitle" placeholder="Beslutning / sak (f.eks. «Bør vi starte selskap X i marked Y?»)">
+  <textarea id="decContext" rows="4" placeholder="Kontekst: alt styret bør vite – tall, antakelser, alternativer, tidsramme …" style="margin-top:8px"></textarea>
+  <button class="primary" id="runBtn">⚖ Innkall styret</button>
+  <div id="pipeline"></div>
+  <div id="board"></div>
+  <div id="verdict"></div>
+</section>
+
+<!-- ============ HOVEDBOK ============ -->
+<section class="tab" id="tab-ledger">
+  <h2>HOVEDBOK – BESLUTNINGER, UTFALL OG LÆRDOM</h2>
+  <div class="note">Registrer faktisk utfall på en beslutning for å utløse post-mortem og oppdatere agentenes fortjente autoritet.</div>
+  <div id="ledgerList"></div>
+  <div id="ledgerDetail"></div>
+</section>
+
+<!-- ============ ROLLER ============ -->
+<section class="tab" id="tab-roles">
+  <h2>EXECUTIVE BOARD – DYNAMISK ORGANISASJON</h2>
+  <div class="note">Ingen rolle er permanent. Autoritet (vekt) fortjenes gjennom kalibrering mot faktiske utfall — alle starter på 1,00×.</div>
+  <div id="rolesTable"></div>
+  <h2>OPPRETT NY ROLLE</h2>
+  <div class="row">
+    <input type="text" id="newRoleTitle" placeholder="Tittel (f.eks. Real Estate Director)">
+    <input type="text" id="newRoleMandate" placeholder="Mandat – hva skal rollen vurdere?">
+  </div>
+  <button class="primary" id="addRoleBtn">+ Opprett rolle</button>
+</section>
+
+<!-- ============ RADAR ============ -->
+<section class="tab" id="tab-radar">
+  <h2>RADAR – PROAKTIV SKANNING</h2>
+  <div class="note">Systemet venter ikke på oppgaver: radaren leter etter muligheter, risiko og markedsendringer basert på profilen din og hovedboken, med websøk.</div>
+  <button class="primary" id="radarBtn">📡 Kjør radar-skanning</button>
+  <div id="radarOut"></div>
+</section>
+
+<!-- ============ SYSTEM ============ -->
+<section class="tab" id="tab-system">
+  <h2>EIERPROFIL (injiseres i alle analyser)</h2>
+  <textarea id="profile" rows="6" placeholder="Hvem er du, hva eier du, hva er målene dine, risikotoleranse, tidshorisont, kapital tilgjengelig …"></textarea>
+  <button class="primary" id="saveProfileBtn">Lagre profil</button>
+
+  <h2>API-NØKKEL</h2>
+  <input type="password" id="apiKey" placeholder="sk-ant-… (deles med JARVIS-appen)">
+  <button class="primary" id="saveKeyBtn">Lagre nøkkel</button>
+
+  <h2>SELVFORBEDRING</h2>
+  <div class="note">Systemet evaluerer sin egen arkitektur, sine regler og roller — og foreslår en migreringsplan. Ingen del av systemet er «ferdig».</div>
+  <button class="primary" id="reviewBtn">🔄 Kjør arkitektur-review</button>
+  <div id="reviewOut"></div>
+
+  <h2>BACKUP</h2>
+  <div class="row">
+    <button class="small" id="exportBtn">Eksporter alt (JSON)</button>
+    <button class="small" id="importBtn">Importer JSON</button>
+  </div>
+  <input type="file" id="importFile" accept="application/json" style="display:none">
+  <div class="note">Arkitektur: <a href="ARCHITECTURE.md" target="_blank">ARCHITECTURE.md</a></div>
+</section>
+
+</main>
+
+<script src="aeis.js"></script>
+<script>
+(() => {
+"use strict";
+const $ = (id) => document.getElementById(id);
+const { Store, Roles, Scoring, Engine, Ledger, Radar, SelfReview } = window.AEIS;
+
+/* ---------- faner ---------- */
+document.querySelectorAll("nav button").forEach((b) => {
+  b.onclick = () => {
+    document.querySelectorAll("nav button").forEach((x) => x.classList.remove("on"));
+    document.querySelectorAll(".tab").forEach((x) => x.classList.remove("on"));
+    b.classList.add("on");
+    $("tab-" + b.dataset.tab).classList.add("on");
+    if (b.dataset.tab === "roles") renderRoles();
+    if (b.dataset.tab === "ledger") renderLedger();
+  };
+});
+
+function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
+function certBadge(c) {
+  const cls = c === "høy" ? "h" : c === "middels" ? "m" : "l";
+  return `<span class="badge ${cls}">${esc(c)} sikkerhet</span>`;
+}
+
+/* ---------- STYREROM ---------- */
+let running = false;
+$("runBtn").onclick = async () => {
+  const title = $("decTitle").value.trim();
+  if (!title || running) return;
+  if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM-fanen først."); return; }
+  running = true;
+  $("runBtn").disabled = true;
+  $("board").innerHTML = "";
+  $("verdict").innerHTML = "";
+  const cards = {};
+  const pipe = (html) => { $("pipeline").innerHTML = html; };
+  try {
+    const decision = await Engine.runDecision(title, $("decContext").value.trim(), (step, detail) => {
+      if (step === "framing") pipe("<b>1–4/14</b> " + esc(detail));
+      if (step === "participants") {
+        pipe("<b>5–6/14</b> Uavhengige analyser pågår …");
+        for (const t of detail) {
+          const el = document.createElement("div");
+          el.className = "card working";
+          el.innerHTML = `<h3>${esc(t)}</h3><div class="st">ANALYSERER …</div><div class="rec"></div>`;
+          $("board").appendChild(el);
+          cards[t] = el;
+        }
+      }
+      if (step === "role_done") {
+        const role = Roles.byId(detail);
+        const el = role && cards[role.title];
+        if (el) { el.classList.remove("working"); el.querySelector(".st").textContent = "FERDIG"; }
+      }
+      if (step === "devil") pipe("<b>7–8/14</b> " + esc(detail));
+      if (step === "veto") {
+        pipe("<b>VETO</b> Devil's Advocate krever ny analyserunde");
+        Object.values(cards).forEach((el) => { el.classList.add("working"); el.querySelector(".st").textContent = "RUNDE 2 …"; });
+      }
+      if (step === "premortem") pipe("<b>9/14</b> " + esc(detail));
+      if (step === "synthesis") pipe("<b>10–14/14</b> " + esc(detail));
+    });
+    pipe("<b>FERDIG</b> Beslutningen er lagret i hovedboken.");
+    renderDecision(decision, cards);
+  } catch (e) {
+    pipe(`<span style="color:var(--danger)">FEIL: ${esc(e.message)}</span>`);
+  }
+  running = false;
+  $("runBtn").disabled = false;
+};
+
+function renderDecision(d, cards) {
+  for (const a of d.analyses || []) {
+    const el = cards && cards[a.roleTitle];
+    if (el) {
+      el.querySelector(".st").innerHTML = `ANBEFALING ${certBadge(a.certainty)}${typeof a.probability_success === "number" ? ` <span class="badge">p=${Math.round(a.probability_success * 100)}%</span>` : ""}`;
+      el.querySelector(".rec").textContent = a.recommendation + (a.needs_more_info ? "\n⚠ Mangler informasjon: " + a.data_gaps.join("; ") : "");
+    }
+  }
+  const s = d.synthesis;
+  const devil = d.devilRound2 || d.devil;
+  $("verdict").innerHTML = `
+    ${d.rounds > 1 ? `<div class="panel danger"><h3>⚑ DEVIL'S ADVOCATE NEDLA VETO – ANALYSEN BLE KJØRT PÅ NYTT</h3>${esc(d.devil.veto_reason)}</div>` : ""}
+    <div class="panel danger"><h3>DEVIL'S ADVOCATE</h3>Innvendinger:\n- ${devil.objections.map(esc).join("\n- ") || "(ingen)"}\n\nUtestede antakelser: ${devil.untested_assumptions.map(esc).join("; ") || "(ingen)"}</div>
+    <div class="panel"><h3>PRE-MORTEM («om to år var dette en katastrofe»)</h3>${esc(d.premortem.failure_story)}\n\nTiltak nå:\n- ${d.premortem.mitigations.map(esc).join("\n- ")}</div>
+    <div class="panel"><h3>CEO-KONKLUSJON ${certBadge(s.certainty)}${typeof s.probability_success === "number" ? ` <span class="badge">p=${Math.round(s.probability_success * 100)}%</span>` : ""}</h3><b style="color:var(--cyan)">${esc(s.recommendation)}</b>\n\n${esc(s.summary)}\n\nUenigheter i styret:\n- ${s.disagreements.map(esc).join("\n- ") || "(ingen vesentlige)"}\n\nForventet verdi: ${esc(s.expected_value_reasoning)}</div>
+    <div class="panel"><h3>SCENARIER</h3><table><tr><th>SCENARIO</th><th>SANNSYNLIGHET</th><th>UTFALL</th><th>VERDI</th></tr>${s.scenarios.map((x) => `<tr><td>${esc(x.name)}</td><td>${Math.round(x.probability * 100)}%</td><td>${esc(x.outcome)}</td><td>${esc(x.value_estimate)}</td></tr>`).join("")}</table></div>
+    <div class="panel"><h3>HANDLINGSPLAN</h3>${s.action_plan.map((x, i) => `${i + 1}. ${esc(x)}`).join("\n")}</div>
+    <div class="panel"><h3>ANTAKELSER SOM SKAL FØLGES OPP</h3><table><tr><th>ANTAKELSE</th><th>TEST</th><th>HORISONT</th></tr>${s.assumptions_to_track.map((x) => `<tr><td>${esc(x.claim)}</td><td>${esc(x.test)}</td><td>${esc(x.review_horizon)}</td></tr>`).join("")}</table></div>`;
+}
+
+/* ---------- HOVEDBOK ---------- */
+function renderLedger() {
+  const list = Ledger.list();
+  $("ledgerDetail").innerHTML = "";
+  if (!list.length) { $("ledgerList").innerHTML = `<div class="panel muted">Hovedboken er tom. Kjør en sak i styrerommet.</div>`; return; }
+  $("ledgerList").innerHTML = `<table><tr><th>DATO</th><th>SAK</th><th>ANBEFALING</th><th>UTFALL</th></tr>` +
+    list.map((d) => `<tr class="ledger-item" data-id="${d.id}"><td>${esc(d.at.slice(0, 10))}</td><td>${esc(d.title)}</td><td>${esc((d.synthesis?.recommendation || d.radar || "").slice(0, 80))}</td><td>${d.outcome ? d.outcome.successPct + "%" : d.synthesis ? "—" : ""}</td></tr>`).join("") + "</table>";
+  document.querySelectorAll(".ledger-item").forEach((tr) => { tr.onclick = () => showDecision(tr.dataset.id); });
+}
+function showDecision(id) {
+  const d = Ledger.get(id);
+  if (!d) return;
+  if (d.radar) { $("ledgerDetail").innerHTML = `<div class="panel"><h3>${esc(d.title)}</h3>${esc(d.radar)}</div>`; return; }
+  let html = `<div class="panel"><h3>${esc(d.title)}</h3>${esc(d.synthesis?.recommendation || "")} ${d.synthesis ? certBadge(d.synthesis.certainty) : ""}\n\n${esc(d.synthesis?.summary || "")}</div>`;
+  if (d.outcome) {
+    html += `<div class="panel"><h3>UTFALL: ${d.outcome.successPct}% SUKSESS</h3>${esc(d.outcome.notes || "")}</div>`;
+    if (d.postmortem) html += `<div class="panel"><h3>POST-MORTEM</h3>Fungerte:\n- ${d.postmortem.what_worked.map(esc).join("\n- ")}\n\nFeilet:\n- ${d.postmortem.what_failed.map(esc).join("\n- ")}\n\nLærdom: <b style="color:var(--cyan)">${esc(d.postmortem.lesson)}</b></div>`;
+  } else if (d.synthesis) {
+    html += `<div class="panel"><h3>REGISTRER FAKTISK UTFALL</h3>
+      <div class="row"><input type="number" id="outcomePct" min="0" max="100" placeholder="Suksess 0–100 %"><input type="text" id="outcomeNotes" placeholder="Hva skjedde?"></div>
+      <button class="primary" id="outcomeBtn">Registrer utfall → post-mortem + kalibrering</button>
+      <div class="note" id="outcomeStatus"></div></div>`;
+  }
+  $("ledgerDetail").innerHTML = html;
+  const btn = $("outcomeBtn");
+  if (btn) btn.onclick = async () => {
+    const pct = parseFloat($("outcomePct").value);
+    if (isNaN(pct)) return;
+    btn.disabled = true;
+    $("outcomeStatus").textContent = "Scorer agentene og kjører post-mortem …";
+    try {
+      await Ledger.registerOutcome(id, pct, $("outcomeNotes").value, (s) => { $("outcomeStatus").textContent = s; });
+      showDecision(id);
+      renderLedger();
+      showDecision(id);
+    } catch (e) { $("outcomeStatus").textContent = "Feil: " + e.message; btn.disabled = false; }
+  };
+}
+
+/* ---------- ROLLER ---------- */
+function renderRoles() {
+  const roles = Roles.all().filter((r) => r.active || !r.temporary);
+  $("rolesTable").innerHTML = `<table><tr><th>ROLLE</th><th>MANDAT</th><th>VEKT</th><th>UTFALL</th><th></th></tr>` +
+    roles.map((r) => `<tr${r.active ? "" : ' style="opacity:.45"'}><td>${esc(r.title)}${r.temporary ? ' <span class="badge">midlertidig</span>' : ""}</td><td class="muted">${esc(r.mandate)}</td><td>${Scoring.weightOf(r).toFixed(2)}×</td><td>${r.track.n}</td><td>${r.active ? `<button class="small" data-retire="${r.id}">Avvikle</button>` : "avviklet"}</td></tr>`).join("") + "</table>";
+  document.querySelectorAll("[data-retire]").forEach((b) => {
+    b.onclick = () => { Roles.retire(b.dataset.retire); renderRoles(); };
+  });
+}
+$("addRoleBtn").onclick = () => {
+  const t = $("newRoleTitle").value.trim(), m = $("newRoleMandate").value.trim();
+  if (!t || !m) return;
+  Roles.add(t, m);
+  $("newRoleTitle").value = ""; $("newRoleMandate").value = "";
+  renderRoles();
+};
+
+/* ---------- RADAR ---------- */
+$("radarBtn").onclick = async () => {
+  $("radarBtn").disabled = true;
+  $("radarOut").innerHTML = `<div class="panel muted">Skanner (websøk kan ta et minutt) …</div>`;
+  try {
+    const text = await Radar.run((s) => { $("radarOut").innerHTML = `<div class="panel muted">${esc(s)}</div>`; });
+    $("radarOut").innerHTML = `<div class="panel"><h3>RADAR-FUNN</h3>${esc(text)}</div>`;
+  } catch (e) {
+    $("radarOut").innerHTML = `<div class="panel danger">Feil: ${esc(e.message)}</div>`;
+  }
+  $("radarBtn").disabled = false;
+};
+
+/* ---------- SYSTEM ---------- */
+$("profile").value = Store.profile;
+$("apiKey").value = Store.apiKey;
+$("saveProfileBtn").onclick = () => { Store.profile = $("profile").value; $("saveProfileBtn").textContent = "Lagret ✓"; setTimeout(() => $("saveProfileBtn").textContent = "Lagre profil", 1500); };
+$("saveKeyBtn").onclick = () => { Store.apiKey = $("apiKey").value.trim(); $("saveKeyBtn").textContent = "Lagret ✓"; setTimeout(() => $("saveKeyBtn").textContent = "Lagre nøkkel", 1500); };
+$("reviewBtn").onclick = async () => {
+  $("reviewBtn").disabled = true;
+  $("reviewOut").innerHTML = `<div class="panel muted">Systemet gransker seg selv …</div>`;
+  try {
+    const text = await SelfReview.run();
+    $("reviewOut").innerHTML = `<div class="panel"><h3>SELVEVALUERING OG MIGRERINGSPLAN</h3>${esc(text)}</div>`;
+  } catch (e) {
+    $("reviewOut").innerHTML = `<div class="panel danger">Feil: ${esc(e.message)}</div>`;
+  }
+  $("reviewBtn").disabled = false;
+};
+$("exportBtn").onclick = () => {
+  const blob = new Blob([Store.exportAll()], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "aeis-backup.json";
+  a.click();
+};
+$("importBtn").onclick = () => $("importFile").click();
+$("importFile").onchange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  Store.importAll(await file.text());
+  renderRoles(); renderLedger();
+  alert("Importert.");
+};
+
+renderRoles();
+})();
+</script>
+</body>
+</html>
