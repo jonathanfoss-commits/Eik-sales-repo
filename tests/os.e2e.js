@@ -119,6 +119,60 @@ function aeisHandler(route) {
     await page.close();
   }
 
+  /* ---------- OS 3: assistent-dokken – kontekst, tool-use, delt samtale ---------- */
+  console.log("OS 3: Cmd+J-dokk med prosjektkontekst – verktøykall – samme samtale i flaten");
+  {
+    const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
+    let chatCalls = 0;
+    const chatBodies = [];
+    await page.route("**/v1/messages", (route) => {
+      const body = JSON.parse(route.request().postData());
+      const sys = sysOf(body);
+      if (sys.includes("Du er SAGA")) {
+        chatCalls++;
+        chatBodies.push(body);
+        if (chatCalls === 1) {
+          return route.fulfill(respond("", { content: [{ type: "tool_use", id: "tu1", name: "saga_factory_status", input: {} }], stop_reason: "tool_use" }));
+        }
+        return route.fulfill(respond("Porteføljen (FAKTISK): 1 selskap – BoligPuls (TEST) i fase 5."));
+      }
+      if (!aeisHandler(route)) route.fulfill(respond({ note: "uventet" }));
+    });
+    await page.goto(BASE, { waitUntil: "networkidle" });
+    await page.evaluate(() => { localStorage.clear(); localStorage.setItem("saga_api_key", "sk-test"); });
+    await page.reload({ waitUntil: "networkidle" });
+    await page.evaluate(() => window.CF.Demo.load());
+    const pid = await page.evaluate(() => window.CF.Projects.list()[0].id);
+    await page.goto(BASE + "#/companies/" + pid, { waitUntil: "networkidle" });
+
+    await page.keyboard.press("Control+j");
+    const dockState = await page.evaluate(() => ({
+      on: document.getElementById("dock").classList.contains("on"),
+      ctx: document.getElementById("dockCtx").textContent,
+      boxInDock: document.getElementById("chatBox").parentElement.id === "dockBody",
+    }));
+    check("Cmd+J åpner dokken med chat-boksen og prosjektkontekst", dockState.on && dockState.boxInDock && dockState.ctx.includes("BoligPuls"), dockState);
+
+    await page.fill("#chatInput", "Hva er status på porteføljen?");
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(() => document.querySelectorAll("#chatLog .msg.bot").length >= 1 && document.getElementById("chatLog").textContent.includes("FAKTISK"), null, { timeout: 10000 });
+    const sysHadCtx = sysOf(chatBodies[0]).includes("BoligPuls");
+    check("systemprompten fikk prosjektkonteksten injisert", sysHadCtx, sysOf(chatBodies[0]).slice(-200));
+    check("verktøyrunden gikk: tool_use → tool_result → svar", chatCalls === 2 && JSON.stringify(chatBodies[1].messages).includes("tool_result"), { chatCalls });
+
+    /* Samme samtale i Assistent-flaten */
+    await page.keyboard.press("Escape");
+    await page.click('nav button[data-tab="chat"]');
+    const shared = await page.evaluate(() => ({
+      inView: document.getElementById("chatBox").closest("#tab-chat") !== null,
+      text: document.getElementById("chatLog").textContent,
+      persisted: (JSON.parse(localStorage.getItem("saga_chat")) || []).length,
+    }));
+    check("flaten viser samme samtale (boksen flyttet, historikk lagret)", shared.inView && shared.text.includes("FAKTISK") && shared.persisted >= 2, shared);
+    check("kostnaden ble målt på assistent-dokken", await page.evaluate(() => (JSON.parse(localStorage.getItem("cf_costs")) || []).some((c) => c.label === "assistent-dokk")), null);
+    await page.close();
+  }
+
   await browser.close();
   console.log(failures === 0 ? "\nALL OS TESTS PASSED" : `\n${failures} FAILURES`);
   process.exit(failures === 0 ? 0 : 1);
