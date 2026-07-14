@@ -1,4 +1,4 @@
-# Company Factory – Arkitektur v1.4
+# Company Factory – Arkitektur v1.5
 
 AI-drevet startup-studio: fra idé → kritisk vurdering → validering → forretningsmodell →
 MVP-brief → (neste fase: bygging, betaling, lansering, vekst). Del av Eik-plattformen
@@ -137,7 +137,7 @@ API. Kostnadskontroll: bevisst få og små kall per pipeline-kjøring (~6–9 ka
 | **F2 Validering** | Eksperimentkø avledet fra kritiske antakelser (terskel definert før resultat), resultatregistrering med eier-logg, falsk-dør-landingsside-generator (selvstendig deploybar HTML med ærlig venteliste-framing), valideringsport som konkluderer og slipper prosjektet videre/stopper det | ✅ Bygget og testet |
 | **F3 Bygging (del 1)** | Fase 3: forretningsmodell med deterministisk økonomimodell (LLM setter begrunnede antakelser, koden beregner 24-mnd MRR/break-even/LTV/CAC/kapitalbehov i tre scenarier, gratis lokal rekalkulering). Fase 6+8: nettsted-generator – komplett statisk nettsted (forside, pris fra planene, FAQ, om, vilkår/personvern som merkede utkast, deploy-README) pakket med egen ZIP-writer. Læringssløyfe: retro per prosjekt → varige lærdommer (`cf_lessons`) injiseres i alle fremtidige LLM-kall. Byggekjeden kjøres automatisk ved byggebeslutning: brief → modell → nettsted | ✅ Bygget og testet |
 | **F3 Styring (del 2)** | Fase 14/15: modenhetsstige (prototype → MVP → beta → produksjonsklart → lanseringsklart) med sjekklister per nivå – ingenting erklæres uten at eieren huker av alle punkter; «lansert» er egen eierhandling. Fase 16: måletall per måned mot prognosen (sannsynlig scenario), samlet MRR i porteføljen. Fase 11: prioritert markedsføringsmotor (kanaler etter målgruppe/økonomi, eksperimentkø med terskler). Seksjon 6: gjenbruksbibliotek (`cf_library`) som retro fyller automatisk med kandidater | ✅ Bygget og testet |
-| **F3 Bygging (del 3)** | Fase 8–9 dypere: app-skall med auth + reell Stripe-abonnementsflyt (krever backend eller Stripe Payment Links + kundeportal) | Neste |
+| **F3 Bygging (del 3)** | Fase 8–9 dypere: `CF.AppGen` genererer deploybar app-pakke fra MVP-briefen – SPA med innlogging/onboarding/dashboard/abonnementsside (ærlig demo-modus uten konfigurasjon), `config.js` (kun offentlige nøkler), Supabase-skjema med RLS (kun webhook/service-role skriver abonnementsstatus), Stripe-webhook-mal med signaturverifisering og oppsett-README som mapper hvert steg til eier-portene. Reell auth/betaling aktiveres av eieren (Supabase- og Stripe-kontoer) | ✅ Bygget og testet |
 | **F4 Plattform** | Trekk LLM/Store ut i `platform/`-bibliotek når tredje forbruker finnes; synk-backend bak Store-kontrakten; gjenbruksbibliotek (maler, moduler) med generalisering etter hvert prosjekt | Etter F3 |
 | **F5 Drift/vekst** | Fase 11–16-motorer: målinger inn i porteføljen, ukesrapport, radar-integrasjon mot AEIS | Etter F4 |
 

@@ -506,6 +506,26 @@ const SCHEMAS = {
     required: ["core_message", "channel_strategy", "content_calendar", "ad_concepts", "email_sequence", "launch_plan", "experiment_queue", "budget_notes"],
     additionalProperties: false,
   },
+  app: {
+    type: "object",
+    properties: {
+      app_name: { type: "string" },
+      welcome_line: { type: "string" },
+      onboarding_steps: { type: "array", items: {
+        type: "object",
+        properties: { title: { type: "string" }, text: { type: "string" }, input_label: { type: "string" } },
+        required: ["title", "text", "input_label"], additionalProperties: false } },
+      dashboard_modules: { type: "array", items: {
+        type: "object",
+        properties: { title: { type: "string" }, description: { type: "string" }, empty_state: { type: "string" } },
+        required: ["title", "description", "empty_state"], additionalProperties: false } },
+      settings_items: strArr,
+      activation_metric: { type: "string" },
+      upgrade_prompt: { type: "string" },
+    },
+    required: ["app_name", "welcome_line", "onboarding_steps", "dashboard_modules", "settings_items", "activation_metric", "upgrade_prompt"],
+    additionalProperties: false,
+  },
   ops: {
     type: "object",
     properties: {
@@ -1211,6 +1231,7 @@ const Report = {
       L.push("\n**Bygges ikke:**"); li(p.brief.not_building);
     }
     if (p.site) { H("Fase 6+8 – Nettsted"); L.push(`Generert (${Object.keys(p.site.files).length} filer): «${p.site.content.hero_headline}». Betalingsknapper er Stripe-plassholdere (eier-port).`); }
+    if (p.app) { H("Fase 8+9 – App-skall"); L.push(`Generert (${Object.keys(p.app.files).length} filer): «${p.app.content.app_name}». Demo-modus til Supabase/Stripe kobles til (eier-porter). Aktiveringsmetrikk: ${p.app.content.activation_metric}`); }
     if (p.legal) {
       H("Fase 10 – Juridisk (VEILEDNING, ikke rådgivning)");
       L.push("> " + p.legal.disclaimer + "\n");
@@ -1253,6 +1274,292 @@ const Marketing = {
     p.marketing = { ...json, at: new Date().toISOString() };
     Projects.logDecision(p, { phase: 11, role: "markedsføringsmodul", decision: `Kanalstrategi valgt: ${json.channel_strategy.map((c) => c.channel).join(", ")}`, rationale: json.core_message });
     return Projects.save(p);
+  },
+};
+
+/* ================= AppGen (Fase 8+9 del 2: deploybart app-skall) ================= */
+const AppGen = {
+  async run(p, onStatus) {
+    if (!p.brief) throw new Error("App-skallet bygges fra MVP-briefen – kjør pipeline til brief først.");
+    if (onStatus) onStatus("Bygger app-skall: onboarding, dashboard, abonnement …");
+    const { json } = await LLM.call({
+      system: `Du er app-modulen i Company Factory (Fase 8+9). Lever produktspesifikt innhold til app-skallet: appnavn, velkomstlinje, 2–4 onboarding-steg (hvert med input-etikett for det viktigste feltet), 2–4 dashboard-moduler avledet DIREKTE av MVP-funksjonene (med ærlige tomtilstander), innstillingspunkter, den éne aktiveringsmetrikken som betyr noe, og en oppgraderingsmelding uten tomme fraser. Ikke finn på funksjoner som ikke står i briefen.`,
+      user: `${ownerContext()}PROSJEKT: ${p.name}\n\nMVP-BRIEF:\n${JSON.stringify(p.brief, null, 2)}${p.bizmodel ? `\n\nPLANER: ${p.bizmodel.model.plans.map((x) => `${x.name} ${x.price_month} kr/mnd`).join(", ")} · Prøve: ${p.bizmodel.model.trial}` : ""}`,
+      schema: SCHEMAS.app,
+      maxTokens: 4096,
+    });
+    const files = this.renderApp(json, p);
+    p.app = { content: json, files, at: new Date().toISOString() };
+    Projects.logDecision(p, { phase: 8, role: "app-modul", decision: `App-skall generert (${Object.keys(files).length} filer)`, rationale: `SPA med innlogging/onboarding/dashboard/abonnement. Kjører ærlig DEMO-MODUS til eieren kobler til Supabase og Stripe (eier-porter) – se README-app.md.` });
+    return Projects.save(p);
+  },
+
+  /* Deterministisk app-pakke. Ingen hemmeligheter – all konfigurasjon fylles inn av eieren. */
+  renderApp(c, p) {
+    const e = escHtml;
+    const brand = p.site ? p.site.content.brand : { name: c.app_name, color_primary: "#0b6e6e", color_ink: "#15222e", color_bg: "#f7f9fa" };
+    const plans = p.bizmodel ? p.bizmodel.model.plans : [];
+
+    const configJs = `/* ${c.app_name} – konfigurasjon. Fyll inn og deploy. ALDRI sjekk inn hemmelige nøkler –
+ * kun Supabase anon-key (offentlig) og Payment Links hører hjemme her. */
+window.APP_CONFIG = {
+  supabaseUrl: "",        // https://<prosjekt>.supabase.co  (tomt = DEMO-MODUS)
+  supabaseAnonKey: "",    // offentlig anon-nøkkel fra Supabase → Settings → API
+  supabaseJsUrl: "https://esm.sh/@supabase/supabase-js@2",
+  stripePaymentLinks: {   // Stripe → Payment Links (eier-port: betaling)
+${plans.map((pl) => `    "${pl.name}": "", // ${pl.price_month} kr/mnd`).join("\n") || '    "Standard": "",'}
+  },
+  stripeCustomerPortal: "", // Stripe → Customer Portal-lenke (kansellering/kort)
+};
+`;
+
+    const sql = `-- ${c.app_name} – Supabase-skjema. Kjør i SQL-editoren.
+-- Profiler (1:1 med auth.users)
+create table if not exists public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  created_at timestamptz default now(),
+  onboarding jsonb default '{}'::jsonb
+);
+-- Abonnementsstatus (oppdateres KUN av stripe-webhooken via service role)
+create table if not exists public.subscriptions (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  status text not null default 'none', -- none | trialing | active | past_due | canceled
+  plan text,
+  current_period_end timestamptz,
+  stripe_customer_id text,
+  updated_at timestamptz default now()
+);
+-- Row Level Security: brukere ser kun egne rader; ingen klient-skriving til subscriptions
+alter table public.profiles enable row level security;
+alter table public.subscriptions enable row level security;
+create policy "own profile read" on public.profiles for select using (auth.uid() = id);
+create policy "own profile write" on public.profiles for update using (auth.uid() = id);
+create policy "own profile insert" on public.profiles for insert with check (auth.uid() = id);
+create policy "own subscription read" on public.subscriptions for select using (auth.uid() = user_id);
+-- Ingen insert/update-policy for subscriptions: kun service role (webhooken) skriver.
+`;
+
+    const webhook = `// ${c.app_name} – Stripe-webhook (Netlify/Vercel serverless-mal).
+// Oppdaterer abonnementsstatus i Supabase. Krever hemmeligheter som MILJØVARIABLER
+// (eier-port): STRIPE_WEBHOOK_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
+// Deploy: Netlify functions/ eller Vercel api/ – juster eksporten deretter.
+import Stripe from "stripe";
+import { createClient } from "@supabase/supabase-js";
+
+export default async function handler(req, res) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  let event;
+  try {
+    // TODO: verifiser signaturen – IKKE hopp over dette i produksjon
+    event = stripe.webhooks.constructEvent(req.body, req.headers["stripe-signature"], process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    return res.status(400).send("Ugyldig signatur: " + err.message);
+  }
+  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+  const obj = event.data.object;
+  if (["customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted"].includes(event.type)) {
+    // TODO: slå opp user_id fra stripe_customer_id (lagre koblingen ved checkout.session.completed)
+    await supabase.from("subscriptions").upsert({
+      stripe_customer_id: obj.customer,
+      status: obj.status,
+      plan: obj.items?.data?.[0]?.price?.nickname || null,
+      current_period_end: new Date(obj.current_period_end * 1000).toISOString(),
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "stripe_customer_id" });
+  }
+  res.status(200).json({ received: true });
+}
+`;
+
+    const readme = `# ${c.app_name} – app-skall generert av Company Factory
+
+SPA med innlogging, onboarding, dashboard og abonnement. Uten konfigurasjon kjører
+appen i tydelig merket **DEMO-MODUS** (lokal, falsk innlogging – ingen ekte data).
+
+## Oppsett (rekkefølgen matcher eier-portene i Company Factory)
+1. **Supabase** (gratisnivå holder): nytt prosjekt → kjør \`supabase-schema.sql\` i
+   SQL-editoren → aktiver e-postinnlogging → lim URL + anon-key inn i \`config.js\`.
+2. **Stripe** (eier-port: betaling): opprett produkter/priser → lag Payment Links og
+   Customer Portal-lenke → lim inn i \`config.js\`.
+3. **Webhook** (eier-port: produksjonsendring): deploy \`functions/stripe-webhook.js\`
+   (Netlify/Vercel) med miljøvariablene beskrevet i filen → pek Stripe-webhooken dit
+   (events: customer.subscription.*, checkout.session.completed).
+4. **Deploy appen**: statisk hosting (samme som nettstedet). Test hele flyten i
+   Stripe testmodus FØR ekte kort – se modenhetssjekklisten i fabrikken.
+
+## Sikkerhet
+- Kun offentlige nøkler i \`config.js\`. Hemmeligheter kun som miljøvariabler serverside.
+- RLS er på: brukere leser kun egne rader; kun webhooken (service role) skriver abonnement.
+- Klienten HÅNDHEVER IKKE tilgang alene – reell tilgangskontroll ligger i RLS + webhook.
+
+Aktiveringsmetrikk å måle fra dag 1: **${c.activation_metric}**
+`;
+
+    const appHtml = `<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${e(c.app_name)}</title>
+<meta name="robots" content="noindex">
+<style>
+  :root { --primary:${e(brand.color_primary)}; --ink:${e(brand.color_ink)}; --bg:${e(brand.color_bg)}; --muted:#5f6f7d; --card:#fff; --line:#e2e8ee; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); line-height:1.6; }
+  header { background:var(--card); border-bottom:1px solid var(--line); padding:12px 20px; display:flex; align-items:center; gap:14px; }
+  header b { color:var(--primary); margin-right:auto; }
+  header a { color:var(--muted); text-decoration:none; font-size:14px; }
+  main { max-width:760px; margin:0 auto; padding:24px 20px 60px; }
+  h1 { font-size:24px; margin-bottom:10px; } h2 { font-size:18px; margin:22px 0 10px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:12px; }
+  .muted { color:var(--muted); font-size:14px; }
+  input { width:100%; padding:12px; font-size:16px; border:1px solid #c8d2da; border-radius:10px; margin:6px 0; }
+  .btn { display:inline-block; background:var(--primary); color:#fff; border:0; padding:12px 22px; border-radius:10px; font-size:15px; cursor:pointer; text-decoration:none; }
+  .btn.alt { background:#fff; color:var(--primary); border:2px solid var(--primary); }
+  #demoBanner { background:#fff7e0; border-bottom:1px solid #eedc9a; padding:8px 20px; font-size:13px; text-align:center; }
+  .err { color:#b3261e; font-size:14px; min-height:18px; }
+  .pill { display:inline-block; border:1px solid var(--line); border-radius:99px; padding:2px 10px; font-size:12px; color:var(--muted); }
+</style>
+</head>
+<body>
+<div id="demoBanner" hidden>DEMO-MODUS: ingen ekte innlogging eller betaling. Koble til Supabase/Stripe i config.js – se README-app.md.</div>
+<header><b>${e(c.app_name)}</b><a href="#/dashboard">Dashboard</a><a href="#/abonnement">Abonnement</a><a href="#/innstillinger">Innstillinger</a><a href="#" id="logoutLink" hidden>Logg ut</a></header>
+<main id="view"></main>
+<script src="config.js"></script>
+<script>
+(() => {
+"use strict";
+const CFG = window.APP_CONFIG || {};
+const DEMO = !CFG.supabaseUrl;
+const ONBOARDING = ${JSON.stringify(c.onboarding_steps)};
+const MODULES = ${JSON.stringify(c.dashboard_modules)};
+const SETTINGS = ${JSON.stringify(c.settings_items)};
+const PAYMENT_LINKS = (CFG.stripePaymentLinks) || {};
+let sb = null;
+
+const esc = (s) => { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; };
+
+/* Auth-adapter: Supabase når konfigurert, ellers ærlig demo (localStorage) */
+const Auth = {
+  async init() {
+    if (DEMO) { document.getElementById("demoBanner").hidden = false; return; }
+    const mod = await import(CFG.supabaseJsUrl);
+    sb = mod.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey);
+  },
+  async user() {
+    if (DEMO) { try { return JSON.parse(localStorage.getItem("app_demo_user")); } catch (_) { return null; } }
+    const { data } = await sb.auth.getUser();
+    return data.user || null;
+  },
+  async signUp(email, password) {
+    if (DEMO) { localStorage.setItem("app_demo_user", JSON.stringify({ email })); return {}; }
+    return await sb.auth.signUp({ email, password });
+  },
+  async signIn(email, password) {
+    if (DEMO) { localStorage.setItem("app_demo_user", JSON.stringify({ email })); return {}; }
+    return await sb.auth.signInWithPassword({ email, password });
+  },
+  async signOut() {
+    if (DEMO) { localStorage.removeItem("app_demo_user"); return; }
+    await sb.auth.signOut();
+  },
+  async subscription() {
+    if (DEMO) return { status: localStorage.getItem("app_demo_sub") || "none", plan: null };
+    const { data } = await sb.from("subscriptions").select("status, plan, current_period_end").maybeSingle();
+    return data || { status: "none", plan: null };
+  },
+};
+
+const view = document.getElementById("view");
+const routes = {
+  "/login": async () => {
+    view.innerHTML = '<h1>Logg inn</h1><div class="card"><input id="em" type="email" placeholder="E-post"><input id="pw" type="password" placeholder="Passord"><div class="err" id="err"></div><button class="btn" id="go">Logg inn</button> <a class="btn alt" href="#/signup">Ny konto</a></div>';
+    document.getElementById("go").onclick = async () => {
+      const r = await Auth.signIn(document.getElementById("em").value, document.getElementById("pw").value);
+      if (r && r.error) { document.getElementById("err").textContent = r.error.message; return; }
+      location.hash = "#/dashboard";
+    };
+  },
+  "/signup": async () => {
+    view.innerHTML = '<h1>Opprett konto</h1><p class="muted">${e(c.welcome_line)}</p><div class="card"><input id="em" type="email" placeholder="E-post"><input id="pw" type="password" placeholder="Passord (min. 8 tegn)"><div class="err" id="err"></div><button class="btn" id="go">Kom i gang</button></div>';
+    document.getElementById("go").onclick = async () => {
+      const r = await Auth.signUp(document.getElementById("em").value, document.getElementById("pw").value);
+      if (r && r.error) { document.getElementById("err").textContent = r.error.message; return; }
+      location.hash = "#/onboarding";
+    };
+  },
+  "/onboarding": async () => {
+    const u = await Auth.user();
+    if (!u) { location.hash = "#/login"; return; }
+    let step = 0;
+    const answers = {};
+    const render = () => {
+      const s = ONBOARDING[step];
+      view.innerHTML = '<h1>' + esc(s.title) + ' <span class="pill">' + (step + 1) + '/' + ONBOARDING.length + '</span></h1><div class="card"><p class="muted">' + esc(s.text) + '</p><input id="ob" placeholder="' + esc(s.input_label) + '"><button class="btn" id="next">' + (step + 1 < ONBOARDING.length ? "Neste" : "Fullfør") + '</button></div>';
+      document.getElementById("next").onclick = () => {
+        answers[s.input_label] = document.getElementById("ob").value;
+        step++;
+        if (step < ONBOARDING.length) render();
+        else { try { localStorage.setItem("app_onboarding", JSON.stringify(answers)); } catch (_) {} location.hash = "#/dashboard"; }
+      };
+    };
+    render();
+  },
+  "/dashboard": async () => {
+    const u = await Auth.user();
+    if (!u) { location.hash = "#/login"; return; }
+    const sub = await Auth.subscription();
+    const gated = !["active", "trialing"].includes(sub.status);
+    view.innerHTML = '<h1>Dashboard</h1>' +
+      (gated ? '<div class="card"><b>${e(c.upgrade_prompt)}</b><br><br><a class="btn" href="#/abonnement">Se planer</a></div>' : "") +
+      MODULES.map((m) => '<div class="card"><h2>' + esc(m.title) + '</h2><p class="muted">' + esc(m.description) + '</p><p class="muted"><i>' + esc(m.empty_state) + '</i></p></div>').join("");
+  },
+  "/abonnement": async () => {
+    const u = await Auth.user();
+    if (!u) { location.hash = "#/login"; return; }
+    const sub = await Auth.subscription();
+    view.innerHTML = '<h1>Abonnement</h1><div class="card">Status: <b>' + esc(sub.status) + '</b>' + (sub.plan ? ' (' + esc(sub.plan) + ')' : "") + '</div>' +
+      Object.keys(PAYMENT_LINKS).map((name) => '<div class="card"><h2>' + esc(name) + '</h2>' +
+        (PAYMENT_LINKS[name] ? '<a class="btn" href="' + esc(PAYMENT_LINKS[name]) + '">Velg ' + esc(name) + '</a>' : '<button class="btn" data-demo-plan="' + esc(name) + '">Velg ' + esc(name) + (DEMO ? " (demo)" : "") + '</button><p class="muted">Payment Link mangler i config.js (eier-port: betaling).</p>') + '</div>').join("") +
+      '<div class="card"><h2>Administrer</h2>' + (CFG.stripeCustomerPortal ? '<a class="btn alt" href="' + esc(CFG.stripeCustomerPortal) + '">Kundeportal (kort, kansellering)</a>' : '<p class="muted">Customer Portal-lenke mangler i config.js. Kansellering skal alltid være like enkelt som kjøp.</p>') + '</div>';
+    view.querySelectorAll("[data-demo-plan]").forEach((b) => {
+      b.onclick = () => { if (DEMO) { localStorage.setItem("app_demo_sub", "active"); location.reload(); } else alert("Legg inn Payment Link i config.js først."); };
+    });
+  },
+  "/innstillinger": async () => {
+    const u = await Auth.user();
+    if (!u) { location.hash = "#/login"; return; }
+    view.innerHTML = '<h1>Innstillinger</h1><div class="card">Konto: <b>' + esc(u.email) + '</b></div>' +
+      SETTINGS.map((s) => '<div class="card muted">' + esc(s) + '</div>').join("");
+  },
+};
+
+async function route() {
+  const path = (location.hash || "#/dashboard").slice(1);
+  const u = await Auth.user();
+  document.getElementById("logoutLink").hidden = !u;
+  (routes[path] || routes["/dashboard"])();
+}
+document.getElementById("logoutLink").onclick = async (ev) => { ev.preventDefault(); await Auth.signOut(); location.hash = "#/login"; };
+window.addEventListener("hashchange", route);
+Auth.init().then(route);
+})();
+<\/script>
+</body>
+</html>`;
+
+    return {
+      "app/index.html": appHtml,
+      "app/config.js": configJs,
+      "app/supabase-schema.sql": sql,
+      "app/functions/stripe-webhook.js": webhook,
+      "app/README-app.md": readme,
+    };
+  },
+
+  zip(p) {
+    if (!p.app) throw new Error("App-skallet er ikke generert.");
+    return makeZip(p.app.files);
   },
 };
 
@@ -1554,4 +1861,4 @@ const SelfReview = {
 };
 
 /* Eksponer modulene (også for tester) */
-window.CF = { Store, LLM, Board, Pipeline, Projects, Intake, Evaluation, Experiments, Landing, BizModel, Finance, SiteGen, Maturity, Metrics, Library, Marketing, Strategy, Legal, Ops, Report, Retro, Lessons, Planner, Brief, Demo, SelfReview, SCHEMAS, PHASES, OWNER_GATE_ACTIONS, FACTORY_ROLES, CRITERIA, MATURITY_CHECKLISTS, pool, makeZip, crc32 };
+window.CF = { Store, LLM, Board, Pipeline, Projects, Intake, Evaluation, Experiments, Landing, BizModel, Finance, SiteGen, AppGen, Maturity, Metrics, Library, Marketing, Strategy, Legal, Ops, Report, Retro, Lessons, Planner, Brief, Demo, SelfReview, SCHEMAS, PHASES, OWNER_GATE_ACTIONS, FACTORY_ROLES, CRITERIA, MATURITY_CHECKLISTS, pool, makeZip, crc32 };

@@ -318,6 +318,19 @@ function showProject(id) {
     html += v + `</div>`;
   }
 
+  /* FASE 8+9 – app-skall (innlogging, onboarding, dashboard, abonnement) */
+  if (p.app || p.brief) {
+    let v = `<div class="panel"><h3>FASE 8+9 – APP-SKALL</h3>`;
+    if (!p.app) {
+      v += `<div class="note">Genererer deploybar app-pakke fra MVP-briefen: SPA med innlogging/onboarding/dashboard/abonnement (ærlig demo-modus uten konfigurasjon), Supabase-skjema med RLS, Stripe-webhook-mal og oppsett-README. Supabase/Stripe-oppkobling er eier-porter.</div><button class="small" id="appGen" style="margin-top:8px">📱 Generer app-skall</button>`;
+    } else {
+      v += `«${esc(p.app.content.app_name)}» – ${esc(p.app.content.welcome_line)}\nFiler: ${Object.keys(p.app.files).map(esc).join(", ")}\nAktiveringsmetrikk: <b>${esc(p.app.content.activation_metric)}</b>` +
+        `<div class="row" style="margin-top:10px"><button class="small" id="appPreview">👁 Forhåndsvis (demo-modus)</button><button class="small" id="appZip">⬇ Last ned app-pakken (ZIP)</button></div>` +
+        `<div class="note">Uten config kjører appen i tydelig merket demo-modus. Reell auth/betaling krever Supabase + Stripe (eier-porter) – se README-app.md i pakken.</div>`;
+    }
+    html += v + `</div>`;
+  }
+
   /* FASE 10 – juridisk, personvern og sikkerhet */
   if (p.legal || buildableNow) {
     let v = `<div class="panel danger"><h3>FASE 10 – JURIDISK, PERSONVERN OG SIKKERHET</h3>`;
@@ -554,6 +567,27 @@ function showProject(id) {
     lgGen.disabled = true;
     try { await window.CF.Legal.run(Projects.get(p.id)); showProject(p.id); }
     catch (e) { alert("Feil: " + e.message); lgGen.disabled = false; }
+  };
+
+  /* FASE 8+9-handlinger */
+  const appGen = $("appGen");
+  if (appGen) appGen.onclick = async () => {
+    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
+    appGen.disabled = true;
+    try { await window.CF.AppGen.run(Projects.get(p.id)); showProject(p.id); }
+    catch (e) { alert("Feil: " + e.message); appGen.disabled = false; }
+  };
+  const appPreview = $("appPreview");
+  if (appPreview) appPreview.onclick = () => {
+    window.open(URL.createObjectURL(new Blob([Projects.get(p.id).app.files["app/index.html"]], { type: "text/html" })));
+  };
+  const appZip = $("appZip");
+  if (appZip) appZip.onclick = () => {
+    const bytes = window.CF.AppGen.zip(Projects.get(p.id));
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([bytes], { type: "application/zip" }));
+    a.download = p.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() + "-app.zip";
+    a.click();
   };
 
   const opsGen = $("opsGen");

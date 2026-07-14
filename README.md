@@ -176,10 +176,12 @@ lanseringsklart digitalt selskap. Nås fra JARVIS-appen (🏭 FACTORY-knappen) e
 - **Eier-porter**: betalinger, publisering, domener, juss, masseutsendelser og offentlig
   lansering auto-godkjennes aldri — de krever ditt eksplisitte klikk og logges.
 
-I tillegg: strategi med ikke-gjøre-liste (Fase 4), juridisk kartlegging der alt som
-krever advokat/regnskapsfører merkes eksplisitt (Fase 10, veiledning – ikke rådgivning),
-nedlastbar prosjektrapport (Markdown), og kill-disiplin: parker/avslutt/reaktiver som
-loggede eierbeslutninger.
+I tillegg: strategi med ikke-gjøre-liste (Fase 4), **app-skall** (Fase 8+9: deploybar
+SPA med innlogging/onboarding/dashboard/abonnement, Supabase-skjema med RLS og
+Stripe-webhook-mal – demo-modus til du kobler til kontoene), juridisk kartlegging der
+alt som krever advokat/regnskapsfører merkes eksplisitt (Fase 10, veiledning – ikke
+rådgivning), driftsgrunnlag (Fase 13), nedlastbar prosjektrapport (Markdown), og
+kill-disiplin: parker/avslutt/reaktiver som loggede eierbeslutninger.
 
 Arkitektur (systemrevisjon, arkitekturbeslutning, målarkitektur, plan):
 [`factory/ARCHITECTURE.md`](factory/ARCHITECTURE.md). Testet i `tests/factory.e2e.js`

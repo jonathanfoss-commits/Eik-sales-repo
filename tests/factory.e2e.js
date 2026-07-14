@@ -244,6 +244,22 @@ const LEGAL = {
   action_list: ["Utkast til vilkår → advokat", "Behandlingsprotokoll → personvernrådgiver"],
 };
 
+const APP = {
+  app_name: "BoligPuls",
+  welcome_line: "Registrer boligen din og få planen på under to minutter.",
+  onboarding_steps: [
+    { title: "Om boligen", text: "Vi tilpasser planen etter boligtype.", input_label: "Boligtype (f.eks. enebolig 1985)" },
+    { title: "Hvor er boligen?", text: "Klima styrer sesongoppgavene.", input_label: "Postnummer" },
+  ],
+  dashboard_modules: [
+    { title: "Vedlikeholdsplanen", description: "Oppgaver for din bolig, sortert etter sesong.", empty_state: "Fullfør onboarding for å få planen." },
+    { title: "Neste varsel", description: "Det viktigste å gjøre nå.", empty_state: "Ingen varsler enda – planen genereres." },
+  ],
+  settings_items: ["Varslingskanal (e-post)", "Boligprofil", "Slett konto og data"],
+  activation_metric: "Bruker har fullført boligprofil og fått sin første plan innen 24 timer",
+  upgrade_prompt: "Planen din er klar – abonner for å få sesongvarsler og sjekklister.",
+};
+
 const OPS = {
   support_channels: ["E-post (hjelp@boligpuls.no)", "Kontaktskjema"],
   faq_seed: [{ q: "Hvordan sier jeg opp?", a: "Under Innstillinger → Abonnement, gjelder ut perioden." }],
@@ -295,6 +311,7 @@ function mockRouter(overrides = {}) {
     if (sys.includes("strategimodulen")) { counts.strategy = (counts.strategy || 0) + 1; return route.fulfill(respond(overrides.strategy || STRATEGY)); }
     if (sys.includes("juridisk-modulen")) { counts.legal = (counts.legal || 0) + 1; return route.fulfill(respond(overrides.legal || LEGAL)); }
     if (sys.includes("driftsmodulen")) { counts.ops = (counts.ops || 0) + 1; return route.fulfill(respond(overrides.ops || OPS)); }
+    if (sys.includes("app-modulen")) { counts.app = (counts.app || 0) + 1; return route.fulfill(respond(overrides.app || APP)); }
     if (sys.includes("selvevalueringsmodul")) {
       counts.review++;
       return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ content: [{ type: "text", text: "Selvevaluering: fabrikken fungerer; forbedre X." }], stop_reason: "end_turn", usage: { input_tokens: 1, output_tokens: 1 } }) });
@@ -664,6 +681,22 @@ print('OK', len(names))
       detail2.includes("JURIDISK") && detail2.includes("IKKE juridisk rådgivning") && detail2.includes("KREVES"), null);
     check("driftsgrunnlag med svarmaler og automatiseringskandidater",
       detail2.includes("DRIFT OG KUNDESERVICE") && detail2.includes("Betalingsfeil") && detail2.includes("Bør automatiseres"), null);
+
+    /* App-skall (Fase 8+9) – krever brief */
+    const appErr = await page.evaluate(() => window.CF.AppGen.run(window.CF.Projects.list()[0]).then(() => null, (e) => e.message));
+    check("app-skall krever MVP-brief", appErr && appErr.includes("brief"), appErr);
+    await page.evaluate(async () => {
+      await window.CF.Brief.run(window.CF.Projects.list()[0]);
+      await window.CF.AppGen.run(window.CF.Projects.list()[0]);
+    });
+    const app = await page.evaluate(() => window.CF.Projects.list()[0].app);
+    check("app-pakken har alle 5 filer", Object.keys(app.files).length === 5 && app.files["app/index.html"] && app.files["app/supabase-schema.sql"], Object.keys(app.files));
+    check("appen har ærlig demo-modus og ingen hardkodede eksterne script",
+      app.files["app/index.html"].includes("DEMO-MODUS") && !/<script src="http/i.test(app.files["app/index.html"]), null);
+    check("SQL har RLS og webhook-mal krever signaturverifisering",
+      app.files["app/supabase-schema.sql"].includes("enable row level security") && app.files["app/functions/stripe-webhook.js"].includes("STRIPE_WEBHOOK_SECRET"), null);
+    check("config har Payment Link-plassholdere for planene fra forretningsmodellen",
+      app.files["app/config.js"].includes('"Basis"') && app.files["app/config.js"].includes('"Pluss"') && !app.files["app/config.js"].includes("sk_"), null);
 
     /* Prosjektrapport (deterministisk Markdown) */
     const report = await page.evaluate(() => window.CF.Report.generate(window.CF.Projects.list()[0]));
