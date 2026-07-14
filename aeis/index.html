@@ -15,11 +15,15 @@
     --danger: #ff6b6b; --gold: #ffd166; --green: #7bd88f;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--bg); }
   body {
     background: radial-gradient(1400px 800px at 50% -10%, #0d2238 0%, var(--bg) 55%);
+    background-color: var(--bg);
     color: var(--text);
     font-family: "SF Mono", ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
     min-height: 100dvh;
+    overflow-x: hidden;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
   header { padding: 18px 22px 12px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
   h1 { font-size: 18px; letter-spacing: .35em; color: var(--cyan); text-shadow: 0 0 14px rgba(55,213,255,.55); }
@@ -60,11 +64,11 @@
   .badge.h { color: var(--green); border-color: rgba(123,216,143,.4); }
   .badge.m { color: var(--gold); border-color: rgba(255,209,102,.4); }
   .badge.l { color: var(--danger); border-color: rgba(255,107,107,.4); }
-  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-top: 12px; font-size: 13px; line-height: 1.65; white-space: pre-wrap; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-top: 12px; font-size: 13px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
   .panel.danger { border-color: #5a2430; }
   .panel h3 { font-size: 11px; letter-spacing: .2em; color: var(--cyan-dim); margin-bottom: 8px; }
   table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
-  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
   th { color: var(--muted); font-size: 10px; letter-spacing: .15em; }
   .ledger-item { cursor: pointer; }
   .ledger-item:hover { background: rgba(55,213,255,.04); }
@@ -73,6 +77,13 @@
   .row > * { flex: 1; min-width: 160px; }
   .note { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
   a { color: var(--cyan); }
+  .card, .note { overflow-wrap: anywhere; }
+  @media (max-width: 600px) {
+    /* 16px hindrer iOS-autozoom ved fokus (zoomen ga «smalnet» skjerm) */
+    textarea, input[type=text], input[type=password], input[type=number] { font-size: 16px; }
+    main { padding: 14px 12px; }
+    th, td { padding: 7px 6px; }
+  }
 </style>
 </head>
 <body>

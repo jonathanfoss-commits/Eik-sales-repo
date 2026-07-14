@@ -217,6 +217,42 @@ async function freshPage(browser) {
     await page.close();
   }
 
+  /* ---------- Scenario 3b: ingen horisontal smalning på mobil ---------- */
+  console.log("AEIS 3b: ingen horisontal overflow på iPhone-bredde");
+  {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    const errors = [];
+    page.on("pageerror", (e) => errors.push(e.message));
+    await page.goto(BASE, { waitUntil: "networkidle" });
+    await page.evaluate(() => { localStorage.clear(); localStorage.setItem("jarvis_api_key", "sk-ant-test"); });
+    await page.reload({ waitUntil: "networkidle" });
+    const { handler } = mockRouter();
+    await page.route("**/v1/messages", handler);
+
+    // Roller-fanen med ekstra lang rolle (verstefall for tabellbredde)
+    await page.evaluate(() => window.AEIS.Roles.add(
+      "Superkalifragilistisk Ekspialidosisk Direktør",
+      "EtSværtLangtSammenhengendeOrdUtenMellomromSomTidligereTvangTabellenBredereEnnSkjermenOgSmalnetAltInnhold og i tillegg et veldig langt mandat med mange detaljer om alt mulig rart."));
+    await page.click('nav button[data-tab="roles"]');
+    await page.waitForTimeout(300);
+    const rolesOverflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    check("roller-fanen fyller ikke bredere enn skjermen", rolesOverflow <= 0, rolesOverflow);
+
+    // Full rapport i styrerommet på mobilbredde
+    await page.click('nav button[data-tab="boardroom"]');
+    await page.fill("#decTitle", "Mobiltest");
+    await page.click("#runBtn");
+    await page.waitForFunction(() => document.getElementById("pipeline").textContent.includes("FERDIG"), null, { timeout: 20000 });
+    const verdictOverflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    check("rapporten fyller ikke bredere enn skjermen", verdictOverflow <= 0, verdictOverflow);
+    check("safe-area-polstring definert på body", await page.evaluate(() =>
+      /safe-area-inset-top/.test([...document.styleSheets].flatMap(s => [...s.cssRules]).map(r => r.cssText).join(""))), null);
+    check("html-bakgrunn er mørk (ingen hvit stripe)", await page.evaluate(() =>
+      getComputedStyle(document.documentElement).backgroundColor === "rgb(6, 12, 22)"), null);
+    check("ingen JS-feil", errors.length === 0, errors);
+    await page.close();
+  }
+
   /* ---------- Scenario 4: dynamisk organisasjon ---------- */
   console.log("AEIS 4: roller kan opprettes og avvikles");
   {
