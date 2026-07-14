@@ -274,8 +274,8 @@ async function freshPage(browser) {
     check("safe-area-polstring definert på body", await page.evaluate(() =>
       /safe-area-inset-top/.test([...document.styleSheets].flatMap(s => [...s.cssRules]).map(r => r.cssText).join(""))), null);
     /* SAGA-migrering: bakgrunnen er nå lys Tiffany-hvit (design-tokens) – sjekker konsistens, ikke mørkhet */
-    check("html-bakgrunn matcher SAGA-tokenet (ingen avvikende stripe)", await page.evaluate(() =>
-      getComputedStyle(document.documentElement).backgroundColor === "rgb(255, 255, 255)"), null);
+    check("html-bakgrunn matcher SAGA-mørketokenet (ingen lys stripe)", await page.evaluate(() =>
+      getComputedStyle(document.documentElement).backgroundColor === "rgb(5, 15, 14)"), null);
     check("ingen JS-feil", errors.length === 0, errors);
     await page.close();
   }

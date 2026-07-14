@@ -11,17 +11,17 @@
 <link rel="apple-touch-icon" href="../../../icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0ABAB5">
+<meta name="theme-color" content="#050F0E">
 <style>
   :root {
-    --bg: #FFFFFF; --panel: #F4FBFA; --line: #C9EAE8;
-    --cyan: #089490; --cyan-dim: #0ABAB5; --text: #1A2E2D; --muted: #4A6866;
-    --danger: #B3261E; --gold: #8A6A00; --green: #1E7F4F;
+    --bg: #050F0E; --panel: #0A1B1A; --line: #17423F;
+    --cyan: #0ABAB5; --cyan-dim: #089490; --text: #D9F2F0; --muted: #8FB3B0;
+    --danger: #F28B82; --gold: #E8C466; --green: #6FD695;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { background: var(--bg); }
   body {
-    background: radial-gradient(1400px 800px at 50% -10%, #E6F7F6 0%, var(--bg) 55%);
+    background: radial-gradient(1400px 800px at 50% -10%, #0C2624 0%, var(--bg) 55%);
     background-color: var(--bg);
     color: var(--text);
     font-family: "SF Mono", ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
@@ -49,7 +49,7 @@
   }
   textarea:focus, input:focus { border-color: var(--cyan-dim); }
   button.primary {
-    background: #0ABAB5; border: 1px solid var(--cyan-dim); color: #FFFFFF; font: inherit; font-size: 13px;
+    background: #0ABAB5; border: 1px solid var(--saga-primary-light); color: #04302E; font: inherit; font-size: 13px;
     letter-spacing: .08em; padding: 12px 20px; border-radius: 10px; cursor: pointer; margin-top: 10px;
   }
   button.primary:disabled { opacity: .5; cursor: default; }
@@ -69,7 +69,7 @@
   .badge.m { color: var(--gold); border-color: rgba(255,209,102,.4); }
   .badge.l { color: var(--danger); border-color: rgba(255,107,107,.4); }
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-top: 12px; font-size: 13px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
-  .panel.danger { border-color: #E7B7B4; }
+  .panel.danger { border-color: #5A2B28; }
   .panel h3 { font-size: 11px; letter-spacing: .2em; color: var(--cyan-dim); margin-bottom: 8px; }
   table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
   th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }

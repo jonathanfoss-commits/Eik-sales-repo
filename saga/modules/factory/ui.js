@@ -140,7 +140,7 @@ function renderCommand() {
     const bars = months.map((m, i) => {
       const h = Math.max(2, Math.round((byMonth[m] / max) * (H - 26)));
       const x = 4 + i * (bw + 6);
-      return `<rect x="${x}" y="${H - 16 - h}" width="${bw}" height="${h}" rx="2" fill="#37d5ff" opacity=".8"><title>${m}: ${byMonth[m]} kr</title></rect><text x="${x + bw / 2}" y="${H - 4}" font-size="7" fill="#47708a" text-anchor="middle">${m.slice(5)}</text>`;
+      return `<rect x="${x}" y="${H - 16 - h}" width="${bw}" height="${h}" rx="2" fill="#0AA79F" opacity=".9"><title>${m}: ${byMonth[m]} kr</title></rect><text x="${x + bw / 2}" y="${H - 4}" font-size="7" fill="#5E8380" text-anchor="middle">${m.slice(5)}</text>`;
     }).join("");
     $("ccMrr").innerHTML = `<div class="lbl">SUM MRR PER MÅNED (${months.length} MND)</div><svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="MRR per måned">${bars}</svg>`;
   } else {
@@ -431,7 +431,7 @@ function showProject(id) {
       const line = (arr) => arr.map((val, i) => `${X(i)},${Y(val)}`).join(" ");
       const band = sim.mrr.p90.map((val, i) => `${X(i)},${Y(val)}`).join(" ") + " " + [...sim.mrr.p10].reverse().map((val, i) => `${X(sim.months - 1 - i)},${Y(val)}`).join(" ");
       v += `<h3 style="margin-top:14px">USIKKERHETSVIFTE – MRR 24 MND <span class="badge est">estimat · ${sim.runs} simuleringer</span></h3>` +
-        `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="MRR-usikkerhetsvifte"><polygon points="${band}" fill="#37d5ff" opacity=".13"/><polyline points="${line(sim.mrr.p50)}" fill="none" stroke="#37d5ff" stroke-width="1.6"/><polyline points="${line(sim.mrr.p10)}" fill="none" stroke="#47708a" stroke-width=".8" stroke-dasharray="3 3"/><polyline points="${line(sim.mrr.p90)}" fill="none" stroke="#47708a" stroke-width=".8" stroke-dasharray="3 3"/><text x="${W - 4}" y="${Y(sim.mrr.p50[sim.months - 1]) - 4}" font-size="8" fill="#37d5ff" text-anchor="end">P50 ${Math.round(sim.mrr.p50[sim.months - 1] / 1000)}k</text></svg>` +
+        `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="MRR-usikkerhetsvifte"><polygon points="${band}" fill="#0AA79F" opacity=".16"/><polyline points="${line(sim.mrr.p50)}" fill="none" stroke="#0AA79F" stroke-width="1.6"/><polyline points="${line(sim.mrr.p10)}" fill="none" stroke="#5E8380" stroke-width=".8" stroke-dasharray="3 3"/><polyline points="${line(sim.mrr.p90)}" fill="none" stroke="#5E8380" stroke-width=".8" stroke-dasharray="3 3"/><text x="${W - 4}" y="${Y(sim.mrr.p50[sim.months - 1]) - 4}" font-size="8" fill="#8FB3B0" text-anchor="end">P50 ${Math.round(sim.mrr.p50[sim.months - 1] / 1000)}k</text></svg>` +
         `<div class="note">MRR måned 24: P10 ${nok(sim.mrr.p10[23])} · P50 ${nok(sim.mrr.p50[23])} · P90 ${nok(sim.mrr.p90[23])}. Kapitalbehov: P10 ${nok(sim.capital.p10)} · P50 ${nok(sim.capital.p50)} · P90 ${nok(sim.capital.p90)}. Spenn per parameter: ±${Object.values(window.CF.Finance.SIM_SPREADS).map((x) => Math.round(x * 100) + "%").join("/±")}.</div>`;
 
       /* Vakthunden: antakelser mot bransjespenn */

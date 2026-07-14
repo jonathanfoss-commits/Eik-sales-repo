@@ -1,35 +1,36 @@
-/* SAGA designsystem – Tiffany Blue.
- * ÉN kilde til sannhet for farger i hele systemet. Ingen komponent skal
- * hardkode brandfarger – alt via disse tokens.
+/* SAGA designsystem – Tiffany Blue på MØRK bakgrunn (eiers valg: alltid mørk).
+ * ÉN kilde til sannhet for farger. Ingen komponent hardkoder brandfarger.
  *
- * WCAG-notat (decisions.md D8): #0ABAB5 (≈2,5:1) og #089490 (≈3,7:1) består
- * ikke AA for liten tekst på hvit. Derfor finnes --saga-primary-text (#067a76,
- * ≈4,6:1) for små tekstelementer; #0ABAB5 brukes til logo, flater, ikoner og
- * store elementer – slik paletten foreskriver. */
+ * Kontrast (decisions.md D8/D12): på mørk bunn består #0ABAB5 WCAG AA også for
+ * liten tekst (~6,9:1 mot --saga-bg) – tekstbegrensningen fra lys modus gjelder
+ * ikke lenger. --saga-chart (#0AA79F) er diagram-merkefargen, validert mot mørk
+ * flate med dataviz-validatoren (lysbånd + kontrast PASS). Tekst på primærflater
+ * er mørk (#04302E) fordi hvit på #0ABAB5 kun gir ~2,4:1. */
 :root {
-  /* Foreskrevet palett */
+  /* Brand-palett (Tiffany) */
   --saga-primary:         #0ABAB5;
   --saga-primary-dark:    #089490;
   --saga-primary-light:   #7FDBD8;
-  --saga-primary-tint:    #E6F7F6;
-  --saga-text-on-primary: #FFFFFF;
-  --saga-text:            #1A2E2D;
-  --saga-bg:              #FFFFFF;
-  --saga-border:          #C9EAE8;
+  --saga-primary-tint:    #0C2624;  /* subtile flater – mørk fortolkning */
+  --saga-text-on-primary: #04302E;  /* AA på primærflater (mørk tekst) */
+  --saga-text:            #D9F2F0;
+  --saga-bg:              #050F0E;
+  --saga-border:          #17423F;
 
-  /* Avledede tokens (dokumentert i decisions.md) */
-  --saga-primary-text:    #067A76; /* AA-kompatibel for liten tekst/lenker */
-  --saga-muted:           #4A6866; /* sekundærtekst, ≥7:1 på hvit */
-  --saga-faint:           #6E8B89; /* svakeste tillatte tekst (labels) */
-  --saga-surface:         #F4FBFA; /* panelflate, hint av tint */
-  --saga-surface-2:       #FFFFFF; /* input-/kortflate */
-  --saga-glow:            10, 186, 181; /* rgb-triplet for skygger/glød */
+  /* Avledede tokens */
+  --saga-primary-text:    #0ABAB5;  /* AA på mørk bunn – kan brukes for liten tekst */
+  --saga-muted:           #8FB3B0;
+  --saga-faint:           #5E8380;
+  --saga-surface:         #0A1B1A;
+  --saga-surface-2:       #0E2321;
+  --saga-glow:            10, 186, 181;
+  --saga-chart:           #0AA79F;  /* diagram-merker, validert (dataviz) */
 
-  /* Semantiske statusfarger (separat fra aksenten) */
-  --saga-ok:              #1E7F4F;
-  --saga-warn:            #8A6A00;
-  --saga-danger:          #B3261E;
-  --saga-ok-border:       rgba(30, 127, 79, .45);
-  --saga-warn-border:     rgba(138, 106, 0, .45);
-  --saga-danger-border:   rgba(179, 38, 30, .45);
+  /* Semantiske statusfarger (reservert – aldri seriefarger) */
+  --saga-ok:              #6FD695;
+  --saga-warn:            #E8C466;
+  --saga-danger:          #F28B82;
+  --saga-ok-border:       rgba(111, 214, 149, .45);
+  --saga-warn-border:     rgba(232, 196, 102, .45);
+  --saga-danger-border:   rgba(242, 139, 130, .45);
 }
