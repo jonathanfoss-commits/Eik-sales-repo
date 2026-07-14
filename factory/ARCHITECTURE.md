@@ -1,4 +1,4 @@
-# Company Factory – Arkitektur v1.3
+# Company Factory – Arkitektur v1.4
 
 AI-drevet startup-studio: fra idé → kritisk vurdering → validering → forretningsmodell →
 MVP-brief → (neste fase: bygging, betaling, lansering, vekst). Del av Eik-plattformen
@@ -188,6 +188,15 @@ skjema-drift mellom AEIS-roller og Factory (mitigeres av lese-kun-kontrakt + fal
 - `CF.Marketing` — `run(p)` (Fase 11: 2–4 prioriterte kanaler med CAC-hypoteser,
   innholdskalender, annonsekonsepter, e-postsekvens, lanseringsplan, eksperimentkø
   med terskler; masseutsendelser/kampanjer forblir eier-porter).
+- `CF.Strategy` — `run(p)` (Fase 4: navn/alternativer/kriterier, posisjonering,
+  løfte, prioriteringer, 90-dagers/12-måneders plan, 3-årig retning og eksplisitt
+  ikke-gjøre-liste; registrering/varemerker/domener holdes utenfor som eier-porter).
+- `CF.Legal` — `run(p)` (Fase 10: krav per område med `must_be_verified_by_professional`,
+  persondata-oversikt med behandlingsgrunnlag og lagringstid, forbrukerrettigheter,
+  markedsføringsregler, MVA/skatt, handlingsliste). All output bærer disclaimer:
+  generell veiledning, ikke juridisk rådgivning.
+- `CF.Report` — `generate(p)` (deterministisk Markdown-rapport over alle faser,
+  antakelses- og beslutningslogg – nedlastbar fra prosjektheaderen, ingen LLM-kostnad).
 - `CF.Landing` — `run(p, {formEndpoint})` (copy via LLM + `renderHTML`),
   `renderHTML(content, opts)` (selvstendig, responsiv, deploybar HTML: ingen eksterne
   avhengigheter, pris synlig, ærlig disclaimer, schema.org PreOrder; uten

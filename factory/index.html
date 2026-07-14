@@ -225,6 +225,7 @@ function showProject(id) {
     `<div class="row" style="margin-top:10px">` +
     `<button class="small" id="pResume">▶ Kjør videre</button>` +
     `<button class="small" id="pGate">✅ Godkjenn port (eier): ${esc((PHASES.find((f) => f.n === p.phase) || {}).gate || "")}</button>` +
+    `<button class="small" id="pReport">📄 Rapport</button>` +
     `<button class="small" id="pRetro">🔁 Retro</button>` +
     `<button class="small" id="pExport">Eksporter prosjekt</button>` +
     `<button class="small" id="pDelete">Slett/avvikle</button></div></div>`;
@@ -289,6 +290,18 @@ function showProject(id) {
     html += v + `</div>`;
   }
 
+  /* FASE 4 – selskap og strategi */
+  if (p.strategy || buildableNow) {
+    let v = `<div class="panel"><h3>FASE 4 – SELSKAP OG STRATEGI</h3>`;
+    if (!p.strategy) {
+      v += `<div class="note">Navn, posisjonering, prioriteringer, 90-dagers og 12-måneders plan – og en eksplisitt ikke-gjøre-liste. Selskapsregistrering, varemerker og domener er eier-porter som kommer senere.</div><button class="small" id="stGen" style="margin-top:8px">🧭 Utarbeid strategi</button>`;
+    } else {
+      const st = p.strategy;
+      v += `<b style="color:var(--cyan)">${esc(st.working_name)}</b> (${esc(st.category)})\n${esc(st.positioning)}\n\nLøfte: ${esc(st.promise)}\nDifferensiering: ${esc(st.differentiation)}\nNavnealternativer: ${st.name_alternatives.map(esc).join(", ")}\n\nMission: ${esc(st.mission)}\nVision: ${esc(st.vision)}\nVerdier: ${st.values.map(esc).join(" · ")}\n\n90 dager:\n- ${st.plan_90_days.map(esc).join("\n- ")}\n\n12 måneder:\n- ${st.plan_12_months.map(esc).join("\n- ")}\n\n3-årig retning: ${esc(st.direction_3_years)}\n\n<b>Skal IKKE gjøre:</b>\n- ${st.not_doing.map(esc).join("\n- ")}`;
+    }
+    html += v + `</div>`;
+  }
+
   /* FASE 6+8 – nettstedet (fabrikken bygger det) */
   if (p.site || buildableNow) {
     let v = `<div class="panel"><h3>FASE 6+8 – NETTSTED</h3>`;
@@ -298,6 +311,20 @@ function showProject(id) {
       v += `«${esc(p.site.content.hero_headline)}» – ${esc(p.site.content.brand.slogan)}\nFiler: ${Object.keys(p.site.files).map(esc).join(", ")}` +
         `<div class="row" style="margin-top:10px"><button class="small" id="sitePreview">👁 Forhåndsvis forsiden</button><button class="small" id="siteZip">⬇ Last ned nettstedet (ZIP)</button></div>` +
         `<div class="note">Betalingsknappene er plassholdere til Stripe Payment Links legges inn (eier-port). Juridiske sider er utkast som krever advokat. Se README-deploy.md i pakken.</div>`;
+    }
+    html += v + `</div>`;
+  }
+
+  /* FASE 10 – juridisk, personvern og sikkerhet */
+  if (p.legal || buildableNow) {
+    let v = `<div class="panel danger"><h3>FASE 10 – JURIDISK, PERSONVERN OG SIKKERHET</h3>`;
+    if (!p.legal) {
+      v += `<div class="note">Kartlegger krav: selskapsform, vilkår, GDPR, forbrukerrettigheter, markedsføringsregler, MVA/regnskap. All output er generell veiledning – punkter som krever fagperson merkes tydelig.</div><button class="small" id="lgGen" style="margin-top:8px">⚖️ Kartlegg juridiske krav</button>`;
+    } else {
+      v += `<b>${esc(p.legal.disclaimer)}</b>\n\nSelskapsform: ${esc(p.legal.company_form_notes)}\nMVA/skatt: ${esc(p.legal.vat_tax_notes)}` +
+        `<table><tr><th>OMRÅDE</th><th>KRAV</th><th>GJELDER FORDI</th><th>FAGPERSON</th></tr>${p.legal.requirements.map((r) => `<tr><td>${esc(r.area)}</td><td>${esc(r.requirement)}</td><td class="muted">${esc(r.applies_because)}</td><td>${r.must_be_verified_by_professional ? '<span class="badge l">KREVES</span>' : '<span class="badge">nei</span>'}</td></tr>`).join("")}</table>` +
+        `<h3 style="margin-top:14px">PERSONDATA</h3><table><tr><th>DATA</th><th>FORMÅL</th><th>GRUNNLAG</th><th>LAGRINGSTID</th></tr>${p.legal.privacy_data.map((d) => `<tr><td>${esc(d.data)}</td><td class="muted">${esc(d.purpose)}</td><td class="muted">${esc(d.legal_basis)}</td><td class="muted">${esc(d.retention)}</td></tr>`).join("")}</table>` +
+        `\nHandlingsliste:\n- ${p.legal.action_list.map(esc).join("\n- ")}`;
     }
     html += v + `</div>`;
   }
@@ -493,6 +520,31 @@ function showProject(id) {
       showProject(p.id);
       renderPortfolio();
     } catch (e) { alert(e.message); }
+  };
+
+  /* FASE 4- og FASE 10-handlinger */
+  const stGen = $("stGen");
+  if (stGen) stGen.onclick = async () => {
+    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
+    stGen.disabled = true;
+    try { await window.CF.Strategy.run(Projects.get(p.id)); showProject(p.id); }
+    catch (e) { alert("Feil: " + e.message); stGen.disabled = false; }
+  };
+  const lgGen = $("lgGen");
+  if (lgGen) lgGen.onclick = async () => {
+    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
+    lgGen.disabled = true;
+    try { await window.CF.Legal.run(Projects.get(p.id)); showProject(p.id); }
+    catch (e) { alert("Feil: " + e.message); lgGen.disabled = false; }
+  };
+
+  /* Rapport (deterministisk Markdown) */
+  $("pReport").onclick = () => {
+    const md = window.CF.Report.generate(Projects.get(p.id));
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([md], { type: "text/markdown" }));
+    a.download = p.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() + "-rapport.md";
+    a.click();
   };
 
   /* Retro */

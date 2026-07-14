@@ -412,6 +412,50 @@ const SCHEMAS = {
     required: ["brand", "seo_title", "seo_description", "hero_headline", "hero_sub", "cta_text", "features", "how_it_works", "pricing_faq", "faq", "about_story", "about_values", "terms_outline", "privacy_outline"],
     additionalProperties: false,
   },
+  strategy: {
+    type: "object",
+    properties: {
+      working_name: { type: "string" },
+      name_alternatives: strArr,
+      name_criteria: strArr,
+      positioning: { type: "string" },
+      category: { type: "string" },
+      promise: { type: "string" },
+      differentiation: { type: "string" },
+      mission: { type: "string" },
+      vision: { type: "string" },
+      values: strArr,
+      strategic_priorities: strArr,
+      moat_options: strArr,
+      plan_90_days: strArr,
+      plan_12_months: strArr,
+      direction_3_years: { type: "string" },
+      risks: strArr,
+      not_doing: strArr,
+    },
+    required: ["working_name", "name_alternatives", "name_criteria", "positioning", "category", "promise", "differentiation", "mission", "vision", "values", "strategic_priorities", "moat_options", "plan_90_days", "plan_12_months", "direction_3_years", "risks", "not_doing"],
+    additionalProperties: false,
+  },
+  legal: {
+    type: "object",
+    properties: {
+      company_form_notes: { type: "string" },
+      requirements: { type: "array", items: {
+        type: "object",
+        properties: { area: { type: "string" }, requirement: { type: "string" }, applies_because: { type: "string" }, must_be_verified_by_professional: { type: "boolean" } },
+        required: ["area", "requirement", "applies_because", "must_be_verified_by_professional"], additionalProperties: false } },
+      privacy_data: { type: "array", items: {
+        type: "object",
+        properties: { data: { type: "string" }, purpose: { type: "string" }, legal_basis: { type: "string" }, retention: { type: "string" } },
+        required: ["data", "purpose", "legal_basis", "retention"], additionalProperties: false } },
+      consumer_rights: strArr,
+      marketing_rules: strArr,
+      vat_tax_notes: { type: "string" },
+      action_list: strArr,
+    },
+    required: ["company_form_notes", "requirements", "privacy_data", "consumer_rights", "marketing_rules", "vat_tax_notes", "action_list"],
+    additionalProperties: false,
+  },
   marketing: {
     type: "object",
     properties: {
@@ -1041,6 +1085,115 @@ const Library = {
   remove(id) { Store.set("cf_library", this.list().filter((x) => x.id !== id)); },
 };
 
+/* ================= Strategy (Fase 4: selskap og strategi) ================= */
+const Strategy = {
+  async run(p, onStatus) {
+    if (!p.intake || !p.evaluation) throw new Error("Kjør inntak og idévurdering først.");
+    if (onStatus) onStatus("Fase 4: strategi og posisjonering …");
+    const { json } = await LLM.call({
+      system: `Du er strategimodulen i Company Factory (Fase 4). Lever konkret selskaps- og strategigrunnlag: arbeidsnavn + alternativer med tydelige navnekriterier, posisjonering, kategori, løfte, differensiering, mission/vision/verdier uten floskler, strategiske prioriteringer, mulige forsvarsmekanismer, 90-dagers plan, 12-måneders plan, 3-årig retning, risikoer – og en eksplisitt liste over ting selskapet IKKE skal gjøre. Ikke bruk tid på selskapsregistrering, varemerker eller domenekjøp – det er eier-porter som kommer senere.`,
+      user: `${ownerContext()}PROSJEKT: ${p.name}\n\nINNTAK:\n${JSON.stringify(p.intake, null, 2)}\n\nVURDERING: ${p.evaluation.synthesis.decision} (score ${p.evaluation.totalScore}/100)\nSVAKHETER: ${p.evaluation.synthesis.weaknesses.join("; ")}\nFORBEDRINGER: ${p.evaluation.synthesis.improvements.join("; ")}${p.bizmodel ? `\n\nFORRETNINGSMODELL: ${p.bizmodel.model.revenue_model}, ICP: ${p.bizmodel.model.icp}` : ""}`,
+      schema: SCHEMAS.strategy,
+      maxTokens: 4096,
+    });
+    p.strategy = { ...json, at: new Date().toISOString() };
+    Projects.logDecision(p, { phase: 4, role: "strategimodul", decision: `Strategi etablert: ${json.working_name} – ${json.category}`, rationale: json.positioning });
+    return Projects.save(p);
+  },
+};
+
+/* ================= Legal (Fase 10: juridisk, personvern og sikkerhet) ================= */
+const Legal = {
+  DISCLAIMER: "Automatisk generert veiledning – IKKE juridisk rådgivning. Alle punkter merket «krever fagperson» MÅ kvalitetssikres av advokat, regnskapsfører eller annen autorisert fagperson før de legges til grunn.",
+  async run(p, onStatus) {
+    if (!p.intake) throw new Error("Kjør inntak først.");
+    if (onStatus) onStatus("Fase 10: juridisk kartlegging …");
+    const { json } = await LLM.call({
+      system: `Du er juridisk-modulen i Company Factory (Fase 10). Kartlegg juridiske og regulatoriske krav for et norsk digitalt abonnementsprodukt: selskapsform, avtalevilkår, GDPR/personvern (hvilke data, formål, behandlingsgrunnlag, lagringstid), forbrukerrettigheter og angrerett, regler for markedsføringssamtykke, MVA/skatt og krav til regnskap. Dette er GENERELL VEILEDNING, ikke juridisk rådgivning: sett must_be_verified_by_professional=true på alt som reelt krever advokat/regnskapsfører, og vær heller for streng enn for slapp. Ta med bransjespesifikke krav hvis produktet berører regulerte områder.`,
+      user: `${ownerContext()}PROSJEKT: ${p.name}\n\nINNTAK:\n${JSON.stringify(p.intake, null, 2)}${p.bizmodel ? `\n\nFORRETNINGSMODELL: ${p.bizmodel.model.revenue_model}, planer: ${p.bizmodel.model.plans.map((x) => x.name + " " + x.price_month + " kr/mnd").join(", ")}` : ""}`,
+      schema: SCHEMAS.legal,
+      maxTokens: 4096,
+    });
+    p.legal = { ...json, disclaimer: this.DISCLAIMER, at: new Date().toISOString() };
+    Projects.logDecision(p, { phase: 10, role: "juridisk-modul", decision: `Juridisk kartlegging: ${json.requirements.length} krav identifisert`, rationale: `${json.requirements.filter((r) => r.must_be_verified_by_professional).length} av dem krever autorisert fagperson (eier-port). ${this.DISCLAIMER}` });
+    return Projects.save(p);
+  },
+};
+
+/* ================= Report (nedlastbar prosjektrapport – deterministisk) ================= */
+const Report = {
+  generate(p) {
+    const L = [];
+    const H = (s) => L.push("\n## " + s + "\n");
+    const li = (arr) => (arr || []).forEach((x) => L.push("- " + x));
+    L.push(`# ${p.name} – prosjektrapport fra Company Factory`);
+    L.push(`\nGenerert ${new Date().toISOString().slice(0, 10)} · Status: **${p.status}** · Fase: ${p.phase} (${(PHASES.find((f) => f.n === p.phase) || {}).title || "–"}) · Modenhet: ${p.maturity || "–"}${p.test ? " · **TESTPROSJEKT**" : ""}`);
+    L.push(`\n> Idé: ${p.idea}`);
+    if (p.intake) {
+      H("Fase 0 – Inntak");
+      L.push(`**Problem:** ${p.intake.problem}\n\n**Målgruppe:** ${p.intake.target_group}\n\n**Løsning:** ${p.intake.solution}\n\n**Betalingsvilje:** ${p.intake.willingness_to_pay}\n\n**Marked:** ${p.intake.market}\n\n**Abonnementspotensial:** ${p.intake.subscription_potential}`);
+    }
+    if (p.evaluation) {
+      const s = p.evaluation.synthesis;
+      H(`Fase 1 – Idévurdering: ${s.decision.toUpperCase()} (${p.evaluation.totalScore}/100)`);
+      L.push(s.decision_rationale + "\n");
+      L.push("| Kriterium | Score | Begrunnelse |\n|---|---|---|");
+      for (const r of s.scorecard) L.push(`| ${r.criterion} | ${r.score}/10 | ${r.reasoning} |`);
+      L.push("\n**Svakheter:**"); li(s.weaknesses);
+      L.push("\n**Scenarier:**");
+      for (const x of s.scenarios) L.push(`- ${x.name} (${Math.round(x.probability * 100)} %): ${x.outcome} – ${x.value_estimate}`);
+    }
+    if ((p.experiments || []).length) {
+      H("Fase 2 – Validering");
+      L.push("| Antakelse | Terskel | Status | Resultat |\n|---|---|---|---|");
+      for (const e of p.experiments) L.push(`| ${e.claim} | ${e.threshold} | ${e.status === "fullført" ? (e.passed ? "BESTÅTT" : "IKKE BESTÅTT") : e.status} | ${e.result || "–"} |`);
+      if (p.validation) L.push(`\n**Valideringsport:** ${p.validation.decision.toUpperCase()} – ${p.validation.decision_rationale}`);
+    }
+    if (p.bizmodel) {
+      const sc = p.bizmodel.computed.scenarios;
+      H("Fase 3 – Forretningsmodell");
+      L.push(`${p.bizmodel.model.value_prop}\n\nICP: ${p.bizmodel.model.icp} · Modell: ${p.bizmodel.model.revenue_model} · Snittpris: ${p.bizmodel.computed.price_avg} kr/mnd`);
+      L.push("\n| Scenario (24 mnd) | Kunder | MRR | Break-even | Kapitalbehov | LTV/CAC |\n|---|---|---|---|---|---|");
+      for (const k of ["konservativ", "sannsynlig", "offensiv"]) L.push(`| ${k} | ${sc[k].customers24} | ${sc[k].mrr24} kr | ${sc[k].breakEvenMonth ? "mnd " + sc[k].breakEvenMonth : "ikke innen 24 mnd"} | ${sc[k].capitalNeed} kr | ${sc[k].ltvCac ?? "–"} |`);
+    }
+    if (p.strategy) {
+      H("Fase 4 – Strategi");
+      L.push(`**${p.strategy.working_name}** (${p.strategy.category}) – ${p.strategy.positioning}\n\nLøfte: ${p.strategy.promise}\n\n**Skal ikke gjøre:**`); li(p.strategy.not_doing);
+    }
+    if (p.brief) {
+      H("Fase 5 – MVP-brief: " + p.brief.working_name);
+      L.push(p.brief.product_vision + "\n\n**MVP-funksjoner:**");
+      for (const f of p.brief.mvp_features) L.push(`- **${f.name}** – ${f.why} (akseptanse: ${f.acceptance})`);
+      L.push("\n**Bygges ikke:**"); li(p.brief.not_building);
+    }
+    if (p.site) { H("Fase 6+8 – Nettsted"); L.push(`Generert (${Object.keys(p.site.files).length} filer): «${p.site.content.hero_headline}». Betalingsknapper er Stripe-plassholdere (eier-port).`); }
+    if (p.legal) {
+      H("Fase 10 – Juridisk (VEILEDNING, ikke rådgivning)");
+      L.push("> " + p.legal.disclaimer + "\n");
+      L.push("| Område | Krav | Krever fagperson |\n|---|---|---|");
+      for (const r of p.legal.requirements) L.push(`| ${r.area} | ${r.requirement} | ${r.must_be_verified_by_professional ? "**JA**" : "nei"} |`);
+    }
+    if (p.marketing) { H("Fase 11 – Markedsføring"); L.push(`Kjernebudskap: ${p.marketing.core_message}\n\n**Kanaler:**`); for (const c of p.marketing.channel_strategy) L.push(`- ${c.priority}. ${c.channel}: ${c.why} (CAC-hypotese: ${c.cac_hypothesis})`); }
+    if ((p.metrics || []).length) {
+      H("Fase 16 – Måletall");
+      L.push("| Måned | Kunder | MRR | Churn | Besøk |\n|---|---|---|---|---|");
+      for (const m of p.metrics) L.push(`| ${m.month} | ${m.customers} | ${m.mrr} kr | ${m.churn_pct == null ? "–" : m.churn_pct + " %"} | ${m.visitors} |`);
+    }
+    if (p.assumptions.length) {
+      H("Antakelseslogg");
+      L.push("| Påstand | Type | Sikkerhet | Kilde |\n|---|---|---|---|");
+      for (const a of p.assumptions) L.push(`| ${a.claim} | ${a.type} | ${a.confidence} | ${a.source} |`);
+    }
+    if (p.decisions.length) {
+      H("Beslutningslogg");
+      L.push("| Dato | Rolle | Beslutning |\n|---|---|---|");
+      for (const d of p.decisions) L.push(`| ${d.at.slice(0, 10)} | ${d.role}${d.byOwner ? " (EIER)" : ""} | ${d.decision} |`);
+    }
+    if (p.retro) { H("Retro"); L.push("Lærdom: **" + p.retro.lesson + "**"); }
+    return L.join("\n");
+  },
+};
+
 /* ================= Marketing (Fase 11: prioritert markedsføringsmotor) ================= */
 const Marketing = {
   async run(p, onStatus) {
@@ -1297,6 +1450,24 @@ const Demo = {
       at: new Date().toISOString(),
     };
     Projects.logDecision(p, { decision: "Faseplan opprettet", rationale: p.phasePlan.sequencing_notes, role: "planmodul" });
+    /* Statisk eksempel-forretningsmodell så Fase 3-flyten kan utforskes uten API-nøkkel */
+    p.bizmodel = {
+      model: {
+        value_prop: "Vedlikeholdsplan som forebygger dyre boligskader.",
+        icp: "Førstegangs eneboligeiere 30–50 år.", buyer: "Boligeieren", user: "Boligeieren",
+        revenue_model: "B2C-abonnement",
+        plans: [
+          { name: "Basis", price_month: 79, price_year: 790, target_share: 0.7, includes: ["Vedlikeholdsplan", "Sesongvarsler"] },
+          { name: "Pluss", price_month: 149, price_year: 1490, target_share: 0.3, includes: ["Alt i Basis", "Prisantydninger", "Prioritert support"] },
+        ],
+        free_tier: "Gratis sjekkliste for én sesong", trial: "14 dager gratis",
+        assumptions: { visitors_m1: 1500, visitor_growth_pct_m: 0.08, signup_rate: 0.04, paid_conversion: 0.25, churn_monthly: 0.06, cac: 250, fixed_costs_monthly: 4000, variable_cost_per_user: 4 },
+        assumption_notes: ["ALLE TALL ER UVALIDERTE TESTANTAKELSER – dette er et eksempelprosjekt", "Churn 6 %/mnd antatt over B2C-snittet pga. sesongrisiko"],
+        risks: ["Churn etter første sesong kan være langt høyere"],
+      },
+      at: new Date().toISOString(),
+    };
+    BizModel.recompute(p);
     return Projects.save(p);
   },
 };
@@ -1321,4 +1492,4 @@ const SelfReview = {
 };
 
 /* Eksponer modulene (også for tester) */
-window.CF = { Store, LLM, Board, Pipeline, Projects, Intake, Evaluation, Experiments, Landing, BizModel, Finance, SiteGen, Maturity, Metrics, Library, Marketing, Retro, Lessons, Planner, Brief, Demo, SelfReview, SCHEMAS, PHASES, OWNER_GATE_ACTIONS, FACTORY_ROLES, CRITERIA, MATURITY_CHECKLISTS, pool, makeZip, crc32 };
+window.CF = { Store, LLM, Board, Pipeline, Projects, Intake, Evaluation, Experiments, Landing, BizModel, Finance, SiteGen, Maturity, Metrics, Library, Marketing, Strategy, Legal, Report, Retro, Lessons, Planner, Brief, Demo, SelfReview, SCHEMAS, PHASES, OWNER_GATE_ACTIONS, FACTORY_ROLES, CRITERIA, MATURITY_CHECKLISTS, pool, makeZip, crc32 };

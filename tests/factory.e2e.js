@@ -210,6 +210,40 @@ const MARKETING = {
   budget_notes: "Start med 5 000 kr/mnd; skaler kun kanaler med LTV/CAC > 3.",
 };
 
+const STRATEGY = {
+  working_name: "BoligPuls",
+  name_alternatives: ["Husvakt", "Vedlikeholdsplanen"],
+  name_criteria: ["Kort", "Norsk", "Ledig .no-domene (må sjekkes – eier-port)"],
+  positioning: "Den enkleste måten å holde boligen i stand på.",
+  category: "Vedlikeholdsabonnement for boligeiere",
+  promise: "Du får beskjed før småfeil blir dyre skader.",
+  differentiation: "Boligspesifikk plan, ikke generiske sjekklister.",
+  mission: "Gjøre boligvedlikehold håndterbart for vanlige folk.",
+  vision: "Standardverktøyet for norske boligeiere.",
+  values: ["Konkret", "Ærlig", "Forebyggende"],
+  strategic_priorities: ["Validert betalingsvilje før vekst", "SEO som hovedkanal"],
+  moat_options: ["Boligdata over tid", "Partneravtaler med forsikring"],
+  plan_90_days: ["Lansere MVP til ventelisten", "20 betalende kunder"],
+  plan_12_months: ["1 000 betalende", "Partneravtale med ett forsikringsselskap"],
+  direction_3_years: "Norden, med API mot forsikring og megler.",
+  risks: ["Forsikringsselskap lanserer gratisversjon"],
+  not_doing: ["Ingen håndverkermarkedsplass i år 1", "Ingen native app før 5 000 kunder", "Ingen B2B-salg før B2C er validert"],
+};
+
+const LEGAL = {
+  company_form_notes: "AS anbefales vurdert ved betalende kunder – må avklares med regnskapsfører.",
+  requirements: [
+    { area: "Angrerett", requirement: "14 dagers angrerett med skjema før kjøp", applies_because: "Forbrukersalg av digital tjeneste", must_be_verified_by_professional: true },
+    { area: "GDPR", requirement: "Behandlingsprotokoll og personvernerklæring", applies_because: "Lagrer persondata om boligeiere", must_be_verified_by_professional: true },
+    { area: "Abonnementsvilkår", requirement: "Tydelig fornyelse og enkel oppsigelse", applies_because: "Løpende abonnement", must_be_verified_by_professional: false },
+  ],
+  privacy_data: [{ data: "E-post, boligtype, byggeår", purpose: "Levere vedlikeholdsplan", legal_basis: "Avtale (GDPR art. 6.1.b)", retention: "Slettes 12 mnd etter oppsigelse" }],
+  consumer_rights: ["Angrerett", "Reklamasjon"],
+  marketing_rules: ["Samtykke før nyhetsbrev (markedsføringsloven § 15)"],
+  vat_tax_notes: "MVA-pliktig ved omsetning over 50 000 kr – regnskapsfører må bekrefte.",
+  action_list: ["Utkast til vilkår → advokat", "Behandlingsprotokoll → personvernrådgiver"],
+};
+
 const RETRO = {
   what_worked: ["Falsk-dør-testen ga tydelig signal"],
   what_failed: ["Intervjurekruttering tok for lang tid"],
@@ -244,6 +278,8 @@ function mockRouter(overrides = {}) {
     if (sys.includes("nettsted-modulen")) { counts.site++; return route.fulfill(respond(overrides.site || SITE)); }
     if (sys.includes("retro-modulen")) { counts.retro++; return route.fulfill(respond(overrides.retro || RETRO)); }
     if (sys.includes("markedsføringsmodulen")) { counts.marketing = (counts.marketing || 0) + 1; return route.fulfill(respond(overrides.marketing || MARKETING)); }
+    if (sys.includes("strategimodulen")) { counts.strategy = (counts.strategy || 0) + 1; return route.fulfill(respond(overrides.strategy || STRATEGY)); }
+    if (sys.includes("juridisk-modulen")) { counts.legal = (counts.legal || 0) + 1; return route.fulfill(respond(overrides.legal || LEGAL)); }
     if (sys.includes("selvevalueringsmodul")) {
       counts.review++;
       return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ content: [{ type: "text", text: "Selvevaluering: fabrikken fungerer; forbedre X." }], stop_reason: "end_turn", usage: { input_tokens: 1, output_tokens: 1 } }) });
@@ -586,6 +622,26 @@ print('OK', len(names))
     await page.click('nav button[data-tab="system"]');
     const libShown = await page.evaluate(() => document.getElementById("libraryList").textContent.includes("Landingsside-malen"));
     check("biblioteket vises under SYSTEM", libShown, null);
+
+    /* Strategi (Fase 4) og juridisk (Fase 10) */
+    await page.evaluate(async () => {
+      await window.CF.Strategy.run(window.CF.Projects.list()[0]);
+      await window.CF.Legal.run(window.CF.Projects.list()[0]);
+    });
+    await page.click('nav button[data-tab="portfolio"]');
+    await page.click(".proj-item");
+    const detail2 = await page.evaluate(() => document.getElementById("detail").textContent);
+    check("strategi vises med ikke-gjøre-liste", detail2.includes("SELSKAP OG STRATEGI") && detail2.includes("Skal IKKE gjøre") && detail2.includes("håndverkermarkedsplass"), null);
+    check("juridisk kartlegging med fagperson-merking og disclaimer",
+      detail2.includes("JURIDISK") && detail2.includes("IKKE juridisk rådgivning") && detail2.includes("KREVES"), null);
+
+    /* Prosjektrapport (deterministisk Markdown) */
+    const report = await page.evaluate(() => window.CF.Report.generate(window.CF.Projects.list()[0]));
+    check("rapporten samler alle faser med logger og disclaimer",
+      report.includes("# BoligPuls (TEST) – prosjektrapport") && report.includes("TESTPROSJEKT") &&
+      report.includes("Fase 1 – Idévurdering") && report.includes("Fase 3 – Forretningsmodell") &&
+      report.includes("Fase 4 – Strategi") && report.includes("IKKE juridisk rådgivning") &&
+      report.includes("Beslutningslogg") && report.includes("Antakelseslogg") && report.includes("Fase 16 – Måletall"), report.slice(0, 200));
     check("ingen JS-feil", errors.length === 0, errors);
     await page.close();
   }
