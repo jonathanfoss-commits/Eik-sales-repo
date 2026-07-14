@@ -156,6 +156,76 @@ Arkitektur, modulkontrakter og utvidelsesregler: [`aeis/ARCHITECTURE.md`](aeis/A
 Testet i `tests/aeis.e2e.js` (mocket API): hele pipelinen, veto-runden, kalibrering av vekter
 og læringssløyfen.
 
+## 🏭 Company Factory – AI-drevet startup-studio
+
+I [`factory/`](factory/) ligger fabrikken som tar en enkel idé og driver den mot et
+lanseringsklart digitalt selskap. Nås fra JARVIS-appen (🏭 FACTORY-knappen) eller på `…/factory/`.
+
+**Control Center (v2.0):** grensesnittet er et operativt kontrollsenter, ikke et
+dashboard – seks områder (Command, Idélab, Selskaper, Godkjenninger, Bibliotek,
+System), «KREVER DEG NÅ» øverst med ekte varsler og godkjenn-knapper,
+kommandopalett (Ctrl/Cmd+K), dype lenker per selskap, fasestripe over alle 17
+faser, kostnadsmåler for hvert LLM-kall, varig aktivitetsspor, idé-sammenligning
+og mobil bunn-navigasjon der godkjenninger er én tommel unna. FAKTISK, ESTIMAT
+og TEST merkes alltid hver for seg.
+
+**v3 – fra fabrikk til første krone:** inntektstrakten (idéer vurdert → tester
+publisert → betalende kunder → MRR) øverst i Command Center; kapitaldisiplin med
+budsjett, utgiftslogg og kill-varsler i kroner; transparent porteføljeprioritering;
+Monte Carlo-usikkerhetsvifte (P10/P50/P90) i stedet for falsk scenariotrygghet;
+benchmark-vakthund som flagger ønsketenkning i antakelsene; **synk** mellom
+enheter via privat GitHub-repo (konflikt-backup, PAT aldri i eksport); **ett
+klikks publisering** av falske dører til live URL bak eier-port med live-test-
+overvåking; idé-innboks med AEIS-radar-kandidater; prosjekt-tidslinje; selvtest
+med tapsfri reparasjon – og **«DIN TUR»-køen** som samler alt som venter på
+eieren med klikk-for-klikk-instruksjoner.
+
+- **Idé → beslutning på minutter**: inntak (Fase 0) strukturerer idéen og skiller fakta,
+  påstander, antakelser og ukjente; idévurderingen (Fase 1) innkaller kun de 3–6 relevante
+  fagrollene (gjenbruker AEIS-styret med fortjent autoritet + 9 fabrikkroller), scorer på
+  10 vektede kriterier og konkluderer: `stopp | parker | valider_mer | endre_konsept |
+  prototype | mvp | lansering`.
+- **Kritisk, ikke hyggelig**: fabrikken forsøker å avkrefte idéen før den anbefaler bygging —
+  svake idéer får svakheter, forbedringer og alternative idéer, ikke en byggeplan.
+- **Valider billig først – og faktisk**: hver kritisk antakelse blir et eksperiment med
+  terskel definert før resultatet finnes; fabrikken genererer en **deploybar falsk-dør-
+  landingsside** (selvstendig HTML, pris synlig, ærlig venteliste), og valideringsporten
+  konkluderer på resultatene — bestått slipper prosjektet videre til MVP, stryk stopper det.
+- **Leveranser per prosjekt**: tilpasset faseplan (17 standardfaser, små idéer får små planer),
+  MVP-brief med eksplisitt «bygges ikke»-liste, antakelseslogg og full beslutningslogg.
+- **Byggekjeden**: ved byggebeslutning produserer fabrikken automatisk **forretningsmodell**
+  (LLM setter begrunnede antakelser, koden beregner 24-mnd MRR, break-even, LTV/CAC og
+  kapitalbehov i tre scenarier – rekalkuler gratis når du justerer tallene) og et **komplett
+  nettsted** (forside, pris fra planene, FAQ, om oss, vilkår/personvern som merkede utkast,
+  deploy-README) – lastes ned som ZIP, klart for GitHub Pages/Netlify. Betalingsknapper er
+  Stripe-plassholdere bak eier-porten.
+- **Læringssløyfe**: 🔁 Retro per prosjekt trekker ut én generaliserbar lærdom som injiseres
+  i alle fremtidige vurderinger, og høster gjenbrukskandidater til fellesbiblioteket –
+  fabrikken blir bedre for hvert prosjekt.
+- **Kvalitetsporter**: modenhetsstigen prototype → MVP → beta → produksjonsklart →
+  lanseringsklart har sjekklister per nivå – ingenting erklæres ferdig før eieren har huket
+  av alle punkter, og «lansert» er en egen eierhandling.
+- **Måling og markedsføring**: registrer faktiske månedstall og se dem mot prognosen;
+  porteføljen viser samlet MRR. Fase 11 bygger prioritert kanalstrategi med eksperimentkø.
+- **Portefølje**: flere parallelle prosjekter, isolert lagring per prosjekt (`cf_project_*`),
+  per-prosjekt eksport for utspinning/avvikling, og enkel kill-disiplin.
+- **Eier-porter**: betalinger, publisering, domener, juss, masseutsendelser og offentlig
+  lansering auto-godkjennes aldri — de krever ditt eksplisitte klikk og logges.
+
+I tillegg: strategi med ikke-gjøre-liste (Fase 4), **app-skall** (Fase 8+9: deploybar
+SPA med innlogging/onboarding/dashboard/abonnement, Supabase-skjema med RLS og
+Stripe-webhook-mal – demo-modus til du kobler til kontoene), juridisk kartlegging der
+alt som krever advokat/regnskapsfører merkes eksplisitt (Fase 10, veiledning – ikke
+rådgivning), driftsgrunnlag (Fase 13), nedlastbar prosjektrapport (Markdown), og
+kill-disiplin: parker/avslutt/reaktiver som loggede eierbeslutninger.
+
+Arkitektur (systemrevisjon, arkitekturbeslutning, målarkitektur, plan):
+[`factory/ARCHITECTURE.md`](factory/ARCHITECTURE.md). Testet i `tests/factory.e2e.js`
+(mocket API, 67 sjekker i 7 scenarier): full pipeline med byggekjede, svak idé → stopp,
+eksempelprosjekt (isolert TEST), valideringssløyfen, håndverifisert økonomimatte,
+python-verifisert ZIP, læringssløyfe, modenhetsporter, eier-porter, navneromsisolasjon
+og AEIS-gjenbruk. Kjør: `node tests/factory.e2e.js` (server på :8130 som beskrevet over).
+
 ## Testing 🧪
 
 `tests/e2e.js` er en full ende-til-ende-suite (Playwright) som mocker Claude API-strømmen
