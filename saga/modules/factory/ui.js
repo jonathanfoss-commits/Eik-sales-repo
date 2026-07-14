@@ -140,7 +140,7 @@ function renderCommand() {
     const bars = months.map((m, i) => {
       const h = Math.max(2, Math.round((byMonth[m] / max) * (H - 26)));
       const x = 4 + i * (bw + 6);
-      return `<rect x="${x}" y="${H - 16 - h}" width="${bw}" height="${h}" rx="2" fill="#37d5ff" opacity=".8"><title>${m}: ${byMonth[m]} kr</title></rect><text x="${x + bw / 2}" y="${H - 4}" font-size="7" fill="#47708a" text-anchor="middle">${m.slice(5)}</text>`;
+      return `<rect x="${x}" y="${H - 16 - h}" width="${bw}" height="${h}" rx="2" fill="#0AA79F" opacity=".9"><title>${m}: ${byMonth[m]} kr</title></rect><text x="${x + bw / 2}" y="${H - 4}" font-size="7" fill="#5E8380" text-anchor="middle">${m.slice(5)}</text>`;
     }).join("");
     $("ccMrr").innerHTML = `<div class="lbl">SUM MRR PER MÅNED (${months.length} MND)</div><svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="MRR per måned">${bars}</svg>`;
   } else {
@@ -233,10 +233,15 @@ function renderSyncStatus(msg) {
     : "Ikke konfigurert – se DIN TUR over for klikk-for-klikk-oppsett.");
 }
 $("ghSaveBtn").onclick = () => {
-  window.CF.Gh.pat = $("ghPat").value.trim();
+  const pat = $("ghPat").value.trim();
+  window.CF.Gh.pat = pat;
   window.CF.Sync.saveConfig({ repo: $("syncRepo").value.trim() });
   window.CF.Publish.saveConfig({ repo: $("pubRepo").value.trim() });
-  renderSyncStatus("Lagret ✓");
+  /* Fang kopieringsfeil ved lagring i stedet for ved første synk (401) */
+  const patLooksOk = !pat || /^(github_pat_|ghp_)/.test(pat);
+  renderSyncStatus(patLooksOk
+    ? "Lagret ✓"
+    : "Lagret – men PAT-en ser uvanlig ut: GitHub-tokens starter med «github_pat_» (fine-grained) eller «ghp_». Kopier på nytt med kopi-ikonet hos GitHub.");
   renderOwnerQueueFull();
   updateNavBadges();
 };
@@ -343,6 +348,7 @@ function showProject(id) {
     `<button class="small" id="pBudget">💰 ${p.budgetNok ? "Endre budsjett" : "Sett budsjett"} (eier)</button>` +
     `<button class="small" id="pExpense">+ Utgift</button>` +
     `<button class="small" id="pGate">✅ Godkjenn port (eier): ${esc((PHASES.find((f) => f.n === p.phase) || {}).gate || "")}</button>` +
+    `<button class="small" id="pResearch">🧠 Be assistenten om research</button>` +
     `<button class="small" id="pReport">📄 Rapport</button>` +
     `<button class="small" id="pRetro">🔁 Retro</button>` +
     `<button class="small" id="pExport">Eksporter prosjekt</button>` +
@@ -425,7 +431,7 @@ function showProject(id) {
       const line = (arr) => arr.map((val, i) => `${X(i)},${Y(val)}`).join(" ");
       const band = sim.mrr.p90.map((val, i) => `${X(i)},${Y(val)}`).join(" ") + " " + [...sim.mrr.p10].reverse().map((val, i) => `${X(sim.months - 1 - i)},${Y(val)}`).join(" ");
       v += `<h3 style="margin-top:14px">USIKKERHETSVIFTE – MRR 24 MND <span class="badge est">estimat · ${sim.runs} simuleringer</span></h3>` +
-        `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="MRR-usikkerhetsvifte"><polygon points="${band}" fill="#37d5ff" opacity=".13"/><polyline points="${line(sim.mrr.p50)}" fill="none" stroke="#37d5ff" stroke-width="1.6"/><polyline points="${line(sim.mrr.p10)}" fill="none" stroke="#47708a" stroke-width=".8" stroke-dasharray="3 3"/><polyline points="${line(sim.mrr.p90)}" fill="none" stroke="#47708a" stroke-width=".8" stroke-dasharray="3 3"/><text x="${W - 4}" y="${Y(sim.mrr.p50[sim.months - 1]) - 4}" font-size="8" fill="#37d5ff" text-anchor="end">P50 ${Math.round(sim.mrr.p50[sim.months - 1] / 1000)}k</text></svg>` +
+        `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="MRR-usikkerhetsvifte"><polygon points="${band}" fill="#0AA79F" opacity=".16"/><polyline points="${line(sim.mrr.p50)}" fill="none" stroke="#0AA79F" stroke-width="1.6"/><polyline points="${line(sim.mrr.p10)}" fill="none" stroke="#5E8380" stroke-width=".8" stroke-dasharray="3 3"/><polyline points="${line(sim.mrr.p90)}" fill="none" stroke="#5E8380" stroke-width=".8" stroke-dasharray="3 3"/><text x="${W - 4}" y="${Y(sim.mrr.p50[sim.months - 1]) - 4}" font-size="8" fill="#8FB3B0" text-anchor="end">P50 ${Math.round(sim.mrr.p50[sim.months - 1] / 1000)}k</text></svg>` +
         `<div class="note">MRR måned 24: P10 ${nok(sim.mrr.p10[23])} · P50 ${nok(sim.mrr.p50[23])} · P90 ${nok(sim.mrr.p90[23])}. Kapitalbehov: P10 ${nok(sim.capital.p10)} · P50 ${nok(sim.capital.p50)} · P90 ${nok(sim.capital.p90)}. Spenn per parameter: ±${Object.values(window.CF.Finance.SIM_SPREADS).map((x) => Math.round(x * 100) + "%").join("/±")}.</div>`;
 
       /* Vakthunden: antakelser mot bransjespenn */
@@ -579,6 +585,15 @@ function showProject(id) {
   if (p.decisions.length) {
     html += `<div class="panel"><h3>BESLUTNINGSLOGG</h3><table><tr><th>DATO</th><th>ROLLE</th><th>BESLUTNING</th><th>BEGRUNNELSE</th></tr>${p.decisions.map((d) => `<tr><td class="muted">${esc(d.at.slice(0, 10))}</td><td>${esc(d.role)}${d.byOwner ? ' <span class="badge test">EIER</span>' : ""}</td><td>${esc(d.decision)}</td><td class="muted">${esc(d.rationale)}</td></tr>`).join("")}</table></div>`;
   }
+  /* SAGA-broen: research bestilt fra og levert av assistenten */
+  {
+    const reqs = window.SAGA ? window.SAGA.bridge.all(50).filter((r) => r.projectId === p.id) : [];
+    if (reqs.length) {
+      html += `<div class="panel"><h3>RESEARCH FRA ASSISTENTEN (SAGA-broen)</h3>` +
+        reqs.map((r) => `<div class="note"><b>${r.status === "done" ? "✅" : "⏳"} ${esc(r.question)}</b>${r.status === "done" ? `\n${esc(r.answer)}` : `\n<span class="muted">Venter – åpne assistenten, der ligger forespørselen som chip.</span>`}</div>`).join("\n") + `</div>`;
+    }
+  }
+
   /* Tidslinje: hele prosjekthistorien fra loggene som finnes – deterministisk */
   {
     const events = [];
@@ -716,6 +731,15 @@ function wireProjectActions(p) {
       showProject(p.id);
       renderPortfolio();
     } catch (e) { alert(e.message); }
+  };
+
+  /* SAGA-broen */
+  $("pResearch").onclick = () => {
+    if (!window.SAGA) { alert("SAGA-kjernen er ikke lastet."); return; }
+    const q = prompt(`Hva skal assistenten researche for «${p.name}»? (leveres med websøk i assistenten)`, "");
+    if (!q || !q.trim()) return;
+    window.SAGA.bridge.requestResearch({ projectId: p.id, project: p.name, question: q.trim() });
+    showProject(p.id);
   };
 
   /* Kapitaldisiplin */
@@ -909,7 +933,8 @@ $("cmpBtn").onclick = () => {
 /* ---------- SYSTEM ---------- */
 $("apiKey").value = Store.apiKey;
 $("saveKeyBtn").onclick = () => {
-  /* jarvis_api_key eies av JARVIS – delt identitetskontrakt, eneste bevisste unntak fra cf_*-regelen */
+  /* Delt identitetskontrakt: kanonisk saga_api_key + legacy jarvis_api_key (bakoverkompatibilitet) */
+  localStorage.setItem("saga_api_key", $("apiKey").value.trim());
   localStorage.setItem("jarvis_api_key", $("apiKey").value.trim());
   $("saveKeyBtn").textContent = "Lagret ✓";
   setTimeout(() => $("saveKeyBtn").textContent = "Lagre nøkkel", 1500);

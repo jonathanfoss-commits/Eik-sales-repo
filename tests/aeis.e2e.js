@@ -8,7 +8,7 @@
  */
 const { chromium } = require("playwright");
 
-const BASE = (process.argv[2] || "http://localhost:8130/") + "aeis/";
+const BASE = (process.argv[2] || "http://localhost:8130/") + "saga/modules/aeis/";
 let failures = 0;
 function check(name, cond, detail) {
   console.log((cond ? "  ✅ " : "  ❌ ") + name + (cond ? "" : "  → " + JSON.stringify(detail)));
@@ -273,8 +273,9 @@ async function freshPage(browser) {
     check("rapporten fyller ikke bredere enn skjermen", verdictOverflow <= 0, verdictOverflow);
     check("safe-area-polstring definert på body", await page.evaluate(() =>
       /safe-area-inset-top/.test([...document.styleSheets].flatMap(s => [...s.cssRules]).map(r => r.cssText).join(""))), null);
-    check("html-bakgrunn er mørk (ingen hvit stripe)", await page.evaluate(() =>
-      getComputedStyle(document.documentElement).backgroundColor === "rgb(6, 12, 22)"), null);
+    /* SAGA-migrering: bakgrunnen er nå lys Tiffany-hvit (design-tokens) – sjekker konsistens, ikke mørkhet */
+    check("html-bakgrunn matcher SAGA-mørketokenet (ingen lys stripe)", await page.evaluate(() =>
+      getComputedStyle(document.documentElement).backgroundColor === "rgb(5, 15, 14)"), null);
     check("ingen JS-feil", errors.length === 0, errors);
     await page.close();
   }

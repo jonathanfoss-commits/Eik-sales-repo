@@ -40,9 +40,9 @@ const Store = {
     if (!key.startsWith("cf_")) throw new Error("Store sletter kun i cf_*-navnerommet: " + key);
     localStorage.removeItem(key);
   },
-  /* Lese-kontrakter mot plattformen (aldri skriv) */
-  get apiKey() { return localStorage.getItem("jarvis_api_key") || ""; },
-  get model() { return localStorage.getItem("jarvis_model") || "claude-opus-4-8"; },
+  /* Lese-kontrakter mot plattformen (aldri skriv). Kanonisk saga_* med legacy-fallback jarvis_*. */
+  get apiKey() { return localStorage.getItem("saga_api_key") || localStorage.getItem("jarvis_api_key") || ""; },
+  get model() { return localStorage.getItem("saga_model") || localStorage.getItem("jarvis_model") || "claude-opus-4-8"; },
   get ownerProfile() { return localStorage.getItem("aeis_profile") || ""; },
   aeisRoles() { return this.get("aeis_roles", null); },
 
@@ -94,7 +94,7 @@ const LLM = {
   /* Settes av modulene før kall – gir kostnadsmåleren prosjekt/modul-kontekst */
   context: null,
   async call({ system, user, schema, tools, maxTokens = 8192, onStatus }) {
-    if (!Store.apiKey) throw new Error("Ingen API-nøkkel. Lim inn under SYSTEM-fanen (deles med JARVIS/AEIS).");
+    if (!Store.apiKey) throw new Error("Ingen API-nøkkel. Lim inn under SYSTEM-fanen (deles med SAGA/AEIS).");
     let messages = [{ role: "user", content: user }];
     for (let round = 0; round < 6; round++) {
       const body = { model: Store.model, max_tokens: maxTokens, system: PHILOSOPHY + "\n\n" + system, messages };
@@ -118,16 +118,21 @@ const LLM = {
     throw new Error("Avbrutt: for mange fortsettelsesrunder.");
   },
   async _post(body, attempt = 0) {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": Store.apiKey,
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true",
-      },
-      body: JSON.stringify(body),
-    });
+    let res;
+    try {
+      res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": Store.apiKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true",
+        },
+        body: JSON.stringify(body),
+      });
+    } catch (_) {
+      throw new Error("Fikk ikke kontakt med Claude API. Er du i FORHÅNDSVISNINGEN på claude.ai? Den blokkerer alle eksterne kall – AI-kjøringer krever den ekte appen (GitHub Pages eller lokalt).");
+    }
     if (!res.ok) {
       if ((res.status === 429 || res.status >= 500) && attempt < 2) {
         await new Promise((r) => setTimeout(r, 3000 * (attempt + 1)));
@@ -135,6 +140,8 @@ const LLM = {
       }
       let detail = "";
       try { detail = (await res.json()).error?.message || ""; } catch (_) {}
+      /* Friksjon logges strukturert til forbedringsloopen (saga improve) */
+      try { if (window.SAGA) window.SAGA.improve.log("factory", `Claude API-feil ${res.status} i modul ${(LLM.context && LLM.context.label) || "ukjent"}`, detail.slice(0, 120)); } catch (_) {}
       throw new Error(`API-feil ${res.status}. ${detail}`);
     }
     return res.json();
@@ -695,6 +702,8 @@ const Activity = {
     const list = Store.get("cf_activity", []);
     list.unshift({ id: "a" + Date.now().toString(36) + list.length % 100, at: new Date().toISOString(), type, message, projectId: projectId || null });
     Store.set("cf_activity", list.slice(0, 300));
+    /* Speil til SAGAs felles aktivitetslogg (D7 – cf_activity forblir fabrikkens eget revisjonsspor) */
+    try { if (window.SAGA) window.SAGA.activity.log("factory", type, message, projectId); } catch (_) {}
   },
   list(n = 50) { return Store.get("cf_activity", []).slice(0, n); },
 };
@@ -2151,11 +2160,17 @@ const Gh = {
   set pat(v) { v ? localStorage.setItem("cf_secret_pat", v) : localStorage.removeItem("cf_secret_pat"); },
   async request(method, path, body) {
     if (!this.pat) throw new Error("Ingen GitHub-PAT. Legg inn under System → Synk & publisering (se DIN TUR).");
-    const res = await fetch("https://api.github.com" + path, {
-      method,
-      headers: { authorization: "Bearer " + this.pat, accept: "application/vnd.github+json", "content-type": "application/json" },
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    let res;
+    try {
+      res = await fetch("https://api.github.com" + path, {
+        method,
+        headers: { authorization: "Bearer " + this.pat, accept: "application/vnd.github+json", "content-type": "application/json" },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+    } catch (_) {
+      /* fetch kastet før noe svar kom: sandkasse-CSP (forhåndsvisning), adblocker eller nettverk */
+      throw new Error("Fikk ikke kontakt med GitHub. Er du i FORHÅNDSVISNINGEN på claude.ai? Den blokkerer alle eksterne kall – bruk den ekte appen (GitHub Pages eller lokalt). Ellers: sjekk nett/adblocker (api.github.com må være tilgjengelig).");
+    }
     if (res.status === 404) return { status: 404, json: null };
     if (res.status === 401 || res.status === 403) throw new Error("GitHub avviste PAT-en (" + res.status + "). Sjekk at den er gyldig og har contents-tilgang til repoet.");
     const json = await res.json().catch(() => null);
