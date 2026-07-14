@@ -1,7 +1,10 @@
 /* AEIS – Adaptive Executive Intelligence System
  * Moduler: Store, Roles, Scoring, LLM, Engine, Ledger, Radar, SelfReview, UI.
  * Kontrakter: se ARCHITECTURE.md. Ingen modul utenom LLM gjør nettverkskall.
+ * IIFE: lastes på samme side som core/factory.js (SAGA OS) – toppnivånavn
+ * som Store/LLM ville ellers kollidert. Alt eksponeres via window.AEIS.
  */
+(() => {
 "use strict";
 
 /* ================= Store ================= */
@@ -658,3 +661,4 @@ const Backup = {
 
 /* Eksponer modulene (også for tester) */
 window.AEIS = { Store, Roles, Scoring, LLM, Engine, Ledger, Radar, SelfReview, Backup, SCHEMAS, pool };
+})();

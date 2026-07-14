@@ -380,6 +380,7 @@ function showProject(id) {
     `<button class="small" id="pExpense">+ Utgift</button>` +
     `<button class="small" id="pGate">✅ Godkjenn port (eier): ${esc((PHASES.find((f) => f.n === p.phase) || {}).gate || "")}</button>` +
     `<button class="small" id="pResearch">🧠 Be assistenten om research</button>` +
+    `<button class="small" id="pBoard">🏛 Send til styret</button>` +
     `<button class="small" id="pReport">📄 Rapport</button>` +
     `<button class="small" id="pRetro">🔁 Retro</button>` +
     `<button class="small" id="pExport">Eksporter prosjekt</button>` +
@@ -764,7 +765,12 @@ function wireProjectActions(p) {
     } catch (e) { alert(e.message); }
   };
 
-  /* SAGA-broen */
+  /* SAGA-broen: hele saken til AEIS-styret (kost-bekreftelse i flaten) */
+  $("pBoard").onclick = async () => {
+    if (!window.OS.boardCaseForProject) { alert("Styret-flaten er ikke lastet."); return; }
+    const d = await window.OS.boardCaseForProject(p);
+    if (d) { goTab("portfolio"); showProject(p.id); }
+  };
   $("pResearch").onclick = () => {
     if (!window.SAGA) { alert("SAGA-kjernen er ikke lastet."); return; }
     const q = prompt(`Hva skal assistenten researche for «${p.name}»? (leveres med websøk i assistenten)`, "");
