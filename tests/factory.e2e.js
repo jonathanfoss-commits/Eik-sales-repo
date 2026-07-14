@@ -193,6 +193,23 @@ const SITE = {
   privacy_outline: ["Hvilke data vi lagrer", "Behandlingsgrunnlag", "Lagringstid", "Dine rettigheter"],
 };
 
+const MARKETING = {
+  core_message: "Boligen din, i rute – uten at du må huske alt selv.",
+  channel_strategy: [
+    { channel: "SEO", why: "Målgruppen googler vedlikeholdsoppgaver sesongvis", priority: 1, cac_hypothesis: "< 100 kr organisk" },
+    { channel: "Meta Ads", why: "Presis målretting mot nye boligeiere", priority: 2, cac_hypothesis: "250–400 kr" },
+  ],
+  content_calendar: [
+    { week: 1, theme: "Høstsjekk av taket", format: "artikkel", channel: "SEO" },
+    { week: 2, theme: "5 feil nye boligeiere gjør", format: "video", channel: "Meta Ads" },
+  ],
+  ad_concepts: [{ channel: "Meta Ads", hook: "Kjøpte du bolig i år?", body: "Få vedlikeholdsplanen som forebygger dyre skader." }],
+  email_sequence: [{ day: 0, subject: "Velkommen – her er planen din", purpose: "aktivering" }, { day: 3, subject: "Første sesongoppgave", purpose: "vane" }],
+  launch_plan: ["Uke 1: publiser 3 SEO-artikler", "Uke 2: aktiver venteliste-e-post"],
+  experiment_queue: [{ hypothesis: "SEO gir CAC < 100 kr", test: "3 artikler + 6 ukers måling", metric: "CAC organisk", threshold: "< 100 kr" }],
+  budget_notes: "Start med 5 000 kr/mnd; skaler kun kanaler med LTV/CAC > 3.",
+};
+
 const RETRO = {
   what_worked: ["Falsk-dør-testen ga tydelig signal"],
   what_failed: ["Intervjurekruttering tok for lang tid"],
@@ -226,6 +243,7 @@ function mockRouter(overrides = {}) {
     if (sys.includes("forretningsmodell-modulen")) { counts.bizmodel++; return route.fulfill(respond(overrides.bizmodel || BIZMODEL)); }
     if (sys.includes("nettsted-modulen")) { counts.site++; return route.fulfill(respond(overrides.site || SITE)); }
     if (sys.includes("retro-modulen")) { counts.retro++; return route.fulfill(respond(overrides.retro || RETRO)); }
+    if (sys.includes("markedsføringsmodulen")) { counts.marketing = (counts.marketing || 0) + 1; return route.fulfill(respond(overrides.marketing || MARKETING)); }
     if (sys.includes("selvevalueringsmodul")) {
       counts.review++;
       return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ content: [{ type: "text", text: "Selvevaluering: fabrikken fungerer; forbedre X." }], stop_reason: "end_turn", usage: { input_tokens: 1, output_tokens: 1 } }) });
@@ -506,6 +524,68 @@ print('OK', len(names))
     const lessonInjected = bodies.some((b) =>
       (b.system || "").includes("inntaksmodul") && (b.messages?.[0]?.content || "").includes("VARIGE LÆRDOMMER") && (b.messages?.[0]?.content || "").includes("falsk dør"));
     check("lærdommen injiseres i neste prosjekts inntak (læringssløyfe)", lessonInjected, null);
+    check("ingen JS-feil", errors.length === 0, errors);
+    await page.close();
+  }
+
+  /* ---------- Scenario 7: modenhetsstige, markedsføring, måletall, gjenbruksbibliotek ---------- */
+  console.log("FACTORY 7: modenhetsporter → marketing → måletall mot prognose → bibliotek");
+  {
+    const { page, errors } = await freshPage(browser);
+    const { handler } = mockRouter();
+    await page.route("**/v1/messages", handler);
+    await page.click('nav button[data-tab="system"]');
+    await page.click("#demoBtn");
+    await page.waitForFunction(() => document.getElementById("detail").textContent.includes("BoligPuls"), null, { timeout: 5000 });
+    await page.evaluate(async () => {
+      await window.CF.BizModel.run(window.CF.Projects.list()[0]);
+      await window.CF.SiteGen.run(window.CF.Projects.list()[0]);
+    });
+    await page.click('nav button[data-tab="portfolio"]');
+    await page.click(".proj-item");
+
+    /* Modenhet: porter håndheves */
+    const err1 = await page.evaluate(() => { try { window.CF.Maturity.declare(window.CF.Projects.list()[0], "prototype"); return null; } catch (e) { return e.message; } });
+    check("erklæring uten fullført sjekkliste avvises", err1 && err1.includes("sjekkpunkt gjenstår"), err1);
+    const err2 = await page.evaluate(() => { try { window.CF.Maturity.declare(window.CF.Projects.list()[0], "beta"); return null; } catch (e) { return e.message; } });
+    check("nivåhopp på stigen avvises", err2 && err2.includes("ikke neste nivå"), err2);
+    const err3 = await page.evaluate(() => { try { window.CF.Maturity.markLaunched(window.CF.Projects.list()[0]); return null; } catch (e) { return e.message; } });
+    check("kan ikke markeres lansert før lanseringsklart", err3 && err3.includes("lanseringsklart"), err3);
+
+    for (let i = 0; i < 3; i++) await page.click(`.mat-check >> nth=${i}`);
+    await page.click("#matDeclare");
+    let p = await page.evaluate(() => window.CF.Projects.list()[0]);
+    check("alle punkter huket → prototype erklært som eierbeslutning",
+      p.maturity === "prototype" && p.decisions[0].decision.includes("MODENHET ERKLÆRT") && p.decisions[0].byOwner === true, p.maturity);
+
+    /* Markedsføring (Fase 11) */
+    await page.evaluate(async () => { await window.CF.Marketing.run(window.CF.Projects.list()[0]); });
+    await page.click('nav button[data-tab="portfolio"]');
+    await page.click(".proj-item");
+    const detail = await page.evaluate(() => document.getElementById("detail").textContent);
+    check("markedsføringsmotor: prioriterte kanaler + eksperimentkø vises",
+      detail.includes("MARKEDSFØRING") && detail.includes("SEO") && detail.includes("EKSPERIMENTKØ"), null);
+
+    /* Måletall mot prognose (Fase 16) */
+    await page.fill("#mtMonth", "2026-08");
+    await page.fill("#mtCustomers", "25");
+    await page.fill("#mtMrr", "2100");
+    await page.fill("#mtVisitors", "1800");
+    await page.click("#mtAdd");
+    p = await page.evaluate(() => window.CF.Projects.list()[0]);
+    const cmp = await page.evaluate(() => window.CF.Metrics.compare(window.CF.Projects.list()[0]));
+    check("måletall registrert med prognose-sammenligning (modellmåned 1)",
+      p.metrics.length === 1 && cmp[0].forecast_mrr !== null && cmp[0].forecast_customers !== null, cmp);
+    const portfolio = await page.evaluate(() => document.getElementById("portfolio").textContent);
+    check("porteføljen viser samlet MRR", portfolio.includes("samlet MRR") && portfolio.includes("2"), portfolio.slice(0, 120));
+
+    /* Gjenbruksbibliotek fra retro */
+    await page.evaluate(async () => { await window.CF.Retro.run(window.CF.Projects.list()[0]); });
+    const lib = await page.evaluate(() => window.CF.Library.list());
+    check("retro høster gjenbrukskandidater til biblioteket", lib.length === 2 && lib.every((x) => x.type === "kandidat" && x.source === "BoligPuls (TEST)"), lib);
+    await page.click('nav button[data-tab="system"]');
+    const libShown = await page.evaluate(() => document.getElementById("libraryList").textContent.includes("Landingsside-malen"));
+    check("biblioteket vises under SYSTEM", libShown, null);
     check("ingen JS-feil", errors.length === 0, errors);
     await page.close();
   }

@@ -134,6 +134,10 @@
   <h2>VARIGE LÆRDOMMER (injiseres i alle fremtidige vurderinger)</h2>
   <div id="lessonsList"></div>
 
+  <h2>GJENBRUKSBIBLIOTEK</h2>
+  <div class="note">Retro trekker automatisk ut gjenbrukskandidater fra hvert prosjekt. Prosjektspesifikk kode kopieres aldri ukritisk inn i kjernen – kandidater må generaliseres før de gjenbrukes.</div>
+  <div id="libraryList"></div>
+
   <h2>SELVEVALUERING</h2>
   <button class="primary" id="reviewBtn">🔄 Evaluer fabrikken</button>
   <div id="reviewOut"></div>
@@ -163,6 +167,7 @@ document.querySelectorAll("nav button").forEach((b) => {
     b.classList.add("on");
     $("tab-" + b.dataset.tab).classList.add("on");
     if (b.dataset.tab === "portfolio") renderPortfolio();
+    if (b.dataset.tab === "system") { renderLessons(); renderLibrary(); }
   };
 });
 function goTab(name) { document.querySelector(`nav button[data-tab="${name}"]`).click(); }
@@ -183,6 +188,14 @@ function renderLessons() {
     : `<div class="panel muted">Ingen lærdommer enda – kjør 🔁 Retro på et prosjekt.</div>`;
 }
 
+function renderLibrary() {
+  const list = window.CF.Library.list();
+  $("libraryList").innerHTML = list.length
+    ? `<div class="panel"><table><tr><th>KAPABILITET</th><th>TYPE</th><th>FRA PROSJEKT</th><th></th></tr>${list.map((x) => `<tr><td>${esc(x.title)}</td><td class="muted">${esc(x.type)}</td><td class="muted">${esc(x.source)}</td><td><button class="small" data-lib="${x.id}">Fjern</button></td></tr>`).join("")}</table></div>`
+    : `<div class="panel muted">Tomt – kjør 🔁 Retro på et prosjekt for å høste gjenbrukskandidater.</div>`;
+  document.querySelectorAll("[data-lib]").forEach((b) => { b.onclick = () => { window.CF.Library.remove(b.dataset.lib); renderLibrary(); }; });
+}
+
 function renderPortfolio() {
   const list = Projects.list();
   if (!list.length) {
@@ -191,7 +204,8 @@ function renderPortfolio() {
     return;
   }
   const byStatus = list.reduce((m, p) => ((m[p.status] = (m[p.status] || 0) + 1), m), {});
-  $("portfolio").innerHTML = `<div class="note" style="margin-bottom:8px">${list.length} prosjekt${list.length === 1 ? "" : "er"} · ${Object.entries(byStatus).map(([k, v]) => `${k}: ${v}`).join(" · ")}</div>` +
+  const totalMrr = list.reduce((sum, p) => { const m = window.CF.Metrics.latest(p); return sum + (m ? m.mrr : 0); }, 0);
+  $("portfolio").innerHTML = `<div class="note" style="margin-bottom:8px">${list.length} prosjekt${list.length === 1 ? "" : "er"} · ${Object.entries(byStatus).map(([k, v]) => `${k}: ${v}`).join(" · ")}${totalMrr ? ` · <b style="color:var(--cyan)">samlet MRR: ${nok(totalMrr)}</b>` : ""}</div>` +
     `<table><tr><th>PROSJEKT</th><th>STATUS</th><th>FASE</th><th>SCORE</th><th>NESTE BESLUTNING</th><th>OPPDATERT</th></tr>` +
     list.map((p) => {
       const next = p.evaluation ? (p.evaluation.synthesis.decision === "valider_mer" ? "gjennomfør validering" : p.evaluation.synthesis.decision) : "kjør idévurdering";
@@ -205,7 +219,7 @@ function showProject(id) {
   if (!p) return;
   const s = p.evaluation && p.evaluation.synthesis;
   let html = `<div class="panel"><h3>${esc(p.name)}${p.test ? ' <span class="badge test">TEST – ISOLERT EKSEMPELPROSJEKT</span>' : ""}</h3>` +
-    `<div class="row"><div>Status: <b>${esc(p.status)}</b></div><div>Fase: <b>${p.phase} – ${esc(phaseTitle(p.phase))}</b></div>` +
+    `<div class="row"><div>Status: <b>${esc(p.status)}</b></div><div>Fase: <b>${p.phase} – ${esc(phaseTitle(p.phase))}</b></div><div>Modenhet: <b>${esc(p.maturity || "–")}</b></div>` +
     (p.evaluation ? `<div>Score: <span class="score">${p.evaluation.totalScore}</span>/100</div>` : "") + `</div>` +
     `<div class="note">Idé: ${esc(p.idea)}</div>` +
     `<div class="row" style="margin-top:10px">` +
@@ -286,6 +300,56 @@ function showProject(id) {
         `<div class="note">Betalingsknappene er plassholdere til Stripe Payment Links legges inn (eier-port). Juridiske sider er utkast som krever advokat. Se README-deploy.md i pakken.</div>`;
     }
     html += v + `</div>`;
+  }
+
+  /* FASE 11 – markedsføring */
+  if (p.marketing || buildableNow) {
+    let v = `<div class="panel"><h3>FASE 11 – MARKEDSFØRING</h3>`;
+    if (!p.marketing) {
+      v += `<div class="note">Prioritert kanalstrategi ut fra målgruppe og økonomi – ikke alle kanaler fordi de finnes. Masseutsendelser og betalte kampanjer forblir eier-porter.</div><button class="small" id="mkGen" style="margin-top:8px">📣 Bygg markedsføringsmotor</button>`;
+    } else {
+      const mk = p.marketing;
+      v += `Kjernebudskap: <b>${esc(mk.core_message)}</b>\n${esc(mk.budget_notes)}` +
+        `<table><tr><th>#</th><th>KANAL</th><th>HVORFOR</th><th>CAC-HYPOTESE</th></tr>${mk.channel_strategy.sort((a, b) => a.priority - b.priority).map((c) => `<tr><td>${c.priority}</td><td>${esc(c.channel)}</td><td class="muted">${esc(c.why)}</td><td class="muted">${esc(c.cac_hypothesis)}</td></tr>`).join("")}</table>` +
+        `<h3 style="margin-top:14px">EKSPERIMENTKØ</h3><table><tr><th>HYPOTESE</th><th>TEST</th><th>MÅL/TERSKEL</th></tr>${mk.experiment_queue.map((x) => `<tr><td>${esc(x.hypothesis)}</td><td class="muted">${esc(x.test)}</td><td class="muted">${esc(x.metric)} – ${esc(x.threshold)}</td></tr>`).join("")}</table>` +
+        `<h3 style="margin-top:14px">INNHOLDSKALENDER</h3><table><tr><th>UKE</th><th>TEMA</th><th>FORMAT</th><th>KANAL</th></tr>${mk.content_calendar.map((c) => `<tr><td>${c.week}</td><td>${esc(c.theme)}</td><td class="muted">${esc(c.format)}</td><td class="muted">${esc(c.channel)}</td></tr>`).join("")}</table>` +
+        `\nLanseringsplan:\n- ${mk.launch_plan.map(esc).join("\n- ")}\n\nE-postsekvens: ${mk.email_sequence.map((m) => `dag ${m.day}: ${esc(m.subject)}`).join(" · ")}`;
+    }
+    html += v + `</div>`;
+  }
+
+  /* FASE 14/15 – modenhetsstige med sjekklister */
+  if (p.brief || p.site || p.maturity) {
+    const next = window.CF.Maturity.next(p);
+    let v = `<div class="panel"><h3>FASE 14/15 – MODENHET OG KVALITETSPORTER</h3>Stige: ${window.CF.Maturity.LADDER.map((l) => (p.maturity === l ? `<b style="color:var(--cyan)">${esc(l)}</b>` : (l === next ? `<u>${esc(l)}</u>` : esc(l)))).join(" → ")}`;
+    if (next) {
+      const cl = window.CF.Maturity.checklist(Projects.get(p.id), next);
+      v += `<h3 style="margin-top:14px">SJEKKLISTE FOR «${esc(next).toUpperCase()}»</h3>` +
+        cl.items.map((it, i) => `<label style="display:block; margin:6px 0; cursor:pointer"><input type="checkbox" class="mat-check" data-idx="${i}" ${it.done ? "checked" : ""}> ${esc(it.text)}</label>`).join("") +
+        `<button class="small" id="matDeclare" ${cl.items.every((i) => i.done) ? "" : "disabled"} style="margin-top:8px">✅ Erklær «${esc(next)}» (eier)</button>` +
+        `<div class="note">Ingenting erklæres ferdig når kritiske punkter mangler. Erklæringen logges som eierbeslutning.</div>`;
+    } else {
+      v += `<div class="note" style="margin-top:8px">Høyeste modenhetsnivå er nådd. Lanseringsklart digitalt produkt ≠ juridisk etablert, operativ eller kommersielt validert virksomhet – de stegene har egne eier-porter.</div>`;
+    }
+    if (p.maturity === "lanseringsklart" && p.status !== "lansert") {
+      v += `<button class="small" id="launchBtn" style="margin-top:8px">🚀 Marker som lansert (eier)</button>`;
+    }
+    html += v + `</div>`;
+  }
+
+  /* FASE 16 – måletall mot prognosen */
+  if (p.bizmodel) {
+    const cmp = window.CF.Metrics.compare(p);
+    let v = `<div class="panel"><h3>FASE 16 – MÅLETALL (FAKTISK MOT PROGNOSE)</h3>`;
+    if (cmp.length) {
+      v += `<table><tr><th>MÅNED</th><th>KUNDER</th><th>PROGNOSE</th><th>MRR</th><th>PROGNOSE</th><th>CHURN</th><th>BESØK</th></tr>${cmp.map((m) => `<tr><td>${esc(m.month)}</td><td>${m.customers}</td><td class="muted">${m.forecast_customers ?? "–"}</td><td>${nok(m.mrr)}</td><td class="muted">${nok(m.forecast_mrr)}</td><td>${m.churn_pct == null ? "–" : m.churn_pct + "%"}</td><td>${m.visitors}</td></tr>`).join("")}</table>`;
+    } else {
+      v += `<div class="note">Ingen måletall registrert enda. Prognosen (sannsynlig scenario) sammenlignes automatisk fra første registrerte måned.</div>`;
+    }
+    v += `<div class="row" style="margin-top:10px">` +
+      [["mtMonth", "ÅÅÅÅ-MM"], ["mtCustomers", "Betalende kunder"], ["mtMrr", "MRR (kr)"], ["mtChurn", "Churn % (valgfri)"], ["mtVisitors", "Besøk"]].map(([id, ph]) => `<input type="text" id="${id}" placeholder="${ph}">`).join("") +
+      `</div><button class="small" id="mtAdd" style="margin-top:8px">📈 Registrer måned</button></div>`;
+    html += v;
   }
 
   /* RETRO – læringssløyfe */
@@ -389,11 +453,53 @@ function showProject(id) {
     a.click();
   };
 
+  /* FASE 11-handlinger */
+  const mkGen = $("mkGen");
+  if (mkGen) mkGen.onclick = async () => {
+    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
+    mkGen.disabled = true;
+    try { await window.CF.Marketing.run(Projects.get(p.id)); showProject(p.id); }
+    catch (e) { alert("Feil: " + e.message); mkGen.disabled = false; }
+  };
+
+  /* FASE 14/15-handlinger */
+  document.querySelectorAll(".mat-check").forEach((cb) => {
+    cb.onchange = () => {
+      const proj = Projects.get(p.id);
+      window.CF.Maturity.toggle(proj, window.CF.Maturity.next(proj), parseInt(cb.dataset.idx, 10), cb.checked);
+      showProject(p.id);
+    };
+  });
+  const matDeclare = $("matDeclare");
+  if (matDeclare) matDeclare.onclick = () => {
+    const proj = Projects.get(p.id);
+    try { window.CF.Maturity.declare(proj, window.CF.Maturity.next(proj)); showProject(p.id); renderPortfolio(); }
+    catch (e) { alert(e.message); }
+  };
+  const launchBtn = $("launchBtn");
+  if (launchBtn) launchBtn.onclick = () => {
+    try { window.CF.Maturity.markLaunched(Projects.get(p.id)); showProject(p.id); renderPortfolio(); }
+    catch (e) { alert(e.message); }
+  };
+
+  /* FASE 16-handlinger */
+  const mtAdd = $("mtAdd");
+  if (mtAdd) mtAdd.onclick = () => {
+    try {
+      window.CF.Metrics.add(Projects.get(p.id), {
+        month: $("mtMonth").value.trim(), customers: $("mtCustomers").value.trim(), mrr: $("mtMrr").value.trim(),
+        churn_pct: $("mtChurn").value.trim(), visitors: $("mtVisitors").value.trim(),
+      });
+      showProject(p.id);
+      renderPortfolio();
+    } catch (e) { alert(e.message); }
+  };
+
   /* Retro */
   $("pRetro").onclick = async () => {
     if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
     $("pRetro").disabled = true;
-    try { await window.CF.Retro.run(Projects.get(p.id)); showProject(p.id); renderLessons(); }
+    try { await window.CF.Retro.run(Projects.get(p.id)); showProject(p.id); renderLessons(); renderLibrary(); }
     catch (e) { alert("Feil: " + e.message); $("pRetro").disabled = false; }
   };
 
@@ -524,6 +630,7 @@ $("importFile").onchange = async (e) => {
 
 renderPortfolio();
 renderLessons();
+renderLibrary();
 })();
 </script>
 </body>

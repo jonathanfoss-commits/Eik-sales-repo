@@ -164,7 +164,13 @@ lanseringsklart digitalt selskap. Nås fra JARVIS-appen (🏭 FACTORY-knappen) e
   deploy-README) – lastes ned som ZIP, klart for GitHub Pages/Netlify. Betalingsknapper er
   Stripe-plassholdere bak eier-porten.
 - **Læringssløyfe**: 🔁 Retro per prosjekt trekker ut én generaliserbar lærdom som injiseres
-  i alle fremtidige vurderinger – fabrikken blir bedre for hvert prosjekt.
+  i alle fremtidige vurderinger, og høster gjenbrukskandidater til fellesbiblioteket –
+  fabrikken blir bedre for hvert prosjekt.
+- **Kvalitetsporter**: modenhetsstigen prototype → MVP → beta → produksjonsklart →
+  lanseringsklart har sjekklister per nivå – ingenting erklæres ferdig før eieren har huket
+  av alle punkter, og «lansert» er en egen eierhandling.
+- **Måling og markedsføring**: registrer faktiske månedstall og se dem mot prognosen;
+  porteføljen viser samlet MRR. Fase 11 bygger prioritert kanalstrategi med eksperimentkø.
 - **Portefølje**: flere parallelle prosjekter, isolert lagring per prosjekt (`cf_project_*`),
   per-prosjekt eksport for utspinning/avvikling, og enkel kill-disiplin.
 - **Eier-porter**: betalinger, publisering, domener, juss, masseutsendelser og offentlig

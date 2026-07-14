@@ -1,4 +1,4 @@
-# Company Factory – Arkitektur v1.2
+# Company Factory – Arkitektur v1.3
 
 AI-drevet startup-studio: fra idé → kritisk vurdering → validering → forretningsmodell →
 MVP-brief → (neste fase: bygging, betaling, lansering, vekst). Del av Eik-plattformen
@@ -136,7 +136,8 @@ API. Kostnadskontroll: bevisst få og små kall per pipeline-kjøring (~6–9 ka
 | **F1 (denne leveransen)** | Motor + UI + tester: idéinntak, kritisk vurdering m/styret, scoring, faseplan, MVP-brief, beslutnings-/antakelseslogg, porter, portefølje, eksempelprosjekt | ✅ Bygget og testet |
 | **F2 Validering** | Eksperimentkø avledet fra kritiske antakelser (terskel definert før resultat), resultatregistrering med eier-logg, falsk-dør-landingsside-generator (selvstendig deploybar HTML med ærlig venteliste-framing), valideringsport som konkluderer og slipper prosjektet videre/stopper det | ✅ Bygget og testet |
 | **F3 Bygging (del 1)** | Fase 3: forretningsmodell med deterministisk økonomimodell (LLM setter begrunnede antakelser, koden beregner 24-mnd MRR/break-even/LTV/CAC/kapitalbehov i tre scenarier, gratis lokal rekalkulering). Fase 6+8: nettsted-generator – komplett statisk nettsted (forside, pris fra planene, FAQ, om, vilkår/personvern som merkede utkast, deploy-README) pakket med egen ZIP-writer. Læringssløyfe: retro per prosjekt → varige lærdommer (`cf_lessons`) injiseres i alle fremtidige LLM-kall. Byggekjeden kjøres automatisk ved byggebeslutning: brief → modell → nettsted | ✅ Bygget og testet |
-| **F3 Bygging (del 2)** | Fase 8–9 dypere: app-skall med auth + reell Stripe-abonnementsflyt (krever backend eller Stripe Payment Links + kundeportal), «lanseringsklar»-sjekklister, QA-krav per modenhetsnivå | Neste |
+| **F3 Styring (del 2)** | Fase 14/15: modenhetsstige (prototype → MVP → beta → produksjonsklart → lanseringsklart) med sjekklister per nivå – ingenting erklæres uten at eieren huker av alle punkter; «lansert» er egen eierhandling. Fase 16: måletall per måned mot prognosen (sannsynlig scenario), samlet MRR i porteføljen. Fase 11: prioritert markedsføringsmotor (kanaler etter målgruppe/økonomi, eksperimentkø med terskler). Seksjon 6: gjenbruksbibliotek (`cf_library`) som retro fyller automatisk med kandidater | ✅ Bygget og testet |
+| **F3 Bygging (del 3)** | Fase 8–9 dypere: app-skall med auth + reell Stripe-abonnementsflyt (krever backend eller Stripe Payment Links + kundeportal) | Neste |
 | **F4 Plattform** | Trekk LLM/Store ut i `platform/`-bibliotek når tredje forbruker finnes; synk-backend bak Store-kontrakten; gjenbruksbibliotek (maler, moduler) med generalisering etter hvert prosjekt | Etter F3 |
 | **F5 Drift/vekst** | Fase 11–16-motorer: målinger inn i porteføljen, ukesrapport, radar-integrasjon mot AEIS | Etter F4 |
 
@@ -175,7 +176,18 @@ skjema-drift mellom AEIS-roller og Factory (mitigeres av lese-kun-kontrakt + fal
   `zip(p)` (via `makeZip` – egen STORE-ZIP-writer uten avhengigheter).
 - `CF.Retro` / `CF.Lessons` — retro per prosjekt → én generaliserbar lærdom lagres i
   `cf_lessons` (maks 20) og injiseres automatisk i alle fremtidige LLM-kall via
-  `ownerContext()` (samme læringssløyfe-mønster som AEIS).
+  `ownerContext()` (samme læringssløyfe-mønster som AEIS). Retro høster også
+  gjenbrukskandidater til `CF.Library` (`cf_library`).
+- `CF.Maturity` — `next(p)`, `checklist(p, level)`, `toggle(p, level, idx, done)`,
+  `declare(p, level)` (kaster feil ved nivåhopp eller åpne sjekkpunkter; logges som
+  eierbeslutning), `markLaunched(p)` (kun fra «lanseringsklart»). Sjekklistene per nivå
+  er definert i kode (`MATURITY_CHECKLISTS`) – ingen LLM-kostnad.
+- `CF.Metrics` — `add(p, {month, customers, mrr, churn_pct, visitors})`,
+  `compare(p)` (faktisk mot sannsynlig-scenariet, posisjonsvis fra første måned),
+  `latest(p)` (aggregeres til samlet MRR i porteføljen).
+- `CF.Marketing` — `run(p)` (Fase 11: 2–4 prioriterte kanaler med CAC-hypoteser,
+  innholdskalender, annonsekonsepter, e-postsekvens, lanseringsplan, eksperimentkø
+  med terskler; masseutsendelser/kampanjer forblir eier-porter).
 - `CF.Landing` — `run(p, {formEndpoint})` (copy via LLM + `renderHTML`),
   `renderHTML(content, opts)` (selvstendig, responsiv, deploybar HTML: ingen eksterne
   avhengigheter, pris synlig, ærlig disclaimer, schema.org PreOrder; uten

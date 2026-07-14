@@ -412,6 +412,36 @@ const SCHEMAS = {
     required: ["brand", "seo_title", "seo_description", "hero_headline", "hero_sub", "cta_text", "features", "how_it_works", "pricing_faq", "faq", "about_story", "about_values", "terms_outline", "privacy_outline"],
     additionalProperties: false,
   },
+  marketing: {
+    type: "object",
+    properties: {
+      core_message: { type: "string" },
+      channel_strategy: { type: "array", items: {
+        type: "object",
+        properties: { channel: { type: "string" }, why: { type: "string" }, priority: { type: "number" }, cac_hypothesis: { type: "string" } },
+        required: ["channel", "why", "priority", "cac_hypothesis"], additionalProperties: false } },
+      content_calendar: { type: "array", items: {
+        type: "object",
+        properties: { week: { type: "number" }, theme: { type: "string" }, format: { type: "string" }, channel: { type: "string" } },
+        required: ["week", "theme", "format", "channel"], additionalProperties: false } },
+      ad_concepts: { type: "array", items: {
+        type: "object",
+        properties: { channel: { type: "string" }, hook: { type: "string" }, body: { type: "string" } },
+        required: ["channel", "hook", "body"], additionalProperties: false } },
+      email_sequence: { type: "array", items: {
+        type: "object",
+        properties: { day: { type: "number" }, subject: { type: "string" }, purpose: { type: "string" } },
+        required: ["day", "subject", "purpose"], additionalProperties: false } },
+      launch_plan: strArr,
+      experiment_queue: { type: "array", items: {
+        type: "object",
+        properties: { hypothesis: { type: "string" }, test: { type: "string" }, metric: { type: "string" }, threshold: { type: "string" } },
+        required: ["hypothesis", "test", "metric", "threshold"], additionalProperties: false } },
+      budget_notes: { type: "string" },
+    },
+    required: ["core_message", "channel_strategy", "content_calendar", "ad_concepts", "email_sequence", "launch_plan", "experiment_queue", "budget_notes"],
+    additionalProperties: false,
+  },
   retro: {
     type: "object",
     properties: {
@@ -774,7 +804,6 @@ const SiteGen = {
     });
     const files = this.renderSite(json, { plans, trial: p.bizmodel ? p.bizmodel.model.trial : "", freeTier: p.bizmodel ? p.bizmodel.model.free_tier : "" });
     p.site = { content: json, files, at: new Date().toISOString() };
-    p.maturity = "prototype";
     Projects.logDecision(p, { phase: 8, role: "nettsted-modul", decision: `Nettsted generert (${Object.keys(files).length} filer)`, rationale: `«${json.hero_headline}» – komplett statisk nettsted klart for deploy. Betalingsknapper er plassholdere til Stripe Payment Links legges inn (eier-port: betaling). Juridiske sider er utkast som krever advokat.` });
     return Projects.save(p);
   },
@@ -901,6 +930,134 @@ Generert ${new Date().toISOString().slice(0, 10)}. Copy og struktur kan redigere
   },
 };
 
+/* ================= Maturity (Fase 14/15: modenhetsstige med sjekklister) ================= */
+const MATURITY_LADDER = ["prototype", "MVP", "beta", "produksjonsklart", "lanseringsklart"];
+const MATURITY_CHECKLISTS = {
+  prototype: [
+    "Kjernebrukerreisen kan demonstreres ende til ende",
+    "Kun testdata – ingen ekte kunde- eller betalingsdata",
+    "Kjente mangler er notert i backloggen",
+  ],
+  MVP: [
+    "Minste betalbare verdi er bygget – ikke en halvferdig storversjon",
+    "Betalingsflyt fungerer i testmodus (f.eks. Stripe test)",
+    "Kansellering og refusjonsregler er definert og fungerer",
+    "Grunnleggende feilhåndtering og backup er på plass",
+    "Analysepunkter for registrering/aktivering/konvertering måles",
+  ],
+  beta: [
+    "Reelle brukere er informert om at dette er beta",
+    "Supportkanal og FAQ er på plass",
+    "Feillogging overvåkes aktivt",
+    "Personvernerklæring er publisert og kvalitetssikret av fagperson (eier-port)",
+  ],
+  produksjonsklart: [
+    "Kritiske tester er kjørt: betaling, tilgang, kansellering, mislykket betaling",
+    "Restore fra backup er faktisk testet",
+    "Sikkerhetsgjennomgang: tilgangsstyring, hemmeligheter, rate limits",
+    "Juridiske dokumenter er kvalitetssikret av advokat/fagperson (eier-port)",
+    "Ytelse og mobilbruk er verifisert",
+  ],
+  lanseringsklart: [
+    "Domene og e-post er satt opp (eier-port)",
+    "Ekte betalingsflyt er verifisert med testkjøp (eier-port)",
+    "Rollback-plan finnes og er dokumentert",
+    "Måleplan og dashboard er klart",
+    "Lanseringstype er valgt bevisst: soft / beta / offentlig / kommersiell",
+    "Offentlig lansering er godkjent av eier (eier-port)",
+  ],
+};
+
+const Maturity = {
+  LADDER: MATURITY_LADDER,
+  next(p) {
+    if (!p.maturity) return MATURITY_LADDER[0];
+    const i = MATURITY_LADDER.indexOf(p.maturity);
+    return i >= 0 ? MATURITY_LADDER[i + 1] || null : MATURITY_LADDER[0];
+  },
+  checklist(p, level) {
+    p.checklists = p.checklists || {};
+    if (!p.checklists[level]) {
+      p.checklists[level] = { items: (MATURITY_CHECKLISTS[level] || []).map((text) => ({ text, done: false, at: null })), declaredAt: null };
+      Projects.save(p);
+    }
+    return p.checklists[level];
+  },
+  toggle(p, level, idx, done) {
+    const cl = this.checklist(p, level);
+    if (!cl.items[idx]) throw new Error("Ukjent sjekkpunkt.");
+    cl.items[idx].done = !!done;
+    cl.items[idx].at = done ? new Date().toISOString() : null;
+    return Projects.save(p);
+  },
+  /* Et nivå kan KUN erklæres når det er neste på stigen og alle punkter er huket av av eieren */
+  declare(p, level) {
+    if (level !== this.next(p)) throw new Error(`«${level}» er ikke neste nivå på stigen (neste: ${this.next(p) || "ingen"}).`);
+    const cl = this.checklist(p, level);
+    const missing = cl.items.filter((i) => !i.done);
+    if (missing.length) throw new Error(`Kan ikke erklære «${level}»: ${missing.length} sjekkpunkt gjenstår. Ingenting erklæres ferdig når kritiske tester mangler.`);
+    p.maturity = level;
+    cl.declaredAt = new Date().toISOString();
+    Projects.logDecision(p, { role: "eier", byOwner: true, decision: `MODENHET ERKLÆRT: ${level}`, rationale: `Alle ${cl.items.length} sjekkpunkter bekreftet av eier.` });
+    return Projects.save(p);
+  },
+  /* «Lansert» er en eksplisitt eierhandling – lanseringsklart ≠ lansert */
+  markLaunched(p) {
+    if (p.maturity !== "lanseringsklart") throw new Error("Prosjektet må være erklært lanseringsklart først.");
+    p.status = "lansert";
+    Projects.logDecision(p, { phase: 15, role: "eier", byOwner: true, decision: "PROSJEKT LANSERT", rationale: "Eieren har bekreftet offentlig lansering (eier-port)." });
+    return Projects.save(p);
+  },
+};
+
+/* ================= Metrics (Fase 16: faktiske tall mot prognosen) ================= */
+const Metrics = {
+  add(p, entry) {
+    if (!/^\d{4}-\d{2}$/.test(entry.month || "")) throw new Error("Måned må være på formen ÅÅÅÅ-MM.");
+    p.metrics = (p.metrics || []).filter((m) => m.month !== entry.month);
+    p.metrics.push({ month: entry.month, customers: +entry.customers || 0, mrr: +entry.mrr || 0, churn_pct: entry.churn_pct === "" || entry.churn_pct == null ? null : +entry.churn_pct, visitors: +entry.visitors || 0, notes: entry.notes || "", at: new Date().toISOString() });
+    p.metrics.sort((a, b) => a.month.localeCompare(b.month));
+    return Projects.save(p);
+  },
+  latest(p) { const m = p.metrics || []; return m.length ? m[m.length - 1] : null; },
+  /* Faktisk vs. sannsynlig-scenariet, posisjonsvis (første registrerte måned = modellmåned 1) */
+  compare(p) {
+    if (!p.bizmodel || !(p.metrics || []).length) return [];
+    const rows = p.bizmodel.computed.scenarios.sannsynlig.rows;
+    return p.metrics.map((m, i) => ({ ...m, forecast_mrr: rows[i] ? rows[i].mrr : null, forecast_customers: rows[i] ? rows[i].customers : null }));
+  },
+};
+
+/* ================= Library (seksjon 6: gjenbrukbare kapabiliteter) ================= */
+const Library = {
+  list() { return Store.get("cf_library", []); },
+  add(title, source, type = "komponent", notes = "") {
+    const list = this.list();
+    if (list.some((x) => x.title === title && x.source === source)) return list;
+    list.unshift({ id: "lib" + Date.now().toString(36) + list.length, title, source, type, notes, at: new Date().toISOString() });
+    Store.set("cf_library", list.slice(0, 100));
+    return list;
+  },
+  remove(id) { Store.set("cf_library", this.list().filter((x) => x.id !== id)); },
+};
+
+/* ================= Marketing (Fase 11: prioritert markedsføringsmotor) ================= */
+const Marketing = {
+  async run(p, onStatus) {
+    if (!p.intake || !p.evaluation) throw new Error("Kjør inntak og idévurdering først.");
+    if (onStatus) onStatus("Fase 11: bygger markedsføringsmotor …");
+    const { json } = await LLM.call({
+      system: `Du er markedsføringsmodulen i Company Factory (Fase 11). Velg kanaler ut fra målgruppen og økonomien – IKKE lag planer for alle sosiale medier bare fordi de finnes. Prioriter 2–4 kanaler med begrunnelse og CAC-hypotese, gi kjernebudskap uten tomme fraser, en enkel innholdskalender (4–8 uker), 2–4 annonsekonsepter, en kort e-postsekvens, lanseringsplan og en eksperimentkø med målbare terskler. Masseutsendelser og betalte kampanjer er eier-porter – planlegg, men ikke anta at de er godkjent.`,
+      user: `${ownerContext()}PROSJEKT: ${p.name}\n\nINNTAK:\n${JSON.stringify(p.intake, null, 2)}${p.bizmodel ? `\n\nFORRETNINGSMODELL:\n${JSON.stringify({ planer: p.bizmodel.model.plans, cac_antakelse: p.bizmodel.model.assumptions.cac, icp: p.bizmodel.model.icp }, null, 2)}` : ""}${p.site ? `\n\nBUDSKAP FRA NETTSTEDET:\n${JSON.stringify({ headline: p.site.content.hero_headline, features: p.site.content.features.map((f) => f.title) }, null, 2)}` : ""}`,
+      schema: SCHEMAS.marketing,
+      maxTokens: 8192,
+    });
+    p.marketing = { ...json, at: new Date().toISOString() };
+    Projects.logDecision(p, { phase: 11, role: "markedsføringsmodul", decision: `Kanalstrategi valgt: ${json.channel_strategy.map((c) => c.channel).join(", ")}`, rationale: json.core_message });
+    return Projects.save(p);
+  },
+};
+
 /* ================= Retro (seksjon 12: selvevaluering per prosjekt) ================= */
 const Retro = {
   async run(p, onStatus) {
@@ -913,7 +1070,9 @@ const Retro = {
     });
     p.retro = { ...json, at: new Date().toISOString() };
     Lessons.add(json.lesson, p.name);
-    Projects.logDecision(p, { role: "retro-modul", decision: "Retro gjennomført", rationale: "Lærdom: " + json.lesson });
+    /* Gjenbrukskandidater trekkes ut til fellesbiblioteket – prosjektspesifikt holdes utenfor */
+    for (const item of json.reusable || []) Library.add(item, p.name, "kandidat");
+    Projects.logDecision(p, { role: "retro-modul", decision: "Retro gjennomført", rationale: `Lærdom: ${json.lesson}${json.reusable.length ? ` · ${json.reusable.length} gjenbrukskandidater lagt i biblioteket.` : ""}` });
     return Projects.save(p);
   },
 };
@@ -1024,7 +1183,6 @@ const Brief = {
       maxTokens: 8192,
     });
     p.brief = { ...json, at: new Date().toISOString() };
-    p.maturity = "MVP-brief klar";
     Projects.logDecision(p, { decision: "MVP-brief produsert: " + json.working_name, rationale: json.product_vision, role: "brief-modul" });
     return Projects.save(p);
   },
@@ -1163,4 +1321,4 @@ const SelfReview = {
 };
 
 /* Eksponer modulene (også for tester) */
-window.CF = { Store, LLM, Board, Pipeline, Projects, Intake, Evaluation, Experiments, Landing, BizModel, Finance, SiteGen, Retro, Lessons, Planner, Brief, Demo, SelfReview, SCHEMAS, PHASES, OWNER_GATE_ACTIONS, FACTORY_ROLES, CRITERIA, pool, makeZip, crc32 };
+window.CF = { Store, LLM, Board, Pipeline, Projects, Intake, Evaluation, Experiments, Landing, BizModel, Finance, SiteGen, Maturity, Metrics, Library, Marketing, Retro, Lessons, Planner, Brief, Demo, SelfReview, SCHEMAS, PHASES, OWNER_GATE_ACTIONS, FACTORY_ROLES, CRITERIA, MATURITY_CHECKLISTS, pool, makeZip, crc32 };
