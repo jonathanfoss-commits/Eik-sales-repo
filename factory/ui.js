@@ -41,7 +41,7 @@ function activateTab(name, crumbExtra) {
   if (name === "idea") renderIdeaLab();
   if (name === "approvals") renderApprovals();
   if (name === "library" || name === "system") { renderLessons(); renderLibrary(); }
-  if (name === "system") { renderStorage(); renderCosts(); }
+  if (name === "system") { renderStorage(); renderCosts(); renderEfficiency(); renderOwnerQueueFull(); renderSyncStatus(); }
   updateNavBadges();
 }
 document.querySelectorAll("#mainnav button").forEach((b) => {
@@ -78,7 +78,38 @@ function wireAlertButtons(rerender) {
   });
 }
 
+function renderOwnerQueue() {
+  const q = window.CF.OwnerQueue.compute();
+  $("ccOwnerQueue").innerHTML = q.length
+    ? `<div class="panel" style="border-color:rgba(255,209,102,.35)"><h3>DIN TUR – ${q.length} PUNKT${q.length > 1 ? "ER" : ""} VENTER PÅ DEG</h3>` +
+      q.slice(0, 4).map((x, i) => `<div class="note"><b>${i + 1}. ${esc(x.title)}</b> – ${esc(x.why)}</div>`).join("") +
+      (q.length > 4 ? `<div class="note muted">… og ${q.length - 4} til.</div>` : "") +
+      `<button class="small" id="oqOpen" style="margin-top:8px">Åpne hele køen med instruksjoner →</button></div>`
+    : "";
+  const btn = $("oqOpen");
+  if (btn) btn.onclick = () => goTab("system");
+}
+
+function renderLive() {
+  const live = window.CF.Publish.liveTests();
+  $("ccLive").innerHTML = live.length
+    ? `<h2 style="margin-top:20px">LIVE TESTER</h2>` + live.map((t) => `<div class="alert sev2"><div><div class="p">${esc(t.name)}${t.test ? ' <span class="badge test">TEST</span>' : ""}</div><div class="t"><a href="${esc(t.url)}" target="_blank" rel="noopener">${esc(t.url)}</a></div><div class="d">${t.daysLive} dag${t.daysLive === 1 ? "" : "er"} live · horisont: ${esc(t.horizon)} · ${t.judged ? "dømt" : "IKKE dømt enda"}</div></div><div class="actions"><button class="small" data-al-open="${t.id}">${t.judged ? "Åpne →" : "Registrer resultat →"}</button></div></div>`).join("")
+    : "";
+  document.querySelectorAll("#ccLive [data-al-open]").forEach((b) => { b.onclick = () => { goTab("portfolio"); showProject(b.dataset.alOpen); }; });
+}
+
 function renderCommand() {
+  renderOwnerQueue();
+  renderLive();
+  /* Trakten: nuller vises ærlig – det er hele poenget */
+  const f = window.CF.Funnel.compute();
+  $("ccFunnel").innerHTML = [
+    ["IDÉER VURDERT", f.evaluated, "kritisk vurdert av styret"],
+    ["TESTER PUBLISERT", f.published, "falske dører live"],
+    ["BETALENDE KUNDER", f.customers, "fra lanserte selskaper"],
+    ["MRR", f.mrr ? nok(f.mrr) : "0 kr", "faktiske tall"],
+  ].map(([k, v, d], i) => `<div class="tile"><div class="k">${i + 1}. ${k}</div><div class="v${v && v !== "0 kr" ? " accent" : ""}">${v}</div><div class="d">${d}</div></div>`).join("");
+
   const alerts = Alerts.derive();
   $("ccAlerts").innerHTML = alerts.length
     ? alerts.map(alertHtml).join("")
@@ -175,6 +206,66 @@ function renderStorage() {
   $("storageUsage").innerHTML = `<div class="panel${pct > 80 ? " danger" : ""}">Totalt: <b>${u.totalKb} kB</b> av ~${u.limitKb} kB (${pct} %)` +
     (u.rows.length ? `<table><tr><th>NØKKEL</th><th>STØRRELSE</th></tr>${u.rows.slice(0, 10).map((r) => `<tr><td class="muted">${esc(r.key)}</td><td>${r.kb} kB</td></tr>`).join("")}</table>` : "") + `</div>`;
 }
+function renderEfficiency() {
+  const e = window.CF.Funnel.efficiency();
+  $("efficiencyView").innerHTML = `<div class="panel"><table><tr><th>STEG</th><th>KALL</th><th>TOTAL</th><th>PER ENHET</th></tr>` +
+    `<tr><td>Idé vurdert (inntak + styret)</td><td>${e.idea.calls}</td><td>${nok(e.idea.nok)}</td><td>${nok(e.idea.perUnit)}/idé</td></tr>` +
+    `<tr><td>Validering (port + landingsside)</td><td>${e.validation.calls}</td><td>${nok(e.validation.nok)}</td><td class="muted">–</td></tr>` +
+    `<tr><td>Byggekjede (brief→app)</td><td>${e.build.calls}</td><td>${nok(e.build.nok)}</td><td class="muted">–</td></tr>` +
+    `</table><div class="note">Kun AI-kost (estimat). Testprosjekter holdes utenfor per-enhet-tallet.</div></div>`;
+}
+
+function renderOwnerQueueFull() {
+  const q = window.CF.OwnerQueue.compute();
+  $("ownerQueueFull").innerHTML = q.length
+    ? `<div class="panel">${q.map((x, i) => `<div style="margin-bottom:14px"><b>${i + 1}. ${esc(x.title)}</b><div class="note"><b>Hvorfor:</b> ${esc(x.why)}\n<b>Slik:</b> ${esc(x.how)}</div></div>`).join("")}</div>`
+    : `<div class="panel" style="border-color:rgba(123,216,143,.4)">Køen er tom – fabrikken er selvgående. 🟢</div>`;
+}
+
+function renderSyncStatus(msg) {
+  const s = window.CF.Sync.status();
+  const pub = window.CF.Publish.config();
+  $("ghPat").value = window.CF.Gh.pat;
+  $("syncRepo").value = window.CF.Sync.config().repo;
+  $("pubRepo").value = pub.repo;
+  $("syncStatus").textContent = msg || (s.configured
+    ? `Koblet til ${s.repo}. Sist synket: ${s.lastSyncAt ? when(s.lastSyncAt) : "aldri"}.`
+    : "Ikke konfigurert – se DIN TUR over for klikk-for-klikk-oppsett.");
+}
+$("ghSaveBtn").onclick = () => {
+  window.CF.Gh.pat = $("ghPat").value.trim();
+  window.CF.Sync.saveConfig({ repo: $("syncRepo").value.trim() });
+  window.CF.Publish.saveConfig({ repo: $("pubRepo").value.trim() });
+  renderSyncStatus("Lagret ✓");
+  renderOwnerQueueFull();
+  updateNavBadges();
+};
+$("syncPushBtn").onclick = async () => {
+  $("syncPushBtn").disabled = true;
+  try { await window.CF.Sync.push(); renderSyncStatus(); }
+  catch (e) { renderSyncStatus("Feil: " + e.message); }
+  $("syncPushBtn").disabled = false;
+};
+$("syncPullBtn").onclick = async () => {
+  if (!confirm("Hente data fra repoet? Lokale data overskrives (eksporter først hvis du er usikker).")) return;
+  $("syncPullBtn").disabled = true;
+  try { await window.CF.Sync.pull(); renderSyncStatus(); renderPortfolio(); }
+  catch (e) { renderSyncStatus("Feil: " + e.message); }
+  $("syncPullBtn").disabled = false;
+};
+$("integrityBtn").onclick = () => {
+  const r = window.CF.Integrity.check();
+  $("integrityOut").innerHTML = r.ok
+    ? `<div class="panel">🟢 ${r.checked} prosjekter sjekket – ingen avvik.</div>`
+    : `<div class="panel danger">${r.issues.map((i) => `• [${esc(i.type)}] ${esc(i.detail)}`).join("\n")}\n<button class="small" id="integrityFix" style="margin-top:8px">🔧 Reparer indeksen</button></div>`;
+  const fix = $("integrityFix");
+  if (fix) fix.onclick = () => {
+    const after = window.CF.Integrity.repair();
+    $("integrityOut").innerHTML = `<div class="panel">Reparert. ${after.ok ? "🟢 Ingen gjenværende avvik." : after.issues.length + " avvik gjenstår (krever manuell vurdering)."}</div>`;
+    renderPortfolio();
+  };
+};
+
 function renderCosts() {
   const t = Costs.totals();
   if (!t.calls) { $("costsView").innerHTML = `<div class="panel muted">Ingen LLM-kall målt enda.</div>`; return; }
@@ -192,7 +283,17 @@ function renderCosts() {
 }
 
 /* ---------- SELSKAPER: portefølje ---------- */
+function renderRanking() {
+  const { ranked, starved } = window.CF.Ranking.compute();
+  if (!ranked.length) { $("ranking").innerHTML = `<div class="panel muted">Ingen aktive prosjekter å prioritere.</div>`; return; }
+  $("ranking").innerHTML = `<div class="panel"><table><tr><th>#</th><th>PROSJEKT</th><th>POENG</th><th>FORMEL</th><th>KOST / BUDSJETT</th></tr>` +
+    ranked.map((r, i) => `<tr class="proj-item" data-id="${r.id}"><td>${i + 1}</td><td>${esc(r.name)}${r.test ? ' <span class="badge test">TEST</span>' : ""}</td><td><b>${r.points}</b></td><td class="muted">${r.reasons.map(esc).join(" · ")}</td><td class="muted">${nok(r.costTotal)}${r.budget ? " / " + nok(r.budget) : " / –"}</td></tr>`).join("") + `</table>` +
+    (starved.length ? `<div class="note" style="margin-top:8px"><b>Får IKKE ressurser nå:</b> ${starved.map((r) => esc(r.name) + " (" + r.points + "p)").join(" · ")}</div>` : "") + `</div>`;
+  document.querySelectorAll("#ranking .proj-item").forEach((tr) => { tr.onclick = () => showProject(tr.dataset.id); });
+}
+
 function renderPortfolio() {
+  renderRanking();
   const list = Projects.list();
   if (!list.length) {
     $("portfolio").innerHTML = `<div class="panel muted">Ingen prosjekter enda. Registrer en idé i Idélab, eller last eksempelprosjektet under System.</div>`;
@@ -228,13 +329,19 @@ function showProject(id) {
   history.replaceState(null, "", "#/companies/" + id);
   $("crumb").innerHTML = `<b>Selskaper</b> <span class="muted">/ ${esc(p.name)}</span>`;
   const s = p.evaluation && p.evaluation.synthesis;
+  const cost = Projects.totalCost(p);
+  const overBudget = p.budgetNok && cost.total >= p.budgetNok;
   let html = `<div class="panel"><h3>${esc(p.name)}${p.test ? ' <span class="badge test">TEST – ISOLERT EKSEMPELPROSJEKT</span>' : ""}</h3>` +
     phaseStrip(p) +
     `<div class="row"><div>Status: <b>${esc(p.status)}</b></div><div>Fase: <b>${p.phase} – ${esc(phaseTitle(p.phase))}</b></div><div>Modenhet: <b>${esc(p.maturity || "–")}</b></div>` +
+    `<div>Kost: <b${overBudget ? ' style="color:var(--red)"' : ""}>${nok(cost.total)}</b><span class="badge est">estimat + faktisk</span>${p.budgetNok ? ` / budsjett ${nok(p.budgetNok)}` : ""}</div>` +
     (p.evaluation ? `<div>Score: <span class="score">${p.evaluation.totalScore}</span>/100</div>` : "") + `</div>` +
+    (overBudget ? `<div class="note" style="color:var(--red)"><b>BUDSJETT BRUKT OPP.</b> Allerede brukt kapital er ikke et argument for å fortsette. Velg: sett nytt budsjett, parker eller avslutt.</div>` : "") +
     `<div class="note">Idé: ${esc(p.idea)}</div>` +
     `<div class="row" style="margin-top:10px">` +
     `<button class="small" id="pResume">▶ Kjør videre</button>` +
+    `<button class="small" id="pBudget">💰 ${p.budgetNok ? "Endre budsjett" : "Sett budsjett"} (eier)</button>` +
+    `<button class="small" id="pExpense">+ Utgift</button>` +
     `<button class="small" id="pGate">✅ Godkjenn port (eier): ${esc((PHASES.find((f) => f.n === p.phase) || {}).gate || "")}</button>` +
     `<button class="small" id="pReport">📄 Rapport</button>` +
     `<button class="small" id="pRetro">🔁 Retro</button>` +
@@ -275,7 +382,16 @@ function showProject(id) {
     }
     v += `<div class="row" style="margin-top:10px">` +
       (p.landing ? `<button class="small" id="lpPreview">👁 Forhåndsvis landingsside</button><button class="small" id="lpDownload">⬇ Last ned landingsside (HTML)</button>` : `<button class="small" id="lpGen">🌐 Generer falsk-dør-landingsside</button>`) + `</div>`;
-    if (p.landing) v += `<div class="note">«${esc(p.landing.content.headline)}» – ${esc(p.landing.content.price_line)}. Selvstendig HTML uten eksterne avhengigheter, klar for GitHub Pages/Netlify.${p.landing.formEndpoint ? "" : " NB: legg inn et skjema-endepunkt (f.eks. Formspree) før reell trafikk – uten det lagres påmeldinger kun i besøkerens nettleser."}</div>`;
+    if (p.landing) {
+      v += `<div class="note">«${esc(p.landing.content.headline)}» – ${esc(p.landing.content.price_line)}. Selvstendig HTML uten eksterne avhengigheter.${p.landing.formEndpoint ? "" : " NB: legg inn et skjema-endepunkt (f.eks. Formspree) før reell trafikk – uten det lagres påmeldinger kun i besøkerens nettleser."}</div>`;
+      if (p.landing.publishedUrl) {
+        v += `<div class="note">🟢 LIVE: <a href="${esc(p.landing.publishedUrl)}" target="_blank" rel="noopener">${esc(p.landing.publishedUrl)}</a> (publisert ${esc((p.landing.publishedAt || "").slice(0, 10))}) <button class="small" id="lpPublish" style="margin-left:8px">↻ Publiser på nytt (eier-port)</button></div>`;
+      } else if (window.CF.Publish.ready()) {
+        v += `<button class="small" id="lpPublish" style="margin-top:8px">🚀 Publiser falsk dør (eier-port)</button>`;
+      } else {
+        v += `<div class="note">Publisering til live URL krever GitHub-oppsett – se DIN TUR under System.</div>`;
+      }
+    }
     v += `</div>`;
     if (p.validation) {
       v += `<div class="panel"><h3>VALIDERINGSPORT ${certBadge(p.validation.certainty)}</h3><b style="color:var(--cyan)">${esc(p.validation.decision.toUpperCase())}</b> – ${esc(p.validation.decision_rationale)}\n\n${esc(p.validation.summary)}` +
@@ -300,6 +416,25 @@ function showProject(id) {
         `<div class="row" style="margin-top:10px">` +
         [["visitors_m1", "Besøk mnd 1"], ["visitor_growth_pct_m", "Vekst/mnd (0–1)"], ["signup_rate", "Reg.rate (0–1)"], ["paid_conversion", "Betalt konv. (0–1)"], ["churn_monthly", "Churn/mnd (0–1)"], ["cac", "CAC (kr)"]].map(([k, lbl]) => `<div><div class="note">${lbl}</div><input type="text" class="bm-in" data-k="${k}" value="${m.assumptions[k]}"></div>`).join("") +
         `</div><button class="small" id="bmUpdate" style="margin-top:8px">↻ Rekalkuler lokalt (gratis)</button>`;
+
+      /* Usikkerhetsvifte: Monte Carlo over antakelsene – ESTIMAT, metoden er enkel med vilje */
+      const sim = window.CF.Finance.simulate({ ...m.assumptions, price_avg: p.bizmodel.computed.price_avg }, 300);
+      const W = 340, H = 110, maxY = Math.max(...sim.mrr.p90, 1);
+      const X = (i) => 6 + (i / (sim.months - 1)) * (W - 12);
+      const Y = (val) => H - 18 - (val / maxY) * (H - 30);
+      const line = (arr) => arr.map((val, i) => `${X(i)},${Y(val)}`).join(" ");
+      const band = sim.mrr.p90.map((val, i) => `${X(i)},${Y(val)}`).join(" ") + " " + [...sim.mrr.p10].reverse().map((val, i) => `${X(sim.months - 1 - i)},${Y(val)}`).join(" ");
+      v += `<h3 style="margin-top:14px">USIKKERHETSVIFTE – MRR 24 MND <span class="badge est">estimat · ${sim.runs} simuleringer</span></h3>` +
+        `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="MRR-usikkerhetsvifte"><polygon points="${band}" fill="#37d5ff" opacity=".13"/><polyline points="${line(sim.mrr.p50)}" fill="none" stroke="#37d5ff" stroke-width="1.6"/><polyline points="${line(sim.mrr.p10)}" fill="none" stroke="#47708a" stroke-width=".8" stroke-dasharray="3 3"/><polyline points="${line(sim.mrr.p90)}" fill="none" stroke="#47708a" stroke-width=".8" stroke-dasharray="3 3"/><text x="${W - 4}" y="${Y(sim.mrr.p50[sim.months - 1]) - 4}" font-size="8" fill="#37d5ff" text-anchor="end">P50 ${Math.round(sim.mrr.p50[sim.months - 1] / 1000)}k</text></svg>` +
+        `<div class="note">MRR måned 24: P10 ${nok(sim.mrr.p10[23])} · P50 ${nok(sim.mrr.p50[23])} · P90 ${nok(sim.mrr.p90[23])}. Kapitalbehov: P10 ${nok(sim.capital.p10)} · P50 ${nok(sim.capital.p50)} · P90 ${nok(sim.capital.p90)}. Spenn per parameter: ±${Object.values(window.CF.Finance.SIM_SPREADS).map((x) => Math.round(x * 100) + "%").join("/±")}.</div>`;
+
+      /* Vakthunden: antakelser mot bransjespenn */
+      const findings = window.CF.Benchmarks.check(m.assumptions);
+      v += `<h3 style="margin-top:14px">VAKTHUNDEN – ANTAKELSER MOT BRANSJESPENN</h3>`;
+      v += findings.length
+        ? findings.map((fd) => `<div class="note">${fd.severity === "optimistisk" ? '<span class="badge l">OPTIMISTISK</span>' : '<span class="badge m">forsiktig</span>'} ${esc(fd.note)}</div>`).join("")
+        : `<div class="note"><span class="badge h">innenfor</span> Alle antakelser ligger innenfor bransjespennene.</div>`;
+      v += `<div class="note muted" style="font-size:10px">${esc(window.CF.Benchmarks.SOURCE)}</div>`;
     }
     html += v + `</div>`;
   }
@@ -444,6 +579,18 @@ function showProject(id) {
   if (p.decisions.length) {
     html += `<div class="panel"><h3>BESLUTNINGSLOGG</h3><table><tr><th>DATO</th><th>ROLLE</th><th>BESLUTNING</th><th>BEGRUNNELSE</th></tr>${p.decisions.map((d) => `<tr><td class="muted">${esc(d.at.slice(0, 10))}</td><td>${esc(d.role)}${d.byOwner ? ' <span class="badge test">EIER</span>' : ""}</td><td>${esc(d.decision)}</td><td class="muted">${esc(d.rationale)}</td></tr>`).join("")}</table></div>`;
   }
+  /* Tidslinje: hele prosjekthistorien fra loggene som finnes – deterministisk */
+  {
+    const events = [];
+    for (const d of p.decisions) events.push({ at: d.at, tag: d.byOwner ? "EIER" : d.role, text: d.decision });
+    for (const e2 of p.expenses || []) events.push({ at: e2.at, tag: "utgift", text: `${e2.amount} kr – ${e2.what}` });
+    for (const m of p.metrics || []) events.push({ at: m.at, tag: "måletall", text: `${m.month}: ${m.customers} kunder, ${m.mrr} kr MRR` });
+    if (p.landing && p.landing.publishedAt) events.push({ at: p.landing.publishedAt, tag: "LIVE", text: "Falsk dør publisert: " + (p.landing.publishedUrl || "") });
+    events.sort((a, b) => (a.at || "").localeCompare(b.at || ""));
+    if (events.length) {
+      html += `<div class="panel"><h3>TIDSLINJE</h3><div class="feed">${events.map((ev) => `<div class="item"><span class="when">${esc(when(ev.at))}</span><span class="badge${ev.tag === "EIER" || ev.tag === "LIVE" ? " test" : ""}">${esc(ev.tag)}</span><span class="what">${esc(ev.text)}</span></div>`).join("")}</div></div>`;
+    }
+  }
   $("detail").innerHTML = html;
   wireProjectActions(p);
 }
@@ -480,6 +627,14 @@ function wireProjectActions(p) {
     const endpoint = prompt("Skjema-endepunkt for ventelisten (f.eks. Formspree-URL). La stå tomt for lokal testvariant:", "") || "";
     try { await window.CF.Landing.run(Projects.get(p.id), { formEndpoint: endpoint.trim() }); showProject(p.id); }
     catch (e) { alert("Feil: " + e.message); lpGen.disabled = false; }
+  };
+  const lpPublish = $("lpPublish");
+  if (lpPublish) lpPublish.onclick = async () => {
+    const t = window.CF.Publish.target(Projects.get(p.id));
+    if (!confirm(`EIER-PORT: PUBLISERING\n\nDette committer landingssiden til:\n  ${t.repo} → ${t.path}\n\nLive URL blir:\n  ${t.url}\n\nInnholdet er nøyaktig HTML-en du kan forhåndsvise med 👁-knappen. Publisere?`)) return;
+    lpPublish.disabled = true;
+    try { await window.CF.Publish.landing(Projects.get(p.id)); refresh(); }
+    catch (e) { alert("Feil: " + e.message); lpPublish.disabled = false; }
   };
   const lpPreview = $("lpPreview");
   if (lpPreview) lpPreview.onclick = () => window.open(URL.createObjectURL(new Blob([Projects.get(p.id).landing.html], { type: "text/html" })));
@@ -561,6 +716,24 @@ function wireProjectActions(p) {
       showProject(p.id);
       renderPortfolio();
     } catch (e) { alert(e.message); }
+  };
+
+  /* Kapitaldisiplin */
+  $("pBudget").onclick = () => {
+    const v = prompt(`Valideringsbudsjett i kr for «${p.name}» (eierbeslutning – forbruk over budsjett utløser kill-varsel):`, p.budgetNok || "5000");
+    if (v === null) return;
+    const n = parseInt(String(v).replace(/\D/g, ""), 10);
+    if (!n) { alert("Ugyldig beløp."); return; }
+    Projects.setBudget(Projects.get(p.id), n);
+    refresh();
+  };
+  $("pExpense").onclick = () => {
+    const what = prompt("Hva er utgiften? (f.eks. «Meta Ads falsk dør»)", "");
+    if (!what) return;
+    const amount = parseInt(String(prompt("Beløp i kr:", "") || "").replace(/\D/g, ""), 10);
+    if (!amount) { alert("Ugyldig beløp."); return; }
+    try { Projects.addExpense(Projects.get(p.id), { amount, what, category: "manuell" }); refresh(); }
+    catch (e) { alert(e.message); }
   };
 
   $("pReport").onclick = () => {
@@ -670,8 +843,48 @@ $("runIdeaBtn").onclick = async () => {
   $("runIdeaBtn").disabled = false;
 };
 
+/* Idé-innboks + AEIS-radar-kandidater */
+function renderInbox() {
+  const list = window.CF.Inbox.list();
+  const radar = window.CF.Inbox.radarCandidates();
+  let html = "";
+  if (radar.length) {
+    html += radar.map((c) => `<div class="alert sev2"><div><div class="p">AEIS-RADAR · ${esc((c.at || "").slice(0, 10))}</div><div class="d">${esc(c.text.slice(0, 220))}${c.text.length > 220 ? "…" : ""}</div></div><div class="actions"><button class="small" data-radar-take="${esc(c.id)}">＋ Til innboksen</button></div></div>`).join("");
+  }
+  html += list.length
+    ? `<div class="panel">${list.map((x) => `<div class="feed"><div class="item"><span class="when">${esc(when(x.at))}</span><span class="badge${x.source === "aeis-radar" ? "" : " test"}">${esc(x.source)}</span><span class="what">${esc(x.text)}</span><span style="margin-left:auto; display:flex; gap:6px"><button class="small" data-inbox-run="${x.id}">🏭 Kjør vurdering</button><button class="small" data-inbox-del="${x.id}">Fjern</button></span></div></div>`).join("")}</div>`
+    : `<div class="panel muted">Innboksen er tom. Fang idéer her – de koster ingenting før du kjører vurderingen.</div>`;
+  $("inboxList").innerHTML = html;
+  document.querySelectorAll("[data-radar-take]").forEach((b) => {
+    b.onclick = () => {
+      const c = window.CF.Inbox.radarCandidates().find((x) => x.id === b.dataset.radarTake);
+      if (c) window.CF.Inbox.add(c.text, "aeis-radar");
+      renderInbox();
+    };
+  });
+  document.querySelectorAll("[data-inbox-run]").forEach((b) => {
+    b.onclick = () => {
+      const item = window.CF.Inbox.list().find((x) => x.id === b.dataset.inboxRun);
+      if (!item) return;
+      $("ideaText").value = item.text;
+      $("ideaName").value = "";
+      window.CF.Inbox.remove(item.id);
+      renderInbox();
+      $("ideaText").scrollIntoView({ behavior: "smooth", block: "center" });
+      $("ideaText").focus();
+    };
+  });
+  document.querySelectorAll("[data-inbox-del]").forEach((b) => { b.onclick = () => { window.CF.Inbox.remove(b.dataset.inboxDel); renderInbox(); }; });
+}
+$("inboxAddBtn").onclick = () => {
+  try { window.CF.Inbox.add($("inboxText").value); $("inboxText").value = ""; renderInbox(); }
+  catch (e) { alert(e.message); }
+};
+$("inboxText").addEventListener("keydown", (e) => { if (e.key === "Enter") $("inboxAddBtn").click(); });
+
 /* Sammenligning av evaluerte idéer */
 function renderIdeaLab() {
+  renderInbox();
   const evaluated = Projects.list().filter((p) => p.evaluation);
   const opts = evaluated.map((p) => `<option value="${p.id}">${esc(p.name)} (${p.evaluation.totalScore}/100)</option>`).join("");
   $("cmpA").innerHTML = opts || `<option value="">– ingen evaluerte idéer –</option>`;

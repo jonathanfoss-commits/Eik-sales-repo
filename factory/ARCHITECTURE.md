@@ -1,4 +1,50 @@
-# Company Factory – Arkitektur v2.0
+# Company Factory – Arkitektur v3.0
+
+## v3: Fra fabrikk til første krone (nattskift-leveransen)
+
+Suksessdefinisjonen flyttet seg fra «flere motorer» til «trakten i Command
+Center»: idéer vurdert → tester publisert → betalende kunder → MRR.
+
+**ADR-1: Datalager for synk.** Vurdert: (a) privat GitHub-repo via contents-API,
+(b) Supabase, (c) kun eksport/import. Valgt (a): allerede i stacken (Pages),
+commit-historikk gir gratis revisjonsspor av hver lagring, fine-grained PAT kan
+begrenses til ett repo, ingen ny leverandør. Migreringsvei: `Gh` er eneste
+API-klient – `Sync`/`Publish` er eneste forbrukere. Konflikt: siste skriver
+vinner, men taperen sikkerhetskopieres i repoet først (`factory-data.backup-*`).
+PAT lagres KUN i `cf_secret_pat` – utenfor eksport, synkdata og rapporter.
+
+**ADR-2: Publisering av tester.** Falsk dør → commit til Pages-repo
+(`tests/<slug>/index.html`) → live URL på minutter. Hver publisering er en
+eier-port: knappen viser repo, filsti og URL før bekreftelse, og beslutningen
+logges byOwner. Live tester overvåkes i Command Center (dager live, dømt/ikke
+dømt).
+
+**Kapitaldisiplin (CFO):** budsjett per prosjekt (`Projects.setBudget`,
+eier-logget), utgiftslogg (`addExpense` – faktiske kroner ved siden av
+AI-estimatet), kill-varsler ved 80 % og 100 % av budsjett (sev0 med eksplisitt
+«brukt kapital er ikke argument for å fortsette»), transparent
+porteføljeprioritering (`Ranking` – synlig formel, topp 3 + «får ikke ressurser
+nå»-hale) og fabrikkens egen effektivitet (kost per idé/validering/byggekjede).
+
+**Usikkerhetsvifte:** `Finance.simulate` (Monte Carlo, dokumenterte spenn
+±30–50 % per parameter) gir P10/P50/P90-bånd for MRR og kapitalbehov – tegnes
+som SVG-vifte i Fase 3, alltid merket ESTIMAT. Tre scenarier er falsk trygghet.
+
+**Vakthunden:** `Benchmarks` – kildemerkede bransjespenn; antakelser utenfor
+spennet i GUNSTIG retning gir varsel (LLM-en får aldri siste ord om egne tall).
+
+**Innboks og radar:** `Inbox` fanger rå idéer (cf_inbox); AEIS-radarens funn
+(lese-kontrakt mot `aeis_ledger` – aldri skriv) vises som kandidater.
+
+**Drift:** parkerte prosjekter > 30 dager varsles; `Integrity` selvtest med
+tapsfri indeks-reparasjon; prosjekt-tidslinje bygges deterministisk av loggene.
+
+**Eier-køen (`OwnerQueue`):** alt som venter på eieren – PAT, datarepo,
+Pages-repo, budsjett, skjema-endepunkt, første ekte idé, PR til main – som
+nummerert, klikk-for-klikk-liste i Command Center og System. Tom kø =
+selvgående fabrikk.
+
+---
 
 ## Control Center (v2.0)
 

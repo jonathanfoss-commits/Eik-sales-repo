@@ -255,6 +255,28 @@ const Projects = {
     }
     return Store.saveProject(p);
   },
+  /* Kapitaldisiplin: budsjett settes av eier; utgifter logges; total kost = AI + manuelle utgifter */
+  setBudget(p, amountNok) {
+    const amount = Math.max(0, Math.round(+amountNok || 0));
+    p.budgetNok = amount;
+    this.logDecision(p, { role: "eier", byOwner: true, decision: `BUDSJETT SATT: ${amount} kr`, rationale: "Valideringsbudsjett besluttet av eier. Forbruk over budsjett utløser kill-varsel." });
+    return Store.saveProject(p);
+  },
+  addExpense(p, { amount, what, category }) {
+    const amt = Math.round(+amount || 0);
+    if (!amt || !what) throw new Error("Utgift krever beløp og beskrivelse.");
+    p.expenses = p.expenses || [];
+    p.expenses.push({ at: new Date().toISOString(), amount: amt, what, category: category || "annet" });
+    Activity.log("utgift", `[${p.name}] ${amt} kr – ${what}`, p.id);
+    return Store.saveProject(p);
+  },
+  /* Total prosjektkost i NOK: manuelle utgifter (faktiske) + AI-kost (estimat) */
+  totalCost(p) {
+    const manual = (p.expenses || []).reduce((s, e) => s + e.amount, 0);
+    const ai = Costs.totals(p.id).estimateNok;
+    return { manual, ai, total: Math.round((manual + ai) * 100) / 100 };
+  },
+
   /* Kill-disiplin: parker/avslutt/reaktiver er eksplisitte, loggede eierhandlinger.
      Allerede brukt tid er aldri et argument for å fortsette. */
   park(p, reason) {
@@ -1781,6 +1803,36 @@ const Finance = {
       capitalNeed: Math.round(Math.min(0, ...rows.map((r) => r.cumulative))) * -1,
     };
   },
+  /* Monte Carlo-usikkerhetsvifte. Tre scenarier er falsk trygghet – viften viser spennet.
+     Dokumenterte spenn rundt basisantakelsene (uniform): konvertering ±40 %, churn ±50 %,
+     CAC ±40 %, trafikkvekst ±50 %, starttrafikk ±30 %. ESTIMAT – metoden er enkel med vilje. */
+  SIM_SPREADS: { conv: 0.4, churn: 0.5, cac: 0.4, growth: 0.5, visitors: 0.3 },
+  simulate(a, runs = 500, months = 24) {
+    const sp = this.SIM_SPREADS;
+    const jitter = (v, pct) => v * (1 + (Math.random() * 2 - 1) * pct);
+    const mrrByMonth = Array.from({ length: months }, () => []);
+    const capitals = [];
+    for (let i = 0; i < runs; i++) {
+      const run = this.project({
+        ...a,
+        signup_rate: jitter(a.signup_rate, sp.conv),
+        paid_conversion: jitter(a.paid_conversion, sp.conv),
+        churn_monthly: Math.min(0.9, Math.max(0.001, jitter(a.churn_monthly, sp.churn))),
+        cac: Math.max(0, jitter(a.cac, sp.cac)),
+        visitor_growth_pct_m: jitter(a.visitor_growth_pct_m, sp.growth),
+        visitors_m1: Math.max(1, jitter(a.visitors_m1, sp.visitors)),
+      }, months);
+      run.rows.forEach((r, m) => mrrByMonth[m].push(r.mrr));
+      capitals.push(run.capitalNeed);
+    }
+    const pct = (arr, q) => { const s = [...arr].sort((x, y) => x - y); return s[Math.min(s.length - 1, Math.floor(q * s.length))]; };
+    return {
+      runs, months, spreads: sp,
+      mrr: { p10: mrrByMonth.map((m) => pct(m, 0.1)), p50: mrrByMonth.map((m) => pct(m, 0.5)), p90: mrrByMonth.map((m) => pct(m, 0.9)) },
+      capital: { p10: pct(capitals, 0.1), p50: pct(capitals, 0.5), p90: pct(capitals, 0.9) },
+    };
+  },
+
   /* Konservativ / sannsynlig / offensiv – faste multiplikatorer, tydelig dokumentert */
   scenarios(a) {
     const mk = (mult) => this.project({
@@ -1795,6 +1847,31 @@ const Finance = {
       sannsynlig: mk({ conv: 1, churn: 1, cac: 1 }),
       offensiv: mk({ conv: 1.4, churn: 0.7, cac: 0.8 }),
     };
+  },
+};
+
+/* ================= Benchmarks (vakthund: LLM-antakelser mot bransjespenn) ================= */
+const Benchmarks = {
+  SOURCE: "Bransjetommelfingre for selvbetjent SaaS (offentlige benchmark-rapporter, per 2025). Vide spenn med vilje – dette er en vakthund mot ønsketenkning, ikke fasit.",
+  RANGES: {
+    signup_rate: { min: 0.01, max: 0.10, label: "Besøk → registrering" },
+    paid_conversion: { min: 0.02, max: 0.25, label: "Registrert → betalende" },
+    churn_monthly: { min: 0.02, max: 0.10, label: "Månedlig churn (B2C)" },
+    cac: { min: 50, max: 1500, label: "CAC (kr, blandet kanal)" },
+    visitor_growth_pct_m: { min: 0, max: 0.3, label: "Organisk trafikkvekst/mnd" },
+  },
+  /* Optimistiske avvik (bedre enn spennet) er farligst – de blir varsler. Pessimistiske noteres. */
+  check(assumptions) {
+    const findings = [];
+    for (const [key, r] of Object.entries(this.RANGES)) {
+      const v = assumptions[key];
+      if (typeof v !== "number") continue;
+      const optimistic = (key === "churn_monthly" || key === "cac") ? v < r.min : v > r.max;
+      const pessimistic = (key === "churn_monthly" || key === "cac") ? v > r.max : v < r.min;
+      if (optimistic) findings.push({ key, value: v, range: r, severity: "optimistisk", note: `${r.label}: ${v} er utenfor spennet ${r.min}–${r.max} i GUNSTIG retning – krever ekstraordinær begrunnelse eller egne data.` });
+      else if (pessimistic) findings.push({ key, value: v, range: r, severity: "pessimistisk", note: `${r.label}: ${v} er utenfor spennet ${r.min}–${r.max} i ugunstig retning – muligens for forsiktig.` });
+    }
+    return findings;
   },
 };
 
@@ -1999,7 +2076,14 @@ const Alerts = {
     const alerts = [];
     for (const p of Projects.list()) {
       const active = !["parkert", "avsluttet"].includes(p.status);
-      if (!active) continue;
+      if (!active) {
+        /* Parkerte prosjekter skal ikke råtne i stillhet */
+        if (p.status === "parkert") {
+          const days = Math.floor((Date.now() - new Date(p.updatedAt || p.createdAt).getTime()) / 86400000);
+          if (days >= 30) alerts.push({ severity: 2, type: "parkert", projectId: p.id, project: p.name, title: `Parkert i ${days} dager`, detail: "Revurder med ny informasjon – eller avslutt og høst lærdommen. Parkering er ikke en beslutning.", action: "open" });
+        }
+        continue;
+      }
       /* Ventende port for nåværende fase */
       const phase = PHASES.find((f) => f.n === p.phase);
       if (phase && p.evaluation && !(p.gates && p.gates[phase.gate] && p.gates[phase.gate].approved)) {
@@ -2010,6 +2094,15 @@ const Alerts = {
       if (dec === "stopp") alerts.push({ severity: 0, type: "stopp", projectId: p.id, project: p.name, title: "Anbefalt STOPP – prosjektet er fortsatt aktivt", detail: "Allerede brukt tid er ikke et argument for å fortsette.", action: "open" });
       /* Idé uten vurdering */
       if (!p.evaluation) alerts.push({ severity: 2, type: "neste_steg", projectId: p.id, project: p.name, title: "Idé uten vurdering", detail: "Kjør idévurderingen for å få beslutning og score.", action: "open" });
+      /* Kapitaldisiplin: forbruk mot budsjett */
+      if (p.budgetNok) {
+        const cost = Projects.totalCost(p);
+        if (cost.total >= p.budgetNok) {
+          alerts.push({ severity: 0, type: "budsjett", projectId: p.id, project: p.name, title: `Budsjett brukt opp: ${Math.round(cost.total)} av ${p.budgetNok} kr`, detail: "Allerede brukt kapital er IKKE et argument for å fortsette. Eiervalg: sett nytt budsjett, parker eller avslutt.", action: "open" });
+        } else if (cost.total >= p.budgetNok * 0.8) {
+          alerts.push({ severity: 1, type: "budsjett", projectId: p.id, project: p.name, title: `Budsjett ${Math.round((cost.total / p.budgetNok) * 100)} % brukt (${Math.round(cost.total)} av ${p.budgetNok} kr)`, detail: "Planlegg beslutningen nå – ikke når kassen er tom.", action: "open" });
+        }
+      }
       /* Faktisk mot prognose: siste måned < 50 % av forventet MRR */
       if (p.bizmodel && (p.metrics || []).length) {
         const cmp = Metrics.compare(p);
@@ -2017,6 +2110,11 @@ const Alerts = {
         if (last && last.forecast_mrr > 0 && last.mrr < last.forecast_mrr * 0.5) {
           alerts.push({ severity: 1, type: "avvik", projectId: p.id, project: p.name, title: `MRR-avvik: ${last.mrr} kr mot prognose ${last.forecast_mrr} kr (${last.month})`, detail: "Under 50 % av sannsynlig-scenariet – vurder antakelsene på nytt.", action: "open" });
         }
+      }
+      /* Vakthunden: antakelser gunstigere enn bransjespennet */
+      if (p.bizmodel) {
+        const opt = Benchmarks.check(p.bizmodel.model.assumptions).filter((f) => f.severity === "optimistisk");
+        if (opt.length) alerts.push({ severity: 2, type: "vakthund", projectId: p.id, project: p.name, title: `${opt.length} antakelse${opt.length > 1 ? "r" : ""} gunstigere enn bransjespennet`, detail: opt.map((f) => f.range.label).join("; ") + ". Se Fase 3-panelet – krever begrunnelse eller egne data.", action: "open" });
       }
       /* Fullførte eksperimenter uten portbeslutning */
       if ((p.experiments || []).length && p.experiments.every((e) => e.status === "fullført") && !p.validation) {
@@ -2026,6 +2124,258 @@ const Alerts = {
     const u = Store.usage();
     if (u.totalKb / u.limitKb > 0.8) alerts.push({ severity: 1, type: "system", projectId: null, project: "System", title: `Lagring ${Math.round((u.totalKb / u.limitKb) * 100)} % full`, detail: "Eksporter og slett avsluttede prosjekter.", action: "system" });
     return alerts.sort((a, b) => a.severity - b.severity);
+  },
+};
+
+/* ================= Gh (delt GitHub API-klient for Sync og Publish) =================
+ * ADR: GitHub-repo som datalager valgt over Supabase (ny konto, ny leverandør) og
+ * kun-eksport (ingen synk). Begrunnelse: allerede i stacken (Pages-deploy), commit-
+ * historikk gir gratis revisjonsspor av hver lagring, fine-grained PAT kan begrenses
+ * til ett repo. Migreringsvei: Sync/Publish er eneste forbrukere av Gh – bytt
+ * implementasjon uten å røre resten. PAT lagres KUN i cf_secret_pat (utenfor eksport,
+ * rapporter og synkdata). */
+function b64encodeUtf8(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = "";
+  for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+  return btoa(bin);
+}
+function b64decodeUtf8(b64) {
+  const bin = atob(b64.replace(/\n/g, ""));
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+const Gh = {
+  get pat() { return localStorage.getItem("cf_secret_pat") || ""; },
+  set pat(v) { v ? localStorage.setItem("cf_secret_pat", v) : localStorage.removeItem("cf_secret_pat"); },
+  async request(method, path, body) {
+    if (!this.pat) throw new Error("Ingen GitHub-PAT. Legg inn under System → Synk & publisering (se DIN TUR).");
+    const res = await fetch("https://api.github.com" + path, {
+      method,
+      headers: { authorization: "Bearer " + this.pat, accept: "application/vnd.github+json", "content-type": "application/json" },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (res.status === 404) return { status: 404, json: null };
+    if (res.status === 401 || res.status === 403) throw new Error("GitHub avviste PAT-en (" + res.status + "). Sjekk at den er gyldig og har contents-tilgang til repoet.");
+    const json = await res.json().catch(() => null);
+    if (res.status === 409 || res.status === 422) return { status: res.status, json };
+    if (!res.ok) throw new Error(`GitHub API-feil ${res.status}: ${(json && json.message) || "ukjent"}`);
+    return { status: res.status, json };
+  },
+  async getFile(repo, path, branch) {
+    const r = await this.request("GET", `/repos/${repo}/contents/${path}?ref=${encodeURIComponent(branch)}`);
+    if (r.status === 404 || !r.json) return null;
+    return { sha: r.json.sha, content: b64decodeUtf8(r.json.content || "") };
+  },
+  async putFile(repo, path, branch, content, message, sha) {
+    const body = { message, branch, content: b64encodeUtf8(content) };
+    if (sha) body.sha = sha;
+    return this.request("PUT", `/repos/${repo}/contents/${path}`, body);
+  },
+};
+
+/* ================= Sync (privat GitHub-repo som datalager) ================= */
+const Sync = {
+  DATA_PATH: "factory-data.json",
+  config() { return Store.get("cf_sync", { repo: "", branch: "main", lastSyncAt: null, lastSha: null }); },
+  saveConfig(patch) { const c = { ...this.config(), ...patch }; Store.set("cf_sync", c); return c; },
+  status() {
+    const c = this.config();
+    return { configured: !!(c.repo && Gh.pat), repo: c.repo, lastSyncAt: c.lastSyncAt };
+  },
+  /* Push: siste-skriver-vinner, men taperen sikkerhetskopieres i repoet først */
+  async push() {
+    const c = this.config();
+    if (!c.repo) throw new Error("Ingen datarepo konfigurert (eier-oppgave – se DIN TUR).");
+    const data = Store.exportAll();
+    let r = await Gh.putFile(c.repo, this.DATA_PATH, c.branch, data, "factory: synk " + new Date().toISOString(), c.lastSha || undefined);
+    if (r.status === 409 || r.status === 422) {
+      /* Konflikt: en annen enhet har skrevet. Sikkerhetskopier fjernversjonen, så overskriv. */
+      const remote = await Gh.getFile(c.repo, this.DATA_PATH, c.branch);
+      if (remote) {
+        await Gh.putFile(c.repo, `factory-data.backup-${Date.now()}.json`, c.branch, remote.content, "factory: konflikt-backup før overskriving");
+        r = await Gh.putFile(c.repo, this.DATA_PATH, c.branch, data, "factory: synk (konflikt løst, siste skriver vinner) " + new Date().toISOString(), remote.sha);
+        if (r.status === 409 || r.status === 422) throw new Error("Synk-konflikt kunne ikke løses automatisk. Prøv «Hent» først.");
+      }
+    }
+    this.saveConfig({ lastSyncAt: new Date().toISOString(), lastSha: r.json && r.json.content ? r.json.content.sha : null });
+    Activity.log("synk", "Data pushet til " + c.repo);
+    return this.status();
+  },
+  async pull() {
+    const c = this.config();
+    if (!c.repo) throw new Error("Ingen datarepo konfigurert (eier-oppgave – se DIN TUR).");
+    const remote = await Gh.getFile(c.repo, this.DATA_PATH, c.branch);
+    if (!remote) throw new Error("Fant ingen synkdata i repoet enda – kjør «Synk nå» først fra enheten som har dataene.");
+    Store.importAll(remote.content);
+    this.saveConfig({ lastSyncAt: new Date().toISOString(), lastSha: remote.sha });
+    Activity.log("synk", "Data hentet fra " + c.repo);
+    return this.status();
+  },
+};
+
+/* ================= Publish (ship-path: falsk dør → live URL, bak eier-port) ================= */
+const Publish = {
+  config() { return Store.get("cf_publish", { repo: "", branch: "main", baseUrl: "" }); },
+  saveConfig(patch) { const c = { ...this.config(), ...patch }; Store.set("cf_publish", c); return c; },
+  slug(p) { return p.name.replace(/[^a-z0-9æøå]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase() || p.id; },
+  target(p) {
+    const c = this.config();
+    const path = `tests/${this.slug(p)}/index.html`;
+    const base = c.baseUrl || (c.repo ? `https://${c.repo.split("/")[0]}.github.io/${c.repo.split("/")[1]}` : "");
+    return { repo: c.repo, branch: c.branch, path, url: base ? `${base}/tests/${this.slug(p)}/` : "" };
+  },
+  ready() { const c = this.config(); return !!(c.repo && Gh.pat); },
+  /* Publisering er en eier-port: kalles KUN fra eierens eksplisitte klikk etter forhåndsvisning av målet */
+  async landing(p) {
+    if (!p.landing) throw new Error("Ingen landingsside generert.");
+    const t = this.target(p);
+    if (!t.repo) throw new Error("Ingen Pages-repo konfigurert (eier-oppgave – se DIN TUR).");
+    const existing = await Gh.getFile(t.repo, t.path, t.branch);
+    const r = await Gh.putFile(t.repo, t.path, t.branch, p.landing.html, `factory: publiser falsk dør for ${p.name}`, existing ? existing.sha : undefined);
+    if (r.status === 409 || r.status === 422) throw new Error("Publisering feilet (konflikt). Prøv igjen.");
+    p.landing.publishedUrl = t.url;
+    p.landing.publishedAt = new Date().toISOString();
+    Projects.logDecision(p, { phase: 2, role: "eier", byOwner: true, decision: "FALSK DØR PUBLISERT (eier-port)", rationale: `${t.repo}/${t.path} → ${t.url}` });
+    return Projects.save(p);
+  },
+  liveTests() {
+    return Projects.list()
+      .filter((p) => p.landing && p.landing.publishedAt)
+      .map((p) => ({ id: p.id, name: p.name, test: p.test, url: p.landing.publishedUrl, daysLive: Math.floor((Date.now() - new Date(p.landing.publishedAt).getTime()) / 86400000), horizon: (p.evaluation && p.evaluation.synthesis.assumptions_to_validate[0] || {}).horizon || "–", judged: !!p.validation }));
+  },
+};
+
+/* ================= Funnel (inntektstrakten – fabrikkens eneste ærlige målestokk) ================= */
+const Funnel = {
+  compute() {
+    const list = Projects.list();
+    const evaluated = list.filter((p) => p.evaluation).length;
+    const published = list.filter((p) => p.landing && p.landing.publishedUrl).length;
+    const launched = list.filter((p) => p.status === "lansert");
+    const customers = launched.reduce((s, p) => { const m = Metrics.latest(p); return s + (m ? m.customers : 0); }, 0);
+    const mrr = list.reduce((s, p) => { const m = Metrics.latest(p); return s + (m ? m.mrr : 0); }, 0);
+    return { evaluated, published, customers, mrr };
+  },
+  /* Fabrikkens egen effektivitet: hva koster hvert steg (AI-estimat) */
+  efficiency() {
+    const rows = Store.get("cf_costs", []);
+    const sumFor = (labels) => {
+      const r = rows.filter((x) => labels.includes(x.label));
+      return { calls: r.length, nok: Math.round(Costs.estimateNok(r.reduce((s, x) => s + x.in, 0), r.reduce((s, x) => s + x.out, 0)) * 100) / 100 };
+    };
+    const evaluated = Math.max(1, Projects.list().filter((p) => p.evaluation && !p.test).length);
+    const perIdea = sumFor(["inntak", "idévurdering"]);
+    return {
+      idea: { ...perIdea, perUnit: Math.round((perIdea.nok / evaluated) * 100) / 100 },
+      validation: sumFor(["valideringsport", "landingsside"]),
+      build: sumFor(["mvp-brief", "forretningsmodell", "nettsted", "app-skall", "teknisk arkitektur", "faseplan"]),
+    };
+  },
+};
+
+/* ================= Ranking (porteføljeprioritering – transparent formel, ingen LLM) ================= */
+const Ranking = {
+  /* Poeng: idéscore (0–100) + LTV/CAC-bonus + trekk for kapitalbehov, overforbruk og stillstand.
+     Formelen er bevisst enkel og synlig – prioritering skal kunne etterprøves, ikke føles. */
+  compute() {
+    const now = Date.now();
+    const rows = Projects.list()
+      .filter((p) => !["avsluttet", "parkert"].includes(p.status))
+      .map((p) => {
+        const reasons = [];
+        let pts = p.evaluation ? p.evaluation.totalScore : 0;
+        reasons.push(`score ${pts}`);
+        const ltvCac = p.bizmodel ? p.bizmodel.computed.scenarios.sannsynlig.ltvCac : null;
+        if (ltvCac !== null) {
+          const b = ltvCac >= 3 ? 15 : ltvCac >= 1 ? 0 : -15;
+          pts += b; reasons.push(`LTV/CAC ${ltvCac} (${b >= 0 ? "+" : ""}${b})`);
+        }
+        const capital = p.bizmodel ? p.bizmodel.computed.scenarios.sannsynlig.capitalNeed : null;
+        if (capital !== null && capital > 100000) { pts -= 10; reasons.push("kapitalbehov > 100k (−10)"); }
+        const cost = Projects.totalCost(p);
+        if (p.budgetNok && cost.total >= p.budgetNok) { pts -= 25; reasons.push("over budsjett (−25)"); }
+        const daysIdle = Math.floor((now - new Date(p.updatedAt || p.createdAt).getTime()) / 86400000);
+        if (daysIdle > 14) { pts -= 10; reasons.push(`${daysIdle} dager uten aktivitet (−10)`); }
+        return { id: p.id, name: p.name, test: p.test, status: p.status, phase: p.phase, points: Math.round(pts), reasons, costTotal: cost.total, budget: p.budgetNok || null };
+      })
+      .sort((a, b) => b.points - a.points);
+    return { ranked: rows.slice(0, 3), starved: rows.slice(3) };
+  },
+};
+
+/* ================= Inbox (idé-innboks + AEIS-radar-kandidater) ================= */
+const Inbox = {
+  list() { return Store.get("cf_inbox", []); },
+  add(text, source = "eier") {
+    if (!text || !text.trim()) throw new Error("Tom idé.");
+    const list = this.list();
+    list.unshift({ id: "i" + Date.now().toString(36) + list.length % 100, text: text.trim(), source, at: new Date().toISOString() });
+    Store.set("cf_inbox", list.slice(0, 50));
+    Activity.log("idé", "Idé fanget i innboksen: " + text.slice(0, 60));
+    return list[0];
+  },
+  remove(id) { Store.set("cf_inbox", this.list().filter((x) => x.id !== id)); },
+  /* AEIS-radaren (LESE-kontrakt, aldri skriv): radar-funn fra hovedboken som idé-kandidater */
+  radarCandidates() {
+    const ledger = Store.get("aeis_ledger", []);
+    const seen = new Set(this.list().map((x) => x.text));
+    return (ledger || [])
+      .filter((d) => d && d.radar)
+      .slice(0, 3)
+      .map((d) => ({ id: d.id, at: d.at, text: String(d.radar).slice(0, 500) }))
+      .filter((c) => !seen.has(c.text));
+  },
+};
+
+/* ================= Integrity (selvtest: dataintegritet med reparasjon) ================= */
+const Integrity = {
+  check() {
+    const issues = [];
+    const index = Store.projectIds();
+    for (const id of index) {
+      const p = Store.loadProject(id);
+      if (!p) issues.push({ type: "manglende_prosjekt", detail: `Indeksen peker på cf_project_${id} som ikke finnes.`, fix: "reindex" });
+      else if (!p.id || !p.name || !Array.isArray(p.decisions)) issues.push({ type: "korrupt_prosjekt", detail: `«${p.name || id}» mangler påkrevde felter.`, fix: null });
+    }
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("cf_project_") && !index.includes(key.replace("cf_project_", ""))) {
+        issues.push({ type: "foreldreløs_nøkkel", detail: `${key} finnes, men står ikke i indeksen.`, fix: "reindex" });
+      }
+    }
+    return { ok: issues.length === 0, issues, checked: index.length };
+  },
+  /* Reparasjon: bygg indeksen på nytt fra faktiske nøkler (mister aldri data) */
+  repair() {
+    const ids = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("cf_project_") && Store.get(key, null)) ids.push(key.replace("cf_project_", ""));
+    }
+    Store.set("cf_index", ids);
+    Activity.log("system", `Selvtest reparerte indeksen (${ids.length} prosjekter).`);
+    return this.check();
+  },
+};
+
+/* ================= OwnerQueue («DIN TUR» – alt som venter på eieren, klikk-for-klikk) ================= */
+const OwnerQueue = {
+  compute() {
+    const q = [];
+    if (!Store.apiKey) q.push({ id: "apikey", title: "Legg inn API-nøkkel", why: "Låser opp alle AI-kjøringer (vurdering, byggekjede).", how: "platform.claude.com → API keys → Create key → lim inn under System." });
+    if (!Gh.pat) q.push({ id: "pat", title: "Lag GitHub-PAT og lim inn", why: "Låser opp synk på tvers av enheter og publisering av live tester.", how: "github.com → Settings → Developer settings → Fine-grained tokens → gi KUN contents-lese/skrive til datarepoet og Pages-repoet → lim inn under System → Synk & publisering. Lagres kun i denne nettleseren, aldri i eksport." });
+    if (!Sync.config().repo) q.push({ id: "syncrepo", title: "Opprett PRIVAT datarepo og angi navnet", why: "Dataene dine overlever nettleseren og synkes mellom telefon og desktop, med commit-historikk som revisjonsspor.", how: "github.com → New repository → f.eks. «factory-data» (Private) → skriv owner/factory-data under System → Synk." });
+    if (!Publish.config().repo) q.push({ id: "pubrepo", title: "Angi Pages-repo for live tester", why: "Falske dører publiseres til en ekte URL på minutter.", how: "Bruk et offentlig repo med GitHub Pages aktivert (f.eks. dette repoet) → skriv owner/repo under System → Publisering." });
+    for (const p of Projects.list()) {
+      if (p.test) continue;
+      if (p.evaluation && !p.budgetNok) q.push({ id: "budget-" + p.id, title: `Sett valideringsbudsjett for «${p.name}»`, why: "Kill-terskler i penger aktiveres først når budsjettet finnes.", how: "Åpne prosjektet → 💰 Sett budsjett. Forslag: 5 000 kr.", projectId: p.id });
+      if (p.landing && !p.landing.formEndpoint) q.push({ id: "form-" + p.id, title: `Skjema-endepunkt for ventelisten («${p.name}»)`, why: "Uten endepunkt samles ikke påmeldinger – testen måler ingenting.", how: "formspree.io → New form → kopier URL → regenerer landingssiden med endepunktet.", projectId: p.id });
+    }
+    if (!Projects.list().some((p) => !p.test)) q.push({ id: "realidea", title: "Velg fabrikkens første EKTE idé", why: "Trakten forblir null til et ekte prosjekt kjøres.", how: "Skriv idéen i Idélab (eller velg fra innboksen) og kjør fabrikken med API-nøkkelen." });
+    q.push({ id: "mergemain", title: "Merge fabrikken til main (PR)", why: "Gjør Control Center live på GitHub Pages med fast URL.", how: "Be Claude lage PR-en, eller merge branchen claude/company-factory-build-bp8pnz selv." });
+    return q;
   },
 };
 
@@ -2050,4 +2400,4 @@ const SelfReview = {
 };
 
 /* Eksponer modulene (også for tester) */
-window.CF = { Store, LLM, Board, Pipeline, Projects, Intake, Evaluation, Experiments, Landing, BizModel, Finance, SiteGen, TechArch, AppGen, Maturity, Metrics, Library, Marketing, Strategy, Legal, Ops, Report, Retro, Lessons, Activity, Costs, Alerts, Planner, Brief, Demo, SelfReview, SCHEMAS, PHASES, OWNER_GATE_ACTIONS, FACTORY_ROLES, CRITERIA, MATURITY_CHECKLISTS, COST_RATES, pool, makeZip, crc32 };
+window.CF = { Store, LLM, Board, Pipeline, Projects, Intake, Evaluation, Experiments, Landing, BizModel, Finance, Benchmarks, SiteGen, TechArch, AppGen, Maturity, Metrics, Library, Marketing, Strategy, Legal, Ops, Report, Retro, Lessons, Activity, Costs, Alerts, Funnel, Ranking, Gh, Sync, Publish, Inbox, Integrity, OwnerQueue, Planner, Brief, Demo, SelfReview, SCHEMAS, PHASES, OWNER_GATE_ACTIONS, FACTORY_ROLES, CRITERIA, MATURITY_CHECKLISTS, COST_RATES, pool, makeZip, crc32 };

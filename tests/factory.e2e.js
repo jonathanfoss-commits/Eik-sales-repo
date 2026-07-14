@@ -921,6 +921,192 @@ print('OK', len(names))
     await mob.close();
   }
 
+  /* ---------- Scenario 10: v3 – kapitaldisiplin, vifte, vakthund, synk, publisering, innboks, selvtest ---------- */
+  console.log("FACTORY 10: trakt → budsjett-kill → vifte → vakthund → synk (m/konflikt) → publisering → innboks → selvtest");
+  {
+    const { page, errors } = await freshPage(browser);
+    const { handler } = mockRouter();
+    await page.route("**/v1/messages", handler);
+    page.on("dialog", (d) => d.accept("Testbegrunnelse"));
+
+    /* Mocket GitHub API med tilstand: filer, sha-er, konflikt og ugyldig PAT */
+    const gh = { files: {}, shaN: 1, puts: [] };
+    await page.route("https://api.github.com/**", (route) => {
+      const req = route.request();
+      const auth = req.headers()["authorization"] || "";
+      if (auth.includes("bad-pat")) return route.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ message: "Bad credentials" }) });
+      const url = new URL(req.url());
+      const m = url.pathname.match(/^\/repos\/([^/]+\/[^/]+)\/contents\/(.+)$/);
+      if (!m) return route.fulfill({ status: 404, contentType: "application/json", body: "{}" });
+      const key = m[1] + "/" + decodeURIComponent(m[2]);
+      if (req.method() === "GET") {
+        const f = gh.files[key];
+        if (!f) return route.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ message: "Not Found" }) });
+        return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ sha: f.sha, content: Buffer.from(f.content, "utf-8").toString("base64") }) });
+      }
+      if (req.method() === "PUT") {
+        const body = JSON.parse(req.postData());
+        const existing = gh.files[key];
+        if (existing && body.sha !== existing.sha) return route.fulfill({ status: 409, contentType: "application/json", body: JSON.stringify({ message: "sha mismatch" }) });
+        if (!existing && body.sha) return route.fulfill({ status: 422, contentType: "application/json", body: JSON.stringify({ message: "sha provided for new file" }) });
+        const sha = "sha" + gh.shaN++;
+        gh.files[key] = { sha, content: Buffer.from(body.content, "base64").toString("utf-8") };
+        gh.puts.push(key);
+        return route.fulfill({ status: existing ? 200 : 201, contentType: "application/json", body: JSON.stringify({ content: { sha } }) });
+      }
+      return route.fulfill({ status: 404, body: "{}" });
+    });
+
+    /* Eier-køen før oppsett */
+    const q0 = await page.evaluate(() => window.CF.OwnerQueue.compute().map((x) => x.id));
+    check("eier-køen lister PAT, datarepo, Pages-repo og ekte idé før oppsett",
+      ["pat", "syncrepo", "pubrepo", "realidea", "mergemain"].every((id) => q0.includes(id)), q0);
+    const oqShown = await page.evaluate(() => document.getElementById("ccOwnerQueue").textContent.includes("DIN TUR"));
+    check("DIN TUR-kortet vises i Command Center", oqShown, null);
+
+    /* Demo + trakt */
+    await page.click('nav button[data-tab="system"]');
+    await page.click("#demoBtn");
+    await page.waitForFunction(() => document.getElementById("detail").textContent.includes("BoligPuls"), null, { timeout: 5000 });
+    await page.click('nav button[data-tab="command"]');
+    const funnel1 = await page.evaluate(() => document.getElementById("ccFunnel").textContent);
+    check("trakten viser 1 idé vurdert og ærlige nuller videre", funnel1.includes("IDÉER VURDERT") && funnel1.includes("TESTER PUBLISERT") && funnel1.includes("BETALENDE KUNDER"), funnel1.slice(0, 100));
+
+    /* Kapitaldisiplin: budsjett + utgifter → kill-varsler */
+    const budgetAlerts = await page.evaluate(() => {
+      const p = window.CF.Projects.list()[0];
+      window.CF.Projects.setBudget(p, 1000);
+      window.CF.Projects.addExpense(window.CF.Projects.get(p.id), { amount: 850, what: "Meta Ads falsk dør" });
+      const warn = window.CF.Alerts.derive().find((a) => a.type === "budsjett");
+      window.CF.Projects.addExpense(window.CF.Projects.get(p.id), { amount: 300, what: "Domene" });
+      const kill = window.CF.Alerts.derive().find((a) => a.type === "budsjett");
+      return { warnSev: warn && warn.severity, killSev: kill && kill.severity, killText: kill && kill.title };
+    });
+    check("budsjett: 80 %-varsel (sev1) → brukt opp (sev0) med kapital-disiplin-tekst",
+      budgetAlerts.warnSev === 1 && budgetAlerts.killSev === 0 && budgetAlerts.killText.includes("brukt opp"), budgetAlerts);
+
+    /* Prioritering */
+    await page.click('nav button[data-tab="portfolio"]');
+    const ranking = await page.evaluate(() => document.getElementById("ranking").textContent);
+    check("prioriteringen viser transparent formel med budsjett-trekk",
+      ranking.includes("score") && ranking.includes("over budsjett"), ranking.slice(0, 120));
+
+    /* Monte Carlo-vifte */
+    const sim = await page.evaluate(() => {
+      const p = window.CF.Projects.list()[0];
+      const s = window.CF.Finance.simulate({ ...p.bizmodel.model.assumptions, price_avg: p.bizmodel.computed.price_avg }, 200);
+      return { ord: s.mrr.p10[23] <= s.mrr.p50[23] && s.mrr.p50[23] <= s.mrr.p90[23], cap: s.capital.p10 <= s.capital.p50 && s.capital.p50 <= s.capital.p90, runs: s.runs };
+    });
+    check("Monte Carlo: persentilorden holder for MRR og kapitalbehov", sim.ord && sim.cap && sim.runs === 200, sim);
+    await page.click(".proj-item");
+    const fan = await page.evaluate(() => document.getElementById("detail").textContent);
+    check("viften og vakthunden vises i Fase 3-panelet", fan.includes("USIKKERHETSVIFTE") && fan.includes("VAKTHUNDEN"), null);
+
+    /* Vakthunden flagger ønsketenkning */
+    const wd = await page.evaluate(() => {
+      const f = window.CF.Benchmarks.check({ churn_monthly: 0.005, signup_rate: 0.5, cac: 10, paid_conversion: 0.1, visitor_growth_pct_m: 0.05 });
+      return f.filter((x) => x.severity === "optimistisk").map((x) => x.key);
+    });
+    check("vakthunden flagger churn/CAC/registrering utenfor spennet i gunstig retning",
+      wd.includes("churn_monthly") && wd.includes("cac") && wd.includes("signup_rate"), wd);
+
+    /* Synk: oppsett → push → pull → konflikt → ugyldig PAT */
+    await page.click('nav button[data-tab="system"]');
+    await page.fill("#ghPat", "good-pat");
+    await page.fill("#syncRepo", "eik/factory-data");
+    await page.fill("#pubRepo", "eik/eik-sales-repo");
+    await page.click("#ghSaveBtn");
+    await page.click("#syncPushBtn");
+    await page.waitForFunction(() => document.getElementById("syncStatus").textContent.includes("Sist synket"), null, { timeout: 5000 });
+    const pushed = gh.files["eik/factory-data/factory-data.json"];
+    check("synk push skriver hele eksporten til datarepoet", !!pushed && pushed.content.includes("BoligPuls"), Object.keys(gh.files));
+    /* Konflikt: en «annen enhet» endrer fila */
+    gh.files["eik/factory-data/factory-data.json"].sha = "ekstern-endring";
+    await page.click("#syncPushBtn");
+    for (let i = 0; i < 25 && !gh.puts.some((k) => k.includes("factory-data.backup-")); i++) await new Promise((r) => setTimeout(r, 200));
+    check("synk-konflikt: taperen sikkerhetskopieres i repoet før overskriving",
+      gh.puts.some((k) => k.includes("factory-data.backup-")), gh.puts);
+    /* Pull henter og anvender */
+    const pullOk = await page.evaluate(async () => {
+      const before = window.CF.Lessons.list().length;
+      const remote = JSON.parse(window.CF.Store.exportAll());
+      remote.cf_lessons = [{ lesson: "Synk-testlærdom", project: "SynkTest", at: new Date().toISOString() }];
+      return { before, remote: JSON.stringify(remote) };
+    });
+    gh.files["eik/factory-data/factory-data.json"] = { sha: "pull-sha", content: pullOk.remote };
+    await page.click("#syncPullBtn");
+    await page.waitForFunction(() => window.CF.Lessons.list().some((l) => l.lesson === "Synk-testlærdom"), null, { timeout: 5000 });
+    check("synk pull anvender fjerndata lokalt", true, null);
+    /* Ugyldig PAT gir forståelig feil */
+    await page.fill("#ghPat", "bad-pat");
+    await page.click("#ghSaveBtn");
+    await page.click("#syncPushBtn");
+    await page.waitForFunction(() => document.getElementById("syncStatus").textContent.includes("PAT"), null, { timeout: 5000 });
+    check("ugyldig PAT gir handlingsrettet feilmelding", true, null);
+    await page.fill("#ghPat", "good-pat");
+    await page.click("#ghSaveBtn");
+
+    /* Publisering (eier-port) → live URL → trakt og live-panel */
+    await page.evaluate(async () => { await window.CF.Landing.run(window.CF.Projects.list()[0], { formEndpoint: "https://formspree.io/f/test" }); });
+    await page.click('nav button[data-tab="portfolio"]');
+    await page.click(".proj-item");
+    await page.click("#lpPublish");
+    await page.waitForFunction(() => document.getElementById("detail").textContent.includes("LIVE:"), null, { timeout: 5000 });
+    const pub = await page.evaluate(() => {
+      const p = window.CF.Projects.list()[0];
+      return { url: p.landing.publishedUrl, logged: p.decisions[0].decision.includes("PUBLISERT") && p.decisions[0].byOwner, file: null };
+    });
+    check("falsk dør publisert bak eier-port med logget beslutning",
+      pub.url === "https://eik.github.io/eik-sales-repo/tests/boligpuls-test/" && pub.logged &&
+      !!gh.files["eik/eik-sales-repo/tests/boligpuls-test/index.html"], pub);
+    await page.click('nav button[data-tab="command"]');
+    const cc3 = await page.evaluate(() => ({ funnel: document.getElementById("ccFunnel").textContent, live: document.getElementById("ccLive").textContent }));
+    check("trakten teller publisert test og live-panelet overvåker den",
+      cc3.funnel.includes("TESTER PUBLISERT") && cc3.live.includes("LIVE TESTER") && cc3.live.includes("IKKE dømt"), cc3.live.slice(0, 100));
+
+    /* Innboks + AEIS-radar-kandidater */
+    await page.evaluate(() => {
+      localStorage.setItem("aeis_ledger", JSON.stringify([{ id: "r1", at: new Date().toISOString(), title: "Radar", radar: "[MULIGHET] Abonnement på strømsparing for boligeiere – økende søkevolum." }]));
+    });
+    await page.click('nav button[data-tab="idea"]');
+    await page.click("[data-radar-take]");
+    const inboxHas = await page.evaluate(() => window.CF.Inbox.list().some((x) => x.source === "aeis-radar"));
+    check("radar-funn kan tas inn i innboksen (lese-kontrakt mot AEIS)", inboxHas, null);
+    await page.click("[data-inbox-run]");
+    const prefilled = await page.evaluate(() => document.getElementById("ideaText").value.includes("strømsparing") && window.CF.Inbox.list().length === 0);
+    check("innboks-idé forhåndsutfyller pipelinen og fjernes fra køen", prefilled, null);
+
+    /* Tidslinje */
+    await page.click('nav button[data-tab="portfolio"]');
+    await page.click(".proj-item");
+    const timeline = await page.evaluate(() => document.getElementById("detail").textContent);
+    check("tidslinjen samler beslutninger, utgifter og publisering",
+      timeline.includes("TIDSLINJE") && timeline.includes("Meta Ads") && timeline.includes("PUBLISERT"), null);
+
+    /* Parkert-påminnelse */
+    const parked = await page.evaluate(() => {
+      const p2 = window.CF.Projects.create("Gammel idé", "En idé som ble parkert.");
+      window.CF.Projects.park(window.CF.Projects.get(p2.id), "test");
+      const raw = window.CF.Store.loadProject(p2.id);
+      raw.updatedAt = new Date(Date.now() - 40 * 86400000).toISOString();
+      window.CF.Store.set("cf_project_" + p2.id, raw);
+      return window.CF.Alerts.derive().find((a) => a.type === "parkert");
+    });
+    check("parkerte prosjekter over 30 dager gir påminnelse", parked && parked.title.includes("dager"), parked && parked.title);
+
+    /* Selvtest med reparasjon */
+    const integ = await page.evaluate(() => {
+      localStorage.setItem("cf_project_orphan1", JSON.stringify({ id: "orphan1", name: "Foreldreløs", decisions: [], assumptions: [] }));
+      const before = window.CF.Integrity.check();
+      const after = window.CF.Integrity.repair();
+      return { foundOrphan: before.issues.some((i) => i.type === "foreldreløs_nøkkel"), okAfter: after.ok, indexed: window.CF.Store.projectIds().includes("orphan1") };
+    });
+    check("selvtesten finner foreldreløse nøkler og reparasjonen bevarer data",
+      integ.foundOrphan && integ.okAfter && integ.indexed, integ);
+    check("ingen JS-feil", errors.length === 0, errors);
+    await page.close();
+  }
+
   await browser.close();
   console.log(failures === 0 ? "\nALL FACTORY TESTS PASSED" : `\n${failures} FAILURES`);
   process.exit(failures === 0 ? 0 : 1);

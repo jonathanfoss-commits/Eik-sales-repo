@@ -44,8 +44,12 @@
 
 <!-- ============ COMMAND CENTER ============ -->
 <section class="tab on" id="tab-command">
+  <h2>INNTEKTSTRAKTEN – FABRIKKENS ENESTE ÆRLIGE MÅLESTOKK</h2>
+  <div class="tiles" id="ccFunnel"></div>
+  <div id="ccOwnerQueue"></div>
   <h2>KREVER DEG NÅ</h2>
   <div id="ccAlerts"></div>
+  <div id="ccLive"></div>
   <h2>PORTEFØLJEPULS</h2>
   <div class="tiles" id="ccTiles"></div>
   <div class="row" style="align-items:flex-start">
@@ -62,6 +66,14 @@
 
 <!-- ============ IDÉLAB ============ -->
 <section class="tab" id="tab-idea">
+  <h2>IDÉ-INNBOKS</h2>
+  <div class="note">Fang idéer på sekunder uten å starte pipelinen. AEIS-radarens funn dukker opp som kandidater.</div>
+  <div class="row" style="margin-top:8px">
+    <input type="text" id="inboxText" placeholder="Rå idé – ett tastetrykk unna å bli husket">
+    <button class="small" id="inboxAddBtn" style="flex:0 0 auto">＋ Fang idé</button>
+  </div>
+  <div id="inboxList"></div>
+
   <h2>REGISTRER EN IDÉ (FASE 0)</h2>
   <div class="note">Input kan være svært kort. Fabrikken strukturerer idéen, registrerer antakelser, innkaller relevante fagroller, scorer kritisk og anbefaler neste steg. Den forsøker å avkrefte idéen før den anbefaler bygging.</div>
   <input type="text" id="ideaName" placeholder="Arbeidsnavn (f.eks. «BoligPuls»)" style="margin-top:10px">
@@ -83,6 +95,9 @@
 
 <!-- ============ SELSKAPER ============ -->
 <section class="tab" id="tab-portfolio">
+  <h2>PRIORITERING – HVEM FÅR RESSURSENE?</h2>
+  <div class="note">Transparent formel: idéscore + LTV/CAC-bonus − kapitalbehov − overforbruk − stillstand. Prioritering skal kunne etterprøves, ikke føles.</div>
+  <div id="ranking"></div>
   <h2>PROSJEKTPORTEFØLJE</h2>
   <div id="portfolio"></div>
   <div id="detail"></div>
@@ -112,9 +127,35 @@
   <input type="password" id="apiKey" placeholder="sk-ant-… (deles med JARVIS og AEIS)">
   <button class="primary" id="saveKeyBtn">Lagre nøkkel</button>
 
+  <h2>DIN TUR – ALT SOM VENTER PÅ DEG</h2>
+  <div id="ownerQueueFull"></div>
+
+  <h2>SYNK &amp; PUBLISERING (GitHub)</h2>
+  <div class="note">Privat datarepo gir synk mellom enheter med commit-historikk som revisjonsspor. Pages-repo gjør falske dører live på minutter. PAT-en lagres KUN i denne nettleseren – aldri i eksport eller synkdata.</div>
+  <div class="row" style="margin-top:8px">
+    <input type="password" id="ghPat" placeholder="GitHub fine-grained PAT (kun contents-tilgang)">
+    <input type="text" id="syncRepo" placeholder="Datarepo: owner/factory-data (PRIVAT)">
+    <input type="text" id="pubRepo" placeholder="Pages-repo: owner/repo (offentlig)">
+  </div>
+  <button class="primary" id="ghSaveBtn">Lagre oppsett</button>
+  <div class="row" style="margin-top:8px">
+    <button class="small" id="syncPushBtn">⇡ Synk nå (push)</button>
+    <button class="small" id="syncPullBtn">⇣ Hent fra repo (pull)</button>
+  </div>
+  <div class="note" id="syncStatus"></div>
+
+  <h2>SELVTEST</h2>
+  <div class="note">Dataintegritet: indeks mot nøkler, korrupte prosjekter, foreldreløse nøkler. Reparasjon mister aldri data.</div>
+  <button class="small" id="integrityBtn">🩺 Kjør selvtest</button>
+  <div id="integrityOut"></div>
+
   <h2>EKSEMPELPROSJEKT</h2>
   <div class="note">Laster et isolert, tydelig merket testprosjekt («BoligPuls (TEST)») med ferdig gjennomkjørt pipeline – ingen API-kall. Bruk det til å se hele flyten.</div>
   <button class="primary" id="demoBtn">🧪 Last inn eksempelprosjekt</button>
+
+  <h2>FABRIKKENS EFFEKTIVITET (ESTIMAT)</h2>
+  <div class="note">Hva koster hvert steg i AI-kall – grunnlaget for å vurdere om fabrikken selv er verdt prisen.</div>
+  <div id="efficiencyView"></div>
 
   <h2>AI-KOSTNADER (ESTIMAT)</h2>
   <div class="note">Usage fra hvert LLM-kall akkumuleres per prosjekt og modul. Ratene er konfigurerbare estimater – ikke faktura.</div>

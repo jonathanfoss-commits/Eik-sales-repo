@@ -152,6 +152,17 @@ faser, kostnadsmåler for hvert LLM-kall, varig aktivitetsspor, idé-sammenligni
 og mobil bunn-navigasjon der godkjenninger er én tommel unna. FAKTISK, ESTIMAT
 og TEST merkes alltid hver for seg.
 
+**v3 – fra fabrikk til første krone:** inntektstrakten (idéer vurdert → tester
+publisert → betalende kunder → MRR) øverst i Command Center; kapitaldisiplin med
+budsjett, utgiftslogg og kill-varsler i kroner; transparent porteføljeprioritering;
+Monte Carlo-usikkerhetsvifte (P10/P50/P90) i stedet for falsk scenariotrygghet;
+benchmark-vakthund som flagger ønsketenkning i antakelsene; **synk** mellom
+enheter via privat GitHub-repo (konflikt-backup, PAT aldri i eksport); **ett
+klikks publisering** av falske dører til live URL bak eier-port med live-test-
+overvåking; idé-innboks med AEIS-radar-kandidater; prosjekt-tidslinje; selvtest
+med tapsfri reparasjon – og **«DIN TUR»-køen** som samler alt som venter på
+eieren med klikk-for-klikk-instruksjoner.
+
 - **Idé → beslutning på minutter**: inntak (Fase 0) strukturerer idéen og skiller fakta,
   påstander, antakelser og ukjente; idévurderingen (Fase 1) innkaller kun de 3–6 relevante
   fagrollene (gjenbruker AEIS-styret med fortjent autoritet + 9 fabrikkroller), scorer på
