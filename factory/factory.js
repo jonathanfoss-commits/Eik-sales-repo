@@ -1572,7 +1572,7 @@ Aktiveringsmetrikk å måle fra dag 1: **${c.activation_metric}**
 <div id="demoBanner" hidden>DEMO-MODUS: ingen ekte innlogging eller betaling. Koble til Supabase/Stripe i config.js – se README-app.md.</div>
 <header><b>${e(c.app_name)}</b><a href="#/dashboard">Dashboard</a><a href="#/abonnement">Abonnement</a><a href="#/innstillinger">Innstillinger</a><a href="#" id="logoutLink" hidden>Logg ut</a></header>
 <main id="view"></main>
-<script src="config.js"></script>
+<script src="config.js"><\/script>
 <script>
 (() => {
 "use strict";
