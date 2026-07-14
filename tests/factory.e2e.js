@@ -817,6 +817,110 @@ print('OK', len(names))
     }
   }
 
+  /* ---------- Scenario 9: Control Center – command, godkjenninger, palett, kostnader, dype lenker, mobil ---------- */
+  console.log("FACTORY 9: Control Center → varsler → palett → godkjenning → kostnader → dyp lenke → mobil");
+  {
+    const { page, errors } = await freshPage(browser);
+    const { handler } = mockRouter();
+    await page.route("**/v1/messages", handler);
+
+    /* Ærlig tom tilstand i Command Center */
+    const empty = await page.evaluate(() => document.getElementById("ccAlerts").textContent + document.getElementById("ccMrr").textContent);
+    check("command center har veiledende tomme tilstander (ingen falske tall)",
+      empty.includes("Ingenting venter") && empty.includes("Ingen måletall"), empty.slice(0, 80));
+
+    /* Kommandopalett med tastatur: Ctrl+K → søk → Enter laster demo */
+    await page.keyboard.press("Control+KeyK");
+    await page.waitForSelector("#cmdk.on", { timeout: 3000 });
+    await page.fill("#cmdkInput", "eksempel");
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(() => document.getElementById("detail").textContent.includes("BoligPuls"), null, { timeout: 5000 });
+    check("kommandopaletten er tastaturdrevet og utfører handlinger", true, null);
+
+    /* Dyp lenke: prosjektet har adresserbar URL som overlever reload */
+    const hash = await page.evaluate(() => location.hash);
+    check("prosjektvisningen setter dyp lenke (#/companies/<id>)", /^#\/companies\/p/.test(hash), hash);
+    await page.reload({ waitUntil: "networkidle" });
+    await page.waitForFunction(() => document.getElementById("detail").textContent.includes("BoligPuls"), null, { timeout: 5000 });
+    check("dyp lenke ruter rett til selskapet etter reload", true, null);
+    const strip = await page.evaluate(() => ({ cur: document.querySelectorAll(".phasestrip .seg.cur").length, total: document.querySelectorAll(".phasestrip .seg").length }));
+    check("fasestripen viser 17 faser med markert nåværende fase", strip.total === 17 && strip.cur === 1, strip);
+
+    /* Command Center med ekte varsler fra demoprosjektet */
+    await page.click('nav button[data-tab="command"]');
+    const cc = await page.evaluate(() => document.getElementById("ccAlerts").textContent + "|" + document.getElementById("ccTiles").textContent);
+    check("varsler viser ventende port og pulsen viser porteføljen",
+      cc.includes("Port venter") && cc.includes("PROSJEKTER") && cc.includes("VENTENDE PORTER"), cc.slice(0, 120));
+    const badge = await page.evaluate(() => ({ hidden: document.getElementById("navGateCount").hidden, n: document.getElementById("navGateCount").textContent }));
+    check("navigasjonen viser port-teller", badge.hidden === false && badge.n === "1", badge);
+
+    /* Godkjenningssenteret: kontekst + godkjenning logget som eier */
+    await page.click('nav button[data-tab="approvals"]');
+    const appr = await page.evaluate(() => document.getElementById("approvalsList").textContent);
+    check("godkjenning viser hva/hvorfor/risiko/reverserbarhet",
+      appr.includes("Hva:") && appr.includes("Hvorfor:") && appr.includes("Risiko:") && appr.includes("Reverserbarhet:"), appr.slice(0, 100));
+    await page.click("#approvalsList [data-al-approve]");
+    const afterApprove = await page.evaluate(() => {
+      const p = window.CF.Projects.list()[0];
+      const gates = Object.values(p.gates || {});
+      return { gates: gates.length, byOwner: gates[0] && gates[0].byOwner, empty: document.getElementById("approvalsList").textContent.includes("Ingen ventende"), badgeHidden: document.getElementById("navGateCount").hidden };
+    });
+    check("port godkjent fra senteret: logget som eier, liste tømt, teller borte",
+      afterApprove.gates === 1 && afterApprove.byOwner === true && afterApprove.empty && afterApprove.badgeHidden, afterApprove);
+
+    /* Kostnadsmåler + aktivitetsspor etter reell (mocket) pipeline-kjøring */
+    await page.click('nav button[data-tab="idea"]');
+    await page.fill("#ideaName", "SmåbedriftCRM");
+    await page.fill("#ideaText", "Abonnement for små bedrifter som trenger bedre kundeoppfølging.");
+    await page.click("#runIdeaBtn");
+    await page.waitForFunction(() => document.getElementById("pipeline").textContent.includes("FERDIG"), null, { timeout: 30000 });
+    const meter = await page.evaluate(() => {
+      const t = window.CF.Costs.totals();
+      const act = window.CF.Activity.list(50);
+      const exp = JSON.parse(window.CF.Store.exportAll());
+      return { calls: t.calls, nok: t.estimateNok, perProject: window.CF.Costs.totals(window.CF.Projects.list()[0].id).calls, actHasCreate: act.some((a) => a.message.includes("Prosjekt opprettet")), exportHasAll: Array.isArray(exp.cf_activity) && Array.isArray(exp.cf_costs) && Array.isArray(exp.cf_lessons) && Array.isArray(exp.cf_library) };
+    });
+    check("kostnadsmåleren akkumulerer usage per prosjekt", meter.calls >= 8 && meter.nok > 0 && meter.perProject >= 8, meter);
+    check("aktivitetssporet logger hendelser og eksporten dekker alt", meter.actHasCreate && meter.exportHasAll, meter);
+    await page.click('nav button[data-tab="command"]');
+    const cc2 = await page.evaluate(() => document.getElementById("ccTiles").textContent + "|" + document.getElementById("ccActivity").textContent);
+    check("command center viser kostnad (merket estimat) og levende aktivitet",
+      cc2.includes("AI-KOSTNAD") && cc2.includes("estimat") && cc2.includes("kr") && cc2.includes("Prosjekt opprettet"), cc2.slice(0, 150));
+
+    /* Sammenlign idéer */
+    await page.click('nav button[data-tab="idea"]');
+    await page.evaluate(() => {
+      const list = window.CF.Projects.list();
+      document.getElementById("cmpA").value = list[0].id;
+      document.getElementById("cmpB").value = list[1].id;
+    });
+    await page.click("#cmpBtn");
+    const cmp = await page.evaluate(() => document.getElementById("cmpOut").textContent);
+    check("idé-sammenligning viser scorekort side ved side med diff",
+      cmp.includes("MOT") && cmp.includes("DIFF") && cmp.includes("problemsmerte"), cmp.slice(0, 100));
+    check("ingen JS-feil", errors.length === 0, errors);
+    await page.close();
+
+    /* Mobil (390px): bunn-nav og godkjenninger fungerer */
+    const mob = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    const mobErrors = [];
+    mob.on("pageerror", (e) => mobErrors.push(e.message));
+    await mob.route("**/v1/messages", handler);
+    await mob.goto(BASE, { waitUntil: "networkidle" });
+    await mob.evaluate(() => { localStorage.clear(); localStorage.setItem("jarvis_api_key", "sk-ant-test"); });
+    await mob.reload({ waitUntil: "networkidle" });
+    await mob.click('nav button[data-tab="system"]');
+    await mob.click("#demoBtn");
+    await mob.click('nav button[data-tab="approvals"]');
+    await mob.waitForSelector("#approvalsList [data-al-approve]", { timeout: 5000 });
+    const navFixed = await mob.evaluate(() => getComputedStyle(document.getElementById("sidebar")).position);
+    await mob.click("#approvalsList [data-al-approve]");
+    const mobOk = await mob.evaluate(() => Object.values(window.CF.Projects.list()[0].gates).length === 1 && document.getElementById("approvalsList").textContent.includes("Ingen ventende"));
+    check("mobil: bunn-navigasjon (fixed) og godkjenning ende-til-ende", navFixed === "fixed" && mobOk, { navFixed, mobOk });
+    check("ingen JS-feil på mobil", mobErrors.length === 0, mobErrors);
+    await mob.close();
+  }
+
   await browser.close();
   console.log(failures === 0 ? "\nALL FACTORY TESTS PASSED" : `\n${failures} FAILURES`);
   process.exit(failures === 0 ? 0 : 1);

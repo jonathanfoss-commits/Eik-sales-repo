@@ -144,6 +144,14 @@ og læringssløyfen.
 I [`factory/`](factory/) ligger fabrikken som tar en enkel idé og driver den mot et
 lanseringsklart digitalt selskap. Nås fra JARVIS-appen (🏭 FACTORY-knappen) eller på `…/factory/`.
 
+**Control Center (v2.0):** grensesnittet er et operativt kontrollsenter, ikke et
+dashboard – seks områder (Command, Idélab, Selskaper, Godkjenninger, Bibliotek,
+System), «KREVER DEG NÅ» øverst med ekte varsler og godkjenn-knapper,
+kommandopalett (Ctrl/Cmd+K), dype lenker per selskap, fasestripe over alle 17
+faser, kostnadsmåler for hvert LLM-kall, varig aktivitetsspor, idé-sammenligning
+og mobil bunn-navigasjon der godkjenninger er én tommel unna. FAKTISK, ESTIMAT
+og TEST merkes alltid hver for seg.
+
 - **Idé → beslutning på minutter**: inntak (Fase 0) strukturerer idéen og skiller fakta,
   påstander, antakelser og ukjente; idévurderingen (Fase 1) innkaller kun de 3–6 relevante
   fagrollene (gjenbruker AEIS-styret med fortjent autoritet + 9 fabrikkroller), scorer på

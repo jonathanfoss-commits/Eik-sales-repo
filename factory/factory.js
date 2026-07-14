@@ -63,12 +63,18 @@ const Store = {
   exportAll() {
     const projects = {};
     for (const id of this.projectIds()) projects["cf_project_" + id] = this.loadProject(id);
-    return JSON.stringify({ cf_index: this.projectIds(), ...projects, exported: new Date().toISOString() }, null, 2);
+    return JSON.stringify({
+      cf_index: this.projectIds(), ...projects,
+      cf_lessons: this.get("cf_lessons", []), cf_library: this.get("cf_library", []),
+      cf_activity: this.get("cf_activity", []), cf_costs: this.get("cf_costs", []),
+      exported: new Date().toISOString(),
+    }, null, 2);
   },
   importAll(json) {
     const d = JSON.parse(json);
     if (Array.isArray(d.cf_index)) this.set("cf_index", d.cf_index);
     for (const k of Object.keys(d)) if (k.startsWith("cf_project_")) this.set(k, d[k]);
+    for (const k of ["cf_lessons", "cf_library", "cf_activity", "cf_costs"]) if (Array.isArray(d[k])) this.set(k, d[k]);
   },
 };
 
@@ -85,6 +91,8 @@ GRUNNLOV (overstyrer alt annet):
 Svar på norsk.`;
 
 const LLM = {
+  /* Settes av modulene før kall – gir kostnadsmåleren prosjekt/modul-kontekst */
+  context: null,
   async call({ system, user, schema, tools, maxTokens = 8192, onStatus }) {
     if (!Store.apiKey) throw new Error("Ingen API-nøkkel. Lim inn under SYSTEM-fanen (deles med JARVIS/AEIS).");
     let messages = [{ role: "user", content: user }];
@@ -100,6 +108,7 @@ const LLM = {
       }
       if (res.stop_reason === "refusal") throw new Error("Forespørselen ble avvist av modellen.");
       const text = (res.content || []).filter((b) => b.type === "text").map((b) => b.text).join("");
+      Costs.add(res.usage, (this.context && this.context.label) || "system", this.context && this.context.projectId);
       if (schema) {
         try { return { json: JSON.parse(text), usage: res.usage }; }
         catch (e) { throw new Error("Klarte ikke å tolke strukturert svar: " + e.message); }
@@ -205,6 +214,7 @@ const MATURITY = ["prototype", "MVP", "beta", "produksjonsklart", "lanseringskla
 /* ================= Projects ================= */
 const Projects = {
   create(name, ideaText, opts = {}) {
+    Activity.log("prosjekt", "Prosjekt opprettet: " + name);
     const id = "p" + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
     const p = {
       id, name, idea: ideaText, test: !!opts.test,
@@ -236,6 +246,7 @@ const Projects = {
       revisit: entry.revisit || "",
       byOwner: !!entry.byOwner,
     });
+    Activity.log(entry.byOwner ? "eier" : "beslutning", `[${p.name}] ${entry.decision}`, p.id);
     return Store.saveProject(p);
   },
   logAssumptions(p, list, source) {
@@ -656,6 +667,36 @@ const SCHEMAS = {
   },
 };
 
+/* ================= Activity (varig hendelsesspor – revisjonsspor for hele fabrikken) ================= */
+const Activity = {
+  log(type, message, projectId) {
+    const list = Store.get("cf_activity", []);
+    list.unshift({ id: "a" + Date.now().toString(36) + list.length % 100, at: new Date().toISOString(), type, message, projectId: projectId || null });
+    Store.set("cf_activity", list.slice(0, 300));
+  },
+  list(n = 50) { return Store.get("cf_activity", []).slice(0, n); },
+};
+
+/* ================= Costs (kostnadsmåler – usage fra hvert LLM-kall akkumuleres) ================= */
+/* Rater er KONFIGURERBARE ESTIMATER (USD per million tokens + USD→NOK). Juster ved modellbytte. */
+const COST_RATES = { inPerMTok: 15, outPerMTok: 75, usdToNok: 10.5 };
+const Costs = {
+  add(usage, label, projectId) {
+    if (!usage) return;
+    const list = Store.get("cf_costs", []);
+    list.unshift({ at: new Date().toISOString(), label: label || "ukjent", projectId: projectId || null, in: usage.input_tokens || 0, out: usage.output_tokens || 0 });
+    Store.set("cf_costs", list.slice(0, 500));
+  },
+  estimateNok(inTok, outTok) {
+    return ((inTok / 1e6) * COST_RATES.inPerMTok + (outTok / 1e6) * COST_RATES.outPerMTok) * COST_RATES.usdToNok;
+  },
+  totals(projectId) {
+    const rows = Store.get("cf_costs", []).filter((r) => !projectId || r.projectId === projectId);
+    const inTok = rows.reduce((s, r) => s + r.in, 0), outTok = rows.reduce((s, r) => s + r.out, 0);
+    return { calls: rows.length, in: inTok, out: outTok, estimateNok: Math.round(this.estimateNok(inTok, outTok) * 100) / 100 };
+  },
+};
+
 /* ================= Lessons (varige lærdommer på tvers av prosjekter) ================= */
 const Lessons = {
   list() { return Store.get("cf_lessons", []); },
@@ -723,6 +764,7 @@ function makeZip(files) {
 /* ================= Intake (Fase 0) ================= */
 const Intake = {
   async run(p, onStatus) {
+    LLM.context = { projectId: p.id, label: "inntak" };
     if (onStatus) onStatus("Fase 0: strukturerer idéen …");
     const { json } = await LLM.call({
       system: `Du er Company Factorys inntaksmodul (Fase 0). Trekk ut problem, målgruppe, mulig løsning, betalingsvilje, marked, kanal og abonnementspotensial fra eierens idé. Skill knallhardt mellom fakta, eierens påstander, antakelser, ukjente og forhold som krever ekstern validering. Lag rimelige antakelser der informasjon mangler (marker dem), og still KUN spørsmål som faktisk kan endre beslutningen eller løsningen. Ikke stopp prosessen fordi informasjon mangler.`,
@@ -757,6 +799,7 @@ const Evaluation = {
     const caseText = `SAK: ${p.name}\nPROBLEM: ${p.intake.problem}\nMÅLGRUPPE: ${p.intake.target_group}\nLØSNING: ${p.intake.solution}\nBETALINGSVILJE: ${p.intake.willingness_to_pay}\nMARKED: ${p.intake.market}\nKANAL: ${p.intake.channel}\nABONNEMENTSPOTENSIAL: ${p.intake.subscription_potential}\nUKJENTE: ${p.intake.unknowns.join("; ") || "(ingen)"}`;
 
     /* 1) Framing: velg kun roller som tilfører saken noe */
+    LLM.context = { projectId: p.id, label: "idévurdering" };
     say("framing", "Velger relevante fagroller …");
     const roster = Board.roster();
     const framing = (await LLM.call({
@@ -837,6 +880,7 @@ const Experiments = {
   async review(p, onStatus) {
     const done = (p.experiments || []).filter((e) => e.status === "fullført");
     if (!done.length) throw new Error("Ingen fullførte eksperimenter å evaluere.");
+    LLM.context = { projectId: p.id, label: "valideringsport" };
     if (onStatus) onStatus("Evaluerer valideringsresultatene …");
     const { json } = await LLM.call({
       system: `Du er valideringsmodulen i Company Factory (Fase 2-porten). Vurder eksperimentresultatene nøkternt mot tersklene som ble satt FØR resultatene fantes. Allerede brukt tid og penger er IKKE et argument for å fortsette. Konkluder med én beslutning (${DECISIONS.join("|")}): bestått validering kan gi prototype/mvp; delvis bestått kan gi endre_konsept eller valider_mer (kun hvis en NY, billig test finnes); ikke bestått skal normalt gi stopp eller parker.`,
@@ -859,6 +903,7 @@ const Experiments = {
 const Landing = {
   async run(p, opts = {}, onStatus) {
     if (!p.intake || !p.evaluation) throw new Error("Kjør inntak og idévurdering først.");
+    LLM.context = { projectId: p.id, label: "landingsside" };
     if (onStatus) onStatus("Skriver copy og bygger landingssiden …");
     const { json } = await LLM.call({
       system: `Du er landingsside-modulen i Company Factory. Skriv komplett copy for en falsk-dør-landingsside som tester betalingsvilje FØR produktet bygges. Krav: copy er konkret, troverdig og basert på kundens problem – ingen tomme fraser («revolusjonerende», «sømløs», «kraftig», «fremtidens»). Prisen skal være tydelig (falsk dør uten pris måler ingenting). CTA er venteliste-påmelding. honest_disclaimer skal ærlig si at tjenesten er under utvikling og at påmelding er uforpliktende – vi lurer ikke folk til å tro de kjøper et ferdig produkt. Skriv for målgruppen, på norsk.`,
@@ -948,6 +993,7 @@ const Landing = {
 const SiteGen = {
   async run(p, onStatus) {
     if (!p.intake || !p.evaluation) throw new Error("Kjør inntak og idévurdering først.");
+    LLM.context = { projectId: p.id, label: "nettsted" };
     if (onStatus) onStatus("Bygger nettstedet: merkevare, copy og sider …");
     const plans = p.bizmodel ? p.bizmodel.model.plans : null;
     const { json } = await LLM.call({
@@ -1199,6 +1245,7 @@ const Library = {
 const Strategy = {
   async run(p, onStatus) {
     if (!p.intake || !p.evaluation) throw new Error("Kjør inntak og idévurdering først.");
+    LLM.context = { projectId: p.id, label: "strategi" };
     if (onStatus) onStatus("Fase 4: strategi og posisjonering …");
     const { json } = await LLM.call({
       system: `Du er strategimodulen i Company Factory (Fase 4). Lever konkret selskaps- og strategigrunnlag: arbeidsnavn + alternativer med tydelige navnekriterier, posisjonering, kategori, løfte, differensiering, mission/vision/verdier uten floskler, strategiske prioriteringer, mulige forsvarsmekanismer, 90-dagers plan, 12-måneders plan, 3-årig retning, risikoer – og en eksplisitt liste over ting selskapet IKKE skal gjøre. Ikke bruk tid på selskapsregistrering, varemerker eller domenekjøp – det er eier-porter som kommer senere.`,
@@ -1217,6 +1264,7 @@ const Legal = {
   DISCLAIMER: "Automatisk generert veiledning – IKKE juridisk rådgivning. Alle punkter merket «krever fagperson» MÅ kvalitetssikres av advokat, regnskapsfører eller annen autorisert fagperson før de legges til grunn.",
   async run(p, onStatus) {
     if (!p.intake) throw new Error("Kjør inntak først.");
+    LLM.context = { projectId: p.id, label: "juridisk" };
     if (onStatus) onStatus("Fase 10: juridisk kartlegging …");
     const { json } = await LLM.call({
       system: `Du er juridisk-modulen i Company Factory (Fase 10). Kartlegg juridiske og regulatoriske krav for et norsk digitalt abonnementsprodukt: selskapsform, avtalevilkår, GDPR/personvern (hvilke data, formål, behandlingsgrunnlag, lagringstid), forbrukerrettigheter og angrerett, regler for markedsføringssamtykke, MVA/skatt og krav til regnskap. Dette er GENERELL VEILEDNING, ikke juridisk rådgivning: sett must_be_verified_by_professional=true på alt som reelt krever advokat/regnskapsfører, og vær heller for streng enn for slapp. Ta med bransjespesifikke krav hvis produktet berører regulerte områder.`,
@@ -1337,6 +1385,7 @@ const Report = {
 const Marketing = {
   async run(p, onStatus) {
     if (!p.intake || !p.evaluation) throw new Error("Kjør inntak og idévurdering først.");
+    LLM.context = { projectId: p.id, label: "markedsføring" };
     if (onStatus) onStatus("Fase 11: bygger markedsføringsmotor …");
     const { json } = await LLM.call({
       system: `Du er markedsføringsmodulen i Company Factory (Fase 11). Velg kanaler ut fra målgruppen og økonomien – IKKE lag planer for alle sosiale medier bare fordi de finnes. Prioriter 2–4 kanaler med begrunnelse og CAC-hypotese, gi kjernebudskap uten tomme fraser, en enkel innholdskalender (4–8 uker), 2–4 annonsekonsepter, en kort e-postsekvens, lanseringsplan og en eksperimentkø med målbare terskler. Masseutsendelser og betalte kampanjer er eier-porter – planlegg, men ikke anta at de er godkjent.`,
@@ -1354,6 +1403,7 @@ const Marketing = {
 const TechArch = {
   async run(p, onStatus) {
     if (!p.intake || !p.evaluation) throw new Error("Kjør inntak og idévurdering først.");
+    LLM.context = { projectId: p.id, label: "teknisk arkitektur" };
     if (onStatus) onStatus("Fase 7: velger teknisk arkitektur …");
     const { json } = await LLM.call({
       system: `Du er arkitekturmodulen i Company Factory (Fase 7). Velg teknologi ut fra produktets FAKTISKE behov – ikke komplisert infrastruktur fordi den ser imponerende ut. Dekk områdene som er relevante for dette produktet (typisk: frontend, backend/BaaS, database, autentisering, betaling/abonnement, e-post, analyse, logging/feilhåndtering, hosting, backup). For hvert valg: hva, hvorfor, hvilke alternativer som ble vurdert, månedskostnad-estimat, leverandørbinding (lav/middels/høy) og migreringsvei. List eksplisitt hva som IKKE trengs enda (not_needed_yet) – det er like viktig som valgene. Utgangspunkt for et selvbetjent abonnementsprodukt bygget av én person: statisk hosting + BaaS (f.eks. Supabase) + Stripe – avvik fra dette KUN hvis produktbehovet krever det, og begrunn avviket.`,
@@ -1377,6 +1427,7 @@ const TechArch = {
 const AppGen = {
   async run(p, onStatus) {
     if (!p.brief) throw new Error("App-skallet bygges fra MVP-briefen – kjør pipeline til brief først.");
+    LLM.context = { projectId: p.id, label: "app-skall" };
     if (onStatus) onStatus("Bygger app-skall: onboarding, dashboard, abonnement …");
     const { json } = await LLM.call({
       system: `Du er app-modulen i Company Factory (Fase 8+9). Lever produktspesifikt innhold til app-skallet: appnavn, velkomstlinje, 2–4 onboarding-steg (hvert med input-etikett for det viktigste feltet), 2–4 dashboard-moduler avledet DIREKTE av MVP-funksjonene (med ærlige tomtilstander), innstillingspunkter, den éne aktiveringsmetrikken som betyr noe, og en oppgraderingsmelding uten tomme fraser. Ikke finn på funksjoner som ikke står i briefen.`,
@@ -1663,6 +1714,7 @@ Auth.init().then(route);
 const Ops = {
   async run(p, onStatus) {
     if (!p.intake || !p.evaluation) throw new Error("Kjør inntak og idévurdering først.");
+    LLM.context = { projectId: p.id, label: "drift" };
     if (onStatus) onStatus("Fase 13: driftsgrunnlag …");
     const { json } = await LLM.call({
       system: `Du er driftsmodulen i Company Factory (Fase 13). Målet er at selskapet kan drives med minst mulig manuelt arbeid uten at kundene opplever dårlig service. Lever: supportkanaler (få og realistiske for én person), FAQ-frø basert på produktet, svarmaler for de vanligste sakene (betalingsfeil, kansellering, refusjon, teknisk feil), eskaleringsregler, en kort hendelses-runbook, månedlig gjennomgangssjekkliste, leverandøroversikt med kostnadsnotat, og kandidater for automatisering. Vær konkret – ingen generiske driftsfloskler.`,
@@ -1679,6 +1731,7 @@ const Ops = {
 /* ================= Retro (seksjon 12: selvevaluering per prosjekt) ================= */
 const Retro = {
   async run(p, onStatus) {
+    LLM.context = { projectId: p.id, label: "retro" };
     if (onStatus) onStatus("Kjører retro på prosjektet …");
     const { json } = await LLM.call({
       system: `Du er retro-modulen i Company Factory. Evaluer prosjektgjennomføringen nøkternt: hva fungerte, hva feilet, hvilke antakelser var gale, hvilke prosessforbedringer bør gjøres, hva kan generaliseres til gjenbruksbiblioteket – og hva bør IKKE gjenbrukes. Formuler ÉN kort, generaliserbar lærdom («lesson») som fabrikken skal huske i alle fremtidige prosjekter. Ikke foreslå forbedringer som bare gjør systemet større uten målbar verdi.`,
@@ -1749,6 +1802,7 @@ const Finance = {
 const BizModel = {
   async run(p, onStatus) {
     if (!p.intake || !p.evaluation) throw new Error("Kjør inntak og idévurdering først.");
+    LLM.context = { projectId: p.id, label: "forretningsmodell" };
     if (onStatus) onStatus("Fase 3: bygger forretningsmodell …");
     const { json } = await LLM.call({
       system: `Du er forretningsmodell-modulen i Company Factory (Fase 3). Definer en konkret modell: verdi, ICP, kjøper/bruker, inntektsmodell, 1–3 abonnementsplaner med månedspris/årspris og forventet kundefordeling (target_share, summerer til ~1), gratisnivå/prøveperiode. Sett NØKTERNE talleantakelser (trafikk måned 1, månedlig vekst, registreringsrate, betalt konvertering, månedlig churn, CAC, faste kostnader, variabel kostnad per bruker) – all videre matematikk gjøres av kode, ikke av deg. Hver talleantakelse skal begrunnes kort i assumption_notes. Ikke pynt på tallene: modellen skal kunne avkreftes.`,
@@ -1776,6 +1830,7 @@ const BizModel = {
 const Planner = {
   async run(p, onStatus) {
     if (!p.evaluation) throw new Error("Kjør idévurdering (Fase 1) først.");
+    LLM.context = { projectId: p.id, label: "faseplan" };
     if (onStatus) onStatus("Lager tilpasset faseplan …");
     const { json } = await LLM.call({
       system: `Du er planmodulen i Company Factory. Tilpass standardpipelinen til DETTE prosjektet: marker hvilke faser som er relevante (små idéer får små planer – dropp faser som ikke trengs), definer omfang, leveranser, første konkrete handlinger, stoppkriterier, ansvarlig rolle og risiko per relevant fase. Valider billig før tung bygging: menneskeheten har allerede laget nok ubrukte dashboards.`,
@@ -1793,6 +1848,7 @@ const Planner = {
 const Brief = {
   async run(p, onStatus) {
     if (!p.evaluation) throw new Error("Kjør idévurdering (Fase 1) først.");
+    LLM.context = { projectId: p.id, label: "mvp-brief" };
     if (onStatus) onStatus("Skriver MVP-brief …");
     const { json } = await LLM.call({
       system: `Du er MVP-brief-modulen i Company Factory. Skriv en konkret, byggbar brief. MVP = den minste løsningen som skaper reell verdi og tester betalingsvilje – ikke en halvferdig versjon av et enormt produkt. Vær eksplisitt om hva som IKKE skal bygges. Bruk tydelig prioritering, ingen funksjonsinflasjon, ingen tomme fraser.`,
@@ -1937,9 +1993,46 @@ const Demo = {
   },
 };
 
+/* ================= Alerts (deterministisk varselavledning – ingen LLM) ================= */
+const Alerts = {
+  derive() {
+    const alerts = [];
+    for (const p of Projects.list()) {
+      const active = !["parkert", "avsluttet"].includes(p.status);
+      if (!active) continue;
+      /* Ventende port for nåværende fase */
+      const phase = PHASES.find((f) => f.n === p.phase);
+      if (phase && p.evaluation && !(p.gates && p.gates[phase.gate] && p.gates[phase.gate].approved)) {
+        alerts.push({ severity: 1, type: "godkjenning", projectId: p.id, project: p.name, title: `Port venter: ${phase.gate}`, detail: `Fase ${p.phase} – ${phase.title}.`, action: "approve_gate", gate: phase.gate });
+      }
+      /* Stoppanbefaling som ikke er fulgt opp */
+      const dec = (p.validation && p.validation.decision) || (p.evaluation && p.evaluation.synthesis.decision);
+      if (dec === "stopp") alerts.push({ severity: 0, type: "stopp", projectId: p.id, project: p.name, title: "Anbefalt STOPP – prosjektet er fortsatt aktivt", detail: "Allerede brukt tid er ikke et argument for å fortsette.", action: "open" });
+      /* Idé uten vurdering */
+      if (!p.evaluation) alerts.push({ severity: 2, type: "neste_steg", projectId: p.id, project: p.name, title: "Idé uten vurdering", detail: "Kjør idévurderingen for å få beslutning og score.", action: "open" });
+      /* Faktisk mot prognose: siste måned < 50 % av forventet MRR */
+      if (p.bizmodel && (p.metrics || []).length) {
+        const cmp = Metrics.compare(p);
+        const last = cmp[cmp.length - 1];
+        if (last && last.forecast_mrr > 0 && last.mrr < last.forecast_mrr * 0.5) {
+          alerts.push({ severity: 1, type: "avvik", projectId: p.id, project: p.name, title: `MRR-avvik: ${last.mrr} kr mot prognose ${last.forecast_mrr} kr (${last.month})`, detail: "Under 50 % av sannsynlig-scenariet – vurder antakelsene på nytt.", action: "open" });
+        }
+      }
+      /* Fullførte eksperimenter uten portbeslutning */
+      if ((p.experiments || []).length && p.experiments.every((e) => e.status === "fullført") && !p.validation) {
+        alerts.push({ severity: 1, type: "neste_steg", projectId: p.id, project: p.name, title: "Valideringen er ferdig – porten er ikke evaluert", detail: "Kjør valideringsporten for å beslutte videre løp.", action: "open" });
+      }
+    }
+    const u = Store.usage();
+    if (u.totalKb / u.limitKb > 0.8) alerts.push({ severity: 1, type: "system", projectId: null, project: "System", title: `Lagring ${Math.round((u.totalKb / u.limitKb) * 100)} % full`, detail: "Eksporter og slett avsluttede prosjekter.", action: "system" });
+    return alerts.sort((a, b) => a.severity - b.severity);
+  },
+};
+
 /* ================= SelfReview ================= */
 const SelfReview = {
   async run() {
+    LLM.context = { projectId: null, label: "selvevaluering" };
     let arch = "";
     try { arch = await (await fetch("ARCHITECTURE.md")).text(); } catch (_) {}
     const stats = {
@@ -1957,4 +2050,4 @@ const SelfReview = {
 };
 
 /* Eksponer modulene (også for tester) */
-window.CF = { Store, LLM, Board, Pipeline, Projects, Intake, Evaluation, Experiments, Landing, BizModel, Finance, SiteGen, TechArch, AppGen, Maturity, Metrics, Library, Marketing, Strategy, Legal, Ops, Report, Retro, Lessons, Planner, Brief, Demo, SelfReview, SCHEMAS, PHASES, OWNER_GATE_ACTIONS, FACTORY_ROLES, CRITERIA, MATURITY_CHECKLISTS, pool, makeZip, crc32 };
+window.CF = { Store, LLM, Board, Pipeline, Projects, Intake, Evaluation, Experiments, Landing, BizModel, Finance, SiteGen, TechArch, AppGen, Maturity, Metrics, Library, Marketing, Strategy, Legal, Ops, Report, Retro, Lessons, Activity, Costs, Alerts, Planner, Brief, Demo, SelfReview, SCHEMAS, PHASES, OWNER_GATE_ACTIONS, FACTORY_ROLES, CRITERIA, MATURITY_CHECKLISTS, COST_RATES, pool, makeZip, crc32 };

@@ -3,109 +3,64 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Company Factory</title>
-<meta name="description" content="Company Factory – AI-drevet startup-studio: fra idé til lanseringsklart digitalt selskap.">
+<title>Company Factory – Control Center</title>
+<meta name="description" content="Company Factory Control Center – grensesnittet som styrer det AI-drevne startup-studioet.">
 <link rel="icon" href="../icons/icon-192.png">
 <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-<meta name="theme-color" content="#060c16">
-<style>
-  :root {
-    --bg: #060c16; --panel: #0b1626; --line: #12304a;
-    --cyan: #37d5ff; --cyan-dim: #1a9cc4; --text: #d7f3ff; --muted: #6d9db5;
-    --danger: #ff6b6b; --gold: #ffd166; --green: #7bd88f;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: radial-gradient(1400px 800px at 50% -10%, #0d2238 0%, var(--bg) 55%);
-    color: var(--text);
-    font-family: "SF Mono", ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
-    min-height: 100dvh;
-  }
-  header { padding: 18px 22px 12px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-  h1 { font-size: 18px; letter-spacing: .35em; color: var(--cyan); text-shadow: 0 0 14px rgba(55,213,255,.55); }
-  header .sub { font-size: 9px; letter-spacing: .2em; color: var(--muted); margin-top: 3px; }
-  header a { color: var(--muted); font-size: 11px; text-decoration: none; border: 1px solid var(--line); padding: 6px 10px; border-radius: 8px; margin-left: 6px; }
-  nav { display: flex; gap: 6px; padding: 12px 18px; overflow-x: auto; border-bottom: 1px solid var(--line); }
-  nav button {
-    background: none; border: 1px solid var(--line); color: var(--muted); font: inherit; font-size: 12px;
-    letter-spacing: .12em; padding: 8px 14px; border-radius: 8px; cursor: pointer; white-space: nowrap;
-  }
-  nav button.on { color: var(--cyan); border-color: var(--cyan-dim); box-shadow: 0 0 12px rgba(55,213,255,.2); }
-  main { padding: 18px; max-width: 1080px; margin: 0 auto; }
-  .tab { display: none; }
-  .tab.on { display: block; }
-  h2 { font-size: 12px; letter-spacing: .25em; color: var(--cyan-dim); margin: 18px 0 10px; }
-  textarea, input[type=text], input[type=password] {
-    width: 100%; background: var(--panel); border: 1px solid var(--line); color: var(--text);
-    border-radius: 10px; padding: 12px; font: inherit; font-size: 14px; outline: none;
-  }
-  textarea:focus, input:focus { border-color: var(--cyan-dim); }
-  button.primary {
-    background: #0d3a52; border: 1px solid var(--cyan-dim); color: #dff7ff; font: inherit; font-size: 13px;
-    letter-spacing: .08em; padding: 12px 20px; border-radius: 10px; cursor: pointer; margin-top: 10px;
-  }
-  button.primary:disabled { opacity: .5; cursor: default; }
-  button.small { background: none; border: 1px solid var(--line); color: var(--muted); font: inherit; font-size: 11px; padding: 6px 10px; border-radius: 8px; cursor: pointer; }
-  button.small:hover { color: var(--cyan); border-color: var(--cyan-dim); }
-  #pipeline { font-size: 11px; letter-spacing: .12em; color: var(--muted); margin: 14px 0; min-height: 16px; }
-  #pipeline b { color: var(--cyan); }
-  #board { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; font-size: 12px; }
-  .card.working { border-color: var(--cyan-dim); box-shadow: 0 0 16px rgba(55,213,255,.15); animation: cardpulse 1.4s ease-in-out infinite; }
-  @keyframes cardpulse { 50% { box-shadow: 0 0 26px rgba(55,213,255,.35); } }
-  .card h3 { font-size: 11px; letter-spacing: .12em; color: var(--cyan); margin-bottom: 6px; }
-  .card .st { color: var(--muted); font-size: 10px; letter-spacing: .1em; }
-  .card .rec { margin-top: 8px; line-height: 1.5; white-space: pre-wrap; }
-  .badge { display: inline-block; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; font-size: 10px; color: var(--muted); margin-left: 6px; }
-  .badge.h { color: var(--green); border-color: rgba(123,216,143,.4); }
-  .badge.m { color: var(--gold); border-color: rgba(255,209,102,.4); }
-  .badge.l { color: var(--danger); border-color: rgba(255,107,107,.4); }
-  .badge.test { color: var(--gold); border-color: rgba(255,209,102,.5); }
-  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-top: 12px; font-size: 13px; line-height: 1.65; white-space: pre-wrap; }
-  .panel.danger { border-color: #5a2430; }
-  .panel h3 { font-size: 11px; letter-spacing: .2em; color: var(--cyan-dim); margin-bottom: 8px; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
-  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
-  th { color: var(--muted); font-size: 10px; letter-spacing: .15em; }
-  .proj-item { cursor: pointer; }
-  .proj-item:hover { background: rgba(55,213,255,.04); }
-  .muted { color: var(--muted); }
-  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-  .row > * { flex: 1; min-width: 160px; }
-  .note { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
-  .score { font-size: 26px; color: var(--cyan); text-shadow: 0 0 12px rgba(55,213,255,.4); }
-  a { color: var(--cyan); }
-</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#05080f">
+<link rel="stylesheet" href="ui.css">
 </head>
 <body>
 
-<header>
-  <div>
+<div id="app">
+
+<aside id="sidebar">
+  <div class="logo">
     <h1>FACTORY</h1>
-    <div class="sub">COMPANY FACTORY – AI STARTUP-STUDIO</div>
+    <div class="sub">CONTROL CENTER</div>
   </div>
-  <div>
-    <a href="../aeis/">🏛 AEIS</a>
-    <a href="../">← JARVIS</a>
+  <nav id="mainnav">
+    <button data-tab="command" class="on"><span class="ic">◉</span>COMMAND<span class="n" id="navAlertCount" hidden></span></button>
+    <button data-tab="idea"><span class="ic">◇</span>IDÉLAB</button>
+    <button data-tab="portfolio"><span class="ic">▣</span>SELSKAPER</button>
+    <button data-tab="approvals"><span class="ic">✓</span>GODKJENNINGER<span class="n" id="navGateCount" hidden></span></button>
+    <button data-tab="library"><span class="ic">⌘</span>BIBLIOTEK</button>
+    <button data-tab="system"><span class="ic">⚙</span>SYSTEM</button>
+  </nav>
+  <div class="foot">
+    <a href="../">← JARVIS</a> · <a href="../aeis/">AEIS</a><br>
+    cf_* · isolert per prosjekt
   </div>
-</header>
+</aside>
 
-<nav>
-  <button data-tab="portfolio" class="on">PORTEFØLJE</button>
-  <button data-tab="idea">NY IDÉ</button>
-  <button data-tab="system">SYSTEM</button>
-</nav>
+<div id="topbar">
+  <div id="crumb"><b>Command Center</b></div>
+  <div class="spacer"></div>
+  <button id="cmdkBtn">⌘ Kommandopalett <kbd>Ctrl K</kbd></button>
+</div>
 
-<main>
+<main id="view">
 
-<!-- ============ PORTEFØLJE ============ -->
-<section class="tab on" id="tab-portfolio">
-  <h2>PROSJEKTPORTEFØLJE</h2>
-  <div id="portfolio"></div>
-  <div id="detail"></div>
+<!-- ============ COMMAND CENTER ============ -->
+<section class="tab on" id="tab-command">
+  <h2>KREVER DEG NÅ</h2>
+  <div id="ccAlerts"></div>
+  <h2>PORTEFØLJEPULS</h2>
+  <div class="tiles" id="ccTiles"></div>
+  <div class="row" style="align-items:flex-start">
+    <div style="flex:2; min-width:280px">
+      <h2>MRR – FAKTISKE TALL</h2>
+      <div class="panel chart" id="ccMrr"></div>
+    </div>
+    <div style="flex:3; min-width:300px">
+      <h2>SISTE AKTIVITET</h2>
+      <div class="panel feed" id="ccActivity"></div>
+    </div>
+  </div>
 </section>
 
-<!-- ============ NY IDÉ ============ -->
+<!-- ============ IDÉLAB ============ -->
 <section class="tab" id="tab-idea">
   <h2>REGISTRER EN IDÉ (FASE 0)</h2>
   <div class="note">Input kan være svært kort. Fabrikken strukturerer idéen, registrerer antakelser, innkaller relevante fagroller, scorer kritisk og anbefaler neste steg. Den forsøker å avkrefte idéen før den anbefaler bygging.</div>
@@ -115,6 +70,40 @@
   <div id="pipeline"></div>
   <div id="board"></div>
   <div id="ideaResult"></div>
+
+  <h2>SAMMENLIGN IDÉER</h2>
+  <div class="note">Scorekortene side ved side – for å prioritere mellom evaluerte idéer, ikke for falsk presisjon.</div>
+  <div class="row" style="margin-top:8px">
+    <select id="cmpA"></select>
+    <select id="cmpB"></select>
+    <button class="small" id="cmpBtn" style="flex:0 0 auto">⇄ Sammenlign</button>
+  </div>
+  <div id="cmpOut"></div>
+</section>
+
+<!-- ============ SELSKAPER ============ -->
+<section class="tab" id="tab-portfolio">
+  <h2>PROSJEKTPORTEFØLJE</h2>
+  <div id="portfolio"></div>
+  <div id="detail"></div>
+</section>
+
+<!-- ============ GODKJENNINGER ============ -->
+<section class="tab" id="tab-approvals">
+  <h2>VENTENDE GODKJENNINGER</h2>
+  <div class="note">Alle beslutningsporter på tvers av porteføljen. Hver godkjenning logges som eierbeslutning med tidspunkt.</div>
+  <div id="approvalsList"></div>
+  <h2>EIER-PORTER (AUTO-GODKJENNES ALDRI)</h2>
+  <div class="panel" id="gateList"></div>
+</section>
+
+<!-- ============ BIBLIOTEK ============ -->
+<section class="tab" id="tab-library">
+  <h2>VARIGE LÆRDOMMER (injiseres i alle fremtidige vurderinger)</h2>
+  <div id="lessonsList"></div>
+  <h2>GJENBRUKSBIBLIOTEK</h2>
+  <div class="note">Retro trekker automatisk ut gjenbrukskandidater fra hvert prosjekt. Prosjektspesifikk kode kopieres aldri ukritisk inn i kjernen – kandidater må generaliseres før de gjenbrukes.</div>
+  <div id="libraryList"></div>
 </section>
 
 <!-- ============ SYSTEM ============ -->
@@ -127,16 +116,9 @@
   <div class="note">Laster et isolert, tydelig merket testprosjekt («BoligPuls (TEST)») med ferdig gjennomkjørt pipeline – ingen API-kall. Bruk det til å se hele flyten.</div>
   <button class="primary" id="demoBtn">🧪 Last inn eksempelprosjekt</button>
 
-  <h2>EIER-PORTER</h2>
-  <div class="note">Følgende handlinger auto-godkjennes ALDRI – de krever alltid ditt eksplisitte klikk og logges i beslutningsloggen:</div>
-  <div class="panel" id="gateList"></div>
-
-  <h2>VARIGE LÆRDOMMER (injiseres i alle fremtidige vurderinger)</h2>
-  <div id="lessonsList"></div>
-
-  <h2>GJENBRUKSBIBLIOTEK</h2>
-  <div class="note">Retro trekker automatisk ut gjenbrukskandidater fra hvert prosjekt. Prosjektspesifikk kode kopieres aldri ukritisk inn i kjernen – kandidater må generaliseres før de gjenbrukes.</div>
-  <div id="libraryList"></div>
+  <h2>AI-KOSTNADER (ESTIMAT)</h2>
+  <div class="note">Usage fra hvert LLM-kall akkumuleres per prosjekt og modul. Ratene er konfigurerbare estimater – ikke faktura.</div>
+  <div id="costsView"></div>
 
   <h2>SELVEVALUERING</h2>
   <button class="primary" id="reviewBtn">🔄 Evaluer fabrikken</button>
@@ -145,11 +127,11 @@
   <h2>BACKUP OG RAPPORT</h2>
   <div class="row">
     <button class="small" id="portfolioReportBtn">📄 Porteføljerapport (Markdown)</button>
-    <button class="small" id="exportBtn">Eksporter alle prosjekter (JSON)</button>
+    <button class="small" id="exportBtn">Eksporter alt (JSON)</button>
     <button class="small" id="importBtn">Importer JSON</button>
   </div>
   <input type="file" id="importFile" accept="application/json" style="display:none">
-  <div class="note">Arkitektur og kontrakter: <a href="ARCHITECTURE.md" target="_blank">ARCHITECTURE.md</a>. All data ligger i cf_*-navnerommet, isolert per prosjekt.</div>
+  <div class="note">Arkitektur og kontrakter: <a href="ARCHITECTURE.md" target="_blank">ARCHITECTURE.md</a>. All data ligger i cf_*-navnerommet, isolert per prosjekt. Eksporten inkluderer prosjekter, lærdommer, bibliotek, aktivitet og kostnader.</div>
 
   <h2>LAGRINGSBRUK</h2>
   <div class="note">Nettleserens localStorage har ~5 MB kvote. Genererte nettsteder og apper tar plass – eksporter og slett avsluttede prosjekter ved behov.</div>
@@ -157,655 +139,17 @@
 </section>
 
 </main>
+</div>
+
+<!-- Kommandopalett -->
+<div id="cmdk" role="dialog" aria-label="Kommandopalett">
+  <div class="box">
+    <input id="cmdkInput" placeholder="Skriv en kommando eller et prosjektnavn …" autocomplete="off">
+    <div id="cmdkList"></div>
+  </div>
+</div>
 
 <script src="factory.js"></script>
-<script>
-(() => {
-"use strict";
-const $ = (id) => document.getElementById(id);
-const { Store, Projects, Pipeline, Board, Demo, SelfReview, PHASES, OWNER_GATE_ACTIONS } = window.CF;
-
-document.querySelectorAll("nav button").forEach((b) => {
-  b.onclick = () => {
-    document.querySelectorAll("nav button").forEach((x) => x.classList.remove("on"));
-    document.querySelectorAll(".tab").forEach((x) => x.classList.remove("on"));
-    b.classList.add("on");
-    $("tab-" + b.dataset.tab).classList.add("on");
-    if (b.dataset.tab === "portfolio") renderPortfolio();
-    if (b.dataset.tab === "system") { renderLessons(); renderLibrary(); renderStorage(); }
-  };
-});
-function goTab(name) { document.querySelector(`nav button[data-tab="${name}"]`).click(); }
-
-function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
-function certBadge(c) {
-  const cls = c === "høy" ? "h" : c === "middels" ? "m" : "l";
-  return `<span class="badge ${cls}">${esc(c)} sikkerhet</span>`;
-}
-function phaseTitle(n) { const f = PHASES.find((x) => x.n === n); return f ? f.title : "–"; }
-function nok(n) { return n == null ? "–" : Math.round(n).toLocaleString("nb-NO") + " kr"; }
-
-/* ---------- PORTEFØLJE ---------- */
-function renderLessons() {
-  const list = window.CF.Lessons.list();
-  $("lessonsList").innerHTML = list.length
-    ? `<div class="panel">${list.map((l) => `• [${esc(l.project)}] ${esc(l.lesson)}`).join("\n")}</div>`
-    : `<div class="panel muted">Ingen lærdommer enda – kjør 🔁 Retro på et prosjekt.</div>`;
-}
-
-function renderStorage() {
-  const u = Store.usage();
-  const pct = Math.min(100, Math.round((u.totalKb / u.limitKb) * 100));
-  $("storageUsage").innerHTML = `<div class="panel${pct > 80 ? " danger" : ""}">Totalt: <b>${u.totalKb} kB</b> av ~${u.limitKb} kB (${pct} %)` +
-    (u.rows.length ? `<table><tr><th>NØKKEL</th><th>STØRRELSE</th></tr>${u.rows.slice(0, 10).map((r) => `<tr><td class="muted">${esc(r.key)}</td><td>${r.kb} kB</td></tr>`).join("")}</table>` : "") + `</div>`;
-}
-
-function renderLibrary() {
-  const list = window.CF.Library.list();
-  $("libraryList").innerHTML = list.length
-    ? `<div class="panel"><table><tr><th>KAPABILITET</th><th>TYPE</th><th>FRA PROSJEKT</th><th></th></tr>${list.map((x) => `<tr><td>${esc(x.title)}</td><td class="muted">${esc(x.type)}</td><td class="muted">${esc(x.source)}</td><td><button class="small" data-lib="${x.id}">Fjern</button></td></tr>`).join("")}</table></div>`
-    : `<div class="panel muted">Tomt – kjør 🔁 Retro på et prosjekt for å høste gjenbrukskandidater.</div>`;
-  document.querySelectorAll("[data-lib]").forEach((b) => { b.onclick = () => { window.CF.Library.remove(b.dataset.lib); renderLibrary(); }; });
-}
-
-function renderPortfolio() {
-  const list = Projects.list();
-  if (!list.length) {
-    $("portfolio").innerHTML = `<div class="panel muted">Ingen prosjekter enda. Registrer en idé under NY IDÉ, eller last eksempelprosjektet under SYSTEM.</div>`;
-    $("detail").innerHTML = "";
-    return;
-  }
-  const byStatus = list.reduce((m, p) => ((m[p.status] = (m[p.status] || 0) + 1), m), {});
-  const totalMrr = list.reduce((sum, p) => { const m = window.CF.Metrics.latest(p); return sum + (m ? m.mrr : 0); }, 0);
-  $("portfolio").innerHTML = `<div class="note" style="margin-bottom:8px">${list.length} prosjekt${list.length === 1 ? "" : "er"} · ${Object.entries(byStatus).map(([k, v]) => `${k}: ${v}`).join(" · ")}${totalMrr ? ` · <b style="color:var(--cyan)">samlet MRR: ${nok(totalMrr)}</b>` : ""}</div>` +
-    `<table><tr><th>PROSJEKT</th><th>STATUS</th><th>FASE</th><th>SCORE</th><th>NESTE BESLUTNING</th><th>OPPDATERT</th></tr>` +
-    list.map((p) => {
-      const next = p.evaluation ? (p.evaluation.synthesis.decision === "valider_mer" ? "gjennomfør validering" : p.evaluation.synthesis.decision) : "kjør idévurdering";
-      return `<tr class="proj-item" data-id="${p.id}"><td>${esc(p.name)}${p.test ? ' <span class="badge test">TEST</span>' : ""}</td><td>${esc(p.status)}</td><td>${p.phase}: ${esc(phaseTitle(p.phase))}</td><td>${p.evaluation ? p.evaluation.totalScore + "/100" : "–"}</td><td class="muted">${esc(next)}</td><td class="muted">${esc((p.updatedAt || "").slice(0, 10))}</td></tr>`;
-    }).join("") + "</table>";
-  document.querySelectorAll(".proj-item").forEach((tr) => { tr.onclick = () => showProject(tr.dataset.id); });
-}
-
-function showProject(id) {
-  const p = Projects.get(id);
-  if (!p) return;
-  const s = p.evaluation && p.evaluation.synthesis;
-  let html = `<div class="panel"><h3>${esc(p.name)}${p.test ? ' <span class="badge test">TEST – ISOLERT EKSEMPELPROSJEKT</span>' : ""}</h3>` +
-    `<div class="row"><div>Status: <b>${esc(p.status)}</b></div><div>Fase: <b>${p.phase} – ${esc(phaseTitle(p.phase))}</b></div><div>Modenhet: <b>${esc(p.maturity || "–")}</b></div>` +
-    (p.evaluation ? `<div>Score: <span class="score">${p.evaluation.totalScore}</span>/100</div>` : "") + `</div>` +
-    `<div class="note">Idé: ${esc(p.idea)}</div>` +
-    `<div class="row" style="margin-top:10px">` +
-    `<button class="small" id="pResume">▶ Kjør videre</button>` +
-    `<button class="small" id="pGate">✅ Godkjenn port (eier): ${esc((PHASES.find((f) => f.n === p.phase) || {}).gate || "")}</button>` +
-    `<button class="small" id="pReport">📄 Rapport</button>` +
-    `<button class="small" id="pRetro">🔁 Retro</button>` +
-    `<button class="small" id="pExport">Eksporter prosjekt</button>` +
-    (p.status === "parkert" || p.status === "avsluttet"
-      ? `<button class="small" id="pReactivate">▶ Reaktiver (eier)</button>`
-      : `<button class="small" id="pPark">⏸ Parker (eier)</button><button class="small" id="pKill">🛑 Avslutt (eier)</button>`) +
-    `<button class="small" id="pDelete">Slett data</button></div></div>`;
-
-  if (p.intake) {
-    html += `<div class="panel"><h3>FASE 0 – INNTAK</h3>Problem: ${esc(p.intake.problem)}\nMålgruppe: ${esc(p.intake.target_group)}\nLøsning: ${esc(p.intake.solution)}\nBetalingsvilje: ${esc(p.intake.willingness_to_pay)}\nMarked: ${esc(p.intake.market)}\nKanal: ${esc(p.intake.channel)}\nAbonnementspotensial: ${esc(p.intake.subscription_potential)}` +
-      (p.intake.decision_changing_questions.length ? `\n\nSpørsmål som kan endre beslutningen:\n- ${p.intake.decision_changing_questions.map(esc).join("\n- ")}` : "") + `</div>`;
-  }
-  if (s) {
-    html += `<div class="panel"><h3>FASE 1 – STYRETS BESLUTNING ${certBadge(s.certainty)}</h3><b style="color:var(--cyan)">${esc(s.decision.toUpperCase())}</b> – ${esc(s.decision_rationale)}\n\n${esc(s.summary)}\n\nTrekker opp: ${s.score_drivers_up.map(esc).join("; ")}\nTrekker ned: ${s.score_drivers_down.map(esc).join("; ")}</div>`;
-    html += `<div class="panel"><h3>SCOREKORT (${p.evaluation.totalScore}/100)</h3><table><tr><th>KRITERIUM</th><th>SCORE</th><th>BEGRUNNELSE</th></tr>${s.scorecard.map((r) => `<tr><td>${esc(r.criterion)}</td><td>${r.score}/10</td><td class="muted">${esc(r.reasoning)}</td></tr>`).join("")}</table></div>`;
-    if (s.weaknesses.length || s.improvements.length || s.alternative_ideas.length) {
-      html += `<div class="panel danger"><h3>SVAKHETER, FORBEDRINGER OG ALTERNATIVER</h3>Svakheter:\n- ${s.weaknesses.map(esc).join("\n- ") || "(ingen)"}\n\nForbedringer:\n- ${s.improvements.map(esc).join("\n- ") || "(ingen)"}\n\nAlternative idéer fra samme innsikt:\n- ${s.alternative_ideas.map(esc).join("\n- ") || "(ingen)"}</div>`;
-    }
-    html += `<div class="panel"><h3>SCENARIER</h3><table><tr><th>SCENARIO</th><th>SANNSYNLIGHET</th><th>UTFALL</th><th>VERDI</th></tr>${s.scenarios.map((x) => `<tr><td>${esc(x.name)}</td><td>${Math.round(x.probability * 100)}%</td><td>${esc(x.outcome)}</td><td>${esc(x.value_estimate)}</td></tr>`).join("")}</table></div>`;
-    if (s.assumptions_to_validate.length) {
-      html += `<div class="panel"><h3>KRITISKE ANTAKELSER → BILLIGSTE TEST</h3><table><tr><th>ANTAKELSE</th><th>TEST</th><th>TERSKEL</th><th>KOSTNAD</th><th>HORISONT</th></tr>${s.assumptions_to_validate.map((a) => `<tr><td>${esc(a.claim)}</td><td>${esc(a.test)}</td><td>${esc(a.threshold)}</td><td>${esc(a.cost_estimate)}</td><td>${esc(a.horizon)}</td></tr>`).join("")}</table></div>`;
-    }
-    html += `<div class="panel"><h3>ROLLENES VURDERINGER</h3><table><tr><th>ROLLE</th><th>POSISJON</th><th>STERKESTE MOTARGUMENT</th><th>ANBEFALING</th><th>P</th></tr>${p.evaluation.verdicts.map((v) => `<tr><td>${esc(v.roleTitle)}</td><td class="muted">${esc(v.position)}</td><td class="muted">${esc(v.strongest_argument_against)}</td><td>${esc(v.recommendation)}</td><td>${typeof v.probability_success === "number" ? Math.round(v.probability_success * 100) + "%" : "–"}</td></tr>`).join("")}</table></div>`;
-  }
-  /* FASE 2 – markedsvalidering: eksperimenter, landingsside, valideringsport */
-  const dec = s && s.decision;
-  if (p.experiments || (s && ["valider_mer", "prototype", "mvp", "lansering"].includes(dec))) {
-    let v = `<div class="panel"><h3>FASE 2 – MARKEDSVALIDERING</h3>`;
-    if (!p.experiments) {
-      v += `<div class="note">Terskler defineres FØR resultatene finnes. Opprett eksperimentkøen direkte fra de kritiske antakelsene (ingen API-kostnad).</div><button class="small" id="expCreate" style="margin-top:8px">🧪 Opprett eksperimenter fra antakelsene</button>`;
-    } else {
-      v += `<table><tr><th>ANTAKELSE</th><th>TEST / TERSKEL</th><th>KOSTNAD / HORISONT</th><th>STATUS</th><th>RESULTAT</th></tr>` +
-        p.experiments.map((x) => `<tr><td>${esc(x.claim)}</td><td class="muted">${esc(x.test)}<br><b>Terskel:</b> ${esc(x.threshold)}</td><td class="muted">${esc(x.cost_estimate)} / ${esc(x.horizon)}</td><td>${x.status === "fullført" ? (x.passed ? '<span class="badge h">BESTÅTT</span>' : '<span class="badge l">IKKE BESTÅTT</span>') : esc(x.status)}</td><td>${x.status === "fullført" ? esc(x.result) : `<input type="text" class="exp-result" data-exp="${x.id}" placeholder="Faktisk resultat …"><div class="row" style="margin-top:6px"><button class="small exp-pass" data-exp="${x.id}">✓ Bestått</button><button class="small exp-fail" data-exp="${x.id}">✗ Ikke bestått</button></div>`}</td></tr>`).join("") + `</table>`;
-      if (p.experiments.some((x) => x.status === "fullført") && !p.validation) {
-        v += `<button class="small" id="valReview" style="margin-top:10px">⚖ Evaluer valideringen (port)</button>`;
-      }
-    }
-    v += `<div class="row" style="margin-top:10px">` +
-      (p.landing ? `<button class="small" id="lpPreview">👁 Forhåndsvis landingsside</button><button class="small" id="lpDownload">⬇ Last ned landingsside (HTML)</button>` : `<button class="small" id="lpGen">🌐 Generer falsk-dør-landingsside</button>`) + `</div>`;
-    if (p.landing) v += `<div class="note">«${esc(p.landing.content.headline)}» – ${esc(p.landing.content.price_line)}. Selvstendig HTML uten eksterne avhengigheter, klar for GitHub Pages/Netlify.${p.landing.formEndpoint ? "" : " NB: legg inn et skjema-endepunkt (f.eks. Formspree) før reell trafikk – uten det lagres påmeldinger kun i besøkerens nettleser."}</div>`;
-    v += `</div>`;
-    if (p.validation) {
-      v += `<div class="panel"><h3>VALIDERINGSPORT ${certBadge(p.validation.certainty)}</h3><b style="color:var(--cyan)">${esc(p.validation.decision.toUpperCase())}</b> – ${esc(p.validation.decision_rationale)}\n\n${esc(p.validation.summary)}` +
-        `<table><tr><th>ANTAKELSE</th><th>DOM</th><th>KONSEKVENS</th></tr>${p.validation.per_experiment.map((x) => `<tr><td>${esc(x.claim)}</td><td>${x.verdict === "bestått" ? '<span class="badge h">bestått</span>' : x.verdict === "ikke_bestått" ? '<span class="badge l">ikke bestått</span>' : '<span class="badge m">uklart</span>'}</td><td class="muted">${esc(x.implication)}</td></tr>`).join("")}</table>` +
-        `\nNeste steg:\n- ${p.validation.next_steps.map(esc).join("\n- ")}</div>`;
-    }
-    html += v;
-  }
-  /* FASE 3 – forretningsmodell (LLM setter antakelser, koden regner) */
-  const buildableNow = s && (["prototype", "mvp", "lansering"].includes(dec) || (p.validation && ["prototype", "mvp", "lansering"].includes(p.validation.decision)));
-  if (p.bizmodel || buildableNow) {
-    let v = `<div class="panel"><h3>FASE 3 – FORRETNINGSMODELL</h3>`;
-    if (!p.bizmodel) {
-      v += `<div class="note">LLM setter nøkterne antakelser med begrunnelse – all matematikk (MRR, break-even, LTV/CAC, kapitalbehov) beregnes deterministisk i kode og kan rekalkuleres gratis.</div><button class="small" id="bmGen" style="margin-top:8px">💰 Lag forretningsmodell</button>`;
-    } else {
-      const m = p.bizmodel.model, sc = p.bizmodel.computed.scenarios;
-      v += `${esc(m.value_prop)}\nICP: ${esc(m.icp)} · Kjøper: ${esc(m.buyer)} · Inntektsmodell: ${esc(m.revenue_model)}\nGratisnivå: ${esc(m.free_tier)} · Prøve: ${esc(m.trial)}` +
-        `<table><tr><th>PLAN</th><th>PRIS/MND</th><th>PRIS/ÅR</th><th>ANDEL</th><th>INKLUDERER</th></tr>${m.plans.map((pl) => `<tr><td>${esc(pl.name)}</td><td>${nok(pl.price_month)}</td><td>${nok(pl.price_year)}</td><td>${Math.round(pl.target_share * 100)}%</td><td class="muted">${pl.includes.map(esc).join("; ")}</td></tr>`).join("")}</table>` +
-        `<table><tr><th>SCENARIO (24 MND)</th><th>KUNDER</th><th>MRR</th><th>BREAK-EVEN</th><th>KAPITALBEHOV</th><th>LTV</th><th>LTV/CAC</th></tr>` +
-        ["konservativ", "sannsynlig", "offensiv"].map((k) => `<tr><td>${k}</td><td>${sc[k].customers24}</td><td>${nok(sc[k].mrr24)}</td><td>${sc[k].breakEvenMonth ? "mnd " + sc[k].breakEvenMonth : '<span class="badge l">ikke innen 24 mnd</span>'}</td><td>${nok(sc[k].capitalNeed)}</td><td>${nok(sc[k].ltv)}</td><td>${sc[k].ltvCac ?? "–"}${sc[k].ltvCac !== null ? (sc[k].ltvCac >= 3 ? ' <span class="badge h">ok</span>' : ' <span class="badge l">svak</span>') : ""}</td></tr>`).join("") + `</table>` +
-        `<div class="note">Antakelser (begrunnet):\n${m.assumption_notes.map((n) => "• " + esc(n)).join("\n")}</div>` +
-        `<div class="row" style="margin-top:10px">` +
-        [["visitors_m1", "Besøk mnd 1"], ["visitor_growth_pct_m", "Vekst/mnd (0–1)"], ["signup_rate", "Reg.rate (0–1)"], ["paid_conversion", "Betalt konv. (0–1)"], ["churn_monthly", "Churn/mnd (0–1)"], ["cac", "CAC (kr)"]].map(([k, lbl]) => `<div><div class="note">${lbl}</div><input type="text" class="bm-in" data-k="${k}" value="${m.assumptions[k]}"></div>`).join("") +
-        `</div><button class="small" id="bmUpdate" style="margin-top:8px">↻ Rekalkuler lokalt (gratis)</button>`;
-    }
-    html += v + `</div>`;
-  }
-
-  /* FASE 4 – selskap og strategi */
-  if (p.strategy || buildableNow) {
-    let v = `<div class="panel"><h3>FASE 4 – SELSKAP OG STRATEGI</h3>`;
-    if (!p.strategy) {
-      v += `<div class="note">Navn, posisjonering, prioriteringer, 90-dagers og 12-måneders plan – og en eksplisitt ikke-gjøre-liste. Selskapsregistrering, varemerker og domener er eier-porter som kommer senere.</div><button class="small" id="stGen" style="margin-top:8px">🧭 Utarbeid strategi</button>`;
-    } else {
-      const st = p.strategy;
-      v += `<b style="color:var(--cyan)">${esc(st.working_name)}</b> (${esc(st.category)})\n${esc(st.positioning)}\n\nLøfte: ${esc(st.promise)}\nDifferensiering: ${esc(st.differentiation)}\nNavnealternativer: ${st.name_alternatives.map(esc).join(", ")}\n\nMission: ${esc(st.mission)}\nVision: ${esc(st.vision)}\nVerdier: ${st.values.map(esc).join(" · ")}\n\n90 dager:\n- ${st.plan_90_days.map(esc).join("\n- ")}\n\n12 måneder:\n- ${st.plan_12_months.map(esc).join("\n- ")}\n\n3-årig retning: ${esc(st.direction_3_years)}\n\n<b>Skal IKKE gjøre:</b>\n- ${st.not_doing.map(esc).join("\n- ")}`;
-    }
-    html += v + `</div>`;
-  }
-
-  /* FASE 7 – teknisk arkitektur */
-  if (p.techarch || buildableNow) {
-    let v = `<div class="panel"><h3>FASE 7 – TEKNISK ARKITEKTUR</h3>`;
-    if (!p.techarch) {
-      v += `<div class="note">Velger teknologi ut fra produktets faktiske behov – med vurderte alternativer, kostnadsestimat, leverandørbinding og migreringsvei per valg. Lister også hva som IKKE trengs enda.</div><button class="small" id="taGen" style="margin-top:8px">🏗 Velg teknisk arkitektur</button>`;
-    } else {
-      const t = p.techarch;
-      v += `${esc(t.summary)}\nEstimert totalkostnad: <b>${esc(t.total_monthly_cost_estimate)}</b>` +
-        `<table><tr><th>OMRÅDE</th><th>VALG</th><th>HVORFOR</th><th>ALTERNATIVER</th><th>KOST/MND</th><th>BINDING</th></tr>${t.choices.map((c) => `<tr><td>${esc(c.area)}</td><td><b>${esc(c.choice)}</b></td><td class="muted">${esc(c.why)}</td><td class="muted">${c.alternatives_considered.map(esc).join(", ")}</td><td>${esc(c.monthly_cost_estimate)}</td><td>${c.lock_in_risk === "høy" ? '<span class="badge l">høy</span>' : c.lock_in_risk === "middels" ? '<span class="badge m">middels</span>' : '<span class="badge h">lav</span>'}</td></tr>`).join("")}</table>` +
-        `\nTrengs IKKE enda:\n- ${t.not_needed_yet.map(esc).join("\n- ")}\n\nSikkerhet:\n- ${t.security_notes.map(esc).join("\n- ")}`;
-    }
-    html += v + `</div>`;
-  }
-
-  /* FASE 6+8 – nettstedet (fabrikken bygger det) */
-  if (p.site || buildableNow) {
-    let v = `<div class="panel"><h3>FASE 6+8 – NETTSTED</h3>`;
-    if (!p.site) {
-      v += `<div class="note">Genererer komplett statisk nettsted: forside, pris (fra forretningsmodellens planer), FAQ, om oss, vilkår/personvern (merket som utkast) og deploy-README. Selvstendig HTML uten eksterne avhengigheter.</div><button class="small" id="siteGen" style="margin-top:8px">🌐 Generer nettsted</button>`;
-    } else {
-      v += `«${esc(p.site.content.hero_headline)}» – ${esc(p.site.content.brand.slogan)}\nFiler: ${Object.keys(p.site.files).map(esc).join(", ")}` +
-        `<div class="row" style="margin-top:10px"><button class="small" id="sitePreview">👁 Forhåndsvis forsiden</button><button class="small" id="siteZip">⬇ Last ned nettstedet (ZIP)</button></div>` +
-        `<div class="note">Betalingsknappene er plassholdere til Stripe Payment Links legges inn (eier-port). Juridiske sider er utkast som krever advokat. Se README-deploy.md i pakken.</div>`;
-    }
-    html += v + `</div>`;
-  }
-
-  /* FASE 8+9 – app-skall (innlogging, onboarding, dashboard, abonnement) */
-  if (p.app || p.brief) {
-    let v = `<div class="panel"><h3>FASE 8+9 – APP-SKALL</h3>`;
-    if (!p.app) {
-      v += `<div class="note">Genererer deploybar app-pakke fra MVP-briefen: SPA med innlogging/onboarding/dashboard/abonnement (ærlig demo-modus uten konfigurasjon), Supabase-skjema med RLS, Stripe-webhook-mal og oppsett-README. Supabase/Stripe-oppkobling er eier-porter.</div><button class="small" id="appGen" style="margin-top:8px">📱 Generer app-skall</button>`;
-    } else {
-      v += `«${esc(p.app.content.app_name)}» – ${esc(p.app.content.welcome_line)}\nFiler: ${Object.keys(p.app.files).map(esc).join(", ")}\nAktiveringsmetrikk: <b>${esc(p.app.content.activation_metric)}</b>` +
-        `<div class="row" style="margin-top:10px"><button class="small" id="appPreview">👁 Forhåndsvis (demo-modus)</button><button class="small" id="appZip">⬇ Last ned app-pakken (ZIP)</button></div>` +
-        `<div class="note">Uten config kjører appen i tydelig merket demo-modus. Reell auth/betaling krever Supabase + Stripe (eier-porter) – se README-app.md i pakken.</div>`;
-    }
-    html += v + `</div>`;
-  }
-
-  /* FASE 10 – juridisk, personvern og sikkerhet */
-  if (p.legal || buildableNow) {
-    let v = `<div class="panel danger"><h3>FASE 10 – JURIDISK, PERSONVERN OG SIKKERHET</h3>`;
-    if (!p.legal) {
-      v += `<div class="note">Kartlegger krav: selskapsform, vilkår, GDPR, forbrukerrettigheter, markedsføringsregler, MVA/regnskap. All output er generell veiledning – punkter som krever fagperson merkes tydelig.</div><button class="small" id="lgGen" style="margin-top:8px">⚖️ Kartlegg juridiske krav</button>`;
-    } else {
-      v += `<b>${esc(p.legal.disclaimer)}</b>\n\nSelskapsform: ${esc(p.legal.company_form_notes)}\nMVA/skatt: ${esc(p.legal.vat_tax_notes)}` +
-        `<table><tr><th>OMRÅDE</th><th>KRAV</th><th>GJELDER FORDI</th><th>FAGPERSON</th></tr>${p.legal.requirements.map((r) => `<tr><td>${esc(r.area)}</td><td>${esc(r.requirement)}</td><td class="muted">${esc(r.applies_because)}</td><td>${r.must_be_verified_by_professional ? '<span class="badge l">KREVES</span>' : '<span class="badge">nei</span>'}</td></tr>`).join("")}</table>` +
-        `<h3 style="margin-top:14px">PERSONDATA</h3><table><tr><th>DATA</th><th>FORMÅL</th><th>GRUNNLAG</th><th>LAGRINGSTID</th></tr>${p.legal.privacy_data.map((d) => `<tr><td>${esc(d.data)}</td><td class="muted">${esc(d.purpose)}</td><td class="muted">${esc(d.legal_basis)}</td><td class="muted">${esc(d.retention)}</td></tr>`).join("")}</table>` +
-        `\nHandlingsliste:\n- ${p.legal.action_list.map(esc).join("\n- ")}`;
-    }
-    html += v + `</div>`;
-  }
-
-  /* FASE 11 – markedsføring */
-  if (p.marketing || buildableNow) {
-    let v = `<div class="panel"><h3>FASE 11 – MARKEDSFØRING</h3>`;
-    if (!p.marketing) {
-      v += `<div class="note">Prioritert kanalstrategi ut fra målgruppe og økonomi – ikke alle kanaler fordi de finnes. Masseutsendelser og betalte kampanjer forblir eier-porter.</div><button class="small" id="mkGen" style="margin-top:8px">📣 Bygg markedsføringsmotor</button>`;
-    } else {
-      const mk = p.marketing;
-      v += `Kjernebudskap: <b>${esc(mk.core_message)}</b>\n${esc(mk.budget_notes)}` +
-        `<table><tr><th>#</th><th>KANAL</th><th>HVORFOR</th><th>CAC-HYPOTESE</th></tr>${mk.channel_strategy.sort((a, b) => a.priority - b.priority).map((c) => `<tr><td>${c.priority}</td><td>${esc(c.channel)}</td><td class="muted">${esc(c.why)}</td><td class="muted">${esc(c.cac_hypothesis)}</td></tr>`).join("")}</table>` +
-        `<h3 style="margin-top:14px">EKSPERIMENTKØ</h3><table><tr><th>HYPOTESE</th><th>TEST</th><th>MÅL/TERSKEL</th></tr>${mk.experiment_queue.map((x) => `<tr><td>${esc(x.hypothesis)}</td><td class="muted">${esc(x.test)}</td><td class="muted">${esc(x.metric)} – ${esc(x.threshold)}</td></tr>`).join("")}</table>` +
-        `<h3 style="margin-top:14px">INNHOLDSKALENDER</h3><table><tr><th>UKE</th><th>TEMA</th><th>FORMAT</th><th>KANAL</th></tr>${mk.content_calendar.map((c) => `<tr><td>${c.week}</td><td>${esc(c.theme)}</td><td class="muted">${esc(c.format)}</td><td class="muted">${esc(c.channel)}</td></tr>`).join("")}</table>` +
-        `\nLanseringsplan:\n- ${mk.launch_plan.map(esc).join("\n- ")}\n\nE-postsekvens: ${mk.email_sequence.map((m) => `dag ${m.day}: ${esc(m.subject)}`).join(" · ")}`;
-    }
-    html += v + `</div>`;
-  }
-
-  /* FASE 13 – drift og kundeservice */
-  if (p.ops || buildableNow) {
-    let v = `<div class="panel"><h3>FASE 13 – DRIFT OG KUNDESERVICE</h3>`;
-    if (!p.ops) {
-      v += `<div class="note">Grunnlag for drift med minst mulig manuelt arbeid: supportkanaler, FAQ-frø, svarmaler, eskalering, hendelses-runbook, månedlig gjennomgang, leverandøroversikt og automatiseringskandidater.</div><button class="small" id="opsGen" style="margin-top:8px">🛠 Bygg driftsgrunnlag</button>`;
-    } else {
-      const o = p.ops;
-      v += `Supportkanaler: ${o.support_channels.map(esc).join(" · ")}\n\nEskalering:\n- ${o.escalation_rules.map(esc).join("\n- ")}\n\nHendelses-runbook:\n- ${o.incident_runbook.map(esc).join("\n- ")}` +
-        `<h3 style="margin-top:14px">SVARMALER</h3><table><tr><th>SAK</th><th>MAL</th></tr>${o.reply_templates.map((t) => `<tr><td>${esc(t.name)}</td><td class="muted">${esc(t.text)}</td></tr>`).join("")}</table>` +
-        `<h3 style="margin-top:14px">LEVERANDØRER</h3><table><tr><th>LEVERANDØR</th><th>FORMÅL</th><th>KOSTNAD</th></tr>${o.vendor_list.map((x) => `<tr><td>${esc(x.vendor)}</td><td class="muted">${esc(x.purpose)}</td><td class="muted">${esc(x.cost_note)}</td></tr>`).join("")}</table>` +
-        `\nMånedlig gjennomgang:\n- ${o.monthly_review_checklist.map(esc).join("\n- ")}\n\nBør automatiseres:\n- ${o.automation_candidates.map(esc).join("\n- ")}`;
-    }
-    html += v + `</div>`;
-  }
-
-  /* FASE 14/15 – modenhetsstige med sjekklister */
-  if (p.brief || p.site || p.maturity) {
-    const next = window.CF.Maturity.next(p);
-    let v = `<div class="panel"><h3>FASE 14/15 – MODENHET OG KVALITETSPORTER</h3>Stige: ${window.CF.Maturity.LADDER.map((l) => (p.maturity === l ? `<b style="color:var(--cyan)">${esc(l)}</b>` : (l === next ? `<u>${esc(l)}</u>` : esc(l)))).join(" → ")}`;
-    if (next) {
-      const cl = window.CF.Maturity.checklist(Projects.get(p.id), next);
-      v += `<h3 style="margin-top:14px">SJEKKLISTE FOR «${esc(next).toUpperCase()}»</h3>` +
-        cl.items.map((it, i) => `<label style="display:block; margin:6px 0; cursor:pointer"><input type="checkbox" class="mat-check" data-idx="${i}" ${it.done ? "checked" : ""}> ${esc(it.text)}</label>`).join("") +
-        `<button class="small" id="matDeclare" ${cl.items.every((i) => i.done) ? "" : "disabled"} style="margin-top:8px">✅ Erklær «${esc(next)}» (eier)</button>` +
-        `<div class="note">Ingenting erklæres ferdig når kritiske punkter mangler. Erklæringen logges som eierbeslutning.</div>`;
-    } else {
-      v += `<div class="note" style="margin-top:8px">Høyeste modenhetsnivå er nådd. Lanseringsklart digitalt produkt ≠ juridisk etablert, operativ eller kommersielt validert virksomhet – de stegene har egne eier-porter.</div>`;
-    }
-    if (p.maturity === "lanseringsklart" && p.status !== "lansert") {
-      v += `<button class="small" id="launchBtn" style="margin-top:8px">🚀 Marker som lansert (eier)</button>`;
-    }
-    html += v + `</div>`;
-  }
-
-  /* FASE 16 – måletall mot prognosen */
-  if (p.bizmodel) {
-    const cmp = window.CF.Metrics.compare(p);
-    let v = `<div class="panel"><h3>FASE 16 – MÅLETALL (FAKTISK MOT PROGNOSE)</h3>`;
-    if (cmp.length) {
-      v += `<table><tr><th>MÅNED</th><th>KUNDER</th><th>PROGNOSE</th><th>MRR</th><th>PROGNOSE</th><th>CHURN</th><th>BESØK</th></tr>${cmp.map((m) => `<tr><td>${esc(m.month)}</td><td>${m.customers}</td><td class="muted">${m.forecast_customers ?? "–"}</td><td>${nok(m.mrr)}</td><td class="muted">${nok(m.forecast_mrr)}</td><td>${m.churn_pct == null ? "–" : m.churn_pct + "%"}</td><td>${m.visitors}</td></tr>`).join("")}</table>`;
-    } else {
-      v += `<div class="note">Ingen måletall registrert enda. Prognosen (sannsynlig scenario) sammenlignes automatisk fra første registrerte måned.</div>`;
-    }
-    v += `<div class="row" style="margin-top:10px">` +
-      [["mtMonth", "ÅÅÅÅ-MM"], ["mtCustomers", "Betalende kunder"], ["mtMrr", "MRR (kr)"], ["mtChurn", "Churn % (valgfri)"], ["mtVisitors", "Besøk"]].map(([id, ph]) => `<input type="text" id="${id}" placeholder="${ph}">`).join("") +
-      `</div><button class="small" id="mtAdd" style="margin-top:8px">📈 Registrer måned</button></div>`;
-    html += v;
-  }
-
-  /* RETRO – læringssløyfe */
-  if (p.retro) {
-    html += `<div class="panel"><h3>RETRO</h3>Fungerte:\n- ${p.retro.what_worked.map(esc).join("\n- ") || "(ingen)"}\n\nFeilet:\n- ${p.retro.what_failed.map(esc).join("\n- ") || "(ingen)"}\n\nGale antakelser:\n- ${p.retro.wrong_assumptions.map(esc).join("\n- ") || "(ingen)"}\n\nKan gjenbrukes:\n- ${p.retro.reusable.map(esc).join("\n- ") || "(ingen)"}\n\nLærdom: <b style="color:var(--cyan)">${esc(p.retro.lesson)}</b></div>`;
-  }
-
-  if (p.phasePlan) {
-    html += `<div class="panel"><h3>FASEPLAN</h3><div class="note">${esc(p.phasePlan.sequencing_notes)}</div><table><tr><th>FASE</th><th>OMFANG</th><th>FØRSTE HANDLINGER</th><th>STOPPKRITERIER</th><th>EIER</th></tr>${p.phasePlan.phases.filter((f) => f.relevant).map((f) => `<tr><td>${f.phase}: ${esc(phaseTitle(f.phase))}</td><td class="muted">${esc(f.scope)}</td><td>${f.first_actions.map(esc).join("<br>")}</td><td class="muted">${esc(f.stop_criteria)}</td><td>${esc(f.owner_role)}</td></tr>`).join("")}</table></div>`;
-  }
-  if (p.brief) {
-    const b = p.brief;
-    html += `<div class="panel"><h3>MVP-BRIEF: ${esc(b.working_name)}</h3>${esc(b.product_vision)}\n\nKjerneproblem: ${esc(b.core_problem)}\nKjernejobb: ${esc(b.core_job)}\nViktigste brukerreise: ${esc(b.primary_user_journey)}\n\nMonetisering: ${esc(b.monetization.model)} – ${esc(b.monetization.price_hypothesis)} (prøve: ${esc(b.monetization.trial)})\nEstimat: ${esc(b.build_estimate)}` +
-      `<table><tr><th>MVP-FUNKSJON</th><th>HVORFOR</th><th>AKSEPTANSE</th></tr>${b.mvp_features.map((f) => `<tr><td>${esc(f.name)}</td><td class="muted">${esc(f.why)}</td><td class="muted">${esc(f.acceptance)}</td></tr>`).join("")}</table>` +
-      `\nBygges IKKE:\n- ${b.not_building.map(esc).join("\n- ")}\n\nSuksessmål: ${b.success_metrics.map((m) => `${esc(m.metric)} → ${esc(m.target)}`).join("; ")}</div>`;
-  }
-  if (p.assumptions.length) {
-    html += `<div class="panel"><h3>ANTAKELSESLOGG</h3><table><tr><th>PÅSTAND</th><th>TYPE</th><th>SIKKERHET</th><th>KILDE</th></tr>${p.assumptions.map((a) => `<tr><td>${esc(a.claim)}</td><td>${esc(a.type)}</td><td>${esc(a.confidence)}</td><td class="muted">${esc(a.source)}</td></tr>`).join("")}</table></div>`;
-  }
-  if (p.decisions.length) {
-    html += `<div class="panel"><h3>BESLUTNINGSLOGG</h3><table><tr><th>DATO</th><th>ROLLE</th><th>BESLUTNING</th><th>BEGRUNNELSE</th></tr>${p.decisions.map((d) => `<tr><td class="muted">${esc(d.at.slice(0, 10))}</td><td>${esc(d.role)}${d.byOwner ? ' <span class="badge test">EIER</span>' : ""}</td><td>${esc(d.decision)}</td><td class="muted">${esc(d.rationale)}</td></tr>`).join("")}</table></div>`;
-  }
-  $("detail").innerHTML = html;
-
-  /* FASE 2-handlinger */
-  const expCreate = $("expCreate");
-  if (expCreate) expCreate.onclick = () => { window.CF.Experiments.createFrom(Projects.get(p.id)); showProject(p.id); };
-  document.querySelectorAll(".exp-pass, .exp-fail").forEach((b) => {
-    b.onclick = () => {
-      const input = document.querySelector(`.exp-result[data-exp="${b.dataset.exp}"]`);
-      const result = (input && input.value.trim()) || "";
-      if (!result) { alert("Skriv inn det faktiske resultatet først."); return; }
-      window.CF.Experiments.registerResult(Projects.get(p.id), b.dataset.exp, result, b.classList.contains("exp-pass"));
-      showProject(p.id);
-    };
-  });
-  const valReview = $("valReview");
-  if (valReview) valReview.onclick = async () => {
-    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
-    valReview.disabled = true;
-    try { await window.CF.Experiments.review(Projects.get(p.id)); showProject(p.id); renderPortfolio(); }
-    catch (e) { alert("Feil: " + e.message); valReview.disabled = false; }
-  };
-  const lpGen = $("lpGen");
-  if (lpGen) lpGen.onclick = async () => {
-    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
-    lpGen.disabled = true;
-    const endpoint = prompt("Skjema-endepunkt for ventelisten (f.eks. Formspree-URL). La stå tomt for lokal testvariant:", "") || "";
-    try { await window.CF.Landing.run(Projects.get(p.id), { formEndpoint: endpoint.trim() }); showProject(p.id); }
-    catch (e) { alert("Feil: " + e.message); lpGen.disabled = false; }
-  };
-  const lpPreview = $("lpPreview");
-  if (lpPreview) lpPreview.onclick = () => {
-    window.open(URL.createObjectURL(new Blob([Projects.get(p.id).landing.html], { type: "text/html" })));
-  };
-  const lpDownload = $("lpDownload");
-  if (lpDownload) lpDownload.onclick = () => {
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([Projects.get(p.id).landing.html], { type: "text/html" }));
-    a.download = p.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() + "-landingsside.html";
-    a.click();
-  };
-
-  /* FASE 3-handlinger */
-  const bmGen = $("bmGen");
-  if (bmGen) bmGen.onclick = async () => {
-    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
-    bmGen.disabled = true;
-    try { await window.CF.BizModel.run(Projects.get(p.id)); showProject(p.id); }
-    catch (e) { alert("Feil: " + e.message); bmGen.disabled = false; }
-  };
-  const bmUpdate = $("bmUpdate");
-  if (bmUpdate) bmUpdate.onclick = () => {
-    const patch = {};
-    document.querySelectorAll(".bm-in").forEach((i) => {
-      const v = parseFloat(String(i.value).replace(",", "."));
-      if (!isNaN(v)) patch[i.dataset.k] = v;
-    });
-    window.CF.BizModel.recompute(Projects.get(p.id), patch);
-    showProject(p.id);
-  };
-
-  /* FASE 6+8-handlinger */
-  const siteGen = $("siteGen");
-  if (siteGen) siteGen.onclick = async () => {
-    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
-    siteGen.disabled = true;
-    try { await window.CF.SiteGen.run(Projects.get(p.id)); showProject(p.id); }
-    catch (e) { alert("Feil: " + e.message); siteGen.disabled = false; }
-  };
-  const sitePreview = $("sitePreview");
-  if (sitePreview) sitePreview.onclick = () => {
-    window.open(URL.createObjectURL(new Blob([Projects.get(p.id).site.files["index.html"]], { type: "text/html" })));
-  };
-  const siteZip = $("siteZip");
-  if (siteZip) siteZip.onclick = () => {
-    const bytes = window.CF.SiteGen.zip(Projects.get(p.id));
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([bytes], { type: "application/zip" }));
-    a.download = p.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() + "-nettsted.zip";
-    a.click();
-  };
-
-  /* FASE 11-handlinger */
-  const mkGen = $("mkGen");
-  if (mkGen) mkGen.onclick = async () => {
-    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
-    mkGen.disabled = true;
-    try { await window.CF.Marketing.run(Projects.get(p.id)); showProject(p.id); }
-    catch (e) { alert("Feil: " + e.message); mkGen.disabled = false; }
-  };
-
-  /* FASE 14/15-handlinger */
-  document.querySelectorAll(".mat-check").forEach((cb) => {
-    cb.onchange = () => {
-      const proj = Projects.get(p.id);
-      window.CF.Maturity.toggle(proj, window.CF.Maturity.next(proj), parseInt(cb.dataset.idx, 10), cb.checked);
-      showProject(p.id);
-    };
-  });
-  const matDeclare = $("matDeclare");
-  if (matDeclare) matDeclare.onclick = () => {
-    const proj = Projects.get(p.id);
-    try { window.CF.Maturity.declare(proj, window.CF.Maturity.next(proj)); showProject(p.id); renderPortfolio(); }
-    catch (e) { alert(e.message); }
-  };
-  const launchBtn = $("launchBtn");
-  if (launchBtn) launchBtn.onclick = () => {
-    try { window.CF.Maturity.markLaunched(Projects.get(p.id)); showProject(p.id); renderPortfolio(); }
-    catch (e) { alert(e.message); }
-  };
-
-  /* FASE 16-handlinger */
-  const mtAdd = $("mtAdd");
-  if (mtAdd) mtAdd.onclick = () => {
-    try {
-      window.CF.Metrics.add(Projects.get(p.id), {
-        month: $("mtMonth").value.trim(), customers: $("mtCustomers").value.trim(), mrr: $("mtMrr").value.trim(),
-        churn_pct: $("mtChurn").value.trim(), visitors: $("mtVisitors").value.trim(),
-      });
-      showProject(p.id);
-      renderPortfolio();
-    } catch (e) { alert(e.message); }
-  };
-
-  /* FASE 4- og FASE 10-handlinger */
-  const stGen = $("stGen");
-  if (stGen) stGen.onclick = async () => {
-    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
-    stGen.disabled = true;
-    try { await window.CF.Strategy.run(Projects.get(p.id)); showProject(p.id); }
-    catch (e) { alert("Feil: " + e.message); stGen.disabled = false; }
-  };
-  const lgGen = $("lgGen");
-  if (lgGen) lgGen.onclick = async () => {
-    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
-    lgGen.disabled = true;
-    try { await window.CF.Legal.run(Projects.get(p.id)); showProject(p.id); }
-    catch (e) { alert("Feil: " + e.message); lgGen.disabled = false; }
-  };
-
-  /* FASE 7-handlinger */
-  const taGen = $("taGen");
-  if (taGen) taGen.onclick = async () => {
-    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
-    taGen.disabled = true;
-    try { await window.CF.TechArch.run(Projects.get(p.id)); showProject(p.id); }
-    catch (e) { alert("Feil: " + e.message); taGen.disabled = false; }
-  };
-
-  /* FASE 8+9-handlinger */
-  const appGen = $("appGen");
-  if (appGen) appGen.onclick = async () => {
-    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
-    appGen.disabled = true;
-    try { await window.CF.AppGen.run(Projects.get(p.id)); showProject(p.id); }
-    catch (e) { alert("Feil: " + e.message); appGen.disabled = false; }
-  };
-  const appPreview = $("appPreview");
-  if (appPreview) appPreview.onclick = () => {
-    window.open(URL.createObjectURL(new Blob([Projects.get(p.id).app.files["app/index.html"]], { type: "text/html" })));
-  };
-  const appZip = $("appZip");
-  if (appZip) appZip.onclick = () => {
-    const bytes = window.CF.AppGen.zip(Projects.get(p.id));
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([bytes], { type: "application/zip" }));
-    a.download = p.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() + "-app.zip";
-    a.click();
-  };
-
-  const opsGen = $("opsGen");
-  if (opsGen) opsGen.onclick = async () => {
-    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
-    opsGen.disabled = true;
-    try { await window.CF.Ops.run(Projects.get(p.id)); showProject(p.id); }
-    catch (e) { alert("Feil: " + e.message); opsGen.disabled = false; }
-  };
-
-  /* Rapport (deterministisk Markdown) */
-  $("pReport").onclick = () => {
-    const md = window.CF.Report.generate(Projects.get(p.id));
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([md], { type: "text/markdown" }));
-    a.download = p.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() + "-rapport.md";
-    a.click();
-  };
-
-  /* Retro */
-  $("pRetro").onclick = async () => {
-    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
-    $("pRetro").disabled = true;
-    try { await window.CF.Retro.run(Projects.get(p.id)); showProject(p.id); renderLessons(); renderLibrary(); }
-    catch (e) { alert("Feil: " + e.message); $("pRetro").disabled = false; }
-  };
-
-  $("pResume").onclick = async () => {
-    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
-    $("pResume").disabled = true;
-    try { await Pipeline.resume(p.id, () => {}); showProject(p.id); renderPortfolio(); }
-    catch (e) { alert("Feil: " + e.message); }
-  };
-  $("pGate").onclick = () => {
-    const gate = (PHASES.find((f) => f.n === p.phase) || {}).gate;
-    if (!gate) return;
-    Projects.approveGate(Projects.get(p.id), gate, true);
-    showProject(p.id);
-  };
-  $("pExport").onclick = () => {
-    const blob = new Blob([Store.exportProject(p.id)], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = p.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() + ".json";
-    a.click();
-  };
-  const pPark = $("pPark");
-  if (pPark) pPark.onclick = () => {
-    const reason = prompt("Hvorfor parkeres prosjektet? (logges)", "") ?? null;
-    if (reason === null) return;
-    Projects.park(Projects.get(p.id), reason);
-    showProject(p.id); renderPortfolio();
-  };
-  const pKill = $("pKill");
-  if (pKill) pKill.onclick = () => {
-    const reason = prompt("Hvorfor avsluttes prosjektet? Allerede brukt tid er ikke et argument for å fortsette – men heller ikke for å avslutte. (logges)", "") ?? null;
-    if (reason === null) return;
-    Projects.kill(Projects.get(p.id), reason);
-    showProject(p.id); renderPortfolio();
-  };
-  const pReactivate = $("pReactivate");
-  if (pReactivate) pReactivate.onclick = () => {
-    try { Projects.reactivate(Projects.get(p.id)); showProject(p.id); renderPortfolio(); }
-    catch (e) { alert(e.message); }
-  };
-
-  $("pDelete").onclick = () => {
-    if (!confirm(`Slette/avvikle «${p.name}»? Eksporter først hvis prosjektet har verdi.`)) return;
-    Projects.remove(p.id);
-    $("detail").innerHTML = "";
-    renderPortfolio();
-  };
-}
-
-/* ---------- NY IDÉ ---------- */
-let running = false;
-$("runIdeaBtn").onclick = async () => {
-  const idea = $("ideaText").value.trim();
-  const name = $("ideaName").value.trim() || idea.slice(0, 40);
-  if (!idea || running) return;
-  if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM-fanen først."); return; }
-  running = true;
-  $("runIdeaBtn").disabled = true;
-  $("board").innerHTML = "";
-  $("ideaResult").innerHTML = "";
-  const cards = {};
-  const pipe = (html) => { $("pipeline").innerHTML = html; };
-  try {
-    const p = await Pipeline.runFrom(idea, name, (step, detail) => {
-      if (step === "intake") pipe("<b>FASE 0</b> " + esc(detail));
-      if (step === "framing") pipe("<b>FASE 1</b> " + esc(detail));
-      if (step === "participants") {
-        pipe("<b>FASE 1</b> Uavhengige fagvurderinger pågår …");
-        for (const t of detail) {
-          const el = document.createElement("div");
-          el.className = "card working";
-          el.innerHTML = `<h3>${esc(t)}</h3><div class="st">VURDERER …</div><div class="rec"></div>`;
-          $("board").appendChild(el);
-          cards[t] = el;
-        }
-      }
-      if (step === "role_done") {
-        const role = Board.byId(detail);
-        const el = role && cards[role.title];
-        if (el) { el.classList.remove("working"); el.querySelector(".st").textContent = "FERDIG"; }
-      }
-      if (step === "synthesis") pipe("<b>FASE 1</b> " + esc(detail));
-      if (step === "plan") pipe("<b>PLAN</b> " + esc(detail));
-      if (step === "brief") pipe("<b>BRIEF</b> " + esc(detail));
-      if (step === "bizmodel") pipe("<b>FASE 3</b> " + esc(detail));
-      if (step === "site") pipe("<b>FASE 6+8</b> " + esc(detail));
-    });
-    for (const v of p.evaluation.verdicts) {
-      const el = cards[v.roleTitle];
-      if (el) {
-        el.querySelector(".st").innerHTML = `VURDERING ${certBadge(v.certainty)}${typeof v.probability_success === "number" ? ` <span class="badge">p=${Math.round(v.probability_success * 100)}%</span>` : ""}`;
-        el.querySelector(".rec").textContent = v.recommendation;
-      }
-    }
-    pipe(`<b>FERDIG</b> Beslutning: ${esc(p.evaluation.synthesis.decision.toUpperCase())} (score ${p.evaluation.totalScore}/100)`);
-    $("ideaResult").innerHTML = `<div class="panel"><h3>RESULTAT</h3>${esc(p.evaluation.synthesis.decision_rationale)}\n\n<b>Prosjektet er lagret i porteføljen med full logg.</b></div>`;
-    goTab("portfolio");
-    showProject(p.id);
-  } catch (e) {
-    pipe(`<span style="color:var(--danger)">FEIL: ${esc(e.message)}</span>`);
-  }
-  running = false;
-  $("runIdeaBtn").disabled = false;
-};
-
-/* ---------- SYSTEM ---------- */
-$("apiKey").value = Store.apiKey;
-$("saveKeyBtn").onclick = () => {
-  /* jarvis_api_key eies av JARVIS – dette er eneste bevisste unntak fra cf_*-regelen, delt identitetskontrakt */
-  localStorage.setItem("jarvis_api_key", $("apiKey").value.trim());
-  $("saveKeyBtn").textContent = "Lagret ✓";
-  setTimeout(() => $("saveKeyBtn").textContent = "Lagre nøkkel", 1500);
-};
-$("gateList").textContent = OWNER_GATE_ACTIONS.map((a) => "• " + a).join("\n");
-$("demoBtn").onclick = () => {
-  const p = Demo.load();
-  goTab("portfolio");
-  showProject(p.id);
-};
-$("reviewBtn").onclick = async () => {
-  if (!Store.apiKey) { alert("Legg inn API-nøkkel først."); return; }
-  $("reviewBtn").disabled = true;
-  $("reviewOut").innerHTML = `<div class="panel muted">Fabrikken gransker seg selv …</div>`;
-  try {
-    const text = await SelfReview.run();
-    $("reviewOut").innerHTML = `<div class="panel"><h3>SELVEVALUERING</h3>${esc(text)}</div>`;
-  } catch (e) {
-    $("reviewOut").innerHTML = `<div class="panel danger">Feil: ${esc(e.message)}</div>`;
-  }
-  $("reviewBtn").disabled = false;
-};
-$("portfolioReportBtn").onclick = () => {
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([window.CF.Report.portfolio()], { type: "text/markdown" }));
-  a.download = "portefoljerapport.md";
-  a.click();
-};
-$("exportBtn").onclick = () => {
-  const blob = new Blob([Store.exportAll()], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "company-factory-backup.json";
-  a.click();
-};
-$("importBtn").onclick = () => $("importFile").click();
-$("importFile").onchange = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  Store.importAll(await file.text());
-  renderPortfolio();
-  alert("Importert.");
-};
-
-renderPortfolio();
-renderLessons();
-renderLibrary();
-renderStorage();
-})();
-</script>
+<script src="ui.js"></script>
 </body>
 </html>

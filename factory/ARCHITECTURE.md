@@ -1,4 +1,35 @@
-# Company Factory – Arkitektur v1.6
+# Company Factory – Arkitektur v2.0
+
+## Control Center (v2.0)
+
+UI-laget er skilt fra motoren og bygget som operativt kontrollsenter:
+
+- **Lagdeling:** `factory.js` (ren motor, `window.CF` er API-et) · `ui.css`
+  (design-tokens + komponenter) · `ui.js` (visninger/logikk) · `index.html`
+  (tynt skall) · `manifest.webmanifest` (PWA; service worker bevisst utsatt –
+  cache-invalidering under rask utvikling er ikke verdt risikoen enda).
+- **Seks områder:** Command Center («KREVER DEG NÅ» fra `CF.Alerts`,
+  porteføljepuls, MRR-graf av faktiske måletall, aktivitetsspor), Idélab
+  (pipeline-kjøring + idé-sammenligning), Selskaper (portefølje + arbeids-
+  område med fasestripe over alle 17 faser), Godkjenninger (alle porter med
+  hva/hvorfor/risiko/reverserbarhet, utmerket på mobil via bunn-navigasjon),
+  Bibliotek (lærdommer + gjenbruk), System (nøkkel, kostnader, lagring, backup).
+- **Kommandopalett** (Ctrl/Cmd+K): navigasjon, åpne selskap, ny idé,
+  godkjenninger, rapporter – tastaturdrevet.
+- **Dype lenker:** hash-ruting (`#/command`, `#/companies/<id>`) – hver
+  visning er adresserbar og overlever reload.
+- **Motorutvidelser for ekte «levende status»:** `CF.Activity` (varig
+  hendelsesspor, `cf_activity`), `CF.Costs` (usage per LLM-kall akkumulert
+  per prosjekt/modul; ratene i `COST_RATES` er konfigurerbare estimater),
+  `CF.Alerts` (deterministisk varselavledning). `Store.exportAll` dekker nå
+  også lærdommer, bibliotek, aktivitet og kostnader.
+- **Regresjonskontrakt:** alle element-ID-er og `data-tab`-navn fra v1 er
+  beholdt – hele den eksisterende testsuiten består uendret; nytt scenario 9
+  dekker Control Center-funksjonene (101 sjekker totalt).
+- **Ærlighet i UI:** FAKTISK vs. ESTIMAT (stiplet merke) vs. TEST (gult merke)
+  skilles konsekvent; tomme tilstander veileder i stedet for å late som.
+
+---
 
 AI-drevet startup-studio: fra idé → kritisk vurdering → validering → forretningsmodell →
 MVP-brief → (neste fase: bygging, betaling, lansering, vekst). Del av Eik-plattformen
