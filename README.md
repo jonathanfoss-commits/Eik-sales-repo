@@ -139,6 +139,32 @@ Arkitektur, modulkontrakter og utvidelsesregler: [`aeis/ARCHITECTURE.md`](aeis/A
 Testet i `tests/aeis.e2e.js` (mocket API): hele pipelinen, veto-runden, kalibrering av vekter
 og læringssløyfen.
 
+## 🏭 Company Factory – AI-drevet startup-studio
+
+I [`factory/`](factory/) ligger fabrikken som tar en enkel idé og driver den mot et
+lanseringsklart digitalt selskap. Nås fra JARVIS-appen (🏭 FACTORY-knappen) eller på `…/factory/`.
+
+- **Idé → beslutning på minutter**: inntak (Fase 0) strukturerer idéen og skiller fakta,
+  påstander, antakelser og ukjente; idévurderingen (Fase 1) innkaller kun de 3–6 relevante
+  fagrollene (gjenbruker AEIS-styret med fortjent autoritet + 9 fabrikkroller), scorer på
+  10 vektede kriterier og konkluderer: `stopp | parker | valider_mer | endre_konsept |
+  prototype | mvp | lansering`.
+- **Kritisk, ikke hyggelig**: fabrikken forsøker å avkrefte idéen før den anbefaler bygging —
+  svake idéer får svakheter, forbedringer og alternative idéer, ikke en byggeplan.
+- **Valider billig først**: hver kritisk antakelse får billigste test, terskel, kostnad og
+  horisont før tung utvikling.
+- **Leveranser per prosjekt**: tilpasset faseplan (17 standardfaser, små idéer får små planer),
+  MVP-brief med eksplisitt «bygges ikke»-liste, antakelseslogg og full beslutningslogg.
+- **Portefølje**: flere parallelle prosjekter, isolert lagring per prosjekt (`cf_project_*`),
+  per-prosjekt eksport for utspinning/avvikling, og enkel kill-disiplin.
+- **Eier-porter**: betalinger, publisering, domener, juss, masseutsendelser og offentlig
+  lansering auto-godkjennes aldri — de krever ditt eksplisitte klikk og logges.
+
+Arkitektur (systemrevisjon, arkitekturbeslutning, målarkitektur, plan):
+[`factory/ARCHITECTURE.md`](factory/ARCHITECTURE.md). Testet i `tests/factory.e2e.js`
+(mocket API): full pipeline, svak idé → stopp, eksempelprosjekt (isolert TEST),
+eier-porter, navneromsisolasjon og AEIS-gjenbruk.
+
 ## Testing 🧪
 
 `tests/e2e.js` er en full ende-til-ende-suite (Playwright) som mocker Claude API-strømmen

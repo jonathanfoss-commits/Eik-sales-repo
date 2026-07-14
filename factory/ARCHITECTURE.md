@@ -1,0 +1,175 @@
+# Company Factory – Arkitektur v1.0
+
+AI-drevet startup-studio: fra idé → kritisk vurdering → validering → forretningsmodell →
+MVP-brief → (neste fase: bygging, betaling, lansering, vekst). Del av Eik-plattformen
+sammen med JARVIS (personlig AI-OS) og AEIS (Executive Board).
+
+---
+
+## A. Systemrevisjon (gjennomført 2026-07-14)
+
+### Hva som faktisk finnes
+
+| Komponent | Hva det er | Tilstand |
+|---|---|---|
+| `index.html` (JARVIS) | Klientside-PWA: stemmeassistent, Claude-streaming, verktøy (websøk, vær, timere, webhooks, MCP), minne og historikk i `localStorage` | God. Fungerer, testet (`tests/e2e.js`, 10 scenarier, mocket API) |
+| `aeis/` (AEIS) | Executive Board: 13 dynamiske roller, 14-stegs beslutningspipeline med Devil's Advocate-veto, pre-mortem, Brier-kalibrert autoritet, læringssløyfe | God. Modulær (Store/Roles/Scoring/LLM/Engine/Ledger/Radar/SelfReview), kontrakter i `ARCHITECTURE.md`, testet (`tests/aeis.e2e.js`) |
+| `ios/` | Native SwiftUI-versjon av JARVIS | Parallell klient, deler ikke kode med web |
+| `.github/workflows/pages.yml` | Deploy til GitHub Pages | Fungerer; hele plattformen er statisk hosting |
+| `sw.js`, `manifest.webmanifest`, `icons/` | PWA-skall | OK |
+
+### Nøkkelfakta som styrer arkitekturvalget
+
+1. **Det finnes ingen backend.** Ingen server, database, API-lag eller orkestreringsprosess.
+   Alt kjører i nettleseren; persistens er `localStorage`; Claude API kalles direkte
+   («dangerous direct browser access») med brukerens egen nøkkel.
+2. **Plattformkonvensjonene er reelle og gjenbrukbare:** delt API-nøkkel
+   (`jarvis_api_key`) og modellvalg (`jarvis_model`), én LLM-modul per app som eneste
+   nettverkspunkt, JSON-skjema-kontrakter (structured outputs), navneromsdelte
+   Store-nøkler, e2e-tester med mocket API, samme designspråk, samme deploy.
+3. **AEIS-styret er en genuint gjenbrukbar kapabilitet:** dynamisk rolleregister med
+   mandater og fortjent autoritet (`aeis_roles` i Store) — akkurat det Company Factory
+   trenger for beslutningsprosessen.
+
+### Svakheter og teknisk gjeld (relevant for Factory)
+
+- **Persistens er per enhet** (localStorage, ~5 MB-grense). Dokumentert i AEIS som kjent
+  begrensning med migreringsvei (Store er eneste persistenslag → kan byttes til synk-backend).
+  Factory arver både begrensningen og migreringsveien.
+- **Ingen duplisering funnet** som må ryddes; JARVIS og AEIS deler nøkkel/modell-konvensjon
+  men har adskilte navnerom. Ingenting arkiveres eller slettes i denne leveransen.
+- **AEIS' LLM-modul er ikke pakket som delt bibliotek** — den lever i `aeis.js`.
+  Beslutning: Factory implementerer samme kontrakt i eget navnerom i stedet for å
+  importere på tvers (se «Avviste alternativer» under). Når en tredje forbruker oppstår,
+  trekkes LLM/Store ut til `platform/`.
+- **Ingen kostnadsgrenser per kall-kjede** i AEIS. Factory innfører maks-runder og
+  begrenset parallellitet (arvet mønster) + eksplisitte porter før dyre steg.
+
+## B. Arkitekturbeslutning
+
+**Beslutning: Alternativ C med B-trekk (hybrid).** Company Factory bygges som en
+selvstendig, modulær applikasjon (`factory/`) på toppen av plattformen, der JARVIS/AEIS
+forblir det personlige laget. Delingen skjer gjennom definerte kontrakter, ikke delt kode:
+
+- **Identitet/tilgang:** deler `jarvis_api_key` + `jarvis_model` (lese-kontrakt).
+- **Executive Board:** leser AEIS' rolleregister (`aeis_roles`) inklusive fortjent
+  autoritet når det finnes, og supplerer med fabrikkspesifikke fagroller. Skriver aldri
+  til AEIS' navnerom.
+- **Egne data:** alt under `cf_*`-navnerom; hvert selskapsprosjekt isolert i egen nøkkel
+  `cf_project_<id>` med egen eksport (→ enkelt å spinne ut, selge eller avvikle et prosjekt).
+
+### Vurdering av alternativene
+
+| | Vurdering |
+|---|---|
+| **A. Inn i JARVIS** | Avvist. Gjør PWA-en monolittisk (54 kB index.html allerede), blander personlig assistent med selskapsproduksjon, umulig å feilisolere eller spinne ut. |
+| **B. Eget repo/system med API-er** | Avvist *for v1*. Det finnes ingen API-er å kommunisere over — å bygge en backend nå er infrastruktur før behov. Riktig som migreringsvei: når et prosjekt får reell kodebase/kunder, får det eget repo; når synk-backend kommer, blir Store-kontrakten til et API. |
+| **C. Modul på toppen av Jarvis-plattformen** | **Valgt.** Matcher den faktiske plattformen (statiske søsterapper med kontrakts-deling), gjenbruker styret og nøkkelhåndteringen, gir feilisolering (Factory kan ikke ødelegge JARVIS/AEIS-data), og holder veien åpen mot B. |
+| **D. Annen hybrid** | Dekket av C+B-trekkene over. |
+
+Eierens hypotese (Jarvis som overordnet OS, Factory som separat modulær plattform) er
+**bekreftet** av analysen — med én presisering: «kommunikasjon gjennom API-er» er i dag
+kontrakts-deling via Store-navnerom, fordi det ikke finnes noen serverside. Grensesnittene
+er definert slik at de kan løftes til ekte API-er uten å endre modulene.
+
+Begrunnelse mot 5–10-årskriteriene: modularitet og feilisolering (egne navnerom, egen app),
+flere fremtidige fabrikker (mønsteret `<app>/`+kontrakter er repeterbart), flere samtidige
+prosjekter (prosjekt-isolert lagring), ulike teknologistacker per selskap (prosjektkode skal
+bo i egne repoer, fabrikken holder kun metadata/beslutninger), salg/utspinning/avvikling
+(per-prosjekt eksport + statuser), unngår at Jarvis blir monolitt (ingenting legges i JARVIS).
+
+## C. Målarkitektur
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ JARVIS (personlig AI-OS)          AEIS (Executive Board)        │
+│  identitet: jarvis_api_key ──────► roller/autoritet: aeis_roles │
+└──────────────┬───────────────────────────┬─────────────────────┘
+        leser (aldri skriver)       leser (aldri skriver)
+┌──────────────┴───────────────────────────┴─────────────────────┐
+│ COMPANY FACTORY (factory/)                                      │
+│  UI (index.html) – faner: Portefølje, Prosjekt, System          │
+│  ────────────────────────────────────────────────────────────  │
+│  Board     – roster = AEIS-roller + fabrikkens fagroller        │
+│  Intake    – Fase 0: idé → strukturert sak + antakelseslogg     │
+│  Evaluation– Fase 1: rollevurderinger → kritisk syntese + score │
+│  Planner   – tilpasset faseplan (0–16) med porter/stoppkriterier│
+│  Brief     – MVP-brief (kun hvis beslutningen tilsier bygging)  │
+│  Projects  – prosjektregister, status, beslutnings-/antakelseslogg │
+│  Gates     – beslutningsporter; høyrisikohandlinger krever eier │
+│  LLM       – eneste nettverkspunkt (samme kontrakt som AEIS)    │
+│  Store     – cf_index + cf_project_<id> (isolert per prosjekt)  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Dataflyt (v1):** idé → `Intake.run` (1 LLM-kall, strukturert ekstraksjon + antakelser)
+→ `Evaluation.run` (framing-kall velger 3–6 relevante roller → isolerte rollevurderinger,
+maks 3 parallelt → syntese med scoring 0–100, scenarier, svakheter, alternativer, beslutning)
+→ ved beslutning `prototype`/`mvp`/`lansering`: `Planner.run` (faseplan) + `Brief.run`
+(MVP-brief). Alle steg logger beslutninger og antakelser på prosjektet.
+
+**Faser:** standardpipeline 0–16 (inntak, idévurdering, markedsvalidering, forretningsmodell,
+selskap/strategi, produktdefinisjon, merkevare, teknisk arkitektur, bygg produkt/nettside,
+betaling/abonnement, juridisk/personvern, markedsføring, salg, drift/kundeservice,
+testing/QA, lansering, måling/vekst). Planner markerer relevans og omfang per fase for det
+konkrete prosjektet — små idéer får små planer.
+
+**Beslutningsporter:** hver fase har en port med beslutning
+`stopp | parker | valider_mer | endre_konsept | prototype | mvp | lansering | godkjent`.
+Handlinger på **eier-listen** (betalinger, kjøp, publisering, domener, juridisk bindende
+handlinger, selskapsregistrering, bank/skatt, sletting av kritiske data, masseutsendelser,
+kostbare tjenester, høyrisiko produksjonsendringer, sensitive data, offentlig lansering)
+kan aldri auto-godkjennes — de krever eksplisitt eierklikk og logges.
+
+**Sikkerhet og isolasjon:** ingen hemmeligheter i kode eller repo (nøkkel kun i
+localStorage); Factory skriver aldri til JARVIS/AEIS-navnerom; prosjekter er isolert per
+Store-nøkkel med egen eksport; LLM-modulen er eneste nettverkspunkt med maks-runder,
+begrenset parallellitet og retry-tak; eier-porter for alt med penger/juss/publisering.
+
+**Deploy/overvåking:** GitHub Pages (arvet). Testing: `tests/factory.e2e.js` med mocket
+API. Kostnadskontroll: bevisst få og små kall per pipeline-kjøring (~6–9 kall).
+
+## D. Implementeringsplan
+
+| Fase | Innhold | Status |
+|---|---|---|
+| **F1 (denne leveransen)** | Motor + UI + tester: idéinntak, kritisk vurdering m/styret, scoring, faseplan, MVP-brief, beslutnings-/antakelseslogg, porter, portefølje, eksempelprosjekt | ✅ Bygget og testet |
+| **F2 Validering** | Fase 2-verktøy: hypotese→test-planer, landingsside-generator (egen prosjektmappe/repo), venteliste, eksperimentlogg med terskler | Neste |
+| **F3 Bygging** | Fase 5–9: generere prosjekt-repo (mal: nettside + auth + Stripe-abonnement + e-post), «lanseringsklar»-sjekklister, QA-krav per modenhetsnivå | Etter F2 |
+| **F4 Plattform** | Trekk LLM/Store ut i `platform/`-bibliotek når tredje forbruker finnes; synk-backend bak Store-kontrakten; gjenbruksbibliotek (maler, moduler) med generalisering etter hvert prosjekt | Etter F3 |
+| **F5 Drift/vekst** | Fase 11–16-motorer: målinger inn i porteføljen, ukesrapport, radar-integrasjon mot AEIS | Etter F4 |
+
+Risiko: localStorage-tak ved mange prosjekter (mitigeres av per-prosjekt eksport og
+F4-synk); LLM-kostnad ved hyppige kjøringer (mitigeres av porter og få kall);
+skjema-drift mellom AEIS-roller og Factory (mitigeres av lese-kun-kontrakt + fallback-roster).
+
+## Kontrakter (modul-API)
+
+- `CF.Store` — `get/set(key)`, `projectIds()`, `loadProject(id)`, `saveProject(p)`,
+  `deleteProject(id)`, `exportProject(id)`, `exportAll()`, `importAll(json)`.
+  Kun `cf_*`-nøkler. Leser (aldri skriver) `jarvis_api_key`, `jarvis_model`, `aeis_roles`.
+- `CF.LLM.call({system,user,schema,maxTokens,onStatus}) → {json|text, usage}` — identisk
+  kontrakt som AEIS' LLM. Eneste modul med nettverkstilgang.
+- `CF.Board.roster()` — AEIS-roller (aktive, med vekt) ∪ fabrikkens fagroller.
+- `CF.Projects` — `create(idea)`, `list()`, `get(id)`, `update(id,patch)`,
+  `logDecision(id, entry)`, `logAssumptions(id, list)`, `setPhaseStatus(id, phase, status)`,
+  `approveGate(id, gate, byOwner)`.
+- `CF.Pipeline.PHASES` — kanonisk fasedefinisjon 0–16 (formål, leveranser, port, stoppkriterier, eierrolle).
+- `CF.Intake.run(project)` / `CF.Evaluation.run(project)` / `CF.Planner.run(project)` /
+  `CF.Brief.run(project)` — hvert steg muterer prosjektet og returnerer det.
+- `CF.OWNER_GATE_ACTIONS` — listen over handlinger som alltid krever eier.
+
+Utvidelsesregler (arvet fra AEIS): nye moduler = eget navnerom + egen Store-nøkkel;
+alle LLM-flyter definerer JSON-skjema og går via `CF.LLM`; kontraktsendringer krever
+versjonsbump her.
+
+## Kjente begrensninger (v1)
+
+- Persistens per enhet (localStorage) — migreringsvei: Store-kontrakten → synk-backend (F4).
+- Fase 2–16 er planlagt/dokumentert per prosjekt, men motorene som *utfører* dem
+  (bygge nettside, sette opp betaling, kjøre kampanjer) kommer i F2–F5. V1 produserer
+  besluttet plan + MVP-brief, ikke ferdig produkt.
+- «Lanseringsklart digitalt produkt» ≠ juridisk etablert/operativ/kommersielt validert
+  virksomhet — statusmodellen skiller disse, og juridiske dokumenter merkes alltid
+  «krever kvalitetssikring av autorisert fagperson».
+- Ingen kontinuerlig bakgrunnskjøring (samme begrensning som AEIS' Radar).

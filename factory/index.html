@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Company Factory</title>
+<meta name="description" content="Company Factory – AI-drevet startup-studio: fra idé til lanseringsklart digitalt selskap.">
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<meta name="theme-color" content="#060c16">
+<style>
+  :root {
+    --bg: #060c16; --panel: #0b1626; --line: #12304a;
+    --cyan: #37d5ff; --cyan-dim: #1a9cc4; --text: #d7f3ff; --muted: #6d9db5;
+    --danger: #ff6b6b; --gold: #ffd166; --green: #7bd88f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(1400px 800px at 50% -10%, #0d2238 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: "SF Mono", ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
+    min-height: 100dvh;
+  }
+  header { padding: 18px 22px 12px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  h1 { font-size: 18px; letter-spacing: .35em; color: var(--cyan); text-shadow: 0 0 14px rgba(55,213,255,.55); }
+  header .sub { font-size: 9px; letter-spacing: .2em; color: var(--muted); margin-top: 3px; }
+  header a { color: var(--muted); font-size: 11px; text-decoration: none; border: 1px solid var(--line); padding: 6px 10px; border-radius: 8px; margin-left: 6px; }
+  nav { display: flex; gap: 6px; padding: 12px 18px; overflow-x: auto; border-bottom: 1px solid var(--line); }
+  nav button {
+    background: none; border: 1px solid var(--line); color: var(--muted); font: inherit; font-size: 12px;
+    letter-spacing: .12em; padding: 8px 14px; border-radius: 8px; cursor: pointer; white-space: nowrap;
+  }
+  nav button.on { color: var(--cyan); border-color: var(--cyan-dim); box-shadow: 0 0 12px rgba(55,213,255,.2); }
+  main { padding: 18px; max-width: 1080px; margin: 0 auto; }
+  .tab { display: none; }
+  .tab.on { display: block; }
+  h2 { font-size: 12px; letter-spacing: .25em; color: var(--cyan-dim); margin: 18px 0 10px; }
+  textarea, input[type=text], input[type=password] {
+    width: 100%; background: var(--panel); border: 1px solid var(--line); color: var(--text);
+    border-radius: 10px; padding: 12px; font: inherit; font-size: 14px; outline: none;
+  }
+  textarea:focus, input:focus { border-color: var(--cyan-dim); }
+  button.primary {
+    background: #0d3a52; border: 1px solid var(--cyan-dim); color: #dff7ff; font: inherit; font-size: 13px;
+    letter-spacing: .08em; padding: 12px 20px; border-radius: 10px; cursor: pointer; margin-top: 10px;
+  }
+  button.primary:disabled { opacity: .5; cursor: default; }
+  button.small { background: none; border: 1px solid var(--line); color: var(--muted); font: inherit; font-size: 11px; padding: 6px 10px; border-radius: 8px; cursor: pointer; }
+  button.small:hover { color: var(--cyan); border-color: var(--cyan-dim); }
+  #pipeline { font-size: 11px; letter-spacing: .12em; color: var(--muted); margin: 14px 0; min-height: 16px; }
+  #pipeline b { color: var(--cyan); }
+  #board { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; font-size: 12px; }
+  .card.working { border-color: var(--cyan-dim); box-shadow: 0 0 16px rgba(55,213,255,.15); animation: cardpulse 1.4s ease-in-out infinite; }
+  @keyframes cardpulse { 50% { box-shadow: 0 0 26px rgba(55,213,255,.35); } }
+  .card h3 { font-size: 11px; letter-spacing: .12em; color: var(--cyan); margin-bottom: 6px; }
+  .card .st { color: var(--muted); font-size: 10px; letter-spacing: .1em; }
+  .card .rec { margin-top: 8px; line-height: 1.5; white-space: pre-wrap; }
+  .badge { display: inline-block; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; font-size: 10px; color: var(--muted); margin-left: 6px; }
+  .badge.h { color: var(--green); border-color: rgba(123,216,143,.4); }
+  .badge.m { color: var(--gold); border-color: rgba(255,209,102,.4); }
+  .badge.l { color: var(--danger); border-color: rgba(255,107,107,.4); }
+  .badge.test { color: var(--gold); border-color: rgba(255,209,102,.5); }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-top: 12px; font-size: 13px; line-height: 1.65; white-space: pre-wrap; }
+  .panel.danger { border-color: #5a2430; }
+  .panel h3 { font-size: 11px; letter-spacing: .2em; color: var(--cyan-dim); margin-bottom: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-size: 10px; letter-spacing: .15em; }
+  .proj-item { cursor: pointer; }
+  .proj-item:hover { background: rgba(55,213,255,.04); }
+  .muted { color: var(--muted); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row > * { flex: 1; min-width: 160px; }
+  .note { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+  .score { font-size: 26px; color: var(--cyan); text-shadow: 0 0 12px rgba(55,213,255,.4); }
+  a { color: var(--cyan); }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>FACTORY</h1>
+    <div class="sub">COMPANY FACTORY – AI STARTUP-STUDIO</div>
+  </div>
+  <div>
+    <a href="../aeis/">🏛 AEIS</a>
+    <a href="../">← JARVIS</a>
+  </div>
+</header>
+
+<nav>
+  <button data-tab="portfolio" class="on">PORTEFØLJE</button>
+  <button data-tab="idea">NY IDÉ</button>
+  <button data-tab="system">SYSTEM</button>
+</nav>
+
+<main>
+
+<!-- ============ PORTEFØLJE ============ -->
+<section class="tab on" id="tab-portfolio">
+  <h2>PROSJEKTPORTEFØLJE</h2>
+  <div id="portfolio"></div>
+  <div id="detail"></div>
+</section>
+
+<!-- ============ NY IDÉ ============ -->
+<section class="tab" id="tab-idea">
+  <h2>REGISTRER EN IDÉ (FASE 0)</h2>
+  <div class="note">Input kan være svært kort. Fabrikken strukturerer idéen, registrerer antakelser, innkaller relevante fagroller, scorer kritisk og anbefaler neste steg. Den forsøker å avkrefte idéen før den anbefaler bygging.</div>
+  <input type="text" id="ideaName" placeholder="Arbeidsnavn (f.eks. «BoligPuls»)" style="margin-top:10px">
+  <textarea id="ideaText" rows="4" placeholder="Idéen – f.eks. «Lag en abonnementstjeneste som hjelper boligeiere med vedlikehold av bolig.»" style="margin-top:8px"></textarea>
+  <button class="primary" id="runIdeaBtn">🏭 Kjør fabrikken</button>
+  <div id="pipeline"></div>
+  <div id="board"></div>
+  <div id="ideaResult"></div>
+</section>
+
+<!-- ============ SYSTEM ============ -->
+<section class="tab" id="tab-system">
+  <h2>API-NØKKEL</h2>
+  <input type="password" id="apiKey" placeholder="sk-ant-… (deles med JARVIS og AEIS)">
+  <button class="primary" id="saveKeyBtn">Lagre nøkkel</button>
+
+  <h2>EKSEMPELPROSJEKT</h2>
+  <div class="note">Laster et isolert, tydelig merket testprosjekt («BoligPuls (TEST)») med ferdig gjennomkjørt pipeline – ingen API-kall. Bruk det til å se hele flyten.</div>
+  <button class="primary" id="demoBtn">🧪 Last inn eksempelprosjekt</button>
+
+  <h2>EIER-PORTER</h2>
+  <div class="note">Følgende handlinger auto-godkjennes ALDRI – de krever alltid ditt eksplisitte klikk og logges i beslutningsloggen:</div>
+  <div class="panel" id="gateList"></div>
+
+  <h2>SELVEVALUERING</h2>
+  <button class="primary" id="reviewBtn">🔄 Evaluer fabrikken</button>
+  <div id="reviewOut"></div>
+
+  <h2>BACKUP</h2>
+  <div class="row">
+    <button class="small" id="exportBtn">Eksporter alle prosjekter (JSON)</button>
+    <button class="small" id="importBtn">Importer JSON</button>
+  </div>
+  <input type="file" id="importFile" accept="application/json" style="display:none">
+  <div class="note">Arkitektur og kontrakter: <a href="ARCHITECTURE.md" target="_blank">ARCHITECTURE.md</a>. All data ligger i cf_*-navnerommet, isolert per prosjekt.</div>
+</section>
+
+</main>
+
+<script src="factory.js"></script>
+<script>
+(() => {
+"use strict";
+const $ = (id) => document.getElementById(id);
+const { Store, Projects, Pipeline, Board, Demo, SelfReview, PHASES, OWNER_GATE_ACTIONS } = window.CF;
+
+document.querySelectorAll("nav button").forEach((b) => {
+  b.onclick = () => {
+    document.querySelectorAll("nav button").forEach((x) => x.classList.remove("on"));
+    document.querySelectorAll(".tab").forEach((x) => x.classList.remove("on"));
+    b.classList.add("on");
+    $("tab-" + b.dataset.tab).classList.add("on");
+    if (b.dataset.tab === "portfolio") renderPortfolio();
+  };
+});
+function goTab(name) { document.querySelector(`nav button[data-tab="${name}"]`).click(); }
+
+function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
+function certBadge(c) {
+  const cls = c === "høy" ? "h" : c === "middels" ? "m" : "l";
+  return `<span class="badge ${cls}">${esc(c)} sikkerhet</span>`;
+}
+function phaseTitle(n) { const f = PHASES.find((x) => x.n === n); return f ? f.title : "–"; }
+
+/* ---------- PORTEFØLJE ---------- */
+function renderPortfolio() {
+  const list = Projects.list();
+  if (!list.length) {
+    $("portfolio").innerHTML = `<div class="panel muted">Ingen prosjekter enda. Registrer en idé under NY IDÉ, eller last eksempelprosjektet under SYSTEM.</div>`;
+    $("detail").innerHTML = "";
+    return;
+  }
+  $("portfolio").innerHTML = `<table><tr><th>PROSJEKT</th><th>STATUS</th><th>FASE</th><th>SCORE</th><th>NESTE BESLUTNING</th><th>OPPDATERT</th></tr>` +
+    list.map((p) => {
+      const next = p.evaluation ? (p.evaluation.synthesis.decision === "valider_mer" ? "gjennomfør validering" : p.evaluation.synthesis.decision) : "kjør idévurdering";
+      return `<tr class="proj-item" data-id="${p.id}"><td>${esc(p.name)}${p.test ? ' <span class="badge test">TEST</span>' : ""}</td><td>${esc(p.status)}</td><td>${p.phase}: ${esc(phaseTitle(p.phase))}</td><td>${p.evaluation ? p.evaluation.totalScore + "/100" : "–"}</td><td class="muted">${esc(next)}</td><td class="muted">${esc((p.updatedAt || "").slice(0, 10))}</td></tr>`;
+    }).join("") + "</table>";
+  document.querySelectorAll(".proj-item").forEach((tr) => { tr.onclick = () => showProject(tr.dataset.id); });
+}
+
+function showProject(id) {
+  const p = Projects.get(id);
+  if (!p) return;
+  const s = p.evaluation && p.evaluation.synthesis;
+  let html = `<div class="panel"><h3>${esc(p.name)}${p.test ? ' <span class="badge test">TEST – ISOLERT EKSEMPELPROSJEKT</span>' : ""}</h3>` +
+    `<div class="row"><div>Status: <b>${esc(p.status)}</b></div><div>Fase: <b>${p.phase} – ${esc(phaseTitle(p.phase))}</b></div>` +
+    (p.evaluation ? `<div>Score: <span class="score">${p.evaluation.totalScore}</span>/100</div>` : "") + `</div>` +
+    `<div class="note">Idé: ${esc(p.idea)}</div>` +
+    `<div class="row" style="margin-top:10px">` +
+    `<button class="small" id="pResume">▶ Kjør videre</button>` +
+    `<button class="small" id="pGate">✅ Godkjenn port (eier): ${esc((PHASES.find((f) => f.n === p.phase) || {}).gate || "")}</button>` +
+    `<button class="small" id="pExport">Eksporter prosjekt</button>` +
+    `<button class="small" id="pDelete">Slett/avvikle</button></div></div>`;
+
+  if (p.intake) {
+    html += `<div class="panel"><h3>FASE 0 – INNTAK</h3>Problem: ${esc(p.intake.problem)}\nMålgruppe: ${esc(p.intake.target_group)}\nLøsning: ${esc(p.intake.solution)}\nBetalingsvilje: ${esc(p.intake.willingness_to_pay)}\nMarked: ${esc(p.intake.market)}\nKanal: ${esc(p.intake.channel)}\nAbonnementspotensial: ${esc(p.intake.subscription_potential)}` +
+      (p.intake.decision_changing_questions.length ? `\n\nSpørsmål som kan endre beslutningen:\n- ${p.intake.decision_changing_questions.map(esc).join("\n- ")}` : "") + `</div>`;
+  }
+  if (s) {
+    html += `<div class="panel"><h3>FASE 1 – STYRETS BESLUTNING ${certBadge(s.certainty)}</h3><b style="color:var(--cyan)">${esc(s.decision.toUpperCase())}</b> – ${esc(s.decision_rationale)}\n\n${esc(s.summary)}\n\nTrekker opp: ${s.score_drivers_up.map(esc).join("; ")}\nTrekker ned: ${s.score_drivers_down.map(esc).join("; ")}</div>`;
+    html += `<div class="panel"><h3>SCOREKORT (${p.evaluation.totalScore}/100)</h3><table><tr><th>KRITERIUM</th><th>SCORE</th><th>BEGRUNNELSE</th></tr>${s.scorecard.map((r) => `<tr><td>${esc(r.criterion)}</td><td>${r.score}/10</td><td class="muted">${esc(r.reasoning)}</td></tr>`).join("")}</table></div>`;
+    if (s.weaknesses.length || s.improvements.length || s.alternative_ideas.length) {
+      html += `<div class="panel danger"><h3>SVAKHETER, FORBEDRINGER OG ALTERNATIVER</h3>Svakheter:\n- ${s.weaknesses.map(esc).join("\n- ") || "(ingen)"}\n\nForbedringer:\n- ${s.improvements.map(esc).join("\n- ") || "(ingen)"}\n\nAlternative idéer fra samme innsikt:\n- ${s.alternative_ideas.map(esc).join("\n- ") || "(ingen)"}</div>`;
+    }
+    html += `<div class="panel"><h3>SCENARIER</h3><table><tr><th>SCENARIO</th><th>SANNSYNLIGHET</th><th>UTFALL</th><th>VERDI</th></tr>${s.scenarios.map((x) => `<tr><td>${esc(x.name)}</td><td>${Math.round(x.probability * 100)}%</td><td>${esc(x.outcome)}</td><td>${esc(x.value_estimate)}</td></tr>`).join("")}</table></div>`;
+    if (s.assumptions_to_validate.length) {
+      html += `<div class="panel"><h3>KRITISKE ANTAKELSER → BILLIGSTE TEST</h3><table><tr><th>ANTAKELSE</th><th>TEST</th><th>TERSKEL</th><th>KOSTNAD</th><th>HORISONT</th></tr>${s.assumptions_to_validate.map((a) => `<tr><td>${esc(a.claim)}</td><td>${esc(a.test)}</td><td>${esc(a.threshold)}</td><td>${esc(a.cost_estimate)}</td><td>${esc(a.horizon)}</td></tr>`).join("")}</table></div>`;
+    }
+    html += `<div class="panel"><h3>ROLLENES VURDERINGER</h3><table><tr><th>ROLLE</th><th>POSISJON</th><th>STERKESTE MOTARGUMENT</th><th>ANBEFALING</th><th>P</th></tr>${p.evaluation.verdicts.map((v) => `<tr><td>${esc(v.roleTitle)}</td><td class="muted">${esc(v.position)}</td><td class="muted">${esc(v.strongest_argument_against)}</td><td>${esc(v.recommendation)}</td><td>${typeof v.probability_success === "number" ? Math.round(v.probability_success * 100) + "%" : "–"}</td></tr>`).join("")}</table></div>`;
+  }
+  if (p.phasePlan) {
+    html += `<div class="panel"><h3>FASEPLAN</h3><div class="note">${esc(p.phasePlan.sequencing_notes)}</div><table><tr><th>FASE</th><th>OMFANG</th><th>FØRSTE HANDLINGER</th><th>STOPPKRITERIER</th><th>EIER</th></tr>${p.phasePlan.phases.filter((f) => f.relevant).map((f) => `<tr><td>${f.phase}: ${esc(phaseTitle(f.phase))}</td><td class="muted">${esc(f.scope)}</td><td>${f.first_actions.map(esc).join("<br>")}</td><td class="muted">${esc(f.stop_criteria)}</td><td>${esc(f.owner_role)}</td></tr>`).join("")}</table></div>`;
+  }
+  if (p.brief) {
+    const b = p.brief;
+    html += `<div class="panel"><h3>MVP-BRIEF: ${esc(b.working_name)}</h3>${esc(b.product_vision)}\n\nKjerneproblem: ${esc(b.core_problem)}\nKjernejobb: ${esc(b.core_job)}\nViktigste brukerreise: ${esc(b.primary_user_journey)}\n\nMonetisering: ${esc(b.monetization.model)} – ${esc(b.monetization.price_hypothesis)} (prøve: ${esc(b.monetization.trial)})\nEstimat: ${esc(b.build_estimate)}` +
+      `<table><tr><th>MVP-FUNKSJON</th><th>HVORFOR</th><th>AKSEPTANSE</th></tr>${b.mvp_features.map((f) => `<tr><td>${esc(f.name)}</td><td class="muted">${esc(f.why)}</td><td class="muted">${esc(f.acceptance)}</td></tr>`).join("")}</table>` +
+      `\nBygges IKKE:\n- ${b.not_building.map(esc).join("\n- ")}\n\nSuksessmål: ${b.success_metrics.map((m) => `${esc(m.metric)} → ${esc(m.target)}`).join("; ")}</div>`;
+  }
+  if (p.assumptions.length) {
+    html += `<div class="panel"><h3>ANTAKELSESLOGG</h3><table><tr><th>PÅSTAND</th><th>TYPE</th><th>SIKKERHET</th><th>KILDE</th></tr>${p.assumptions.map((a) => `<tr><td>${esc(a.claim)}</td><td>${esc(a.type)}</td><td>${esc(a.confidence)}</td><td class="muted">${esc(a.source)}</td></tr>`).join("")}</table></div>`;
+  }
+  if (p.decisions.length) {
+    html += `<div class="panel"><h3>BESLUTNINGSLOGG</h3><table><tr><th>DATO</th><th>ROLLE</th><th>BESLUTNING</th><th>BEGRUNNELSE</th></tr>${p.decisions.map((d) => `<tr><td class="muted">${esc(d.at.slice(0, 10))}</td><td>${esc(d.role)}${d.byOwner ? ' <span class="badge test">EIER</span>' : ""}</td><td>${esc(d.decision)}</td><td class="muted">${esc(d.rationale)}</td></tr>`).join("")}</table></div>`;
+  }
+  $("detail").innerHTML = html;
+
+  $("pResume").onclick = async () => {
+    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
+    $("pResume").disabled = true;
+    try { await Pipeline.resume(p.id, () => {}); showProject(p.id); renderPortfolio(); }
+    catch (e) { alert("Feil: " + e.message); }
+  };
+  $("pGate").onclick = () => {
+    const gate = (PHASES.find((f) => f.n === p.phase) || {}).gate;
+    if (!gate) return;
+    Projects.approveGate(Projects.get(p.id), gate, true);
+    showProject(p.id);
+  };
+  $("pExport").onclick = () => {
+    const blob = new Blob([Store.exportProject(p.id)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = p.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() + ".json";
+    a.click();
+  };
+  $("pDelete").onclick = () => {
+    if (!confirm(`Slette/avvikle «${p.name}»? Eksporter først hvis prosjektet har verdi.`)) return;
+    Projects.remove(p.id);
+    $("detail").innerHTML = "";
+    renderPortfolio();
+  };
+}
+
+/* ---------- NY IDÉ ---------- */
+let running = false;
+$("runIdeaBtn").onclick = async () => {
+  const idea = $("ideaText").value.trim();
+  const name = $("ideaName").value.trim() || idea.slice(0, 40);
+  if (!idea || running) return;
+  if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM-fanen først."); return; }
+  running = true;
+  $("runIdeaBtn").disabled = true;
+  $("board").innerHTML = "";
+  $("ideaResult").innerHTML = "";
+  const cards = {};
+  const pipe = (html) => { $("pipeline").innerHTML = html; };
+  try {
+    const p = await Pipeline.runFrom(idea, name, (step, detail) => {
+      if (step === "intake") pipe("<b>FASE 0</b> " + esc(detail));
+      if (step === "framing") pipe("<b>FASE 1</b> " + esc(detail));
+      if (step === "participants") {
+        pipe("<b>FASE 1</b> Uavhengige fagvurderinger pågår …");
+        for (const t of detail) {
+          const el = document.createElement("div");
+          el.className = "card working";
+          el.innerHTML = `<h3>${esc(t)}</h3><div class="st">VURDERER …</div><div class="rec"></div>`;
+          $("board").appendChild(el);
+          cards[t] = el;
+        }
+      }
+      if (step === "role_done") {
+        const role = Board.byId(detail);
+        const el = role && cards[role.title];
+        if (el) { el.classList.remove("working"); el.querySelector(".st").textContent = "FERDIG"; }
+      }
+      if (step === "synthesis") pipe("<b>FASE 1</b> " + esc(detail));
+      if (step === "plan") pipe("<b>PLAN</b> " + esc(detail));
+      if (step === "brief") pipe("<b>BRIEF</b> " + esc(detail));
+    });
+    for (const v of p.evaluation.verdicts) {
+      const el = cards[v.roleTitle];
+      if (el) {
+        el.querySelector(".st").innerHTML = `VURDERING ${certBadge(v.certainty)}${typeof v.probability_success === "number" ? ` <span class="badge">p=${Math.round(v.probability_success * 100)}%</span>` : ""}`;
+        el.querySelector(".rec").textContent = v.recommendation;
+      }
+    }
+    pipe(`<b>FERDIG</b> Beslutning: ${esc(p.evaluation.synthesis.decision.toUpperCase())} (score ${p.evaluation.totalScore}/100)`);
+    $("ideaResult").innerHTML = `<div class="panel"><h3>RESULTAT</h3>${esc(p.evaluation.synthesis.decision_rationale)}\n\n<b>Prosjektet er lagret i porteføljen med full logg.</b></div>`;
+    goTab("portfolio");
+    showProject(p.id);
+  } catch (e) {
+    pipe(`<span style="color:var(--danger)">FEIL: ${esc(e.message)}</span>`);
+  }
+  running = false;
+  $("runIdeaBtn").disabled = false;
+};
+
+/* ---------- SYSTEM ---------- */
+$("apiKey").value = Store.apiKey;
+$("saveKeyBtn").onclick = () => {
+  /* jarvis_api_key eies av JARVIS – dette er eneste bevisste unntak fra cf_*-regelen, delt identitetskontrakt */
+  localStorage.setItem("jarvis_api_key", $("apiKey").value.trim());
+  $("saveKeyBtn").textContent = "Lagret ✓";
+  setTimeout(() => $("saveKeyBtn").textContent = "Lagre nøkkel", 1500);
+};
+$("gateList").textContent = OWNER_GATE_ACTIONS.map((a) => "• " + a).join("\n");
+$("demoBtn").onclick = () => {
+  const p = Demo.load();
+  goTab("portfolio");
+  showProject(p.id);
+};
+$("reviewBtn").onclick = async () => {
+  if (!Store.apiKey) { alert("Legg inn API-nøkkel først."); return; }
+  $("reviewBtn").disabled = true;
+  $("reviewOut").innerHTML = `<div class="panel muted">Fabrikken gransker seg selv …</div>`;
+  try {
+    const text = await SelfReview.run();
+    $("reviewOut").innerHTML = `<div class="panel"><h3>SELVEVALUERING</h3>${esc(text)}</div>`;
+  } catch (e) {
+    $("reviewOut").innerHTML = `<div class="panel danger">Feil: ${esc(e.message)}</div>`;
+  }
+  $("reviewBtn").disabled = false;
+};
+$("exportBtn").onclick = () => {
+  const blob = new Blob([Store.exportAll()], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "company-factory-backup.json";
+  a.click();
+};
+$("importBtn").onclick = () => $("importFile").click();
+$("importFile").onchange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  Store.importAll(await file.text());
+  renderPortfolio();
+  alert("Importert.");
+};
+
+renderPortfolio();
+})();
+</script>
+</body>
+</html>
