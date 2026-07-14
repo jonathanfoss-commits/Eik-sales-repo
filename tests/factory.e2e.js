@@ -483,7 +483,8 @@ async function freshPage(browser) {
     const iso = await page.evaluate(() => {
       let threw = false;
       try { window.CF.Store.set("aeis_ledger", []); } catch (_) { threw = true; }
-      const foreign = Object.keys(localStorage).filter((k) => !k.startsWith("cf_") && k !== "jarvis_api_key" && k !== "aeis_roles");
+      /* saga_* er SAGA-kjernens dokumenterte navnerom (felles aktivitetslogg/bus) – tillatt ved siden av cf_* */
+      const foreign = Object.keys(localStorage).filter((k) => !k.startsWith("cf_") && !k.startsWith("saga_") && k !== "jarvis_api_key" && k !== "aeis_roles");
       return { threw, foreign, aeisUntouched: JSON.parse(localStorage.getItem("aeis_roles")).length === 2 };
     });
     check("Store nekter å skrive utenfor cf_*", iso.threw, null);
