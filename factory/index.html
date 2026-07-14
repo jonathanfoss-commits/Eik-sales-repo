@@ -348,6 +348,21 @@ function showProject(id) {
     html += v + `</div>`;
   }
 
+  /* FASE 13 – drift og kundeservice */
+  if (p.ops || buildableNow) {
+    let v = `<div class="panel"><h3>FASE 13 – DRIFT OG KUNDESERVICE</h3>`;
+    if (!p.ops) {
+      v += `<div class="note">Grunnlag for drift med minst mulig manuelt arbeid: supportkanaler, FAQ-frø, svarmaler, eskalering, hendelses-runbook, månedlig gjennomgang, leverandøroversikt og automatiseringskandidater.</div><button class="small" id="opsGen" style="margin-top:8px">🛠 Bygg driftsgrunnlag</button>`;
+    } else {
+      const o = p.ops;
+      v += `Supportkanaler: ${o.support_channels.map(esc).join(" · ")}\n\nEskalering:\n- ${o.escalation_rules.map(esc).join("\n- ")}\n\nHendelses-runbook:\n- ${o.incident_runbook.map(esc).join("\n- ")}` +
+        `<h3 style="margin-top:14px">SVARMALER</h3><table><tr><th>SAK</th><th>MAL</th></tr>${o.reply_templates.map((t) => `<tr><td>${esc(t.name)}</td><td class="muted">${esc(t.text)}</td></tr>`).join("")}</table>` +
+        `<h3 style="margin-top:14px">LEVERANDØRER</h3><table><tr><th>LEVERANDØR</th><th>FORMÅL</th><th>KOSTNAD</th></tr>${o.vendor_list.map((x) => `<tr><td>${esc(x.vendor)}</td><td class="muted">${esc(x.purpose)}</td><td class="muted">${esc(x.cost_note)}</td></tr>`).join("")}</table>` +
+        `\nMånedlig gjennomgang:\n- ${o.monthly_review_checklist.map(esc).join("\n- ")}\n\nBør automatiseres:\n- ${o.automation_candidates.map(esc).join("\n- ")}`;
+    }
+    html += v + `</div>`;
+  }
+
   /* FASE 14/15 – modenhetsstige med sjekklister */
   if (p.brief || p.site || p.maturity) {
     const next = window.CF.Maturity.next(p);
@@ -539,6 +554,14 @@ function showProject(id) {
     lgGen.disabled = true;
     try { await window.CF.Legal.run(Projects.get(p.id)); showProject(p.id); }
     catch (e) { alert("Feil: " + e.message); lgGen.disabled = false; }
+  };
+
+  const opsGen = $("opsGen");
+  if (opsGen) opsGen.onclick = async () => {
+    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
+    opsGen.disabled = true;
+    try { await window.CF.Ops.run(Projects.get(p.id)); showProject(p.id); }
+    catch (e) { alert("Feil: " + e.message); opsGen.disabled = false; }
   };
 
   /* Rapport (deterministisk Markdown) */

@@ -506,6 +506,30 @@ const SCHEMAS = {
     required: ["core_message", "channel_strategy", "content_calendar", "ad_concepts", "email_sequence", "launch_plan", "experiment_queue", "budget_notes"],
     additionalProperties: false,
   },
+  ops: {
+    type: "object",
+    properties: {
+      support_channels: strArr,
+      faq_seed: { type: "array", items: {
+        type: "object",
+        properties: { q: { type: "string" }, a: { type: "string" } },
+        required: ["q", "a"], additionalProperties: false } },
+      reply_templates: { type: "array", items: {
+        type: "object",
+        properties: { name: { type: "string" }, text: { type: "string" } },
+        required: ["name", "text"], additionalProperties: false } },
+      escalation_rules: strArr,
+      incident_runbook: strArr,
+      monthly_review_checklist: strArr,
+      vendor_list: { type: "array", items: {
+        type: "object",
+        properties: { vendor: { type: "string" }, purpose: { type: "string" }, cost_note: { type: "string" } },
+        required: ["vendor", "purpose", "cost_note"], additionalProperties: false } },
+      automation_candidates: strArr,
+    },
+    required: ["support_channels", "faq_seed", "reply_templates", "escalation_rules", "incident_runbook", "monthly_review_checklist", "vendor_list", "automation_candidates"],
+    additionalProperties: false,
+  },
   retro: {
     type: "object",
     properties: {
@@ -1194,6 +1218,7 @@ const Report = {
       for (const r of p.legal.requirements) L.push(`| ${r.area} | ${r.requirement} | ${r.must_be_verified_by_professional ? "**JA**" : "nei"} |`);
     }
     if (p.marketing) { H("Fase 11 – Markedsføring"); L.push(`Kjernebudskap: ${p.marketing.core_message}\n\n**Kanaler:**`); for (const c of p.marketing.channel_strategy) L.push(`- ${c.priority}. ${c.channel}: ${c.why} (CAC-hypotese: ${c.cac_hypothesis})`); }
+    if (p.ops) { H("Fase 13 – Drift"); L.push(`Supportkanaler: ${p.ops.support_channels.join(", ")} · ${p.ops.reply_templates.length} svarmaler · ${p.ops.automation_candidates.length} automatiseringskandidater`); }
     if ((p.metrics || []).length) {
       H("Fase 16 – Måletall");
       L.push("| Måned | Kunder | MRR | Churn | Besøk |\n|---|---|---|---|---|");
@@ -1227,6 +1252,23 @@ const Marketing = {
     });
     p.marketing = { ...json, at: new Date().toISOString() };
     Projects.logDecision(p, { phase: 11, role: "markedsføringsmodul", decision: `Kanalstrategi valgt: ${json.channel_strategy.map((c) => c.channel).join(", ")}`, rationale: json.core_message });
+    return Projects.save(p);
+  },
+};
+
+/* ================= Ops (Fase 13: drift og kundeservice) ================= */
+const Ops = {
+  async run(p, onStatus) {
+    if (!p.intake || !p.evaluation) throw new Error("Kjør inntak og idévurdering først.");
+    if (onStatus) onStatus("Fase 13: driftsgrunnlag …");
+    const { json } = await LLM.call({
+      system: `Du er driftsmodulen i Company Factory (Fase 13). Målet er at selskapet kan drives med minst mulig manuelt arbeid uten at kundene opplever dårlig service. Lever: supportkanaler (få og realistiske for én person), FAQ-frø basert på produktet, svarmaler for de vanligste sakene (betalingsfeil, kansellering, refusjon, teknisk feil), eskaleringsregler, en kort hendelses-runbook, månedlig gjennomgangssjekkliste, leverandøroversikt med kostnadsnotat, og kandidater for automatisering. Vær konkret – ingen generiske driftsfloskler.`,
+      user: `${ownerContext()}PROSJEKT: ${p.name}\n\nINNTAK:\n${JSON.stringify(p.intake, null, 2)}${p.brief ? `\n\nMVP-FUNKSJONER: ${p.brief.mvp_features.map((f) => f.name).join(", ")}` : ""}${p.bizmodel ? `\n\nPLANER: ${p.bizmodel.model.plans.map((x) => `${x.name} ${x.price_month} kr/mnd`).join(", ")}` : ""}`,
+      schema: SCHEMAS.ops,
+      maxTokens: 8192,
+    });
+    p.ops = { ...json, at: new Date().toISOString() };
+    Projects.logDecision(p, { phase: 13, role: "driftsmodul", decision: `Driftsgrunnlag etablert (${json.reply_templates.length} svarmaler, ${json.automation_candidates.length} automatiseringskandidater)`, rationale: `Supportkanaler: ${json.support_channels.join(", ")}` });
     return Projects.save(p);
   },
 };
@@ -1512,4 +1554,4 @@ const SelfReview = {
 };
 
 /* Eksponer modulene (også for tester) */
-window.CF = { Store, LLM, Board, Pipeline, Projects, Intake, Evaluation, Experiments, Landing, BizModel, Finance, SiteGen, Maturity, Metrics, Library, Marketing, Strategy, Legal, Report, Retro, Lessons, Planner, Brief, Demo, SelfReview, SCHEMAS, PHASES, OWNER_GATE_ACTIONS, FACTORY_ROLES, CRITERIA, MATURITY_CHECKLISTS, pool, makeZip, crc32 };
+window.CF = { Store, LLM, Board, Pipeline, Projects, Intake, Evaluation, Experiments, Landing, BizModel, Finance, SiteGen, Maturity, Metrics, Library, Marketing, Strategy, Legal, Ops, Report, Retro, Lessons, Planner, Brief, Demo, SelfReview, SCHEMAS, PHASES, OWNER_GATE_ACTIONS, FACTORY_ROLES, CRITERIA, MATURITY_CHECKLISTS, pool, makeZip, crc32 };

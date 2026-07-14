@@ -222,7 +222,11 @@ dokumentert under; neste utviklingsfase er prioritert i planen over.
 
 Bevisst utelatt (ikke glemt): salgsmotor (Fase 12) bygges først når et prosjekt faktisk
 krever B2B-salg – hovedfokuset er B2C/selvbetjente abonnementer, og dokumentasjon som
-ikke brukes er avfall. Drift/kundeservice-motor (Fase 13) står i F5.
+ikke brukes er avfall.
+
+`CF.Ops` (Fase 13) er levert: supportkanaler, FAQ-frø, svarmaler, eskaleringsregler,
+hendelses-runbook, månedlig gjennomgang, leverandøroversikt og automatiseringskandidater –
+grunnlaget for drift med minst mulig manuelt arbeid.
 
 ## Kjente begrensninger (v1)
 

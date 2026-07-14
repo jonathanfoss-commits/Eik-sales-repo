@@ -244,6 +244,20 @@ const LEGAL = {
   action_list: ["Utkast til vilkår → advokat", "Behandlingsprotokoll → personvernrådgiver"],
 };
 
+const OPS = {
+  support_channels: ["E-post (hjelp@boligpuls.no)", "Kontaktskjema"],
+  faq_seed: [{ q: "Hvordan sier jeg opp?", a: "Under Innstillinger → Abonnement, gjelder ut perioden." }],
+  reply_templates: [
+    { name: "Betalingsfeil", text: "Hei! Betalingen feilet – oppdater kortet her: [lenke]." },
+    { name: "Refusjon", text: "Hei! Refusjonen er registrert og tar 5–10 virkedager." },
+  ],
+  escalation_rules: ["Betalingssaker ubesvart > 24 t → eier varsles"],
+  incident_runbook: ["Sjekk statusside hos leverandør", "Informer berørte kunder innen 2 t"],
+  monthly_review_checklist: ["Churn-gjennomgang", "Supportvolum per kategori", "Kostnadskontroll leverandører"],
+  vendor_list: [{ vendor: "Stripe", purpose: "Betaling/abonnement", cost_note: "2,9 % + 2 kr per transaksjon" }],
+  automation_candidates: ["Purring ved betalingsfeil", "Onboarding-e-poster"],
+};
+
 const RETRO = {
   what_worked: ["Falsk-dør-testen ga tydelig signal"],
   what_failed: ["Intervjurekruttering tok for lang tid"],
@@ -280,6 +294,7 @@ function mockRouter(overrides = {}) {
     if (sys.includes("markedsføringsmodulen")) { counts.marketing = (counts.marketing || 0) + 1; return route.fulfill(respond(overrides.marketing || MARKETING)); }
     if (sys.includes("strategimodulen")) { counts.strategy = (counts.strategy || 0) + 1; return route.fulfill(respond(overrides.strategy || STRATEGY)); }
     if (sys.includes("juridisk-modulen")) { counts.legal = (counts.legal || 0) + 1; return route.fulfill(respond(overrides.legal || LEGAL)); }
+    if (sys.includes("driftsmodulen")) { counts.ops = (counts.ops || 0) + 1; return route.fulfill(respond(overrides.ops || OPS)); }
     if (sys.includes("selvevalueringsmodul")) {
       counts.review++;
       return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ content: [{ type: "text", text: "Selvevaluering: fabrikken fungerer; forbedre X." }], stop_reason: "end_turn", usage: { input_tokens: 1, output_tokens: 1 } }) });
@@ -635,10 +650,11 @@ print('OK', len(names))
     const libShown = await page.evaluate(() => document.getElementById("libraryList").textContent.includes("Landingsside-malen"));
     check("biblioteket vises under SYSTEM", libShown, null);
 
-    /* Strategi (Fase 4) og juridisk (Fase 10) */
+    /* Strategi (Fase 4), juridisk (Fase 10) og drift (Fase 13) */
     await page.evaluate(async () => {
       await window.CF.Strategy.run(window.CF.Projects.list()[0]);
       await window.CF.Legal.run(window.CF.Projects.list()[0]);
+      await window.CF.Ops.run(window.CF.Projects.list()[0]);
     });
     await page.click('nav button[data-tab="portfolio"]');
     await page.click(".proj-item");
@@ -646,6 +662,8 @@ print('OK', len(names))
     check("strategi vises med ikke-gjøre-liste", detail2.includes("SELSKAP OG STRATEGI") && detail2.includes("Skal IKKE gjøre") && detail2.includes("håndverkermarkedsplass"), null);
     check("juridisk kartlegging med fagperson-merking og disclaimer",
       detail2.includes("JURIDISK") && detail2.includes("IKKE juridisk rådgivning") && detail2.includes("KREVES"), null);
+    check("driftsgrunnlag med svarmaler og automatiseringskandidater",
+      detail2.includes("DRIFT OG KUNDESERVICE") && detail2.includes("Betalingsfeil") && detail2.includes("Bør automatiseres"), null);
 
     /* Prosjektrapport (deterministisk Markdown) */
     const report = await page.evaluate(() => window.CF.Report.generate(window.CF.Projects.list()[0]));
