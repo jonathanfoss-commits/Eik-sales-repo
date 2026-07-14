@@ -30,6 +30,7 @@ final class JarvisEngine: ObservableObject {
     var searchSetting: Bool { defaults.object(forKey: "jarvis_search") as? Bool ?? true }
     var mcpName: String { defaults.string(forKey: "jarvis_mcp_name") ?? "" }
     var mcpURL: String { defaults.string(forKey: "jarvis_mcp_url") ?? "" }
+    var ownerProfile: String { defaults.string(forKey: "jarvis_owner_profile") ?? "" }
     var mcpToken: String { Keychain.load("jarvis_mcp_token") }
     var apiKey: String { Keychain.load("jarvis_api_key") }
     var isNorsk: Bool { languageSetting.hasPrefix("nb") || languageSetting.hasPrefix("no") }
@@ -326,6 +327,13 @@ final class JarvisEngine: ObservableObject {
                 ? "\n\nTing du vet om brukeren fra tidligere samtaler:\n"
                 : "\n\nFacts you know about the user from earlier conversations:\n"
             prompt += memory.map { "- " + $0 }.joined(separator: "\n")
+        }
+        let profile = ownerProfile.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !profile.isEmpty {
+            prompt += isNorsk
+                ? "\n\nEIERPROFIL – brukerens eget styringsdokument (mål, portefølje, mandat, grenser). Bruk som stille bakgrunnskunnskap i alt du gjør; ikke les den opp eller referer til den med mindre brukeren spør:\n"
+                : "\n\nOWNER PROFILE – the user's own governing document (goals, portfolio, mandate, boundaries). Use as silent background knowledge in everything you do; don't recite it or refer to it unless asked:\n"
+            prompt += profile
         }
         return prompt
     }

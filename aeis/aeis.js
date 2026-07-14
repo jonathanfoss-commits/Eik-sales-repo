@@ -374,7 +374,7 @@ const Engine = {
     say("devil", "Devil's Advocate gransker analysene …");
     const devilCall = async () => (await LLM.call({
       system: `Du er Devil's Advocate i AEIS. Din eneste jobb: angrip. Finn undervurdert risiko, utestede antakelser, svake data og gruppetenkning. Du har VETORETT: sett veto=true KUN hvis risiko er vesentlig undervurdert, antakelser ikke er testet, data er for svake, eller gruppetenkning preger analysene – da kreves ny analyserunde.`,
-      user: `SAK: ${framing.problem}\n\nSTYRETS ANALYSER:\n${JSON.stringify(decision.analyses.map(a => ({ rolle: a.roleTitle, posisjon: a.position, antakelser: a.assumptions, anbefaling: a.recommendation, sikkerhet: a.certainty, p: a.probability_success })), null, 2)}`,
+      user: `${ownerContext()}SAK: ${framing.problem}\n\nSTYRETS ANALYSER:\n${JSON.stringify(decision.analyses.map(a => ({ rolle: a.roleTitle, posisjon: a.position, antakelser: a.assumptions, anbefaling: a.recommendation, sikkerhet: a.certainty, p: a.probability_success })), null, 2)}`,
       schema: SCHEMAS.devil,
       maxTokens: 4096,
     })).json;
@@ -392,7 +392,7 @@ const Engine = {
     say("premortem", "Pre-mortem: antar katastrofe om to år …");
     decision.premortem = (await LLM.call({
       system: "Du er AEIS' pre-mortem-modul.",
-      user: `SAK: ${framing.problem}\n\nSTYRETS FORELØPIGE RETNING:\n${decision.analyses.map(a => `${a.roleTitle}: ${a.recommendation}`).join("\n")}\n\nANTA: «Om to år viste dette seg å være en katastrofal beslutning.» Fortell historien om hvorfor, hva som sannsynligvis gikk galt, hvilke faresignaler som ble oversett, og hvordan risikoen kan reduseres nå.`,
+      user: `${ownerContext()}SAK: ${framing.problem}\n\nSTYRETS FORELØPIGE RETNING:\n${decision.analyses.map(a => `${a.roleTitle}: ${a.recommendation}`).join("\n")}\n\nANTA: «Om to år viste dette seg å være en katastrofal beslutning.» Fortell historien om hvorfor, hva som sannsynligvis gikk galt, hvilke faresignaler som ble oversett, og hvordan risikoen kan reduseres nå.`,
       schema: SCHEMAS.premortem,
       maxTokens: 4096,
     })).json;

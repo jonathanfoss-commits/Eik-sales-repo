@@ -151,8 +151,12 @@
 <!-- ============ SYSTEM ============ -->
 <section class="tab" id="tab-system">
   <h2>EIERPROFIL (injiseres i alle analyser)</h2>
-  <textarea id="profile" rows="6" placeholder="Hvem er du, hva eier du, hva er målene dine, risikotoleranse, tidshorisont, kapital tilgjengelig …"></textarea>
+  <div class="note">Lim inn hele eierprofil-dokumentet ditt her. Det lagres <b>kun lokalt på denne enheten</b>
+  (aldri på noen server eller i koden) og blir styringsgrunnlaget for alle vurderinger AEIS gjør.
+  JARVIS-appen på samme enhet leser også profilen.</div>
+  <textarea id="profile" rows="14" placeholder="Hvem er du, hva eier du, hva er målene dine, risikotoleranse, tidshorisont, kapital tilgjengelig, mandat, grenser …"></textarea>
   <button class="primary" id="saveProfileBtn">Lagre profil</button>
+  <div class="note" id="profileStatus"></div>
 
   <h2>API-NØKKEL</h2>
   <input type="password" id="apiKey" placeholder="sk-ant-… (deles med JARVIS-appen)">
@@ -336,9 +340,16 @@ $("radarBtn").onclick = async () => {
 };
 
 /* ---------- SYSTEM ---------- */
+const profileStatus = () => {
+  const p = Store.profile;
+  $("profileStatus").textContent = p
+    ? `Profil lagret lokalt (${p.length} tegn) – injiseres i alle AEIS-kall og i JARVIS.`
+    : "Ingen profil lagret enda. Uten profil vurderer styret i blinde – legg den inn.";
+};
+profileStatus();
 $("profile").value = Store.profile;
 $("apiKey").value = Store.apiKey;
-$("saveProfileBtn").onclick = () => { Store.profile = $("profile").value; $("saveProfileBtn").textContent = "Lagret ✓"; setTimeout(() => $("saveProfileBtn").textContent = "Lagre profil", 1500); };
+$("saveProfileBtn").onclick = () => { Store.profile = $("profile").value; profileStatus(); $("saveProfileBtn").textContent = "Lagret ✓"; setTimeout(() => $("saveProfileBtn").textContent = "Lagre profil", 1500); };
 $("saveKeyBtn").onclick = () => { Store.apiKey = $("apiKey").value.trim(); $("saveKeyBtn").textContent = "Lagret ✓"; setTimeout(() => $("saveKeyBtn").textContent = "Lagre nøkkel", 1500); };
 $("reviewBtn").onclick = async () => {
   $("reviewBtn").disabled = true;

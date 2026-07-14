@@ -15,6 +15,7 @@ En **ekte native iOS-app** (SwiftUI) av Jarvis — med alt PWA-en har, pluss det
 | 🌐 Websøk | Claudes serverside websøk, som i PWA-en |
 | 🔌 MCP | Valgfri direktekobling til f.eks. Home Assistant MCP (token i nøkkelringen) |
 | 💾 Hukommelse + historikk | Overlever omstart, «husk at …» fungerer på tvers av økter |
+| 👤 Eierprofil | Lim inn styringsdokumentet ditt under Oppsett → Eierprofil — Jarvis bruker det som bakgrunnskunnskap i alle svar. Lagres kun lokalt på enheten |
 
 ## Slik bygger og installerer du (krever Mac med Xcode)
 
@@ -39,7 +40,7 @@ En **ekte native iOS-app** (SwiftUI) av Jarvis — med alt PWA-en har, pluss det
 |---|---|
 | `JarvisApp.swift` | App-inngang, lydøkt-oppsett |
 | `ContentView.swift` | HUD-grensesnittet: header m/klokke, meldingsliste, arc reactor-knapp med radar-ringer |
-| `SettingsView.swift` | Oppsett: nøkkel (Keychain), modell, språk, stemme, hukommelse |
+| `SettingsView.swift` | Oppsett: nøkkel (Keychain), modell, språk, stemme, hukommelse, eierprofil |
 | `JarvisEngine.swift` | Hjernen: streaming mot Claude API (`claude-opus-4-8`), agentisk verktøy-løkke (`tool_use`/`tool_result`/`pause_turn`), historikk-persistens |
 | `SpeechManager.swift` | Tale inn (SFSpeech + AVAudioEngine, stillhetsdeteksjon) og tale ut (AVSpeechSynthesizer, setning-for-setning under streaming) |
 | `Tools.swift` | Verktøyene: vær, timer (UNUserNotificationCenter), klokke, husk, åpne URL |

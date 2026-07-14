@@ -315,6 +315,11 @@
       <div id="memoryList"></div>
     </div>
     <div class="field">
+      <label>EIERPROFIL (DELES MED AEIS)</label>
+      <div class="note" id="profileInfo">–</div>
+      <div class="note">Eierprofilen limes inn under <b>🏛 AEIS → SYSTEM</b> og leses automatisk av Jarvis. Lagres kun lokalt på denne enheten.</div>
+    </div>
+    <div class="field">
       <label>FORBRUK (DENNE ENHETEN)</label>
       <div class="note" id="usageInfo">–</div>
     </div>
@@ -386,7 +391,15 @@ function systemPrompt() {
     ? (isNorsk() ? "\n\nTing du vet om brukeren fra tidligere samtaler:\n" : "\n\nFacts you know about the user from earlier conversations:\n")
       + mem.map(f => "- " + f).join("\n")
     : "";
-  return base + memText;
+  // Eierprofilen deles med AEIS (samme localStorage) og lagres kun på enheten.
+  const profile = localStorage.getItem("aeis_profile") || "";
+  const profText = profile
+    ? (isNorsk()
+        ? "\n\nEIERPROFIL – brukerens eget styringsdokument (mål, portefølje, mandat, grenser). Bruk som stille bakgrunnskunnskap i alt du gjør; ikke les den opp eller referer til den med mindre brukeren spør:\n"
+        : "\n\nOWNER PROFILE – the user's own governing document (goals, portfolio, mandate, boundaries). Use as silent background knowledge in everything you do; don't recite it or refer to it unless asked:\n")
+      + profile
+    : "";
+  return base + memText + profText;
 }
 
 /* ---------- client-side tools ---------- */
@@ -1131,6 +1144,10 @@ function openSettings() {
   renderMemory();
   renderMcp();
   renderHooks();
+  const prof = localStorage.getItem("aeis_profile") || "";
+  $("profileInfo").textContent = prof
+    ? `Profil lagret (${prof.length} tegn) – Jarvis kjenner eieren.`
+    : "Ingen profil lagt inn enda.";
   $("settings").classList.add("open");
 }
 $("rateSlider").addEventListener("input", (e) => {
