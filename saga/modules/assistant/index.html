@@ -338,6 +338,7 @@
   </div>
 </div>
 
+<script src="../../core/saga-core.js"></script>
 <script>
 "use strict";
 
@@ -452,6 +453,32 @@ const clientToolDefs = [
     },
   },
   {
+    name: "saga_factory_status",
+    description: "Read the live status of the user's Company Factory (SAGA module): all projects with phase, score and decision, plus idea inbox size and pending research requests. Use when the user asks about their companies, projects, ideas or the factory.",
+    input_schema: { type: "object", properties: {}, required: [] },
+  },
+  {
+    name: "saga_factory_add_idea",
+    description: "Send a business idea to the Company Factory idea inbox so the user can run a full evaluation later. Use when the user mentions a business/startup idea worth keeping.",
+    input_schema: {
+      type: "object",
+      properties: { idea: { type: "string", description: "The idea, one or two sentences" } },
+      required: ["idea"],
+    },
+  },
+  {
+    name: "saga_answer_research",
+    description: "List or answer pending research requests from the Company Factory. Call with no arguments to list pending requests. After researching (e.g. with web_search), call again with request_id and answer to deliver the result back to the factory.",
+    input_schema: {
+      type: "object",
+      properties: {
+        request_id: { type: "string", description: "ID of the request to answer (omit to just list pending requests)" },
+        answer: { type: "string", description: "The structured research answer to deliver" },
+      },
+      required: [],
+    },
+  },
+  {
     name: "run_shortcut",
     description: "Run one of the user's Apple Shortcuts by its exact name (works on iPhone, iPad and Mac). Shortcuts can control smart home devices (HomeKit), send messages, play music, trigger automations and much more. Ask the user for the exact shortcut name if unsure.",
     input_schema: {
@@ -487,6 +514,23 @@ function toolStatusText(nameOrBlock) {
 
 async function execTool(name, input) {
   switch (name) {
+    case "saga_factory_status": {
+      if (!window.SAGA) return JSON.stringify({ error: "SAGA core ikke lastet" });
+      return JSON.stringify(window.SAGA.bridge.factoryStatus());
+    }
+    case "saga_factory_add_idea": {
+      if (!window.SAGA) return JSON.stringify({ error: "SAGA core ikke lastet" });
+      const item = window.SAGA.bridge.addIdeaToFactory(input.idea);
+      return JSON.stringify({ ok: true, note: "Idéen ligger i fabrikkens innboks (Idélab).", item });
+    }
+    case "saga_answer_research": {
+      if (!window.SAGA) return JSON.stringify({ error: "SAGA core ikke lastet" });
+      if (input.request_id && input.answer) {
+        const done = window.SAGA.bridge.complete(input.request_id, input.answer);
+        return JSON.stringify({ ok: true, delivered: done.question });
+      }
+      return JSON.stringify({ pending: window.SAGA.bridge.pending("research") });
+    }
     case "get_datetime": {
       const now = new Date();
       return JSON.stringify({
@@ -1227,6 +1271,17 @@ function chipDefs() {
 function renderChips() {
   const el = $("chips");
   el.innerHTML = "";
+  /* SAGA-broen: ventende research-forespørsler fra fabrikken vises som første chip */
+  const pending = window.SAGA ? window.SAGA.bridge.pending("research") : [];
+  if (pending.length) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip";
+    b.id = "sagaResearchChip";
+    b.textContent = `📨 ${pending.length} forespørsel${pending.length > 1 ? "er" : ""} fra fabrikken`;
+    b.onclick = () => askSaga(`Fabrikken har bestilt research. Bruk saga_answer_research for å hente forespørslene, gjør grundig research (bruk websøk ved behov), og lever svaret tilbake med saga_answer_research (request_id + answer). Første spørsmål: «${pending[0].question}»`);
+    el.appendChild(b);
+  }
   for (const [label, prompt] of chipDefs()) {
     const b = document.createElement("button");
     b.type = "button";

@@ -332,6 +332,8 @@ const Ledger = {
     const list = this.list();
     list.unshift(record);
     this.save(list.slice(0, 200));
+    /* Speil til SAGAs felles aktivitetslogg */
+    try { if (window.SAGA) window.SAGA.activity.log("aeis", record.radar ? "radar" : "beslutning", record.title || "(uten tittel)", record.id); } catch (_) {}
   },
   update(id, patch) {
     this.save(this.list().map((d) => (d.id === id ? { ...d, ...patch } : d)));

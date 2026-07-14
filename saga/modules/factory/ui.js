@@ -348,6 +348,7 @@ function showProject(id) {
     `<button class="small" id="pBudget">💰 ${p.budgetNok ? "Endre budsjett" : "Sett budsjett"} (eier)</button>` +
     `<button class="small" id="pExpense">+ Utgift</button>` +
     `<button class="small" id="pGate">✅ Godkjenn port (eier): ${esc((PHASES.find((f) => f.n === p.phase) || {}).gate || "")}</button>` +
+    `<button class="small" id="pResearch">🧠 Be assistenten om research</button>` +
     `<button class="small" id="pReport">📄 Rapport</button>` +
     `<button class="small" id="pRetro">🔁 Retro</button>` +
     `<button class="small" id="pExport">Eksporter prosjekt</button>` +
@@ -584,6 +585,15 @@ function showProject(id) {
   if (p.decisions.length) {
     html += `<div class="panel"><h3>BESLUTNINGSLOGG</h3><table><tr><th>DATO</th><th>ROLLE</th><th>BESLUTNING</th><th>BEGRUNNELSE</th></tr>${p.decisions.map((d) => `<tr><td class="muted">${esc(d.at.slice(0, 10))}</td><td>${esc(d.role)}${d.byOwner ? ' <span class="badge test">EIER</span>' : ""}</td><td>${esc(d.decision)}</td><td class="muted">${esc(d.rationale)}</td></tr>`).join("")}</table></div>`;
   }
+  /* SAGA-broen: research bestilt fra og levert av assistenten */
+  {
+    const reqs = window.SAGA ? window.SAGA.bridge.all(50).filter((r) => r.projectId === p.id) : [];
+    if (reqs.length) {
+      html += `<div class="panel"><h3>RESEARCH FRA ASSISTENTEN (SAGA-broen)</h3>` +
+        reqs.map((r) => `<div class="note"><b>${r.status === "done" ? "✅" : "⏳"} ${esc(r.question)}</b>${r.status === "done" ? `\n${esc(r.answer)}` : `\n<span class="muted">Venter – åpne assistenten, der ligger forespørselen som chip.</span>`}</div>`).join("\n") + `</div>`;
+    }
+  }
+
   /* Tidslinje: hele prosjekthistorien fra loggene som finnes – deterministisk */
   {
     const events = [];
@@ -721,6 +731,15 @@ function wireProjectActions(p) {
       showProject(p.id);
       renderPortfolio();
     } catch (e) { alert(e.message); }
+  };
+
+  /* SAGA-broen */
+  $("pResearch").onclick = () => {
+    if (!window.SAGA) { alert("SAGA-kjernen er ikke lastet."); return; }
+    const q = prompt(`Hva skal assistenten researche for «${p.name}»? (leveres med websøk i assistenten)`, "");
+    if (!q || !q.trim()) return;
+    window.SAGA.bridge.requestResearch({ projectId: p.id, project: p.name, question: q.trim() });
+    showProject(p.id);
   };
 
   /* Kapitaldisiplin */

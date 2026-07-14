@@ -700,6 +700,8 @@ const Activity = {
     const list = Store.get("cf_activity", []);
     list.unshift({ id: "a" + Date.now().toString(36) + list.length % 100, at: new Date().toISOString(), type, message, projectId: projectId || null });
     Store.set("cf_activity", list.slice(0, 300));
+    /* Speil til SAGAs felles aktivitetslogg (D7 – cf_activity forblir fabrikkens eget revisjonsspor) */
+    try { if (window.SAGA) window.SAGA.activity.log("factory", type, message, projectId); } catch (_) {}
   },
   list(n = 50) { return Store.get("cf_activity", []).slice(0, n); },
 };
