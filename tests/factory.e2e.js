@@ -244,6 +244,19 @@ const LEGAL = {
   action_list: ["Utkast til vilkår → advokat", "Behandlingsprotokoll → personvernrådgiver"],
 };
 
+const TECHARCH = {
+  summary: "Statisk frontend + Supabase + Stripe dekker behovet; ingen egen backend før webhook-logikken vokser.",
+  choices: [
+    { area: "Frontend/hosting", choice: "Statisk SPA på Netlify", why: "Ingen serverdrift, gratisnivå holder", alternatives_considered: ["Vercel", "GitHub Pages"], monthly_cost_estimate: "0 kr", lock_in_risk: "lav", migration_path: "Statiske filer flyttes fritt" },
+    { area: "Database/auth", choice: "Supabase", why: "Auth + Postgres + RLS uten egen backend", alternatives_considered: ["Firebase", "egen Node-backend"], monthly_cost_estimate: "0–250 kr", lock_in_risk: "middels", migration_path: "Standard Postgres – pg_dump ut" },
+    { area: "Betaling", choice: "Stripe Payment Links + Customer Portal", why: "Ingen kortdata hos oss, rask oppstart", alternatives_considered: ["Vipps", "Paddle"], monthly_cost_estimate: "2,9 % + 2 kr/transaksjon", lock_in_risk: "middels", migration_path: "Abonnementsdata kan eksporteres" },
+  ],
+  not_needed_yet: ["Kubernetes/containere", "Egen backend-server", "Datavarehus", "CDN utover hostingens innebygde"],
+  security_notes: ["RLS på alle tabeller", "Hemmeligheter kun i miljøvariabler", "Rate limit på webhook-endepunktet"],
+  total_monthly_cost_estimate: "0–300 kr/mnd før transaksjonsgebyrer",
+  risks: ["Supabase gratisnivå pauser inaktive prosjekter"],
+};
+
 const APP = {
   app_name: "BoligPuls",
   welcome_line: "Registrer boligen din og få planen på under to minutter.",
@@ -312,6 +325,7 @@ function mockRouter(overrides = {}) {
     if (sys.includes("juridisk-modulen")) { counts.legal = (counts.legal || 0) + 1; return route.fulfill(respond(overrides.legal || LEGAL)); }
     if (sys.includes("driftsmodulen")) { counts.ops = (counts.ops || 0) + 1; return route.fulfill(respond(overrides.ops || OPS)); }
     if (sys.includes("app-modulen")) { counts.app = (counts.app || 0) + 1; return route.fulfill(respond(overrides.app || APP)); }
+    if (sys.includes("arkitekturmodulen")) { counts.techarch = (counts.techarch || 0) + 1; return route.fulfill(respond(overrides.techarch || TECHARCH)); }
     if (sys.includes("selvevalueringsmodul")) {
       counts.review++;
       return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ content: [{ type: "text", text: "Selvevaluering: fabrikken fungerer; forbedre X." }], stop_reason: "end_turn", usage: { input_tokens: 1, output_tokens: 1 } }) });
@@ -681,6 +695,24 @@ print('OK', len(names))
       detail2.includes("JURIDISK") && detail2.includes("IKKE juridisk rådgivning") && detail2.includes("KREVES"), null);
     check("driftsgrunnlag med svarmaler og automatiseringskandidater",
       detail2.includes("DRIFT OG KUNDESERVICE") && detail2.includes("Betalingsfeil") && detail2.includes("Bør automatiseres"), null);
+
+    /* Teknisk arkitektur (Fase 7) */
+    await page.evaluate(async () => { await window.CF.TechArch.run(window.CF.Projects.list()[0]); });
+    await page.click('nav button[data-tab="portfolio"]');
+    await page.click(".proj-item");
+    const taDetail = await page.evaluate(() => document.getElementById("detail").textContent);
+    check("teknisk arkitektur vises med alternativer, binding og «trengs ikke enda»",
+      taDetail.includes("TEKNISK ARKITEKTUR") && taDetail.includes("Supabase") && taDetail.includes("Firebase") && taDetail.includes("Trengs IKKE enda") && taDetail.includes("Kubernetes"), null);
+    const taP = await page.evaluate(() => window.CF.Projects.list()[0]);
+    check("arkitekturvalget er logget med alternativer og risiko",
+      taP.decisions[0].decision.includes("Teknisk arkitektur valgt") && taP.decisions[0].options.length > 0 && taP.decisions[0].risk.includes("Supabase"), taP.decisions[0]);
+
+    /* Lagringsrobusthet */
+    const usage = await page.evaluate(() => window.CF.Store.usage());
+    check("lagringsbruk måles per cf_-nøkkel", usage.totalKb > 0 && usage.rows.every((r) => r.key.startsWith("cf_")) && usage.limitKb === 5120, usage.totalKb);
+    await page.click('nav button[data-tab="system"]');
+    const storageShown = await page.evaluate(() => document.getElementById("storageUsage").textContent.includes("kB"));
+    check("lagringsbruk vises under SYSTEM", storageShown, null);
 
     /* App-skall (Fase 8+9) – krever brief */
     const appErr = await page.evaluate(() => window.CF.AppGen.run(window.CF.Projects.list()[0]).then(() => null, (e) => e.message));

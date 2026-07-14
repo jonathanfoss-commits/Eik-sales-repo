@@ -150,6 +150,10 @@
   </div>
   <input type="file" id="importFile" accept="application/json" style="display:none">
   <div class="note">Arkitektur og kontrakter: <a href="ARCHITECTURE.md" target="_blank">ARCHITECTURE.md</a>. All data ligger i cf_*-navnerommet, isolert per prosjekt.</div>
+
+  <h2>LAGRINGSBRUK</h2>
+  <div class="note">Nettleserens localStorage har ~5 MB kvote. Genererte nettsteder og apper tar plass – eksporter og slett avsluttede prosjekter ved behov.</div>
+  <div id="storageUsage"></div>
 </section>
 
 </main>
@@ -168,7 +172,7 @@ document.querySelectorAll("nav button").forEach((b) => {
     b.classList.add("on");
     $("tab-" + b.dataset.tab).classList.add("on");
     if (b.dataset.tab === "portfolio") renderPortfolio();
-    if (b.dataset.tab === "system") { renderLessons(); renderLibrary(); }
+    if (b.dataset.tab === "system") { renderLessons(); renderLibrary(); renderStorage(); }
   };
 });
 function goTab(name) { document.querySelector(`nav button[data-tab="${name}"]`).click(); }
@@ -187,6 +191,13 @@ function renderLessons() {
   $("lessonsList").innerHTML = list.length
     ? `<div class="panel">${list.map((l) => `• [${esc(l.project)}] ${esc(l.lesson)}`).join("\n")}</div>`
     : `<div class="panel muted">Ingen lærdommer enda – kjør 🔁 Retro på et prosjekt.</div>`;
+}
+
+function renderStorage() {
+  const u = Store.usage();
+  const pct = Math.min(100, Math.round((u.totalKb / u.limitKb) * 100));
+  $("storageUsage").innerHTML = `<div class="panel${pct > 80 ? " danger" : ""}">Totalt: <b>${u.totalKb} kB</b> av ~${u.limitKb} kB (${pct} %)` +
+    (u.rows.length ? `<table><tr><th>NØKKEL</th><th>STØRRELSE</th></tr>${u.rows.slice(0, 10).map((r) => `<tr><td class="muted">${esc(r.key)}</td><td>${r.kb} kB</td></tr>`).join("")}</table>` : "") + `</div>`;
 }
 
 function renderLibrary() {
@@ -302,6 +313,20 @@ function showProject(id) {
     } else {
       const st = p.strategy;
       v += `<b style="color:var(--cyan)">${esc(st.working_name)}</b> (${esc(st.category)})\n${esc(st.positioning)}\n\nLøfte: ${esc(st.promise)}\nDifferensiering: ${esc(st.differentiation)}\nNavnealternativer: ${st.name_alternatives.map(esc).join(", ")}\n\nMission: ${esc(st.mission)}\nVision: ${esc(st.vision)}\nVerdier: ${st.values.map(esc).join(" · ")}\n\n90 dager:\n- ${st.plan_90_days.map(esc).join("\n- ")}\n\n12 måneder:\n- ${st.plan_12_months.map(esc).join("\n- ")}\n\n3-årig retning: ${esc(st.direction_3_years)}\n\n<b>Skal IKKE gjøre:</b>\n- ${st.not_doing.map(esc).join("\n- ")}`;
+    }
+    html += v + `</div>`;
+  }
+
+  /* FASE 7 – teknisk arkitektur */
+  if (p.techarch || buildableNow) {
+    let v = `<div class="panel"><h3>FASE 7 – TEKNISK ARKITEKTUR</h3>`;
+    if (!p.techarch) {
+      v += `<div class="note">Velger teknologi ut fra produktets faktiske behov – med vurderte alternativer, kostnadsestimat, leverandørbinding og migreringsvei per valg. Lister også hva som IKKE trengs enda.</div><button class="small" id="taGen" style="margin-top:8px">🏗 Velg teknisk arkitektur</button>`;
+    } else {
+      const t = p.techarch;
+      v += `${esc(t.summary)}\nEstimert totalkostnad: <b>${esc(t.total_monthly_cost_estimate)}</b>` +
+        `<table><tr><th>OMRÅDE</th><th>VALG</th><th>HVORFOR</th><th>ALTERNATIVER</th><th>KOST/MND</th><th>BINDING</th></tr>${t.choices.map((c) => `<tr><td>${esc(c.area)}</td><td><b>${esc(c.choice)}</b></td><td class="muted">${esc(c.why)}</td><td class="muted">${c.alternatives_considered.map(esc).join(", ")}</td><td>${esc(c.monthly_cost_estimate)}</td><td>${c.lock_in_risk === "høy" ? '<span class="badge l">høy</span>' : c.lock_in_risk === "middels" ? '<span class="badge m">middels</span>' : '<span class="badge h">lav</span>'}</td></tr>`).join("")}</table>` +
+        `\nTrengs IKKE enda:\n- ${t.not_needed_yet.map(esc).join("\n- ")}\n\nSikkerhet:\n- ${t.security_notes.map(esc).join("\n- ")}`;
     }
     html += v + `</div>`;
   }
@@ -570,6 +595,15 @@ function showProject(id) {
     catch (e) { alert("Feil: " + e.message); lgGen.disabled = false; }
   };
 
+  /* FASE 7-handlinger */
+  const taGen = $("taGen");
+  if (taGen) taGen.onclick = async () => {
+    if (!Store.apiKey) { alert("Legg inn API-nøkkel under SYSTEM først."); return; }
+    taGen.disabled = true;
+    try { await window.CF.TechArch.run(Projects.get(p.id)); showProject(p.id); }
+    catch (e) { alert("Feil: " + e.message); taGen.disabled = false; }
+  };
+
   /* FASE 8+9-handlinger */
   const appGen = $("appGen");
   if (appGen) appGen.onclick = async () => {
@@ -770,6 +804,7 @@ $("importFile").onchange = async (e) => {
 renderPortfolio();
 renderLessons();
 renderLibrary();
+renderStorage();
 })();
 </script>
 </body>

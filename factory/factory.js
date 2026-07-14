@@ -12,7 +12,29 @@ const Store = {
   },
   set(key, value) {
     if (!key.startsWith("cf_")) throw new Error("Store skriver kun til cf_*-navnerommet: " + key);
-    localStorage.setItem(key, JSON.stringify(value));
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+      /* localStorage-kvoten (~5 MB) er en kjent plattformbegrensning – gi et handlingsrettet råd i stedet for en kryptisk feil */
+      if (e && (e.name === "QuotaExceededError" || e.code === 22)) {
+        throw new Error(`Lagringen er full (nettleserens localStorage-kvote). Frigjør plass: eksporter og slett avsluttede prosjekter, eller last ned og fjern genererte nettsted-/app-pakker fra gamle prosjekter. Se lagringsbruk under SYSTEM. (${key})`);
+      }
+      throw e;
+    }
+  },
+  /* Omtrentlig lagringsbruk per cf_*-nøkkel, i kB – vises under SYSTEM */
+  usage() {
+    const rows = [];
+    let total = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith("cf_")) continue;
+      const kb = Math.round(((localStorage.getItem(key) || "").length * 2) / 1024);
+      total += kb;
+      rows.push({ key, kb });
+    }
+    rows.sort((a, b) => b.kb - a.kb);
+    return { rows, totalKb: total, limitKb: 5120 };
   },
   remove(key) {
     if (!key.startsWith("cf_")) throw new Error("Store sletter kun i cf_*-navnerommet: " + key);
@@ -504,6 +526,30 @@ const SCHEMAS = {
       budget_notes: { type: "string" },
     },
     required: ["core_message", "channel_strategy", "content_calendar", "ad_concepts", "email_sequence", "launch_plan", "experiment_queue", "budget_notes"],
+    additionalProperties: false,
+  },
+  techarch: {
+    type: "object",
+    properties: {
+      summary: { type: "string" },
+      choices: { type: "array", items: {
+        type: "object",
+        properties: {
+          area: { type: "string" },
+          choice: { type: "string" },
+          why: { type: "string" },
+          alternatives_considered: strArr,
+          monthly_cost_estimate: { type: "string" },
+          lock_in_risk: { type: "string", enum: ["lav", "middels", "høy"] },
+          migration_path: { type: "string" },
+        },
+        required: ["area", "choice", "why", "alternatives_considered", "monthly_cost_estimate", "lock_in_risk", "migration_path"], additionalProperties: false } },
+      not_needed_yet: strArr,
+      security_notes: strArr,
+      total_monthly_cost_estimate: { type: "string" },
+      risks: strArr,
+    },
+    required: ["summary", "choices", "not_needed_yet", "security_notes", "total_monthly_cost_estimate", "risks"],
     additionalProperties: false,
   },
   app: {
@@ -1220,6 +1266,13 @@ const Report = {
       L.push("\n| Scenario (24 mnd) | Kunder | MRR | Break-even | Kapitalbehov | LTV/CAC |\n|---|---|---|---|---|---|");
       for (const k of ["konservativ", "sannsynlig", "offensiv"]) L.push(`| ${k} | ${sc[k].customers24} | ${sc[k].mrr24} kr | ${sc[k].breakEvenMonth ? "mnd " + sc[k].breakEvenMonth : "ikke innen 24 mnd"} | ${sc[k].capitalNeed} kr | ${sc[k].ltvCac ?? "–"} |`);
     }
+    if (p.techarch) {
+      H("Fase 7 – Teknisk arkitektur");
+      L.push(p.techarch.summary + `\n\nEstimert månedskostnad totalt: ${p.techarch.total_monthly_cost_estimate}\n`);
+      L.push("| Område | Valg | Hvorfor | Alternativer vurdert | Kostnad/mnd | Binding | Migreringsvei |\n|---|---|---|---|---|---|---|");
+      for (const c of p.techarch.choices) L.push(`| ${c.area} | ${c.choice} | ${c.why} | ${c.alternatives_considered.join(", ")} | ${c.monthly_cost_estimate} | ${c.lock_in_risk} | ${c.migration_path} |`);
+      L.push("\n**Trengs ikke enda:**"); li(p.techarch.not_needed_yet);
+    }
     if (p.strategy) {
       H("Fase 4 – Strategi");
       L.push(`**${p.strategy.working_name}** (${p.strategy.category}) – ${p.strategy.positioning}\n\nLøfte: ${p.strategy.promise}\n\n**Skal ikke gjøre:**`); li(p.strategy.not_doing);
@@ -1293,6 +1346,29 @@ const Marketing = {
     });
     p.marketing = { ...json, at: new Date().toISOString() };
     Projects.logDecision(p, { phase: 11, role: "markedsføringsmodul", decision: `Kanalstrategi valgt: ${json.channel_strategy.map((c) => c.channel).join(", ")}`, rationale: json.core_message });
+    return Projects.save(p);
+  },
+};
+
+/* ================= TechArch (Fase 7: teknisk arkitektur) ================= */
+const TechArch = {
+  async run(p, onStatus) {
+    if (!p.intake || !p.evaluation) throw new Error("Kjør inntak og idévurdering først.");
+    if (onStatus) onStatus("Fase 7: velger teknisk arkitektur …");
+    const { json } = await LLM.call({
+      system: `Du er arkitekturmodulen i Company Factory (Fase 7). Velg teknologi ut fra produktets FAKTISKE behov – ikke komplisert infrastruktur fordi den ser imponerende ut. Dekk områdene som er relevante for dette produktet (typisk: frontend, backend/BaaS, database, autentisering, betaling/abonnement, e-post, analyse, logging/feilhåndtering, hosting, backup). For hvert valg: hva, hvorfor, hvilke alternativer som ble vurdert, månedskostnad-estimat, leverandørbinding (lav/middels/høy) og migreringsvei. List eksplisitt hva som IKKE trengs enda (not_needed_yet) – det er like viktig som valgene. Utgangspunkt for et selvbetjent abonnementsprodukt bygget av én person: statisk hosting + BaaS (f.eks. Supabase) + Stripe – avvik fra dette KUN hvis produktbehovet krever det, og begrunn avviket.`,
+      user: `${ownerContext()}PROSJEKT: ${p.name}\n\nINNTAK:\n${JSON.stringify(p.intake, null, 2)}${p.brief ? `\n\nMVP-BRIEF (funksjoner og datamodell):\n${JSON.stringify({ funksjoner: p.brief.mvp_features.map((f) => f.name), datamodell: p.brief.data_model_outline, bygges_ikke: p.brief.not_building }, null, 2)}` : ""}${p.bizmodel ? `\n\nSKALA: sannsynlig scenario ${p.bizmodel.computed.scenarios.sannsynlig.customers24} kunder etter 24 mnd` : ""}`,
+      schema: SCHEMAS.techarch,
+      maxTokens: 4096,
+    });
+    p.techarch = { ...json, at: new Date().toISOString() };
+    Projects.logDecision(p, {
+      phase: 7, role: "arkitekturmodul",
+      decision: `Teknisk arkitektur valgt (${json.choices.length} områder, est. ${json.total_monthly_cost_estimate})`,
+      options: json.choices.flatMap((c) => c.alternatives_considered).slice(0, 8),
+      rationale: json.summary,
+      risk: json.risks.join("; "),
+    });
     return Projects.save(p);
   },
 };
@@ -1881,4 +1957,4 @@ const SelfReview = {
 };
 
 /* Eksponer modulene (også for tester) */
-window.CF = { Store, LLM, Board, Pipeline, Projects, Intake, Evaluation, Experiments, Landing, BizModel, Finance, SiteGen, AppGen, Maturity, Metrics, Library, Marketing, Strategy, Legal, Ops, Report, Retro, Lessons, Planner, Brief, Demo, SelfReview, SCHEMAS, PHASES, OWNER_GATE_ACTIONS, FACTORY_ROLES, CRITERIA, MATURITY_CHECKLISTS, pool, makeZip, crc32 };
+window.CF = { Store, LLM, Board, Pipeline, Projects, Intake, Evaluation, Experiments, Landing, BizModel, Finance, SiteGen, TechArch, AppGen, Maturity, Metrics, Library, Marketing, Strategy, Legal, Ops, Report, Retro, Lessons, Planner, Brief, Demo, SelfReview, SCHEMAS, PHASES, OWNER_GATE_ACTIONS, FACTORY_ROLES, CRITERIA, MATURITY_CHECKLISTS, pool, makeZip, crc32 };
