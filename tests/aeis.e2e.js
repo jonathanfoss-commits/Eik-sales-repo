@@ -15,13 +15,16 @@ function check(name, cond, detail) {
   if (!cond) failures++;
 }
 
+/* system kan være streng eller blokk-array (prompt caching) */
+const sysOf = (b) => (typeof b.system === "string" ? b.system : (b.system || []).map((x) => x.text).join("\n"));
+
 const respond = (payload) => ({
   status: 200,
   contentType: "application/json",
   body: JSON.stringify({
     content: [{ type: "text", text: JSON.stringify(payload) }],
     stop_reason: "end_turn",
-    usage: { input_tokens: 100, output_tokens: 100 },
+    usage: { input_tokens: 100, output_tokens: 100, cache_creation_input_tokens: 40, cache_read_input_tokens: 60 },
   }),
 });
 
@@ -67,6 +70,7 @@ const SYNTHESIS = {
     { name: "Bear", probability: 0.3, outcome: "Nedleggelse", value_estimate: "-70 %" },
   ],
   expected_value_reasoning: "Positiv forventet verdi gitt milepælsstyring.",
+  outside_view: "Base rate: ca. 20 % av slike lanseringer når lønnsomhet innen 2 år.",
   recommendation: "Betinget JA: start med begrenset pilot.",
   certainty: "middels",
   probability_success: 0.62,
@@ -90,7 +94,7 @@ function mockRouter(overrides = {}) {
   const handler = (route) => {
     const body = JSON.parse(route.request().postData());
     bodies.push(body);
-    const sys = body.system || "";
+    const sys = sysOf(body);
     if (sys.includes("framing-modul")) { counts.framing++; return route.fulfill(respond(overrides.framing || FRAMING)); }
     if (sys.includes("Devil's Advocate i AEIS")) {
       counts.devil++;
@@ -152,12 +156,22 @@ async function freshPage(browser) {
     check("beslutningen lagret i hovedboken", ledger.length === 1 && ledger[0].synthesis.recommendation.includes("Betinget"), ledger.length);
     // Eierprofilen skal injiseres i framing, analyser, devil, pre-mortem og syntese
     const hasProfile = (marker) => bodies.some((b) =>
-      (b.system || "").includes(marker) && (b.messages?.[0]?.content || "").includes("XPROFILMARKØRX"));
+      sysOf(b).includes(marker) && sysOf(b).includes("XPROFILMARKØRX"));
     check("eierprofil injisert i framing", hasProfile("framing-modul"), null);
     check("eierprofil injisert i analysene", hasProfile("Executive Board"), null);
     check("eierprofil injisert hos Devil's Advocate", hasProfile("Devil's Advocate i AEIS"), null);
     check("eierprofil injisert i pre-mortem", hasProfile("pre-mortem-modul"), null);
     check("eierprofil injisert i CEO-syntesen", hasProfile("CEO i AEIS"), null);
+    // Smart routing: bredde på Sonnet, dybde på Opus
+    const modelOf = (marker) => (bodies.find((b) => sysOf(b).includes(marker)) || {}).model;
+    check("framing rutes til Sonnet", modelOf("framing-modul") === "claude-sonnet-5", modelOf("framing-modul"));
+    check("analysene rutes til Sonnet", modelOf("Executive Board") === "claude-sonnet-5", modelOf("Executive Board"));
+    check("devil rutes til Opus", modelOf("Devil's Advocate i AEIS") === "claude-opus-4-8", modelOf("Devil's Advocate i AEIS"));
+    check("syntesen rutes til Opus", modelOf("CEO i AEIS") === "claude-opus-4-8", modelOf("CEO i AEIS"));
+    check("grunnlov+profil markert for prompt caching", bodies.every((b) => Array.isArray(b.system) && b.system[0].cache_control?.type === "ephemeral"), null);
+    check("utenfra-perspektiv (base rate) vises", verdict.includes("Base rate"), null);
+    const cost = ledger[0].cost;
+    check("faktisk kostnad lagret på beslutningen", cost && cost.calls >= 6 && cost.usd > 0, cost);
     check("ingen JS-feil", errors.length === 0, errors);
     await page.close();
   }
@@ -175,7 +189,7 @@ async function freshPage(browser) {
     check("devil kjørt to ganger (veto + re-vurdering)", counts.devil === 2, counts);
     check("analysene kjørt i to runder (2 roller × 2)", counts.analysis === 4, counts);
     const round2HasObjections = bodies.some((b) =>
-      (b.system || "").includes("Executive Board") && (b.messages?.[0]?.content || "").includes("NEDLAGT VETO"));
+      sysOf(b).includes("Executive Board") && (b.messages?.[0]?.content || "").includes("NEDLAGT VETO"));
     check("runde 2 fikk innvendingene injisert", round2HasObjections, null);
     const veto = await page.evaluate(() => document.getElementById("verdict").textContent.includes("NEDLA VETO"));
     check("veto vises i domsslutningen", veto, null);
@@ -223,7 +237,7 @@ async function freshPage(browser) {
     await page.click("#runBtn");
     await page.waitForFunction(() => document.getElementById("pipeline").textContent.includes("FERDIG"), null, { timeout: 20000 });
     const framingWithLessons = bodies.some((b) =>
-      (b.system || "").includes("framing-modul") && (b.messages?.[0]?.content || "").includes("VARIGE LÆRDOMMER") && (b.messages?.[0]?.content || "").includes("kanaltest"));
+      sysOf(b).includes("framing-modul") && sysOf(b).includes("VARIGE LÆRDOMMER") && sysOf(b).includes("kanaltest"));
     check("lærdom injiseres i fremtidige framing-kall", framingWithLessons, null);
     check("ingen JS-feil", errors.length === 0, errors);
     await page.close();
@@ -279,6 +293,108 @@ async function freshPage(browser) {
     const growthActive = await page.evaluate(() => window.AEIS.Roles.byId("growth").active);
     check("ny rolle opprettet", after === before + 1, { before, after });
     check("rolle avviklet (ingen rolle er permanent)", growthActive === false, growthActive);
+    check("ingen JS-feil", errors.length === 0, errors);
+    await page.close();
+  }
+
+  /* ---------- Scenario 5: antakelses-sjekkliste + banner ---------- */
+  console.log("AEIS 5: falsifiserbare antakelser følges opp");
+  {
+    const { page, errors } = await freshPage(browser);
+    const { handler } = mockRouter();
+    await page.route("**/v1/messages", handler);
+    await page.fill("#decTitle", "Antakelsestest");
+    await page.click("#runBtn");
+    await page.waitForFunction(() => document.getElementById("pipeline").textContent.includes("FERDIG"), null, { timeout: 20000 });
+
+    const open1 = await page.evaluate(() => window.AEIS.Ledger.openAssumptions().length);
+    check("åpen antakelse registrert etter beslutning", open1 === 1, open1);
+    const bannerShows = await page.evaluate(() => document.getElementById("banner").textContent.includes("antakelse"));
+    check("banner varsler om åpen antakelse", bannerShows, null);
+
+    await page.click('nav button[data-tab="ledger"]');
+    await page.click(".ledger-item");
+    await page.click("[data-assum='0']");
+    await page.waitForTimeout(200);
+    const open2 = await page.evaluate(() => window.AEIS.Ledger.openAssumptions().length);
+    check("avhuking lukker antakelsen", open2 === 0, open2);
+    const persisted = await page.evaluate(() => {
+      const d = JSON.parse(localStorage.getItem("aeis_ledger"))[0];
+      return d.assumptionChecks && !!d.assumptionChecks[0];
+    });
+    check("avhuking persisteres i hovedboken", persisted, null);
+    check("ingen JS-feil", errors.length === 0, errors);
+    await page.close();
+  }
+
+  /* ---------- Scenario 6: radar-funn → styresak ---------- */
+  console.log("AEIS 6: radar-funn kan konverteres til styresak");
+  {
+    const { page, errors } = await freshPage(browser);
+    const RADAR_TEXT = "1. [MULIGHET] Dødsbo-markedet konsoliderer – nisje ledig\nBegrunnelse: to aktører la ned.\nNeste steg: valider med 5 samtaler.\n\n2. [RISIKO] Ny EU-forordning om AI-agenter\nKan kreve samtykkeflyt.\n";
+    await page.route("**/v1/messages", (route) => route.fulfill({
+      status: 200, contentType: "application/json",
+      body: JSON.stringify({ content: [{ type: "text", text: RADAR_TEXT }], stop_reason: "end_turn", usage: { input_tokens: 50, output_tokens: 50 } }),
+    }));
+    await page.click('nav button[data-tab="radar"]');
+    await page.click("#radarBtn");
+    await page.waitForFunction(() => document.querySelectorAll("[data-finding]").length > 0, null, { timeout: 15000 });
+    const nFindings = await page.evaluate(() => document.querySelectorAll("[data-finding]").length);
+    check("radar-funn parset til konverterbare kort", nFindings === 2, nFindings);
+    await page.click("[data-finding='0']");
+    const title = await page.evaluate(() => document.getElementById("decTitle").value);
+    const ctx = await page.evaluate(() => document.getElementById("decContext").value);
+    const onBoardroom = await page.evaluate(() => document.getElementById("tab-boardroom").classList.contains("on"));
+    check("funnet fyller ut styresaken", title.includes("Dødsbo-markedet") && ctx.includes("valider med 5 samtaler"), { title });
+    check("hopper til styrerommet", onBoardroom, null);
+    const lastStamp = await page.evaluate(() => localStorage.getItem("aeis_radar_last"));
+    check("radar-tidsstempel lagret", !!lastStamp, lastStamp);
+    check("ingen JS-feil", errors.length === 0, errors);
+    await page.close();
+  }
+
+  /* ---------- Scenario 7: kryptert sky-backup (mocket GitHub) ---------- */
+  console.log("AEIS 7: backup krypteres, lastes opp og kan gjenopprettes");
+  {
+    const { page, errors } = await freshPage(browser);
+    let uploaded = null;
+    await page.route("**/api.github.com/gists", (route) => {
+      uploaded = JSON.parse(route.request().postData());
+      route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({ id: "gist123" }) });
+    });
+    await page.route("**/api.github.com/gists/gist123", (route) => {
+      if (route.request().method() === "GET") {
+        return route.fulfill({ status: 200, contentType: "application/json",
+          body: JSON.stringify({ id: "gist123", files: { "aeis-backup.enc.json": { content: uploaded.files["aeis-backup.enc.json"].content, truncated: false } } }) });
+      }
+      route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ id: "gist123" }) });
+    });
+
+    await page.evaluate(async () => {
+      const B = window.AEIS.Backup;
+      B.token = "ghp_test";
+      B.pass = "korrekt hest batteri stift";
+      await B.backup();
+    });
+    check("gist opprettet som privat", uploaded && uploaded.public === false, uploaded && uploaded.public);
+    const cipher = uploaded && uploaded.files["aeis-backup.enc.json"].content;
+    check("opplastingen er chiffer (ikke klartekst)", !!cipher && !cipher.includes("XPROFILMARKØRX") && cipher.includes('"data"'), null);
+
+    const roundtrip = await page.evaluate(async () => {
+      localStorage.setItem("aeis_profile", "SLETTET");
+      localStorage.removeItem("aeis_ledger");
+      await window.AEIS.Backup.restore();
+      return { profile: window.AEIS.Store.profile, gist: window.AEIS.Backup.gistId };
+    });
+    check("gjenoppretting dekrypterer profilen", roundtrip.profile.includes("XPROFILMARKØRX"), roundtrip.profile.slice(0, 60));
+    check("gist-id husket for senere backuper", roundtrip.gist === "gist123", roundtrip.gist);
+
+    const wrongPass = await page.evaluate(async () => {
+      window.AEIS.Backup.pass = "feil frase";
+      try { await window.AEIS.Backup.restore(); return "ingen feil"; }
+      catch (e) { return e.message; }
+    });
+    check("feil passordfrase avvises", wrongPass.includes("passordfrase"), wrongPass);
     check("ingen JS-feil", errors.length === 0, errors);
     await page.close();
   }

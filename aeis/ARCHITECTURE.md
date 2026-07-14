@@ -1,6 +1,6 @@
 # AEIS – Adaptive Executive Intelligence System
 
-**Arkitekturdokument v1.0** · Modulært, skalerbart, selvutviklende.
+**Arkitekturdokument v1.1** · Modulært, skalerbart, selvutviklende.
 
 ## Formål
 
@@ -37,18 +37,28 @@ seg mot de samme kontraktene.
 │  SelfReview    – evaluerer egen arkitektur, foreslår endring │
 │  LLM           – ett kall-grensesnitt mot Claude API         │
 │  Store         – persistens (localStorage, eksport/import)   │
+│  Backup        – kryptert sky-backup (privat GitHub-gist)    │
 └──────────────────────────────────────────────────────────────┘
 ```
 
 ### LLM (infrastruktur)
-`LLM.call({system, user, schema?, tools?, maxTokens?}) → {json?|text, usage}`
-- Ett sted for all modellkontakt (claude-opus-4-8 som standard).
+`LLM.call({kind, system, user, schema?, tools?, maxTokens?}) → {json?|text, usage}`
+- Ett sted for all modellkontakt.
+- **Smart modellrouting** (`aeis_routing`, standard «smart»): `kind` bestemmer modell —
+  devil + synthesis kjøres på toppmodellen (claude-opus-4-8), øvrige kall på
+  claude-sonnet-5. «quality» = alt på toppmodellen.
+- **Prompt caching:** systemprompten er to blokker — (1) grunnlov + eierprofil +
+  lærdommer med `cache_control` (identisk på tvers av kall i én beslutning),
+  (2) modulspesifikk instruks. Kutter inputkostnaden vesentlig.
+- **Kostnadsmåler:** `LLM.resetMeter()` per beslutning; forbruk (tokens, USD)
+  lagres som `decision.cost`. `Engine.estimateCost()` gir anslag før kjøring.
 - `schema` gir garantert parsebar JSON via structured outputs.
 - Håndterer `pause_turn` (serversideverktøy som websøk) og retry ved overlast.
-- **Kontrakt:** ingen annen modul gjør nettverkskall.
+- `?debug` i URL-en logger alle kall (kind, modell, tokens) til konsoll + SYSTEM-fanen.
+- **Kontrakt:** ingen annen modul (utenom Backup mot GitHub) gjør nettverkskall.
 
 ### Roles (dynamisk organisasjon)
-Datamodell: `{id, title, mandate, active, temporary?, track: {n, brierSum}}`
+Datamodell: `{id, title, mandate, active, temporary?, track: {n, brierSum, history[{p, o, at}]}}`
 - 13 standardroller (CEO, CSO, CFO, COO, CTAIO, Growth, Product, Investment,
   Human Capital, Legal & Risk, Data & Intelligence, Innovation, Devil's Advocate)
   er kun et startpunkt.
@@ -76,8 +86,9 @@ Pipeline (speiler beslutningsmodellens 14 steg):
    `{failure_story, causes[], missed_signals[], mitigations[]}`
 5. **CEO-syntese** (får rollenes autoritetsvekter) → `{summary, disagreements[],
    scenarios[{name, probability, value_estimate}], expected_value_reasoning,
-   recommendation, certainty, probability_success, action_plan[],
-   assumptions_to_track[{claim, test, review_horizon}]}`
+   outside_view, recommendation, certainty, probability_success, action_plan[],
+   assumptions_to_track[{claim, test, review_horizon}]}` — `outside_view` er
+   obligatorisk base rate-vurdering (utenfra-perspektivet).
 - Beslutningshierarkiet (fakta > egne data > historikk > statistikk > logikk >
   ekspertvurdering > intuisjon) og usikkerhetsgradering (høy/middels/lav +
   sannsynlighet) er del av systemprompten i alle kall.
@@ -91,6 +102,9 @@ Pipeline (speiler beslutningsmodellens 14 steg):
   som lagres som *lærdom*.
 - **Læringssløyfe-kontrakt:** de siste lærdommene injiseres automatisk i alle
   fremtidige framing- og syntese-kall. Systemet blir smartere uten nye instrukser.
+- **Antakelses-oppfølging:** `openAssumptions()` returnerer alle falsifiserbare
+  antakelser fra CEO-synteser som verken er avhuket (`toggleAssumption`) eller
+  lukket av et registrert utfall. UI-et varsler om åpne antakelser i styrerommet.
 
 ### Scoring (fortjent autoritet)
 - Brier-score per rolle per utfall: `(p_rolle − utfall)²`.
@@ -98,11 +112,14 @@ Pipeline (speiler beslutningsmodellens 14 steg):
 - Vekten vises i UI og gis til CEO-syntesen. Autoritet fortjenes — aldri permanent.
 
 ### Radar (proaktivitet)
-`Radar.run()` — bruker websøk + eierprofil + hovedbok til å identifisere
+`Radar.run() / hoursSince() / latest() / parseFindings(text)`
+— bruker websøk + eierprofil + hovedbok til å identifisere
 muligheter, risikoer, markedsendringer, flaskehalser og forslag (investeringer,
 nye selskaper, produkter, automatisering) uten at eieren spør. Funn lagres i
-hovedboken. (Kjøres manuelt/ved åpning i v1; kontinuerlig planlagt kjøring krever
-en vertsprosess og er definert som utvidelsespunkt.)
+hovedboken. Funn merkes [MULIGHET]/[RISIKO]/[ENDRING] og kan konverteres til
+styresak med ett trykk. Tidsstempel (`aeis_radar_last`) driver «siden sist»-visning
+og valgfri auto-kjøring ved åpning når det er gått >24 t (`aeis_radar_auto`).
+(Kontinuerlig kjøring med lukket app krever en vertsprosess — fortsatt utvidelsespunkt.)
 
 ### SelfReview (selvforbedring)
 `SelfReview.run()` — leser dette dokumentet + gjeldende roller, vekter og
@@ -117,6 +134,14 @@ er «ferdig».
   `ownerContext()` i framing, alle rolleanalyser, Devil's Advocate, pre-mortem,
   CEO-syntesen og radaren. JARVIS-appen leser samme nøkkel som bakgrunnskunnskap.
   Profilen lagres av personvernhensyn kun i localStorage — aldri i repoet.
+
+### Backup (umistelig hukommelse)
+`Backup.backup() / restore() / maybeAuto()` — hele tilstanden (roller, hovedbok,
+profil) krypteres **på enheten** med AES-256-GCM (nøkkel avledet av eierens
+passordfrase via PBKDF2-SHA256, 210 000 iterasjoner) og lagres i en **privat
+GitHub-gist** (fint-innstilt token med kun gist-scope). GitHub ser aldri klartekst.
+Auto-backup (debounced) utløses av endringer i `aeis_roles`/`aeis_ledger`/profilen
+når den er aktivert. Feil passordfrase gir kontrollert feilmelding — aldri korrupt import.
 
 ## Utvidelsesregler
 

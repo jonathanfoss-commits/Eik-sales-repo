@@ -16,6 +16,7 @@ En **ekte native iOS-app** (SwiftUI) av Jarvis — med alt PWA-en har, pluss det
 | 🔌 MCP | Valgfri direktekobling til f.eks. Home Assistant MCP (token i nøkkelringen) |
 | 💾 Hukommelse + historikk | Overlever omstart, «husk at …» fungerer på tvers av økter |
 | 👤 Eierprofil | Lim inn styringsdokumentet ditt under Oppsett → Eierprofil — Jarvis bruker det som bakgrunnskunnskap i alle svar. Lagres kun lokalt på enheten |
+| 🏛 AEIS | Hele styrerommet innebygd (🏛-knappen) — beslutningspipeline, hovedbok, radar og backup i appen |
 
 ## Slik bygger og installerer du (krever Mac med Xcode)
 

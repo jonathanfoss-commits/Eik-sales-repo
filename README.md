@@ -131,6 +131,17 @@ Nås fra JARVIS-appen (🏛 AEIS-knappen) eller direkte på `…/aeis/`.
 - **Læringssløyfe**: hvert utfall utløser automatisk post-mortem; lærdommene injiseres i alle
   fremtidige beslutninger. Systemet blir smartere uten nye instrukser.
 - **Radar**: proaktiv skanning (websøk) etter muligheter, risiko og markedsendringer.
+  Funn kan konverteres til styresak med ett trykk; valgfri auto-kjøring ved åpning (>24 t).
+- **Utenfra-perspektiv**: CEO-syntesen må alltid angi base rate — hvor ofte lykkes slike
+  tiltak generelt — før den anbefaler.
+- **Antakelses-oppfølging**: falsifiserbare antakelser fra hver beslutning vises som
+  sjekkliste i hovedboken, og åpne antakelser varsles i styrerommet.
+- **Smart modellrouting**: bredde-analyser kjøres på Sonnet, Devil's Advocate og
+  CEO-syntese på Opus — 60–80 % billigere per beslutning. Grunnlov + eierprofil
+  prompt-caches. Estimert kostnad vises før kjøring, faktisk kostnad lagres per beslutning.
+- **Kryptert sky-backup**: hovedbok, roller, vekter og profil krypteres på enheten
+  (AES-256-GCM med din passordfrase) og lagres i en privat GitHub-gist — localStorage
+  er ikke lenger eneste kopi av systemets hukommelse. Valgfri auto-backup ved endringer.
 - **Selvforbedring**: systemet leser sin egen [arkitektur](aeis/ARCHITECTURE.md) og foreslår
   migreringsplaner. Grunnloven i hvert kall: *ha rett, ikke vær hyggelig* — aldri gjett, aldri
   bekreft en idé fordi eieren liker den, aldri uttrykk mer sikkerhet enn dataene tilsier.
