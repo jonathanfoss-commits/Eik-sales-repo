@@ -1258,6 +1258,26 @@ const Report = {
     if (p.retro) { H("Retro"); L.push("Lærdom: **" + p.retro.lesson + "**"); }
     return L.join("\n");
   },
+
+  /* Porteføljerapport på tvers av alle prosjekter – grunnlaget for ukentlig gjennomgang */
+  portfolio() {
+    const list = Projects.list();
+    const L = [`# Porteføljerapport – Company Factory`, `\nGenerert ${new Date().toISOString().slice(0, 10)} · ${list.length} prosjekt(er)`];
+    const totalMrr = list.reduce((s, p) => { const m = Metrics.latest(p); return s + (m ? m.mrr : 0); }, 0);
+    L.push(`Samlet MRR (siste registrerte måned per prosjekt): **${totalMrr} kr**\n`);
+    L.push("| Prosjekt | Status | Fase | Modenhet | Score | MRR | Neste beslutning |\n|---|---|---|---|---|---|---|");
+    for (const p of list) {
+      const m = Metrics.latest(p);
+      const next = p.validation ? p.validation.decision : p.evaluation ? p.evaluation.synthesis.decision : "kjør vurdering";
+      L.push(`| ${p.name}${p.test ? " (TEST)" : ""} | ${p.status} | ${p.phase} | ${p.maturity || "–"} | ${p.evaluation ? p.evaluation.totalScore + "/100" : "–"} | ${m ? m.mrr + " kr" : "–"} | ${next} |`);
+    }
+    const lessons = Lessons.list();
+    if (lessons.length) { L.push("\n## Varige lærdommer\n"); for (const l of lessons) L.push(`- [${l.project}] ${l.lesson}`); }
+    const lib = Library.list();
+    if (lib.length) { L.push("\n## Gjenbruksbibliotek\n"); for (const x of lib) L.push(`- ${x.title} (${x.type}, fra ${x.source})`); }
+    L.push("\n## Gjennomgangsspørsmål\n- Hvilke prosjekter bør avsluttes? (Allerede brukt tid er ikke et argument for å fortsette.)\n- Hvilke antakelser er fortsatt uvaliderte i aktive prosjekter?\n- Avviker faktiske tall fra prognosen – og hva betyr det for neste beslutning?");
+    return L.join("\n");
+  },
 };
 
 /* ================= Marketing (Fase 11: prioritert markedsføringsmotor) ================= */

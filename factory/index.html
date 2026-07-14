@@ -142,8 +142,9 @@
   <button class="primary" id="reviewBtn">🔄 Evaluer fabrikken</button>
   <div id="reviewOut"></div>
 
-  <h2>BACKUP</h2>
+  <h2>BACKUP OG RAPPORT</h2>
   <div class="row">
+    <button class="small" id="portfolioReportBtn">📄 Porteføljerapport (Markdown)</button>
     <button class="small" id="exportBtn">Eksporter alle prosjekter (JSON)</button>
     <button class="small" id="importBtn">Importer JSON</button>
   </div>
@@ -743,6 +744,12 @@ $("reviewBtn").onclick = async () => {
     $("reviewOut").innerHTML = `<div class="panel danger">Feil: ${esc(e.message)}</div>`;
   }
   $("reviewBtn").disabled = false;
+};
+$("portfolioReportBtn").onclick = () => {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([window.CF.Report.portfolio()], { type: "text/markdown" }));
+  a.download = "portefoljerapport.md";
+  a.click();
 };
 $("exportBtn").onclick = () => {
   const blob = new Blob([Store.exportAll()], { type: "application/json" });

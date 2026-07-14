@@ -700,6 +700,9 @@ print('OK', len(names))
 
     /* Prosjektrapport (deterministisk Markdown) */
     const report = await page.evaluate(() => window.CF.Report.generate(window.CF.Projects.list()[0]));
+    const pfReport = await page.evaluate(() => window.CF.Report.portfolio());
+    check("porteføljerapporten samler status, MRR, lærdommer og bibliotek",
+      pfReport.includes("Porteføljerapport") && pfReport.includes("2100 kr") && pfReport.includes("Varige lærdommer") && pfReport.includes("Gjenbruksbibliotek") && pfReport.includes("bør avsluttes"), pfReport.slice(0, 200));
     check("rapporten samler alle faser med logger og disclaimer",
       report.includes("# BoligPuls (TEST) – prosjektrapport") && report.includes("TESTPROSJEKT") &&
       report.includes("Fase 1 – Idévurdering") && report.includes("Fase 3 – Forretningsmodell") &&
