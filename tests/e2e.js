@@ -46,6 +46,7 @@ async function freshPage(browser) {
     localStorage.clear();
     localStorage.setItem("jarvis_api_key", "sk-ant-test");
     localStorage.setItem("jarvis_speak", "0"); // no TTS in tests
+    localStorage.setItem("aeis_profile", "Eier: Testeier. XPROFILMARKØRX."); // deles med AEIS
     sessionStorage.setItem("jarvis_booted", "1"); // skip boot animation if present
   });
   await page.reload({ waitUntil: "networkidle" });
@@ -60,13 +61,15 @@ async function freshPage(browser) {
   console.log("Scenario 1: plain text response");
   {
     const { page, errors } = await freshPage(browser);
-    await page.route("**/v1/messages", (route) =>
+    const bodies = [];
+    await page.route("**/v1/messages", (route) => {
+      bodies.push(JSON.parse(route.request().postData()));
       route.fulfill({
         status: 200,
         contentType: "text/event-stream",
         body: sse([msgStart(120), ...textBlock(0, "God kveld, sir. Alt vel."), ...msgEnd("end_turn", 12)]),
-      })
-    );
+      });
+    });
     await page.fill("#textInput", "hei");
     await page.click("#sendBtn");
     await page.waitForFunction(
@@ -80,6 +83,7 @@ async function freshPage(browser) {
     const hist = await page.evaluate(() => JSON.parse(localStorage.getItem("jarvis_history")));
     check("assistant text rendered", lastJarvis.includes("God kveld, sir"), lastJarvis);
     check("history has user+assistant", hist.length === 2 && hist[0].role === "user" && hist[1].role === "assistant", hist);
+    check("eierprofil injisert i systemprompten", bodies.length > 0 && bodies.every((b) => (b.system || "").includes("XPROFILMARKØRX")), null);
     check("no JS errors", errors.length === 0, errors);
     await page.close();
   }

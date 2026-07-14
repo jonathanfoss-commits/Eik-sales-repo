@@ -14,6 +14,7 @@ struct SettingsView: View {
     @AppStorage("jarvis_voice") private var voice = ""
     @AppStorage("jarvis_speak") private var speakAloud = true
     @AppStorage("jarvis_search") private var webSearch = true
+    @AppStorage("jarvis_owner_profile") private var ownerProfile = ""
 
     private var voices: [AVSpeechSynthesisVoice] {
         AVSpeechSynthesisVoice.speechVoices()
@@ -58,7 +59,7 @@ struct SettingsView: View {
                 }
 
                 Section("Integrasjon (MCP) – la Jarvis styre andre tjenester") {
-                    TextField("Navn (f.eks. zapier)", text: $mcpName)
+                    TextField("Navn (f.eks. homeassistant)", text: $mcpName)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                     TextField("https://…/mcp", text: $mcpURL)
@@ -68,7 +69,16 @@ struct SettingsView: View {
                         .keyboardType(.URL)
                     SecureField("Token (valgfri)", text: $mcpToken)
                         .textInputAutocapitalization(.never)
-                    Text("Lim inn en MCP-server-URL, f.eks. din personlige Zapier MCP-URL (mcp.zapier.com – styrer 8000+ apper) eller Home Assistant sin MCP-server. Kjøres på Anthropic sin serverside.")
+                    Text("Lim inn en MCP-server-URL, f.eks. Home Assistant sin MCP-server (styr lys og varme), GitHub (api.githubcopilot.com/mcp/ med PAT som token) eller Todoist. Kjøres på Anthropic sin serverside.")
+                        .font(.footnote).foregroundColor(.secondary)
+                }
+
+                Section("Eierprofil") {
+                    TextEditor(text: $ownerProfile)
+                        .font(.system(.footnote, design: .monospaced))
+                        .frame(minHeight: 140)
+                        .autocorrectionDisabled()
+                    Text("Lim inn eierprofil-dokumentet ditt (mål, portefølje, mandat, grenser). Jarvis bruker det som bakgrunnskunnskap i alle svar. Lagres kun lokalt på denne enheten.")
                         .font(.footnote).foregroundColor(.secondary)
                 }
 

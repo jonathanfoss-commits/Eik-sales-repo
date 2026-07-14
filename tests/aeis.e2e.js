@@ -115,7 +115,11 @@ async function freshPage(browser) {
   const errors = [];
   page.on("pageerror", (e) => errors.push("pageerror: " + e.message));
   await page.goto(BASE, { waitUntil: "networkidle" });
-  await page.evaluate(() => { localStorage.clear(); localStorage.setItem("jarvis_api_key", "sk-ant-test"); });
+  await page.evaluate(() => {
+    localStorage.clear();
+    localStorage.setItem("jarvis_api_key", "sk-ant-test");
+    localStorage.setItem("aeis_profile", "Eier: Testeier. Mål: passiv inntekt. Grense: XPROFILMARKØRX.");
+  });
   await page.reload({ waitUntil: "networkidle" });
   return { page, errors };
 }
@@ -127,7 +131,7 @@ async function freshPage(browser) {
   console.log("AEIS 1: full beslutningspipeline");
   {
     const { page, errors } = await freshPage(browser);
-    const { handler, counts } = mockRouter();
+    const { handler, counts, bodies } = mockRouter();
     await page.route("**/v1/messages", handler);
     await page.fill("#decTitle", "Starte selskap X?");
     await page.fill("#decContext", "Har 2 MNOK tilgjengelig.");
@@ -146,6 +150,14 @@ async function freshPage(browser) {
     check("pre-mortem vises", verdict.includes("katastrofe") || verdict.includes("kapitalen brent"), null);
     const ledger = await page.evaluate(() => JSON.parse(localStorage.getItem("aeis_ledger")));
     check("beslutningen lagret i hovedboken", ledger.length === 1 && ledger[0].synthesis.recommendation.includes("Betinget"), ledger.length);
+    // Eierprofilen skal injiseres i framing, analyser, devil, pre-mortem og syntese
+    const hasProfile = (marker) => bodies.some((b) =>
+      (b.system || "").includes(marker) && (b.messages?.[0]?.content || "").includes("XPROFILMARKØRX"));
+    check("eierprofil injisert i framing", hasProfile("framing-modul"), null);
+    check("eierprofil injisert i analysene", hasProfile("Executive Board"), null);
+    check("eierprofil injisert hos Devil's Advocate", hasProfile("Devil's Advocate i AEIS"), null);
+    check("eierprofil injisert i pre-mortem", hasProfile("pre-mortem-modul"), null);
+    check("eierprofil injisert i CEO-syntesen", hasProfile("CEO i AEIS"), null);
     check("ingen JS-feil", errors.length === 0, errors);
     await page.close();
   }

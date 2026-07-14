@@ -135,6 +135,12 @@ Nås fra JARVIS-appen (🏛 AEIS-knappen) eller direkte på `…/aeis/`.
   migreringsplaner. Grunnloven i hvert kall: *ha rett, ikke vær hyggelig* — aldri gjett, aldri
   bekreft en idé fordi eieren liker den, aldri uttrykk mer sikkerhet enn dataene tilsier.
 
+**Eierprofilen din** limes inn under **AEIS → SYSTEM → Eierprofil** (hvem du er, hva du eier,
+mål, risikotoleranse, kapital, mandat og grenser). Den lagres **kun lokalt på enheten** — aldri
+i repoet eller på noen server — og injiseres automatisk i alle AEIS-vurderinger. JARVIS på samme
+enhet leser den samme profilen som stille bakgrunnskunnskap. I iPhone-appen limes profilen inn
+under Oppsett → Eierprofil.
+
 Arkitektur, modulkontrakter og utvidelsesregler: [`aeis/ARCHITECTURE.md`](aeis/ARCHITECTURE.md).
 Testet i `tests/aeis.e2e.js` (mocket API): hele pipelinen, veto-runden, kalibrering av vekter
 og læringssløyfen.

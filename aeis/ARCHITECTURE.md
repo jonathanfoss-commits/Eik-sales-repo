@@ -113,6 +113,10 @@ er «ferdig».
 ### Store (persistens)
 - Nøkler: `aeis_roles`, `aeis_ledger`, `aeis_profile`, `jarvis_api_key` (deles
   med JARVIS-appen). Eksport/import som JSON-fil for backup og flytting.
+- **Eierprofilen** (`aeis_profile`) er styringsgrunnlaget: den injiseres via
+  `ownerContext()` i framing, alle rolleanalyser, Devil's Advocate, pre-mortem,
+  CEO-syntesen og radaren. JARVIS-appen leser samme nøkkel som bakgrunnskunnskap.
+  Profilen lagres av personvernhensyn kun i localStorage — aldri i repoet.
 
 ## Utvidelsesregler
 
