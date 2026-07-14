@@ -92,5 +92,21 @@ const bridge = {
   },
 };
 
-window.SAGA = { keys, activity, bus, bridge, VERSION: "1.0" };
+/* ---------- forbedringsloop: modulene logger feil/friksjon strukturert ---------- */
+const improve = {
+  log(module, note, context) {
+    const list = read("saga_improvements", []);
+    /* dedup på module+note så gjentatte feil ikke fyller loggen */
+    if (list.some((x) => x.module === module && x.note === note)) return;
+    list.unshift({ id: id("im"), at: new Date().toISOString(), module, note, context: context || null, status: "åpen" });
+    write("saga_improvements", list.slice(0, 100));
+  },
+  list() { return read("saga_improvements", []); },
+  /* Eksport i improvements.md-format for `saga improve` */
+  exportMd() {
+    return this.list().map((x) => `## [effekt: middels] [innsats: ukjent] ${x.note}\n- Kilde: ${x.module} i appen, ${x.at}\n- Kontekst: ${x.context || "–"}\n- Status: ${x.status}\n`).join("\n");
+  },
+};
+
+window.SAGA = { keys, activity, bus, bridge, improve, VERSION: "1.0" };
 })();

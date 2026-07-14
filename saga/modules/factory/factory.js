@@ -140,6 +140,8 @@ const LLM = {
       }
       let detail = "";
       try { detail = (await res.json()).error?.message || ""; } catch (_) {}
+      /* Friksjon logges strukturert til forbedringsloopen (saga improve) */
+      try { if (window.SAGA) window.SAGA.improve.log("factory", `Claude API-feil ${res.status} i modul ${(LLM.context && LLM.context.label) || "ukjent"}`, detail.slice(0, 120)); } catch (_) {}
       throw new Error(`API-feil ${res.status}. ${detail}`);
     }
     return res.json();
