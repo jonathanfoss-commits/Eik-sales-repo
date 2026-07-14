@@ -744,6 +744,79 @@ print('OK', len(names))
     await page.close();
   }
 
+  /* ---------- Scenario 8: det genererte app-skallet KJØRER – full brukerflyt i demo-modus ---------- */
+  console.log("FACTORY 8: generert app kjører → signup → onboarding → gating → abonnement → utlogging");
+  {
+    const fs = require("fs");
+    const path = require("path");
+    const { spawn } = require("child_process");
+    const scratch = "/tmp/claude-0/-home-user-Eik-sales-repo/7aa88781-c614-566c-b92e-efc1c1f79f4f/scratchpad/apptest";
+    fs.mkdirSync(path.join(scratch, "app"), { recursive: true });
+
+    /* Render app-pakken deterministisk (uten prosjektstate) og skriv til disk */
+    const { page: factoryPage } = await freshPage(browser);
+    const files = await factoryPage.evaluate((c) => window.CF.AppGen.renderApp(c, {}), APP);
+    await factoryPage.close();
+    for (const [name, content] of Object.entries(files)) {
+      const target = path.join(scratch, name);
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.writeFileSync(target, content);
+    }
+    const appServer = spawn("python3", ["-m", "http.server", "8131"], { cwd: scratch, stdio: "ignore" });
+    await new Promise((r) => setTimeout(r, 800));
+
+    const page = await browser.newPage({ viewport: { width: 480, height: 900 } });
+    const errors = [];
+    page.on("pageerror", (e) => errors.push("pageerror: " + e.message));
+    try {
+      await page.goto("http://localhost:8131/app/index.html", { waitUntil: "networkidle" });
+      await page.evaluate(() => localStorage.clear());
+      await page.goto("http://localhost:8131/app/index.html#/signup", { waitUntil: "networkidle" });
+
+      const banner = await page.evaluate(() => !document.getElementById("demoBanner").hidden);
+      check("demo-banner vises uten konfigurasjon", banner, null);
+
+      /* Registrering → onboarding */
+      await page.fill("#em", "test@example.com");
+      await page.fill("#pw", "hemmelig123");
+      await page.click("#go");
+      await page.waitForFunction(() => location.hash === "#/onboarding" && document.getElementById("ob"), null, { timeout: 5000 });
+      check("registrering fører til onboarding", true, null);
+      for (let i = 0; i < 2; i++) {
+        await page.fill("#ob", "Testsvar " + i);
+        await page.click("#next");
+        await page.waitForTimeout(150);
+      }
+      await page.waitForFunction(() => location.hash === "#/dashboard", null, { timeout: 5000 });
+
+      /* Dashboard er sperret uten abonnement */
+      const gated = await page.evaluate(() => document.getElementById("view").textContent);
+      check("dashboard viser oppgraderingsmelding og moduler med tomtilstander",
+        gated.includes("abonner") && gated.includes("Vedlikeholdsplanen") && gated.includes("Fullfør onboarding"), gated.slice(0, 120));
+
+      /* Demo-abonnement åpner dashbordet */
+      await page.click('a[href="#/abonnement"]');
+      await page.waitForFunction(() => document.getElementById("view").textContent.includes("Status"), null, { timeout: 5000 });
+      const subView = await page.evaluate(() => document.getElementById("view").textContent);
+      check("abonnementssiden viser status og eier-port-melding for Payment Link",
+        subView.includes("none") && subView.includes("eier-port"), subView.slice(0, 150));
+      await page.click("[data-demo-plan]");
+      await page.waitForFunction(() => document.getElementById("view").textContent.includes("active"), null, { timeout: 5000 });
+      await page.click('a[href="#/dashboard"]');
+      await page.waitForFunction(() => !document.getElementById("view").textContent.includes("Se planer"), null, { timeout: 5000 });
+      check("aktivt demo-abonnement fjerner sperren", true, null);
+
+      /* Utlogging */
+      await page.click("#logoutLink");
+      await page.waitForFunction(() => location.hash === "#/login", null, { timeout: 5000 });
+      check("utlogging fører tilbake til innlogging", true, null);
+      check("ingen JS-feil i den genererte appen", errors.length === 0, errors);
+    } finally {
+      appServer.kill();
+      await page.close();
+    }
+  }
+
   await browser.close();
   console.log(failures === 0 ? "\nALL FACTORY TESTS PASSED" : `\n${failures} FAILURES`);
   process.exit(failures === 0 ? 0 : 1);
