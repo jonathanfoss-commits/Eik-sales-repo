@@ -233,10 +233,15 @@ function renderSyncStatus(msg) {
     : "Ikke konfigurert – se DIN TUR over for klikk-for-klikk-oppsett.");
 }
 $("ghSaveBtn").onclick = () => {
-  window.CF.Gh.pat = $("ghPat").value.trim();
+  const pat = $("ghPat").value.trim();
+  window.CF.Gh.pat = pat;
   window.CF.Sync.saveConfig({ repo: $("syncRepo").value.trim() });
   window.CF.Publish.saveConfig({ repo: $("pubRepo").value.trim() });
-  renderSyncStatus("Lagret ✓");
+  /* Fang kopieringsfeil ved lagring i stedet for ved første synk (401) */
+  const patLooksOk = !pat || /^(github_pat_|ghp_)/.test(pat);
+  renderSyncStatus(patLooksOk
+    ? "Lagret ✓"
+    : "Lagret – men PAT-en ser uvanlig ut: GitHub-tokens starter med «github_pat_» (fine-grained) eller «ghp_». Kopier på nytt med kopi-ikonet hos GitHub.");
   renderOwnerQueueFull();
   updateNavBadges();
 };
