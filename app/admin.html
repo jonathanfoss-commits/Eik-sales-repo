@@ -202,9 +202,7 @@
   <div class="kort s8">
     <h2>Innspill fra appen — <b>live</b></h2>
     <div id="innspill-info" style="font-size:.85rem;color:var(--dis)">
-      Koble til med et Netlify-token i <b style="color:var(--lys)">Oppsett</b> for å se
-      innspillene her i sanntid (app.netlify.com → User settings → Applications →
-      New access token — lagres kun i denne nettleseren).
+      Henter innspill …
     </div>
     <ul class="liste" id="innspill-liste" style="display:none"></ul>
     <div id="panel-svar" style="display:none;margin-top:16px">
@@ -290,11 +288,11 @@
       <input id="url-test" placeholder="https://op-bygg-laerling-app-test.netlify.app"></div>
     <div class="felt"><label for="pilot-start">Pilotstart</label>
       <input id="pilot-start" type="date"></div>
-    <div class="felt"><label for="netlify-token">Netlify-token (valgfritt — gir live innspill)</label>
+    <div class="felt"><label for="netlify-token">Netlify-token (reserve — trengs normalt ikke)</label>
       <input id="netlify-token" type="password" placeholder="nfp_…" autocomplete="off"></div>
-    <p style="font-size:.78rem;color:var(--dis);margin:2px 0 10px">URL-er og pilotstart følger
-    med appen og fylles inn av seg selv. Tokenet er det eneste som må limes inn på nytt i en
-    ny nettleser — det er en hemmelighet og lagres kun lokalt hos deg.</p>
+    <p style="font-size:.78rem;color:var(--dis);margin:2px 0 10px">Alt fylles inn av seg selv.
+    Innspill-feeden bruker sitens egen serverfunksjon (miljøvariabelen PILOTLOGG_TOKEN i
+    Netlify, settes én gang) — token-feltet er kun reserve hvis funksjonen ikke er satt opp.</p>
     <button class="knapp" id="lagre-oppsett">Lagre og oppdater</button>
   </div>
 
@@ -481,17 +479,21 @@ Statusdata hentes direkte fra app-kanalene</footer>
       }).catch(function(){});
   }
 
-  /* ── innspill live fra pilotloggen (Netlify API, token kun i denne nettleseren) ── */
+  /* ── innspill live fra pilotloggen ──
+     Førstevalg: sitens egen serverfunksjon (tokenet bor i Netlify som miljøvariabel,
+     PILOTLOGG_TOKEN — null oppsett i nettleseren). Reserve: token fra Oppsett. */
   var API = "https://api.netlify.com/api/v1";
   function apiKall(sti){
     return fetch(API + sti, { headers: { Authorization: "Bearer " + innst.token } })
       .then(function(r){ if(!r.ok) throw new Error("API " + r.status); return r.json(); });
   }
-  function hentInnspill(){
-    var info = document.getElementById("innspill-info"),
-        liste = document.getElementById("innspill-liste"),
-        handlinger = document.getElementById("innspill-handlinger");
-    if(!innst.token || !innst.stabil) return;
+  function hentViaFunksjon(){
+    return fetch("/.netlify/functions/innspill?kode=" + encodeURIComponent(KODE),
+        { cache: "no-store" })
+      .then(function(r){ if(!r.ok) throw new Error("funksjon " + r.status); return r.json(); });
+  }
+  function hentViaToken(){
+    if(!innst.token || !innst.stabil) return Promise.reject(new Error("UOPPSATT"));
     /* idéer lander i skjemaet på den siten appen ble åpnet fra —
        derfor leser vi BEGGE kanalene (stabil + test) og slår dem sammen */
     var verter = [];
@@ -500,7 +502,7 @@ Statusdata hentes direkte fra app-kanalene</footer>
       var v = u.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
       if(verter.indexOf(v) < 0) verter.push(v);
     });
-    Promise.all(verter.map(function(vert){
+    return Promise.all(verter.map(function(vert){
       return apiKall("/sites/" + vert + "/forms")
         .then(function(skjemaer){
           var f = skjemaer.filter(function(x){ return x.name === "pilotlogg"; })[0];
@@ -515,12 +517,19 @@ Statusdata hentes direkte fra app-kanalene</footer>
     }))
       .then(function(resultater){
         if(resultater.every(function(r){ return r === null; }))
-          throw new Error("fikk ikke svar fra Netlify");
+          throw new Error("fikk ikke svar fra Netlify — sjekk tokenet i Oppsett");
         var subs = [];
         resultater.forEach(function(r){ if(r) subs = subs.concat(r); });
         subs.sort(function(a, b){ return a.created_at < b.created_at ? 1 : -1; });
         return subs;
-      })
+      });
+  }
+  function hentInnspill(){
+    var info = document.getElementById("innspill-info"),
+        liste = document.getElementById("innspill-liste"),
+        handlinger = document.getElementById("innspill-handlinger");
+    hentViaFunksjon()
+      .catch(function(){ return hentViaToken(); })
       .then(function(subs){
         innst.handtert = innst.handtert || {};
         var innspill = subs.filter(function(s){ return (s.data || {}).hendelse === "innspill"; });
@@ -607,8 +616,16 @@ Statusdata hentes direkte fra app-kanalene</footer>
       })
       .catch(function(e){
         info.style.display = "block";
-        info.innerHTML = "Fikk ikke hentet innspill: " + String(e.message).replace(/</g, "&lt;") +
-          " — sjekk tokenet i Oppsett.";
+        if(String(e.message) === "UOPPSATT"){
+          info.innerHTML = "Innspill-feeden er ikke koblet til ennå. <b style=\"color:var(--lys)\">" +
+            "Engangsoppsett (gjøres av Jonathan i Netlify):</b> legg miljøvariabelen " +
+            "<b style=\"color:var(--lys)\">PILOTLOGG_TOKEN</b> inn på siten " +
+            "(Site configuration → Environment variables) og kjør «Trigger deploy» — " +
+            "så virker feeden i alle nettlesere uten mer oppsett. " +
+            "Reserve: lim inn et Netlify-token i Oppsett under.";
+        } else {
+          info.innerHTML = "Fikk ikke hentet innspill: " + String(e.message).replace(/</g, "&lt;");
+        }
       });
   }
 

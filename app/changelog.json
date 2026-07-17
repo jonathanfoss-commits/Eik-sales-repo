@@ -1,6 +1,11 @@
 [
   {
     "dato": "2026-07-17",
+    "tekst": "Kommandosentralen kobler seg nå til innspillene helt av seg selv — ingen token å lime inn i nettleseren lenger, på ingen maskin.",
+    "av": "Jonathan"
+  },
+  {
+    "dato": "2026-07-17",
     "tekst": "Kommandosentralen fanger nå opp idéer fra både testappen og hovedappen — uansett hvor de sendes fra, med merke som viser kanalen.",
     "av": "Jonathan"
   },
