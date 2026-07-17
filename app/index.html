@@ -218,6 +218,11 @@
   .laas:last-child{border-bottom:none}
   .laas .chip{margin-left:auto;font-family:var(--mono);font-size:.56rem;letter-spacing:.1em;
      border:1px solid var(--strek);border-radius:99px;padding:4px 10px;white-space:nowrap}
+  .hurtig{background:var(--flate);border:1px solid var(--strek);border-radius:14px;
+     padding:13px 14px;text-align:left;display:flex;flex-direction:column;gap:3px}
+  .hurtig b{font-size:.92rem}
+  .hurtig span{font-size:.72rem;color:var(--dis);line-height:1.4}
+  .hurtig:active{transform:scale(.98)}
   .banner{display:flex;align-items:center;gap:12px;background:
      linear-gradient(135deg,rgba(57,226,155,.12),rgba(47,196,217,.07));
      border:1px solid rgba(57,226,155,.4);border-radius:16px;padding:14px 16px;
@@ -297,11 +302,24 @@
       <div class="pil-h">›</div>
     </button>
 
-    <button class="banner" id="knapp-varemottak" style="background:var(--flate);border-color:var(--strek)">
-      <div class="t"><b>📦 Varemottak</b>
-      <span>Leveranse på plassen? Kontroller og meld avvik — før du signerer</span></div>
-      <div class="pil-h">›</div>
-    </button>
+    <div id="nytt-kort" style="display:none;background:linear-gradient(135deg,rgba(57,226,155,.12),rgba(47,196,217,.06));
+      border:1px solid rgba(57,226,155,.4);border-radius:16px;padding:14px 16px;margin-bottom:12px">
+      <div style="display:flex;align-items:baseline;gap:10px">
+        <div style="flex:1">
+          <div style="font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;color:var(--aurora-a)">✨ NYTT SIDEN SIST</div>
+          <div id="nytt-tekst" style="font-size:.88rem;margin-top:4px"></div>
+          <div id="nytt-av" style="font-size:.74rem;color:var(--dis);margin-top:2px"></div>
+        </div>
+        <button id="nytt-lukk" aria-label="Lukk" style="color:var(--dis);font-size:1.2rem;padding:2px 8px">×</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <button class="hurtig" id="knapp-varemottak"><b>📦 Varemottak</b>
+        <span>Kontroller leveransen — meld avvik før du signerer</span></button>
+      <button class="hurtig" id="knapp-ide"><b>💡 Idé?</b>
+        <span>Si det med én setning — teamet bygger i natt</span></button>
+    </div>
     <div class="sek-tittel">Til godkjenning · <b id="antall">4</b></div>
     <div id="utkast-liste">
 
@@ -595,6 +613,26 @@ Mvh Ole Fabian, OP Bygg AS</div>
   </div>
 </div>
 
+<!-- idé-ark -->
+<div id="ide">
+  <div class="ark-bak" id="ide-bak"></div>
+  <div class="ark" role="dialog" aria-label="Send inn idé">
+    <button class="v-lukk" id="ide-lukk" aria-label="Lukk"
+      style="position:absolute;top:8px;right:12px">×</button>
+    <div class="hank"></div>
+    <h3 style="font-size:1.05rem;font-weight:720;margin-bottom:4px">💡 Idé eller forbedring</h3>
+    <p style="font-size:.82rem;color:var(--dis);margin-bottom:12px">Alt teller — stort eller
+    smått. <b style="color:var(--lys)">Ekspertteamet vurderer alle innspill hver natt</b>,
+    og du ser resultatet i appen.</p>
+    <textarea class="vm-felt" id="ide-tekst" style="min-height:96px;resize:vertical"
+      placeholder="Skriv her — eller trykk mikrofonen på tastaturet og bare snakk"></textarea>
+    <button class="knapp" id="ide-send" style="width:100%">Send til teamet</button>
+    <div id="ide-takk" style="display:none;text-align:center;color:var(--dis);
+      font-size:.9rem;padding:14px 0 4px"><b style="color:var(--lys)">Takk!</b>
+      Idéen behandles av ekspertteamet i natt — følg med på «Nytt siden sist».</div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <div class="velkomst" id="velkomst" role="dialog" aria-label="Velkommen">
@@ -703,7 +741,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
   ];
 
   /* ── versjon og kanal (test vs. stabil) ── */
-  var VERSJON = "0.7.3";
+  var VERSJON = "0.8.0";
   var erTest = /(^|[.-])test([.-]|$)/.test(location.hostname);
   document.getElementById("versjon-info").textContent =
     "LÆRLING v" + VERSJON + " · " + (erTest ? "TESTKANAL" : "STABIL") + " · BYGGET FOR OP BYGG";
@@ -1028,6 +1066,46 @@ Mvh Ole Fabian, OP Bygg AS</div>
       k.classList.toggle("auto", !auto);
     });
   });
+
+  /* idé-arket: laveste mulige terskel for innspill */
+  var ide = document.getElementById("ide");
+  document.getElementById("knapp-ide").addEventListener("click", function(){
+    ide.classList.add("apen");
+    document.getElementById("ide-takk").style.display = "none";
+    document.getElementById("ide-send").style.display = "block";
+    document.getElementById("ide-tekst").value = "";
+    loggHendelse("idé-åpnet");
+  });
+  function lukkIde(){ ide.classList.remove("apen"); }
+  document.getElementById("ide-bak").addEventListener("click", lukkIde);
+  document.getElementById("ide-lukk").addEventListener("click", lukkIde);
+  document.getElementById("ide-send").addEventListener("click", function(){
+    var tekst = document.getElementById("ide-tekst").value.trim();
+    if(!tekst){ siFra("Skriv eller diktér idéen først"); return; }
+    loggHendelse("innspill", "Idé (hurtig) · " + tekst);
+    this.style.display = "none";
+    document.getElementById("ide-takk").style.display = "block";
+    setTimeout(lukkIde, 2200);
+  });
+
+  /* «Nytt siden sist»: viser nattens forbedringer — lukker loopen for innmelderne */
+  if(location.protocol !== "file:"){
+    fetch("changelog.json?t=" + Date.now(), { cache: "no-store" })
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(logg){
+        if(!logg.length) return;
+        var siste = logg[0];
+        if(lager.settNytt === siste.dato + siste.tekst) return;
+        document.getElementById("nytt-tekst").textContent = siste.tekst;
+        document.getElementById("nytt-av").textContent =
+          siste.av ? "Foreslått av " + siste.av : "";
+        document.getElementById("nytt-kort").style.display = "block";
+        document.getElementById("nytt-lukk").addEventListener("click", function(){
+          lager.settNytt = siste.dato + siste.tekst; lagre();
+          document.getElementById("nytt-kort").style.display = "none";
+        });
+      }).catch(function(){});
+  }
 
   /* varemottak-arket: lager ferdig avviksmelding lokalt — fungerer offline */
   var varemottak = document.getElementById("varemottak");

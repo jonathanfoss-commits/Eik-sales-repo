@@ -43,7 +43,9 @@ Opptre som et senior produktteam og innta riktig rolle etter oppgaven:
   hovedbranchen. Hver leveranse bumper versjonen på ALLE tre stedene samtidig (de må
   aldri drifte): `VERSJON`-konstanten i `app/index.html`, verdien i `app/versjon.json`
   (kommandosentralen leser denne), og cache-navnet i `app/sw.js` (ellers serveres gamle
-  filer fra cache). Oppsummer endringen i `innspill/til-godkjenning.md`.
+  filer fra cache). Legg nattens endring øverst i `app/changelog.json` (én jordnær setning,
+  med innmelders fornavn i «av»-feltet når det finnes) og oppsummer i
+  `innspill/til-godkjenning.md`.
 - Endringer går til STABIL først når både Jonathan og Ole Fabian har trykket «Godkjenn» i
   TEST-appen (logges i pilotloggen) og Jonathan har merget og publisert.
   Full flyt: `samarbeid/godkjenning.md`.

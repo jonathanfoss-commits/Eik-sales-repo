@@ -19,9 +19,8 @@ med navn og versjonsnummer. Versjonsnummeret vises nederst på Verktøy-fanen i 
 1. **Kveldsteamet** (hver kveld kl. 21) implementerer fra inbox/backlog på branchen
    `kveldsteam-forslag`, bumper versjonsnummeret i appen, oppsummerer i
    `innspill/til-godkjenning.md`, og pusher. **Rører aldri hovedbranchen.**
-2. **Jonathan** (morgen, 5 min): publiserer forslaget til TEST-siten
-   (ZIP fra `kveldsteam-forslag`-branchen — eller automatisk: Netlify «branch deploy»
-   når repoet er Git-koblet).
+2. **Automatisk:** test-siten deployes i det panelet pusher (krever Git-kobling —
+   se `netlify-github.md`; frem til den er gjort: Jonathan publiserer ZIP manuelt).
 3. **Begge godkjenner:** Jonathan og Ole Fabian åpner TEST-URL-en, prøver endringen,
    trykker «Godkjenn». To GODKJENT-stemmer i pilotloggen = klart.
 4. **Jonathan publiserer til STABIL** (= hans godkjenning i praksis): merger

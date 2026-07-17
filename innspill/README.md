@@ -9,9 +9,11 @@ Jonathan på e-post.
 1. **Ole Fabian** sender innspill fra appen (👍/🐞/💡 + hvilket verktøy + fritekst).
 2. **Jonathan** limer nye innspill inn i [`inbox.md`](inbox.md) (kopier fra Netlify-e-posten —
    30 sekunder) og pusher. *(Når Netlify kobles til repoet kan dette automatiseres.)*
-3. **Kveldsteamet** (planlagt Claude Code-økt hver kveld kl. 21) leser inbox.md, vurderer,
-   implementerer det viktigste, tester, flytter innspillet til [`behandlet.md`](behandlet.md)
-   og pusher.
+3. **Lunsjtriagen** (kl. 12) prioriterer nye innspill i `prioritering.md` og flagger
+   hastesaker. **Kveldsteamet** (ekspertpanel på 12 agenter, hver kveld kl. 21) vurderer
+   kandidatene parallelt med fageksperter, bygger vinneren, tester, oppdaterer
+   `app/changelog.json` («Nytt siden sist» i appen), flytter innspillet til
+   [`behandlet.md`](behandlet.md) og pusher til forslag-branchen.
 4. **Jonathan** ser over om morgenen og publiserer ny ZIP til Netlify.
    *(Kobles Netlify til repoet, skjer også publiseringen automatisk.)*
 
