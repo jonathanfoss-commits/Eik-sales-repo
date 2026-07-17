@@ -223,6 +223,21 @@
   .hurtig b{font-size:.92rem}
   .hurtig span{font-size:.72rem;color:var(--dis);line-height:1.4}
   .hurtig:active{transform:scale(.98)}
+  /* timer-arket */
+  .t-rad{width:100%;background:var(--flate);border:1px solid var(--strek);border-radius:14px;
+     padding:13px 14px;text-align:left;display:flex;align-items:baseline;gap:10px;
+     margin-bottom:14px}
+  .t-rad b{font-size:.92rem}
+  .t-rad span{margin-left:auto;font-size:.76rem;color:var(--dis);text-align:right}
+  .t-rad:active{transform:scale(.98)}
+  .t-chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 14px}
+  .t-chip{border:1px solid var(--strek);border-radius:12px;padding:12px 16px;
+     font-size:.95rem;font-weight:650;color:var(--lys);background:rgba(0,0,0,.2)}
+  .t-chip:active{transform:scale(.95);border-color:var(--aurora-a)}
+  .t-chip.pluss{color:var(--aurora-a)}
+  .t-verdi{font-size:2.2rem;font-weight:800;letter-spacing:-.02em;text-align:center;
+     font-variant-numeric:tabular-nums;margin:2px 0 0}
+  .t-verdi small{font-size:1rem;font-weight:600;color:var(--dis)}
   .banner{display:flex;align-items:center;gap:12px;background:
      linear-gradient(135deg,rgba(57,226,155,.12),rgba(47,196,217,.07));
      border:1px solid rgba(57,226,155,.4);border-radius:16px;padding:14px 16px;
@@ -314,12 +329,14 @@
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
       <button class="hurtig" id="knapp-varemottak"><b>📦 Varemottak</b>
         <span>Kontroller leveransen — meld avvik før du signerer</span></button>
       <button class="hurtig" id="knapp-ide"><b>💡 Idé?</b>
         <span>Si det med én setning — teamet bygger i natt</span></button>
     </div>
+    <button class="t-rad" id="knapp-timer"><b>⏱ Timer</b>
+      <span id="timer-status">Ingen timer ført i dag</span></button>
     <div class="sek-tittel">Til godkjenning · <b id="antall">4</b></div>
     <div id="utkast-liste">
 
@@ -633,6 +650,46 @@ Mvh Ole Fabian, OP Bygg AS</div>
   </div>
 </div>
 
+<!-- timer-ark -->
+<div id="timer">
+  <div class="ark-bak" id="timer-bak"></div>
+  <div class="ark" role="dialog" aria-label="Før timer" style="max-height:88vh;overflow-y:auto">
+    <button class="v-lukk" id="timer-lukk" aria-label="Lukk"
+      style="position:absolute;top:8px;right:12px">×</button>
+    <div class="hank"></div>
+    <h3 style="font-size:1.05rem;font-weight:720;margin-bottom:4px">⏱ Før timer</h3>
+    <p style="font-size:.82rem;color:var(--dis);margin-bottom:12px">Prosjektleders kladdeblokk:
+    timer per prosjekt, klare til å limes inn i timelisten. <b style="color:var(--lys)">Lagres kun
+    på denne telefonen.</b></p>
+
+    <label for="timer-prosjekt" style="font-size:.8rem;color:var(--dis)">Hvilket prosjekt?</label>
+    <input class="vm-felt" id="timer-prosjekt" placeholder="F.eks. Testveien 1"
+      autocomplete="off" style="margin:6px 0 4px">
+    <div class="t-chips" id="timer-prosjekt-chips" style="margin-top:2px"></div>
+
+    <div style="font-size:.8rem;color:var(--dis)">Hvor mange timer i dag?</div>
+    <div class="t-verdi" id="timer-verdi">0 <small>t</small></div>
+    <div class="t-chips" style="justify-content:center">
+      <button class="t-chip" id="t-minus">−0,5</button>
+      <button class="t-chip pluss" id="t-halv">+0,5</button>
+      <button class="t-chip pluss" id="t-en">+1</button>
+      <button class="t-chip pluss" id="t-dag">7,5 t dag</button>
+    </div>
+
+    <input class="vm-felt" id="timer-notat" placeholder="Hva gjorde du? (valgfritt — greit ved fakturering)"
+      autocomplete="off" style="margin-bottom:12px">
+    <button class="knapp" id="timer-lagre" style="width:100%">Lagre timer</button>
+
+    <div id="timer-uke-boks" style="display:none;margin-top:18px">
+      <div style="font-family:var(--mono);font-size:.64rem;letter-spacing:.14em;
+        text-transform:uppercase;color:var(--aurora-b);margin-bottom:6px">Timene dine denne uka</div>
+      <ul id="timer-uke" style="list-style:none"></ul>
+      <button class="knapp svak" id="timer-kopier" style="width:100%;margin-top:10px">
+        Kopier ukesoppsummeringen</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <div class="velkomst" id="velkomst" role="dialog" aria-label="Velkommen">
@@ -742,7 +799,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
   ];
 
   /* ── versjon og kanal (test vs. stabil) ── */
-  var VERSJON = "0.9.4";
+  var VERSJON = "0.10.0";
   var erTest = /(^|[.-])test([.-]|$)/.test(location.hostname);
   document.getElementById("versjon-info").textContent =
     "LÆRLING v" + VERSJON + " · " + (erTest ? "TESTKANAL" : "STABIL") + " · BYGGET FOR OP BYGG";
@@ -1120,6 +1177,135 @@ Mvh Ole Fabian, OP Bygg AS</div>
   document.getElementById("vm-lukk").addEventListener("click", function(){
     varemottak.classList.remove("apen");
   });
+
+  /* timer-arket: prosjektleders kladdeblokk — alt lagres kun lokalt på telefonen.
+     Logging kun som hendelsestype (aldri timetall, prosjekt eller dato — arbeidstid
+     er personopplysning). */
+  var timerArk = document.getElementById("timer");
+  lager.timer = lager.timer || [];
+  function tDato(d){
+    var x = d || new Date();
+    return x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" +
+      String(x.getDate()).padStart(2, "0");
+  }
+  function tTall(n){ return String(n).replace(".", ","); }
+  function tUkestart(){
+    var n = new Date(), dag = (n.getDay() + 6) % 7; // mandag = 0
+    n.setDate(n.getDate() - dag); return tDato(n);
+  }
+  function tDenneUka(){
+    var fra = tUkestart();
+    return lager.timer.filter(function(f){ return f.dato >= fra; });
+  }
+  var tVerdi = 0;
+  function tVis(){
+    document.getElementById("timer-verdi").innerHTML = tTall(tVerdi) + " <small>t</small>";
+  }
+  function tStatus(){
+    var idag = 0;
+    lager.timer.forEach(function(f){ if(f.dato === tDato()) idag += f.timer; });
+    document.getElementById("timer-status").textContent =
+      idag ? "I dag: " + tTall(idag) + " t ✓" : "Ingen timer ført i dag";
+  }
+  function tUke(){
+    var uka = tDenneUka(), boks = document.getElementById("timer-uke-boks"),
+        ul = document.getElementById("timer-uke"), sum = 0;
+    if(!uka.length){ boks.style.display = "none"; return; }
+    boks.style.display = "block";
+    ul.innerHTML = "";
+    var dager = ["man", "tir", "ons", "tor", "fre", "lør", "søn"];
+    uka.slice().sort(function(a, b){ return a.dato < b.dato ? -1 : 1; }).forEach(function(f){
+      sum += f.timer;
+      var d = new Date(f.dato + "T12:00:00"),
+          li = document.createElement("li");
+      li.style.cssText = "display:flex;gap:8px;align-items:baseline;padding:6px 0;" +
+        "border-bottom:1px solid var(--strek);font-size:.86rem;color:var(--dis)";
+      li.innerHTML = "<b style='color:var(--lys)'>" + dager[(d.getDay() + 6) % 7] + " " +
+        d.getDate() + "." + (d.getMonth() + 1) + "</b><span style='flex:1'></span>";
+      li.children[1].textContent = f.prosjekt + (f.notat ? " · " + f.notat : "");
+      li.insertAdjacentHTML("beforeend", "<span style='white-space:nowrap;color:var(--lys)'>" +
+        tTall(f.timer) + " t</span>");
+      ul.appendChild(li);
+    });
+    var s = document.createElement("li");
+    s.style.cssText = "display:flex;justify-content:space-between;padding:8px 0;" +
+      "font-size:.9rem;font-weight:700";
+    s.innerHTML = "<span>Sum denne uka</span><span>" + tTall(sum) + " t</span>";
+    ul.appendChild(s);
+  }
+  function tProsjektChips(){
+    var rad = document.getElementById("timer-prosjekt-chips"),
+        sett = [], siste = lager.timer.slice().reverse();
+    siste.forEach(function(f){
+      if(sett.indexOf(f.prosjekt) < 0 && sett.length < 3) sett.push(f.prosjekt);
+    });
+    rad.innerHTML = "";
+    sett.forEach(function(p){
+      var kn = document.createElement("button");
+      kn.className = "t-chip"; kn.style.fontSize = ".82rem"; kn.style.padding = "9px 13px";
+      kn.textContent = p;
+      kn.addEventListener("click", function(){
+        document.getElementById("timer-prosjekt").value = p;
+        tHentEksisterende();
+      });
+      rad.appendChild(kn);
+    });
+  }
+  function tHentEksisterende(){
+    /* velger du et prosjekt du alt har ført i dag, kan du rette føringen */
+    var p = document.getElementById("timer-prosjekt").value.trim(), funn = 0;
+    lager.timer.forEach(function(f){ if(f.dato === tDato() && f.prosjekt === p) funn = f.timer; });
+    tVerdi = funn; tVis();
+  }
+  function tJuster(delta){
+    tVerdi = Math.max(0, Math.min(24, Math.round((tVerdi + delta) * 2) / 2)); tVis();
+  }
+  document.getElementById("knapp-timer").addEventListener("click", function(){
+    timerArk.classList.add("apen");
+    tProsjektChips(); tHentEksisterende(); tUke();
+    loggHendelse("timer-åpnet");
+  });
+  document.getElementById("timer-bak").addEventListener("click", function(){
+    timerArk.classList.remove("apen");
+  });
+  document.getElementById("timer-lukk").addEventListener("click", function(){
+    timerArk.classList.remove("apen");
+  });
+  document.getElementById("timer-prosjekt").addEventListener("change", tHentEksisterende);
+  document.getElementById("t-minus").addEventListener("click", function(){ tJuster(-0.5); });
+  document.getElementById("t-halv").addEventListener("click", function(){ tJuster(0.5); });
+  document.getElementById("t-en").addEventListener("click", function(){ tJuster(1); });
+  document.getElementById("t-dag").addEventListener("click", function(){ tVerdi = 7.5; tVis(); });
+  document.getElementById("timer-lagre").addEventListener("click", function(){
+    var p = document.getElementById("timer-prosjekt").value.trim(),
+        notat = document.getElementById("timer-notat").value.trim();
+    if(!p){ siFra("Skriv hvilket prosjekt timene gjelder"); return; }
+    if(!tVerdi){ siFra("Trykk inn timene først (+0,5 / +1 / 7,5 t)"); return; }
+    /* én føring per prosjekt per dag — lagring på nytt retter den gamle */
+    lager.timer = lager.timer.filter(function(f){
+      return !(f.dato === tDato() && f.prosjekt === p);
+    });
+    lager.timer.push({ dato: tDato(), prosjekt: p, timer: tVerdi, notat: notat });
+    lagre();
+    siFra("<b>✓</b> " + tTall(tVerdi) + " t ført på " + p);
+    document.getElementById("timer-notat").value = "";
+    tStatus(); tUke(); tProsjektChips();
+  });
+  document.getElementById("timer-kopier").addEventListener("click", function(){
+    var uka = tDenneUka().slice().sort(function(a, b){ return a.dato < b.dato ? -1 : 1; }),
+        dager = ["man", "tir", "ons", "tor", "fre", "lør", "søn"], sum = 0,
+        linjer = uka.map(function(f){
+          sum += f.timer;
+          var d = new Date(f.dato + "T12:00:00");
+          return dager[(d.getDay() + 6) % 7] + " " + d.getDate() + "." + (d.getMonth() + 1) +
+            ": " + f.prosjekt + " — " + tTall(f.timer) + " t" +
+            (f.notat ? " (" + f.notat + ")" : "");
+        });
+    kopier("Timeliste — " + (lager.bruker || "") + "\n" + linjer.join("\n") +
+      "\nSum: " + tTall(sum) + " t",
+      "Ukesoppsummeringen", "— lim inn i timelisten");
+  });
+  tStatus();
   document.getElementById("varemottak-foto").addEventListener("change", function(){
     var rad = document.getElementById("foto-rad");
     rad.style.display = "flex";

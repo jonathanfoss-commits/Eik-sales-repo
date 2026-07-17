@@ -1,5 +1,5 @@
 /* Lærling service worker — appen virker offline og åpner umiddelbart */
-const CACHE = "laerling-v14";
+const CACHE = "laerling-v15";
 const FILER = ["./", "./index.html", "./rapport.html", "./bli-med.html", "./admin.html",
   "./ansatte.html", "./ledelsen.html",
   "./manifest.webmanifest", "./icon-180.png", "./icon-192.png", "./icon-512.png"];

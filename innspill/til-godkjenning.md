@@ -3,6 +3,27 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
+## v0.10.0 — 17. juli 2026 (panelkjøring — live-demo bestilt av Jonathan)
+
+**Hva:** ⏱ Timeregistrering — Ole Fabians innspill fra i dag, bygget av panelet:
+egen Timer-rad på forsiden med dagens status, ark med prosjekt-hurtigvalg (siste tre
+prosjekter), store timer-knapper (−0,5/+0,5/+1/7,5 t dag), valgfritt notat til fakturering,
+én føring per prosjekt per dag (ny lagring retter den gamle), «Timene dine denne uka» med
+sum og Kopier-knapp formatert for timelisten. Alt lagres kun lokalt på telefonen.
+
+**Panelets innstillinger:** Byggdomene JA (dato per føring, retting, notatfelt),
+Personvernvakt JA (logging kun hendelsestypen «timer-åpnet» — aldri timetall, prosjekt
+eller dato; «lagres kun på denne telefonen» i arket), UX JA (egen rad, chips i stedet for
+tastatur, stoppeklokke utsatt), Tekst JA, Innsikt JA (daglig-bruk-anker — valider bruken
+mot pilotloggen etter to uker), Forretning ENDRE (bygget som «prosjektleders kladdeblokk»,
+aldri lønn/satser). Ingen veto. Bevisst utsatt: overtidskryss, historikk-redigering.
+
+**Testet:** Full systemtest 117/117 grønne — inkl. hele timer-flyten (føring, retting uten
+dobbeltføring, ukesum, kopiert timeliste-tekst, varighet etter omlasting). Skjermbilder tatt.
+
+**Godkjenning:** Jonathan + Ole Fabian trykker Godkjenn i testappen → si «merge og
+publiser» til Claude. (v0.9.4-leveransen under inngår — godkjennes samlet som v0.10.0.)
+
 ## v0.9.4 — 17. juli 2026 (levert av Claude på direkte bestilling fra Jonathan)
 
 **Hva:** Innspill-feeden i kommandosentralen trenger ikke lenger token i nettleseren.

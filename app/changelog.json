@@ -1,6 +1,11 @@
 [
   {
     "dato": "2026-07-17",
+    "tekst": "Nå kan du føre timene dine rett i appen — velg prosjekt, trykk inn timene, og kopier ukesoppsummeringen når du skal levere.",
+    "av": "Ole Fabian"
+  },
+  {
+    "dato": "2026-07-17",
     "tekst": "Kommandosentralen kobler seg nå til innspillene helt av seg selv — ingen token å lime inn i nettleseren lenger, på ingen maskin.",
     "av": "Jonathan"
   },
