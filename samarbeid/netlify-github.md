@@ -43,3 +43,17 @@ git push origin claude/ai-automation-subscription-concept-647y35
 ```
 
 — eller be Claude: «to godkjenninger er inne — merge og publiser».
+
+## Repo-oversikt (per 17. juli 2026)
+
+- **`jonathanfoss-commits/Eik-sales-repo` — ARBEIDSREPOET.** Netlify bygger herfra, og
+  lunsj-/kveldsrutinene pusher hit. Alt automatisk maskineri peker hit.
+- **`jonathanfoss-commits/op-bygg` — SPEILKOPI** (privat), opprettet 17. juli:
+  `main` = hovedbranchen, `kveldsteam-forslag` = forslag-branchen. Claude synkroniserer
+  speilet ved leveranser gjort i vanlige økter (`git push op-bygg <branch>`); de
+  automatiske natt-kjøringene når det ikke (tilgang er per økt), så speilet kan ligge
+  en natt bak. Det er dokumentasjon/backup — ikke sannhetskilden.
+- **Vil dere flytte alt til op-bygg permanent?** To grep: (1) Jonathan re-linker begge
+  Netlify-sitene til op-bygg (flyten øverst i denne filen, samme branch-navn — `main`
+  for stabil), og (2) be Claude oppdatere rutinene og gjøre op-bygg til origin.
+  Ikke gjør (1) uten (2) — da bygger Netlify fra et repo nattkjøringene ikke oppdaterer.
