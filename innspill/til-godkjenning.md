@@ -3,6 +3,24 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
+## ÉN SAMLET LEVERANSE VENTER: v0.9.4–v0.11.0 — godkjennes under ett
+
+Delversjonene under er bygget samme dag og testes kumulativt (fulltesten dekker alt
+sammen). En Godkjenn-stemme på v0.11.0 i testappen godkjenner hele pakken — dette teller
+som ÉN leveranse mot køregelen.
+
+## v0.11.0 — 17. juli 2026 (Prøverommet — bestilt av Jonathan)
+
+**Hva:** 🧪 Prøverommet (`app/lab.html`, kun synlig i testkanalen): alle 11 forslag fra
+bransjeresearchen som fungerende lokale prototyper — purretrapp, Varselvakta (NS 8407),
+tilleggsfanger, bildeknagg, dagbok-autopilot (henter ekte timer fra appen), fristvakt,
+varemottak-historikk, byggemøtereferat, KS-sjekkliste, prisbank og overtakelsesprotokoll.
+Hvert kort har «Prøv den» + 👍/👎-stemming: stemmer logges som innspill i pilotloggen
+(vises i kommandosentralen) og styrer hva panelet bygger inn permanent. Inngang: egen rad
+på forsiden i testkanalen.
+
+**Testet:** Full systemtest inkl. nytt Prøverom-scenario — se testlogg i commit.
+
 ## v0.10.1 — 17. juli 2026 (styringsendring besluttet av Jonathan)
 
 **Hva:** Admin-overstyring formalisert: Jonathan kan hastepublisere alene («publiser som

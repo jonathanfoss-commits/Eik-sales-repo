@@ -1,7 +1,7 @@
 /* Lærling service worker — appen virker offline og åpner umiddelbart */
-const CACHE = "laerling-v16";
+const CACHE = "laerling-v17";
 const FILER = ["./", "./index.html", "./rapport.html", "./bli-med.html", "./admin.html",
-  "./ansatte.html", "./ledelsen.html",
+  "./ansatte.html", "./ledelsen.html", "./lab.html",
   "./manifest.webmanifest", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", (e) => {

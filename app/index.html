@@ -337,6 +337,9 @@
     </div>
     <button class="t-rad" id="knapp-timer"><b>⏱ Timer</b>
       <span id="timer-status">Ingen timer ført i dag</span></button>
+    <a class="t-rad" id="lab-lenke" href="lab.html" style="display:none;text-decoration:none;
+      color:inherit;border-color:rgba(232,182,76,.45)"><b>🧪 Prøverommet</b>
+      <span>11 nye funksjoner venter på din dom — prøv og stem</span></a>
     <div class="sek-tittel">Til godkjenning · <b id="antall">4</b></div>
     <div id="utkast-liste">
 
@@ -799,7 +802,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
   ];
 
   /* ── versjon og kanal (test vs. stabil) ── */
-  var VERSJON = "0.10.1";
+  var VERSJON = "0.11.0";
   var erTest = /(^|[.-])test([.-]|$)/.test(location.hostname);
   document.getElementById("versjon-info").textContent =
     "LÆRLING v" + VERSJON + " · " + (erTest ? "TESTKANAL" : "STABIL") + " · BYGGET FOR OP BYGG";
@@ -843,6 +846,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
     var tb = document.getElementById("test-banner");
     document.getElementById("test-versjon").textContent = "v" + VERSJON;
     tb.style.display = "block";
+    document.getElementById("lab-lenke").style.display = "flex";
     function stemVersjon(stemme){
       if(!lager.bruker){
         var navn = prompt("Hvem godkjenner? Skriv fornavnet ditt:");
