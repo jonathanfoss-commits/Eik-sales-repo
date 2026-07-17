@@ -27,6 +27,13 @@ med navn og versjonsnummer. Versjonsnummeret vises nederst på Verktøy-fanen i 
    `kveldsteam-forslag` inn i hovedbranchen og publiserer. Alle ansatte har ny versjon.
    Ved AVVIST: Jonathan noterer hvorfor i `innspill/inbox.md`, og teamet tar det neste kveld.
 
+## Stemme-verifisering (sikkerhetsnotat 17. juli)
+
+Godkjenningsstemmene sendes fra et åpent skjema og kan i teorien forfalskes. Stemmene i
+kommandosentralen er derfor **indikative**: før merge til STABIL bekrefter Jonathan alltid
+muntlig med Ole Fabian, eller sjekker innsendingen i Netlify-panelet (Forms → pilotlogg,
+med tidsstempel). Ekte pålogging kommer i fullversjonen.
+
 ## Admin-overstyring (nøkkel 1 alene — besluttet av Jonathan 17. juli)
 
 - Jonathan kan som produktansvarlig **hastepublisere uten å vente på Ole Fabians stemme**:

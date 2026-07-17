@@ -3,11 +3,24 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
-## ÉN SAMLET LEVERANSE VENTER: v0.9.4–v0.11.1 — godkjennes under ett
+## ÉN SAMLET LEVERANSE VENTER: v0.9.4–v0.12.0 — godkjennes under ett
 
 Delversjonene under er bygget samme dag og testes kumulativt (fulltesten dekker alt
-sammen). En Godkjenn-stemme på v0.11.1 i testappen godkjenner hele pakken — dette teller
+sammen). En Godkjenn-stemme på v0.12.0 i testappen godkjenner hele pakken — dette teller
 som ÉN leveranse mot køregelen.
+
+## v0.12.0 — 17. juli 2026 (stor kvalitetsrunde — 8 agenter + designgjennomgang)
+
+**Hva (utdrag):** Tilgjengelighet: zoom tillatt igjen, grafkontrast fikset, Escape lukker
+alle ark, dikter-arket fikk lukkeknapp, foto-knappen tastaturtilgjengelig, aria-status på
+toasts, større trykkflater. Sikkerhet: service worker cacher aldri serverfunksjons-/API-svar,
+funksjonen filtrerer hendelser server-side, paginerer (innspill forsvinner ikke etter 100
+hendelser), 60 s svar-cache mot spam, kode flyttet til header, valgfri PILOT_API_KODE-
+miljøvariabel for ekte hemmelighet. Kodefeil: timer-nulling ved prosjektbytte fikset,
+fristvakt-månedsberegning klampet, foto-input kan gjenbrukes, listener-stabling fjernet.
+Design/ærlighet: demo-tall merket «EKSEMPEL», varemottak-duplikat fjernet fra forsiden,
+kompaktere stemmeknapper. Full funnliste i sikkerhets-/tilgjengelighets-/kodeagentenes
+rapporter (se commit).
 
 ## v0.11.1 — 17. juli 2026 (bestilt av Jonathan)
 

@@ -39,6 +39,23 @@ les begrunnelsen der før bygging.
 14. Mørk/lys-modus-bryter (behold mørk som standard).
 15. Forbedre tom-tilstanden med ukens tall («I dag: 4 oppgaver unnagjort»).
 
+## Fra research runde 2 (17. juli kveld) — prioriteres inn av panelet
+
+- **Lærlingtimeteller:** offentlige kontrakter krever fra 1.8.2025 at minst 10 % av
+  byggfagtimene utføres av lærlinger — enkel teller per kontrakt med eksport (MEF).
+- **Seriøsitetsmappa:** samlemappe per anbud (HMS-kort, fagbrev, lærlingbevis) for
+  Norgesmodellens krav — lokal, med sjekkliste.
+- **Grossist-matching i varemottaket:** match leveransefoto mot ordrebekreftelse fra
+  Optimera/Ahlsell og varsle prisavvik (nordisk-validert: Fieldly/Minuba).
+- **Tale-oppmåling:** «12 kvadrat gips i gangen» → mengder rett inn i tilbudet
+  (Plancraft-validert, 30 000+ brukere) — lokal parsing.
+- **Kvitteringsskanning → etterkalkyle:** knips bongen, koble kostnad til prosjekt,
+  «tjener vi penger på denne jobben?» — [SENERE, krever OCR].
+- **Synlig lagret-status overalt:** forskning viser at 2–3 opplevde datatap dreper
+  tilliten varig — alle lagringer skal vise eksplisitt kvittering.
+- **Dagslys-modus LØFTES:** mørkt tema er dokumentert dårligere i sollys — lys modus
+  med én-trykks bytte bør opp fra punkt 14 til topp 5 (bekreftet av felt-UX-research).
+
 ## Avvist etter research (bygges IKKE — se rapporten for begrunnelse)
 
 - Foto-AI som finner feil automatisk (umoden + Personvernvakt-veto)

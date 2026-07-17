@@ -1,14 +1,21 @@
-/* Lærling — serverfunksjon som henter pilotloggen for kommandosentralen.
-   Netlify-tokenet bor som miljøvariabel PILOTLOGG_TOKEN i Netlify (settes ÉN gang,
-   per site) — det skal aldri ligge i nettleseren eller i koden.
-   Svarer kun med de feltene kommandosentralen trenger. */
+/* Lærling — serverfunksjon som henter pilotloggen for kommandosentralen og Prøverommet.
+   Netlify-tokenet bor som miljøvariabel PILOTLOGG_TOKEN i Netlify (settes ÉN gang per
+   site) — det skal aldri ligge i nettleseren eller i koden.
+   Adgang: pilotkoden (X-Pilotkode-header). Settes miljøvariabelen PILOT_API_KODE,
+   kreves DEN i stedet — da er dataene ikke lenger tilgjengelige med koden fra HTML-en.
+   Svarer kun med feltene klientene trenger, og kun relevante hendelsestyper. */
 
-const KODE = "opbygg2026"; // samme interne pilotkode som kommandosentralen
+const KODE = "opbygg2026"; // standard pilotkode (kan overstyres med PILOT_API_KODE)
 const VERTER = [
   "op-bygg-laerling-app.netlify.app",
   "op-bygg-laerling-app-test.netlify.app"
 ];
 const API = "https://api.netlify.com/api/v1";
+const RELEVANTE = ["innspill", "godkjenning", "panel-bestilling"];
+
+// enkel svar-cache: demper spam og sparer Netlify-API-kvoten
+let cacheKropp = null;
+let cacheTid = 0;
 
 exports.handler = async (event) => {
   const svar = (statusCode, kropp) => ({
@@ -17,12 +24,16 @@ exports.handler = async (event) => {
     body: JSON.stringify(kropp)
   });
 
-  if (((event.queryStringParameters || {}).kode || "") !== KODE)
-    return svar(401, { feil: "feil pilotkode" });
+  const riktigKode = process.env.PILOT_API_KODE || KODE;
+  const gittKode = (event.headers && (event.headers["x-pilotkode"] || event.headers["X-Pilotkode"])) ||
+    ((event.queryStringParameters || {}).kode || "");
+  if (gittKode !== riktigKode) return svar(401, { feil: "feil pilotkode" });
 
   const token = process.env.PILOTLOGG_TOKEN;
   if (!token)
     return svar(503, { feil: "PILOTLOGG_TOKEN er ikke satt i Netlify (Site configuration → Environment variables)" });
+
+  if (cacheKropp && Date.now() - cacheTid < 60000) return svar(200, cacheKropp);
 
   const hent = async (sti) => {
     const r = await fetch(API + sti, { headers: { Authorization: "Bearer " + token } });
@@ -38,14 +49,20 @@ exports.handler = async (event) => {
       vellykkede++;
       const f = skjemaer.find((x) => x.name === "pilotlogg");
       if (!f) continue;
-      const subs = await hent("/forms/" + f.id + "/submissions?per_page=100");
-      for (const s of subs) {
-        alle.push({
-          id: s.id,
-          created_at: s.created_at,
-          kanal: vert,
-          data: { hendelse: (s.data || {}).hendelse, detalj: (s.data || {}).detalj }
-        });
+      // paginer: «åpnet»-hendelser dominerer, så relevante innspill kan ligge langt bak
+      for (let side = 1; side <= 3; side++) {
+        const subs = await hent("/forms/" + f.id + "/submissions?per_page=100&page=" + side);
+        for (const s of subs) {
+          const hendelse = (s.data || {}).hendelse;
+          if (!RELEVANTE.includes(hendelse)) continue;
+          alle.push({
+            id: s.id,
+            created_at: s.created_at,
+            kanal: vert,
+            data: { hendelse, detalj: (s.data || {}).detalj }
+          });
+        }
+        if (subs.length < 100) break;
       }
     } catch (e) { /* én kanal kan mangle skjema eller feile — fortsett med den andre */ }
   }
@@ -54,5 +71,6 @@ exports.handler = async (event) => {
     return svar(502, { feil: "fikk ikke svar fra Netlify-API — sjekk at tokenet i PILOTLOGG_TOKEN er gyldig" });
 
   alle.sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+  cacheKropp = alle; cacheTid = Date.now();
   return svar(200, alle);
 };

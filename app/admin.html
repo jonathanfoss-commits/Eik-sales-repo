@@ -112,7 +112,7 @@
   .agent.jobber{color:var(--aurora-a);border-color:rgba(57,226,155,.5);
      animation:agentpuls 1.6s ease-in-out infinite}
   @keyframes agentpuls{50%{opacity:.35}}
-  .mini-knapp{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;padding:5px 10px;
+  .mini-knapp{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;padding:9px 13px;
      border-radius:99px;border:1px solid var(--strek);color:var(--dis);white-space:nowrap}
   .mini-knapp:hover{border-color:rgba(57,226,155,.5);color:var(--lys)}
   .mini-knapp.gjort{color:var(--aurora-a);border-color:rgba(57,226,155,.5)}
@@ -138,6 +138,7 @@
   .port .feil{color:var(--varsel);font-size:.78rem;margin-top:10px;display:none}
   body.laast .wrap{display:none}
   body:not(.laast) .port{display:none}
+  @media (prefers-reduced-motion: reduce){.agent.jobber,.bestilling .blink{animation:none}}
 </style>
 </head>
 <body class="laast">
@@ -292,6 +293,8 @@
       <input id="pilot-start" type="date"></div>
     <div class="felt"><label for="netlify-token">Netlify-token (reserve — trengs normalt ikke)</label>
       <input id="netlify-token" type="password" placeholder="nfp_…" autocomplete="off"></div>
+    <div class="felt"><label for="api-kode">API-kode (kun hvis satt i Netlify)</label>
+      <input id="api-kode" type="password" placeholder="(valgfri ekstra sikring)" autocomplete="off"></div>
     <p style="font-size:.78rem;color:var(--dis);margin:2px 0 10px">Alt fylles inn av seg selv.
     Innspill-feeden bruker sitens egen serverfunksjon (miljøvariabelen PILOTLOGG_TOKEN i
     Netlify, settes én gang) — token-feltet er kun reserve hvis funksjonen ikke er satt opp.</p>
@@ -343,7 +346,7 @@ Statusdata hentes direkte fra app-kanalene</footer>
 
   /* ── oppsett ── */
   var felter = { "url-stabil": "stabil", "url-test": "test", "pilot-start": "start",
-                 "netlify-token": "token" };
+                 "netlify-token": "token", "api-kode": "apikode" };
   Object.keys(felter).forEach(function(id){
     if(innst[felter[id]]) document.getElementById(id).value = innst[felter[id]];
   });
@@ -448,7 +451,7 @@ Statusdata hentes direkte fra app-kanalene</footer>
         ul.innerHTML = "";
         logg.slice(0, 3).forEach(function(o){
           var li = document.createElement("li");
-          li.innerHTML = '<span class="prikk"></span><span><b>' + o.dato + "</b> · " +
+          li.innerHTML = '<span class="prikk"></span><span><b>' + String(o.dato).replace(/</g, "&lt;") + "</b> · " +
             o.tekst.replace(/</g, "&lt;") +
             (o.av ? ' <span style="color:var(--aurora-b)">— foreslått av ' + o.av.replace(/</g, "&lt;") + "</span>" : "") + "</span>";
           ul.appendChild(li);
@@ -490,8 +493,8 @@ Statusdata hentes direkte fra app-kanalene</footer>
       .then(function(r){ if(!r.ok) throw new Error("API " + r.status); return r.json(); });
   }
   function hentViaFunksjon(){
-    return fetch("/.netlify/functions/innspill?kode=" + encodeURIComponent(KODE),
-        { cache: "no-store" })
+    return fetch("/.netlify/functions/innspill",
+        { cache: "no-store", headers: { "X-Pilotkode": innst.apikode || KODE } })
       .then(function(r){ if(!r.ok) throw new Error("funksjon " + r.status); return r.json(); });
   }
   function hentViaToken(){
@@ -647,8 +650,8 @@ Statusdata hentes direkte fra app-kanalene</footer>
       d.classList.toggle("vis", !!(vs[0] && vs[1] && nyere(vs[1], vs[0])));
       if(vs[0] && vs[1] && nyere(vs[0], vs[1])){
         d.classList.add("vis");
-        d.innerHTML = "<b>Obs:</b> testkanalen ligger BAK den stabile (v" + vs[1] +
-          " mot v" + vs[0] + ") — publiser siste versjon til testsiten.";
+        d.innerHTML = "<b>Obs:</b> testkanalen ligger BAK den stabile (v" + String(vs[1]).replace(/</g, "&lt;") +
+          " mot v" + String(vs[0]).replace(/</g, "&lt;") + ") — publiser siste versjon til testsiten.";
       }
     });
   }

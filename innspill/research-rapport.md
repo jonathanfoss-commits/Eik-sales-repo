@@ -95,3 +95,21 @@ companycam.com · handoff.ai · procore.com (AI-agenter) · chaserhq.com · cofa
 *Metodenotat: enkelte nettsteder var blokkert for direkte henting fra sandkassen (403);
 funn bygger da på søkeresultatenes utdrag. Tall merket med kilde bør slås opp før de
 brukes i salgsmateriell.*
+
+---
+
+# Runde 2 — 17. juli kveld (8 agenter: research NO+INT, sikkerhet, kode, a11y, plattform)
+
+**Nye hovedfunn:** (1) Regelverk gir konkrete produktmuligheter: lærlingkrav 10 % i
+offentlige kontrakter fra 1.8.2025, Norgesmodellens seriøsitetskrav, åpenhetslov-krav som
+sildrer ned fra store kunder. (2) Nordisk-validerte funksjoner: grossist-matching i
+varemottak (Fieldly/Minuba), tale-oppmåling (Plancraft, 30 000+ brukere), kvitterings-
+etterkalkyle. (3) RØDT-listen bekreftet: GPS-sporing, geofence-stempling, AI-kameraer og
+produktivitetsscoring er juridisk døde i Norge (GDPR/aml.) — lokal-først er salgsargumentet.
+(4) Frafallsforskning: apper forlates pga. trykk-antall, kontor-DNA, stille datatap og at
+ingen leser rapportene — Lærlings motgrep: synlig lagret-status og mottaker-loop.
+(5) ⚠ Mørkt tema er dokumentert svakere i sollys — dagslys-modus løftes i backloggen.
+(6) Pris: per-bedrift (aldri per bruker), OP Bygg-størrelse ≈ 2 990–3 990 kr/mnd,
+laveste trinn må inneholde daglig-verktøyene (retensjon). (7) Neste bransje: maler
+(letteste), så murer/flislegger, så rørlegger — elektriker frarådes som først.
+Detaljer: agentrapportene i kjøreloggen + konsept/plattform-notat.md.

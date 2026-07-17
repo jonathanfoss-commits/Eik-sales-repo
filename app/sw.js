@@ -1,5 +1,5 @@
 /* Lærling service worker — appen virker offline og åpner umiddelbart */
-const CACHE = "laerling-v18";
+const CACHE = "laerling-v19";
 const FILER = ["./", "./index.html", "./rapport.html", "./bli-med.html", "./admin.html",
   "./ansatte.html", "./ledelsen.html", "./lab.html",
   "./manifest.webmanifest", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
@@ -18,10 +18,21 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
-  // versjon.json og changelog.json må alltid være ferske
-  const sti = new URL(e.request.url).pathname;
+  const url = new URL(e.request.url);
+  // rør aldri andre domener eller serverfunksjoner — de skal alltid være ferske,
+  // og svarene kan inneholde persondata som ikke skal ligge i cache
+  if (url.origin !== location.origin) return;
+  if (url.pathname.startsWith("/.netlify/")) return;
+  const sti = url.pathname;
+  // versjon/changelog/panelsvar: network-first, med cache som offline-reserve
   if (sti.endsWith("/versjon.json") || sti.endsWith("/changelog.json") || sti.endsWith("/panelsvar.json")) {
-    e.respondWith(fetch(e.request).catch(() => caches.match(e.request, { ignoreSearch: true })));
+    e.respondWith(
+      fetch(e.request).then((svar) => {
+        const kopi = svar.clone();
+        caches.open(CACHE).then((c) => c.put(e.request, kopi));
+        return svar;
+      }).catch(() => caches.match(e.request, { ignoreSearch: true }))
+    );
     return;
   }
   e.respondWith(
@@ -31,7 +42,7 @@ self.addEventListener("fetch", (e) => {
         const kopi = svar.clone();
         caches.open(CACHE).then((c) => c.put(e.request, kopi));
         return svar;
-      }).catch(() => caches.match("./index.html"))
+      }).catch(() => (e.request.mode === "navigate" ? caches.match("./index.html") : Response.error()))
     )
   );
 });

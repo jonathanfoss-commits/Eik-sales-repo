@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Lærling · OP Bygg</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -178,7 +178,7 @@
   .vm-felt{width:100%;background:rgba(0,0,0,.25);border:1px solid var(--strek);
      border-radius:10px;color:var(--lys);font:inherit;font-size:.88rem;
      padding:11px 12px;margin-bottom:8px}
-  .vm-felt::placeholder{color:var(--dis);opacity:.7}
+  .vm-felt::placeholder{color:var(--dis)}
 
   /* toast */
   .toast{position:fixed;left:50%;bottom:calc(110px + env(safe-area-inset-bottom));z-index:70;
@@ -271,6 +271,8 @@
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{animation:none!important;transition:none!important}
   }
+  a:focus-visible{outline:2px solid var(--aurora-a);outline-offset:2px}
+  .kopier,.modus{min-height:38px}
 </style>
 </head>
 <body>
@@ -311,11 +313,6 @@
       <span>Veiviser · 2 minutter · helt gratis</span></div>
       <div class="pil-h">›</div>
     </button>
-    <button class="banner" id="apne-varemottak" style="background:linear-gradient(135deg,rgba(47,196,217,.12),rgba(57,226,155,.06));border-color:rgba(47,196,217,.45)">
-      <div class="t"><b>📦 Varemottak — meld avvik</b>
-      <span>Gjør det før du signerer følgeseddelen · 1 minutt</span></div>
-      <div class="pil-h">›</div>
-    </button>
 
     <div id="nytt-kort" style="display:none;background:linear-gradient(135deg,rgba(57,226,155,.12),rgba(47,196,217,.06));
       border:1px solid rgba(57,226,155,.4);border-radius:16px;padding:14px 16px;margin-bottom:12px">
@@ -325,7 +322,7 @@
           <div id="nytt-tekst" style="font-size:.88rem;margin-top:4px"></div>
           <div id="nytt-av" style="font-size:.74rem;color:var(--dis);margin-top:2px"></div>
         </div>
-        <button id="nytt-lukk" aria-label="Lukk" style="color:var(--dis);font-size:1.2rem;padding:2px 8px">×</button>
+        <button id="nytt-lukk" aria-label="Lukk" style="color:var(--dis);font-size:1.2rem;padding:10px 12px">×</button>
       </div>
     </div>
 
@@ -340,7 +337,7 @@
     <a class="t-rad" id="lab-lenke" href="lab.html" style="display:none;text-decoration:none;
       color:inherit;border-color:rgba(232,182,76,.45)"><b>🧪 Prøverommet</b>
       <span>11 nye funksjoner venter på din dom — prøv og stem</span></a>
-    <div class="sek-tittel">Til godkjenning · <b id="antall">4</b></div>
+    <div class="sek-tittel">Til godkjenning · <b id="antall">4</b> <span style="font-family:var(--mono);font-size:.56rem;letter-spacing:.1em;color:var(--dis);border:1px solid var(--strek);border-radius:99px;padding:2px 8px;margin-left:6px">EKSEMPLER</span></div>
     <div id="utkast-liste">
 
       <div class="kort utkast">
@@ -433,6 +430,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
   <!-- ── RAPPORT ── -->
   <div class="fane" id="fane-rapport">
     <div class="hero-tall">
+      <div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.12em;color:var(--varsel);margin-bottom:4px">EKSEMPELDATA — EKTE TALL KOMMER NÅR APPEN BRUKES</div>
       <div class="n">6,5 t</div>
       <div class="l">spart denne uken · verdi ca. 3 900 kr</div>
     </div>
@@ -455,10 +453,10 @@ Mvh Ole Fabian, OP Bygg AS</div>
           </g>
           <!-- stolper: 20px brede, avrundet topp, forankret i grunnlinjen y=138. skala: 20px per time -->
           <g id="stolper">
-            <path class="stolpe" data-uke="24" data-t="2,5" fill="#1F9E66" opacity=".45" d="M36 138 v-46 a4 4 0 0 1 4-4 h12 a4 4 0 0 1 4 4 v46 z"></path>
-            <path class="stolpe" data-uke="25" data-t="3,5" fill="#1F9E66" opacity=".45" d="M96 138 v-66 a4 4 0 0 1 4-4 h12 a4 4 0 0 1 4 4 v66 z"></path>
-            <path class="stolpe" data-uke="26" data-t="4,5" fill="#1F9E66" opacity=".45" d="M156 138 v-86 a4 4 0 0 1 4-4 h12 a4 4 0 0 1 4 4 v86 z"></path>
-            <path class="stolpe" data-uke="27" data-t="5,5" fill="#1F9E66" opacity=".45" d="M216 138 v-106 a4 4 0 0 1 4-4 h12 a4 4 0 0 1 4 4 v106 z"></path>
+            <path class="stolpe" data-uke="24" data-t="2,5" fill="#1F9E66" d="M36 138 v-46 a4 4 0 0 1 4-4 h12 a4 4 0 0 1 4 4 v46 z"></path>
+            <path class="stolpe" data-uke="25" data-t="3,5" fill="#1F9E66" d="M96 138 v-66 a4 4 0 0 1 4-4 h12 a4 4 0 0 1 4 4 v66 z"></path>
+            <path class="stolpe" data-uke="26" data-t="4,5" fill="#1F9E66" d="M156 138 v-86 a4 4 0 0 1 4-4 h12 a4 4 0 0 1 4 4 v86 z"></path>
+            <path class="stolpe" data-uke="27" data-t="5,5" fill="#1F9E66" d="M216 138 v-106 a4 4 0 0 1 4-4 h12 a4 4 0 0 1 4 4 v106 z"></path>
             <path class="stolpe" data-uke="28" data-t="6,5" fill="#1F9E66" d="M276 138 v-126 a4 4 0 0 1 4-4 h12 a4 4 0 0 1 4 4 v126 z"></path>
           </g>
           <text x="286" y="2" font-size="10" fill="#E9F2EE" font-weight="600" text-anchor="middle" dominant-baseline="hanging">6,5 t</text>
@@ -472,7 +470,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
       </div>
     </div>
 
-    <div class="sek-tittel">Utført denne uken</div>
+    <div class="sek-tittel">Utført denne uken <span style="font-family:var(--mono);font-size:.56rem;letter-spacing:.1em;color:var(--dis);border:1px solid var(--strek);border-radius:99px;padding:2px 8px;margin-left:6px">EKSEMPEL</span></div>
     <div class="kort">
       <ul class="gjort">
         <li><span class="hake"></span>23 e-poster besvart eller utkast levert</li>
@@ -583,7 +581,8 @@ Mvh Ole Fabian, OP Bygg AS</div>
 <!-- dikter-ark -->
 <div id="dikter">
   <div class="ark-bak" id="ark-bak"></div>
-  <div class="ark" role="dialog" aria-label="Dikter til Lærling">
+  <div class="ark" role="dialog" aria-modal="true" aria-label="Dikter til Lærling">
+    <button class="v-lukk" id="dikter-lukk" aria-label="Lukk" style="position:absolute;top:8px;right:12px">×</button>
     <div class="hank"></div>
     <div class="lytter">
       <div class="mik-stor"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg></div>
@@ -597,7 +596,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
 <!-- varemottak-ark -->
 <div id="varemottak">
   <div class="ark-bak" id="varemottak-bak"></div>
-  <div class="ark" role="dialog" aria-label="Varemottak — meld avvik" style="max-height:88vh;overflow-y:auto">
+  <div class="ark" role="dialog" aria-modal="true" aria-label="Varemottak — meld avvik" style="max-height:88vh;overflow-y:auto">
     <button class="v-lukk" id="vm-lukk" aria-label="Lukk"
       style="position:absolute;top:8px;right:12px">×</button>
     <div class="hank"></div>
@@ -607,10 +606,9 @@ Mvh Ole Fabian, OP Bygg AS</div>
     <p style="font-size:.8rem;color:var(--dis);text-align:center;margin-bottom:12px">
       Tell mot følgeseddel og bestilling, noter avviket på følgeseddelen
       <b style="color:var(--lys)">før du signerer</b> — og send meldingen med én gang.</p>
-    <label class="knapp svak" style="display:block;text-align:center;margin-bottom:10px;cursor:pointer">
-      📷 Ta bilde av leveransen
-      <input type="file" accept="image/*" capture="environment" multiple hidden id="varemottak-foto">
-    </label>
+    <button type="button" class="knapp svak" id="vm-foto-knapp" style="display:block;width:100%;text-align:center;margin-bottom:10px">
+      📷 Ta bilde av leveransen</button>
+    <input type="file" accept="image/*" capture="environment" multiple hidden id="varemottak-foto">
     <div id="foto-rad" style="display:none;gap:8px;margin-bottom:10px;overflow-x:auto"></div>
     <input class="vm-felt" id="vm-prosjekt" placeholder="Prosjekt (f.eks. Krohgs gate 60)">
     <input class="vm-felt" id="vm-leverandor" placeholder="Leverandør (f.eks. Byggmakker)">
@@ -636,7 +634,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
 <!-- idé-ark -->
 <div id="ide">
   <div class="ark-bak" id="ide-bak"></div>
-  <div class="ark" role="dialog" aria-label="Send inn idé">
+  <div class="ark" role="dialog" aria-modal="true" aria-label="Send inn idé">
     <button class="v-lukk" id="ide-lukk" aria-label="Lukk"
       style="position:absolute;top:8px;right:12px">×</button>
     <div class="hank"></div>
@@ -656,7 +654,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
 <!-- timer-ark -->
 <div id="timer">
   <div class="ark-bak" id="timer-bak"></div>
-  <div class="ark" role="dialog" aria-label="Før timer" style="max-height:88vh;overflow-y:auto">
+  <div class="ark" role="dialog" aria-modal="true" aria-label="Før timer" style="max-height:88vh;overflow-y:auto">
     <button class="v-lukk" id="timer-lukk" aria-label="Lukk"
       style="position:absolute;top:8px;right:12px">×</button>
     <div class="hank"></div>
@@ -693,9 +691,9 @@ Mvh Ole Fabian, OP Bygg AS</div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<div class="velkomst" id="velkomst" role="dialog" aria-label="Velkommen">
+<div class="velkomst" id="velkomst" role="dialog" aria-modal="true" aria-label="Velkommen">
   <div class="boks">
     <img src="op-bygg-logo.png" alt="" style="height:34px;margin-bottom:10px;border-radius:6px"
       onerror="this.remove()">
@@ -708,7 +706,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
     <p style="font-size:.72rem;margin-top:-12px">Pilotversjonen logger bruksstatistikk med fornavn
     (hvilke verktøy som brukes — aldri innholdet i det du skriver eller dikterer).
     Innspill du selv sender inn, deles selvsagt med teamet.</p>
-    <input id="velkomst-navn" placeholder="Fornavnet ditt (så teamet vet hvem som melder inn)"
+    <input id="velkomst-navn" placeholder="Fornavnet ditt"
       autocomplete="given-name"
       style="width:100%;margin-bottom:12px;background:rgba(0,0,0,.25);border:1px solid var(--strek);
       border-radius:10px;color:var(--lys);font:inherit;font-size:.9rem;padding:11px 12px">
@@ -717,7 +715,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
   </div>
 </div>
 
-<div class="veiviser" id="veiviser" role="dialog" aria-label="Kom i gang">
+<div class="veiviser" id="veiviser" role="dialog" aria-modal="true" aria-label="Kom i gang">
   <div class="v-indre">
     <div class="v-hode"><b>Gjør Lærling klar</b>
       <button class="v-lukk" id="veiviser-lukk" aria-label="Lukk">×</button></div>
@@ -802,7 +800,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
   ];
 
   /* ── versjon og kanal (test vs. stabil) ── */
-  var VERSJON = "0.11.1";
+  var VERSJON = "0.12.0";
   var erTest = /(^|[.-])test([.-]|$)/.test(location.hostname);
   document.getElementById("versjon-info").textContent =
     "LÆRLING v" + VERSJON + " · " + (erTest ? "TESTKANAL" : "STABIL") + " · BYGGET FOR OP BYGG";
@@ -1001,6 +999,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
   document.getElementById("dato").textContent =
     no[d.getDay()] + " " + d.getDate() + ". " + mnd[d.getMonth()];
   function settHilsen(){
+    var t = new Date().getHours();
     document.getElementById("hilsen").textContent =
       (t < 5 ? "God natt" : t < 10 ? "God morgen" : t < 18 ? "Hei" : "God kveld") +
       (lager.bruker ? ", " + lager.bruker : "!");
@@ -1010,7 +1009,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
   /* toast */
   var toast = document.getElementById("toast"), toastT;
   function siFra(html){
-    toast.innerHTML = html; toast.classList.add("vis");
+    toast.textContent = String(html).replace(/<[^>]*>/g, ""); toast.classList.add("vis");
     clearTimeout(toastT); toastT = setTimeout(function(){ toast.classList.remove("vis"); }, 2400);
   }
 
@@ -1020,6 +1019,8 @@ Mvh Ole Fabian, OP Bygg AS</div>
     tab.addEventListener("click", function(){
       faner.forEach(function(x){ x.classList.remove("aktiv"); });
       tab.classList.add("aktiv");
+      faner.forEach(function(x){ x.removeAttribute("aria-current"); });
+      tab.setAttribute("aria-current", "page");
       document.querySelectorAll(".fane").forEach(function(f){ f.classList.remove("aktiv"); });
       document.getElementById("fane-" + tab.dataset.fane).classList.add("aktiv");
       scrollTo(0, 0);
@@ -1120,14 +1121,14 @@ Mvh Ole Fabian, OP Bygg AS</div>
     var k = this;
     k.textContent = "UTKAST"; k.removeAttribute("id"); k.dataset.modus = "utkast";
     k.closest(".kort").classList.remove("forslag");
-    siFra("<b>✓</b> Nytt verktøy aktivert i utkast-modus");
+    siFra("✓ Nytt verktøy aktivert i utkast-modus");
     k.addEventListener("click", function(){
       var auto = k.dataset.modus === "auto";
       k.dataset.modus = auto ? "utkast" : "auto";
       k.textContent = auto ? "UTKAST" : "AUTO";
       k.classList.toggle("auto", !auto);
     });
-  });
+  }, { once: true });
 
   /* idé-arket: laveste mulige terskel for innspill */
   var ide = document.getElementById("ide");
@@ -1275,7 +1276,9 @@ Mvh Ole Fabian, OP Bygg AS</div>
   document.getElementById("timer-lukk").addEventListener("click", function(){
     timerArk.classList.remove("apen");
   });
-  document.getElementById("timer-prosjekt").addEventListener("change", tHentEksisterende);
+  document.getElementById("timer-prosjekt").addEventListener("change", function(){
+    if(tVerdi === 0) tHentEksisterende();
+  });
   document.getElementById("t-minus").addEventListener("click", function(){ tJuster(-0.5); });
   document.getElementById("t-halv").addEventListener("click", function(){ tJuster(0.5); });
   document.getElementById("t-en").addEventListener("click", function(){ tJuster(1); });
@@ -1293,7 +1296,13 @@ Mvh Ole Fabian, OP Bygg AS</div>
     lagre();
     siFra("<b>✓</b> " + tTall(tVerdi) + " t ført på " + p);
     document.getElementById("timer-notat").value = "";
-    tStatus(); tUke(); tProsjektChips();
+    tStatus();
+  /* Escape lukker alle åpne ark (tastatur/tilgjengelighet) */
+  document.addEventListener("keydown", function(ev){
+    if(ev.key !== "Escape") return;
+    lukkArk(); varemottak.classList.remove("apen");
+    ide.classList.remove("apen"); timerArk.classList.remove("apen");
+  }); tUke(); tProsjektChips();
   });
   document.getElementById("timer-kopier").addEventListener("click", function(){
     var uka = tDenneUka().slice().sort(function(a, b){ return a.dato < b.dato ? -1 : 1; }),
@@ -1310,6 +1319,15 @@ Mvh Ole Fabian, OP Bygg AS</div>
       "Ukesoppsummeringen", "— lim inn i timelisten");
   });
   tStatus();
+  /* Escape lukker alle åpne ark (tastatur/tilgjengelighet) */
+  document.addEventListener("keydown", function(ev){
+    if(ev.key !== "Escape") return;
+    lukkArk(); varemottak.classList.remove("apen");
+    ide.classList.remove("apen"); timerArk.classList.remove("apen");
+  });
+  document.getElementById("vm-foto-knapp").addEventListener("click", function(){
+    document.getElementById("varemottak-foto").click();
+  });
   document.getElementById("varemottak-foto").addEventListener("change", function(){
     var rad = document.getElementById("foto-rad");
     rad.style.display = "flex";
@@ -1322,7 +1340,8 @@ Mvh Ole Fabian, OP Bygg AS</div>
       rad.appendChild(img);
     });
     loggHendelse("varemottak-foto", this.files.length + " bilde(r)");
-    siFra("<b>✓</b> " + this.files.length + " bilde(r) klare — legg dem ved i meldingen");
+    siFra("✓ " + this.files.length + " bilde(r) klare — legg dem ved i meldingen");
+    this.value = "";
   });
   document.getElementById("vm-lag").addEventListener("click", function(){
     var prosjekt = document.getElementById("vm-prosjekt").value.trim(),
@@ -1368,6 +1387,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
       demoTekst = "husk å bestille container til Krohgs gate før mandag… og send Berg en påminnelse om at vi trenger svar på fargevalg denne uka…";
   function lukkArk(){ dikter.classList.remove("apen"); }
   document.getElementById("ark-bak").addEventListener("click", lukkArk);
+  document.getElementById("dikter-lukk").addEventListener("click", lukkArk);
   mik.addEventListener("click", function(){
     loggHendelse("dikter-åpnet");
     dikter.classList.add("apen");

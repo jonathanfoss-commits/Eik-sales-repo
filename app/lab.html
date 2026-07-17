@@ -38,7 +38,7 @@
      border:none;cursor:pointer;color:#04110B;
      background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b))}
   .knapp.svak{background:var(--flate-2);color:var(--lys);border:1px solid var(--strek)}
-  .knapp.stem{background:none;border:1px solid var(--strek);color:var(--dis)}
+  .knapp.stem{background:none;border:1px solid var(--strek);color:var(--dis);padding:9px 14px}
   .knapp.stem.valgt{border-color:rgba(57,226,155,.6);color:var(--aurora-a)}
   .knapp.stem.valgt.ned{border-color:rgba(232,182,76,.6);color:var(--varsel)}
   .demo{display:none;margin-top:12px;border-top:1px solid var(--strek);padding-top:12px}
@@ -89,6 +89,10 @@
   body.laast .wrap{display:none}
   body:not(.laast) .port{display:none}
   .ide-kort .om{white-space:pre-wrap}
+  button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
+     outline:2px solid var(--aurora-a);outline-offset:2px}
+  .chipknapp{min-height:36px}
+  @media (prefers-reduced-motion: reduce){.blink{animation:none}}
 </style>
 </head>
 <body class="laast">
@@ -123,7 +127,7 @@
 
   <footer>Lærling · Prøverommet · Prototyper — data lagres kun lokalt</footer>
 </div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 (function(){
@@ -148,7 +152,7 @@
   var bruker = "";
   try{ bruker = (JSON.parse(localStorage.getItem("laerling") || "{}").bruker) || ""; }catch(e){}
   function siFra(t){ var el = document.getElementById("toast");
-    el.innerHTML = t; el.classList.add("vis");
+    el.textContent = String(t).replace(/<[^>]*>/g, ""); el.classList.add("vis");
     clearTimeout(el._t); el._t = setTimeout(function(){ el.classList.remove("vis"); }, 2600); }
   function loggInnspill(detalj){
     if(location.protocol === "file:") return;
@@ -182,9 +186,9 @@
 
   { id: "purretrapp", navn: "1 · Purring med norsk purretrapp",
     om: "Velg trinn — vennlig, forsinkelsesrente eller inkassovarsel — og få ferdig melding.",
-    demo: '<label>Hvem skylder?</label><input class="felt" id="pu-navn" placeholder="Hansen AS">' +
-      '<label>Faktura og beløp</label><input class="felt" id="pu-faktura" placeholder="Faktura 1042 · 48 500 kr">' +
-      '<label>Forfall (dager siden)</label><input class="felt" id="pu-dager" type="number" value="14">' +
+    demo: '<label for="pu-navn">Hvem skylder?</label><input class="felt" id="pu-navn" placeholder="Hansen AS">' +
+      '<label for="pu-faktura">Faktura og beløp</label><input class="felt" id="pu-faktura" placeholder="Faktura 1042 · 48 500 kr">' +
+      '<label for="pu-dager">Forfall (dager siden)</label><input class="felt" id="pu-dager" type="number" value="14">' +
       '<div class="rad"><button class="knapp svak" data-trinn="1">Trinn 1 · Vennlig</button>' +
       '<button class="knapp svak" data-trinn="2">Trinn 2 · Rente</button>' +
       '<button class="knapp svak" data-trinn="3">Trinn 3 · Inkassovarsel</button></div>' +
@@ -217,8 +221,8 @@
 
   { id: "varselvakta", navn: "2 · Varselvakta (NS 8407)",
     om: "Skriv avviket — få datostemplet endringsvarsel samme dag, med logg. «Et krav som ikke er varslet, finnes ikke.»",
-    demo: '<label>Prosjekt</label><input class="felt" id="va-prosjekt" placeholder="Solveien 12">' +
-      '<label>Hva skjedde? (dikter gjerne)</label><textarea class="felt" id="va-hva" ' +
+    demo: '<label for="va-prosjekt">Prosjekt</label><input class="felt" id="va-prosjekt" placeholder="Solveien 12">' +
+      '<label for="va-hva">Hva skjedde? (dikter gjerne)</label><textarea class="felt" id="va-hva" ' +
       'placeholder="Råte i bæring bak kledning, må skiftes før vi kan lukke veggen"></textarea>' +
       '<button class="knapp" id="va-lag">Lag varselet</button>' +
       '<div class="ut" id="va-ut"></div>' +
@@ -261,9 +265,9 @@
 
   { id: "tillegg", navn: "3 · Tilleggsarbeid-fangeren",
     om: "20 sekunder etter «vi tar det på regning» — så blir det faktisk fakturert.",
-    demo: '<label>Prosjekt</label><input class="felt" id="ti-prosjekt" placeholder="Solveien 12">' +
-      '<label>Hva ble avtalt?</label><input class="felt" id="ti-hva" placeholder="Ekstra stikkontakter på kjøkken, 4 stk">' +
-      '<label>Avtalt med / anslag</label><input class="felt" id="ti-med" placeholder="Byggherre Berg · ca. 6 500 kr">' +
+    demo: '<label for="ti-prosjekt">Prosjekt</label><input class="felt" id="ti-prosjekt" placeholder="Solveien 12">' +
+      '<label for="ti-hva">Hva ble avtalt?</label><input class="felt" id="ti-hva" placeholder="Ekstra stikkontakter på kjøkken, 4 stk">' +
+      '<label for="ti-med">Avtalt med / anslag</label><input class="felt" id="ti-med" placeholder="Byggherre Berg · ca. 6 500 kr">' +
       '<button class="knapp" id="ti-lagre">Fang tillegget</button>' +
       '<div id="ti-liste" style="margin-top:10px"></div>' +
       '<button class="knapp svak" id="ti-grunnlag" style="display:none;margin-top:8px">Kopier fakturagrunnlag</button>',
@@ -297,7 +301,7 @@
 
   { id: "bildeknagg", navn: "4 · Bildeknagg",
     om: "Bilde + én diktert setning = bevis som ikke drukner i kamerarullen.",
-    demo: '<label>Merkelapp (dikter gjerne)</label><input class="felt" id="bi-tekst" ' +
+    demo: '<label for="bi-tekst">Merkelapp (dikter gjerne)</label><input class="felt" id="bi-tekst" ' +
       'placeholder="Membran lagt på bad 2. etg — før flislegging">' +
       '<input type="file" accept="image/*" capture="environment" id="bi-fil" hidden>' +
       '<button class="knapp" id="bi-ta">📷 Ta / velg bilde</button>' +
@@ -315,7 +319,8 @@
           cap.textContent = dagensDato() + " · " + merkelapp;
           fig.appendChild(img); fig.appendChild(cap); e("bi-rad").appendChild(fig);
         });
-        siFra("<b>✓</b> Knagget med dato og tekst");
+        siFra("✓ Knagget med dato og tekst");
+        this.value = "";
       });
     } },
 
@@ -360,9 +365,15 @@
       e("fr-regn").addEventListener("click", function(){
         var d = e("fr-dato").value;
         if(!d){ siFra("Velg overtakelsesdato først"); return; }
-        var start = new Date(d + "T12:00:00"),
-            slutt2 = new Date(start); slutt2.setMonth(slutt2.getMonth() + 2);
-        var slutt8 = new Date(start); slutt8.setMonth(slutt8.getMonth() + 8);
+        var start = new Date(d + "T12:00:00");
+        function leggTilMnd(dato, mnd){
+          /* klamper til siste dag i målmåneden — 31.12 + 2 mnd = 28/29.2, ikke 3.3 */
+          var r = new Date(dato), dag = r.getDate();
+          r.setDate(1); r.setMonth(r.getMonth() + mnd);
+          r.setDate(Math.min(dag, new Date(r.getFullYear(), r.getMonth() + 1, 0).getDate()));
+          return r;
+        }
+        var slutt2 = leggTilMnd(start, 2), slutt8 = leggTilMnd(start, 8);
         function igjen(m){ return Math.ceil((m - Date.now()) / 864e5); }
         function pen(m){ return m.getDate() + "." + (m.getMonth() + 1) + "." + m.getFullYear(); }
         visUt("fr-ut",
@@ -406,7 +417,7 @@
 
   { id: "referat", navn: "8 · Byggemøte-referatet",
     om: "Dikter hovedpunktene rett etter møtet — få referat med ansvar og frister.",
-    demo: '<label>Hvem var med?</label><input class="felt" id="re-hvem" placeholder="Ole Fabian, byggherre Berg, rørlegger Olsen">' +
+    demo: '<label for="re-hvem">Hvem var med?</label><input class="felt" id="re-hvem" placeholder="Ole Fabian, byggherre Berg, rørlegger Olsen">' +
       '<label>Hovedpunkter (ett per linje — «hva; hvem; frist»)</label>' +
       '<textarea class="felt" id="re-punkter" placeholder="Flytte sluk 40 cm; Olsen; fredag\nBestille fliser; Berg; mandag"></textarea>' +
       '<button class="knapp" id="re-lag">Lag referatet</button>' +
@@ -458,8 +469,8 @@
 
   { id: "prisbank", navn: "10 · Tilbud fra egen prisbank",
     om: "Appen husker hva DU tok sist — og minner deg på det når du priser nytt.",
-    demo: '<label>Jobbtype</label><input class="felt" id="pb-type" placeholder="Legge fliser bad">' +
-      '<label>Pris du tok (per enhet)</label><input class="felt" id="pb-pris" placeholder="1 250 kr/m²">' +
+    demo: '<label for="pb-type">Jobbtype</label><input class="felt" id="pb-type" placeholder="Legge fliser bad">' +
+      '<label for="pb-pris">Pris du tok (per enhet)</label><input class="felt" id="pb-pris" placeholder="1 250 kr/m²">' +
       '<button class="knapp svak" id="pb-lagre">Husk prisen</button>' +
       '<div style="margin:10px 0 4px"><label>…og neste gang du priser:</label>' +
       '<input class="felt" id="pb-sok" placeholder="Skriv jobbtype — f.eks. fliser"></div>' +
@@ -484,7 +495,7 @@
 
   { id: "protokoll", navn: "11 · Overtakelsesprotokollen",
     om: "Rom for rom med mangelliste — beviset som gjelder i fem år.",
-    demo: '<label>Rom</label><input class="felt" id="pr-rom" placeholder="Bad 2. etasje">' +
+    demo: '<label for="pr-rom">Rom</label><input class="felt" id="pr-rom" placeholder="Bad 2. etasje">' +
       '<label>Mangler i rommet (én per linje, tomt = godkjent)</label>' +
       '<textarea class="felt" id="pr-mangler" placeholder="Ripe i flis ved dør\nFuge mangler bak servant"></textarea>' +
       '<button class="knapp svak" id="pr-neste">Neste rom</button>' +
@@ -524,7 +535,7 @@
       '<h2>' + verk.navn + '</h2><p class="om">' + verk.om + '</p>' +
       '<div class="rad">' +
         '<button class="knapp svak" data-prov>Prøv den ▾</button>' +
-        '<button class="knapp stem' + (stemme === "opp" ? " valgt" : "") + '" data-opp>👍 Bygg denne</button>' +
+        '<button class="knapp stem' + (stemme === "opp" ? " valgt" : "") + '" data-opp>👍 Bygg</button>' +
         '<button class="knapp stem' + (stemme === "ned" ? " valgt ned" : "") + '" data-ned>👎 Dropp</button>' +
       '</div>' +
       '<div class="stat"' + (stemme ? ' style="display:block"' : "") + ">" +
@@ -557,7 +568,7 @@
   /* ── innkomne idéer fra pilotloggen (via sitens serverfunksjon) ── */
   function visIdeer(){
     var boks = document.getElementById("ideer");
-    fetch("/.netlify/functions/innspill?kode=" + encodeURIComponent(KODE), { cache: "no-store" })
+    fetch("/.netlify/functions/innspill", { cache: "no-store", headers: { "X-Pilotkode": KODE } })
       .then(function(r){ if(!r.ok) throw 0; return r.json(); })
       .then(function(subs){
         var ideer = subs.filter(function(s){
@@ -580,7 +591,7 @@
             '<p class="om" style="font-family:var(--mono);font-size:.6rem;letter-spacing:.1em">' +
             s.created_at.slice(0, 10) + "</p>" +
             '<div class="rad">' +
-            '<button class="knapp stem' + (stemme === "opp" ? " valgt" : "") + '" data-opp>👍 Bygg denne</button>' +
+            '<button class="knapp stem' + (stemme === "opp" ? " valgt" : "") + '" data-opp>👍 Bygg</button>' +
             '<button class="knapp stem' + (stemme === "ned" ? " valgt ned" : "") + '" data-ned>👎 Dropp</button></div>' +
             '<div class="stat"' + (stemme ? ' style="display:block"' : "") + ">" +
             (stemme === "opp" ? "✓ Sendt til ekspertpanelet" : stemme === "ned" ? "Arkivert" : "") + "</div>";
