@@ -1,5 +1,5 @@
 /* Lærling service worker — appen virker offline og åpner umiddelbart */
-const CACHE = "laerling-v11";
+const CACHE = "laerling-v12";
 const FILER = ["./", "./index.html", "./rapport.html", "./bli-med.html", "./admin.html",
   "./ansatte.html", "./ledelsen.html",
   "./manifest.webmanifest", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
@@ -20,7 +20,7 @@ self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
   // versjon.json og changelog.json må alltid være ferske
   const sti = new URL(e.request.url).pathname;
-  if (sti.endsWith("/versjon.json") || sti.endsWith("/changelog.json")) {
+  if (sti.endsWith("/versjon.json") || sti.endsWith("/changelog.json") || sti.endsWith("/panelsvar.json")) {
     e.respondWith(fetch(e.request).catch(() => caches.match(e.request, { ignoreSearch: true })));
     return;
   }

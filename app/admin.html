@@ -116,6 +116,14 @@
      border-radius:99px;border:1px solid var(--strek);color:var(--dis);white-space:nowrap}
   .mini-knapp:hover{border-color:rgba(57,226,155,.5);color:var(--lys)}
   .mini-knapp.gjort{color:var(--aurora-a);border-color:rgba(57,226,155,.5)}
+  .mini-knapp.behandle{color:var(--aurora-a);border-color:rgba(57,226,155,.4);font-weight:700}
+  .bestilling{width:100%;display:flex;gap:8px;align-items:center;font-size:.76rem;
+     color:var(--aurora-a);padding:6px 0 0 18px}
+  .bestilling .blink{flex:none;width:7px;height:7px;border-radius:50%;
+     background:var(--aurora-a);animation:agentpuls 1.2s ease-in-out infinite}
+  .svar-pill{font-family:var(--mono);font-size:.54rem;letter-spacing:.08em;padding:3px 8px;
+     border-radius:99px;border:1px solid rgba(57,226,155,.5);color:var(--aurora-a);
+     text-transform:uppercase;white-space:nowrap}
 
   /* adgangsport */
   .port{position:fixed;inset:0;z-index:90;background:var(--bunn);display:flex;
@@ -199,11 +207,17 @@
       New access token — lagres kun i denne nettleseren).
     </div>
     <ul class="liste" id="innspill-liste" style="display:none"></ul>
-    <div id="innspill-handlinger" style="display:none;margin-top:14px">
-      <a class="knapp" style="font-size:.8rem;padding:8px 16px" target="_blank" rel="noopener"
-        href="https://github.com/jonathanfoss-commits/Eik-sales-repo/edit/claude/ai-automation-subscription-concept-647y35/innspill/inbox.md">Åpne inbox.md — lim inn og lagre ↗</a>
-      <span style="font-size:.76rem;color:var(--dis);margin-left:10px">…eller be Claude:
-      «kjør panelet nå» for umiddelbar behandling</span>
+    <div id="panel-svar" style="display:none;margin-top:16px">
+      <h2>Svar fra panelet</h2>
+      <ul class="liste" id="svar-liste"></ul>
+    </div>
+    <div id="innspill-handlinger" style="display:none;margin-top:12px;font-size:.76rem;color:var(--dis)">
+      <b style="color:var(--lys)">⚡ Behandle nå</b> varsler ekspertpanelet umiddelbart —
+      forslaget dukker opp her under «Svar fra panelet».
+      <span style="display:block;margin-top:3px">For Jonathan: Kopier-knappen +
+      <a href="https://github.com/jonathanfoss-commits/Eik-sales-repo/edit/claude/ai-automation-subscription-concept-647y35/innspill/inbox.md"
+        target="_blank" rel="noopener" style="color:var(--aurora-b)">inbox.md ↗</a>,
+      eller si «kjør panelet nå» til Claude.</span>
     </div>
   </div>
 
@@ -387,9 +401,22 @@ Statusdata hentes direkte fra app-kanalene</footer>
   function osloTid(){
     return new Date(new Date().toLocaleString("sv-SE", { timeZone: "Europe/Oslo" }).replace(" ", "T"));
   }
+  function nesteKjoring(){
+    var t = osloTid().getHours() + osloTid().getMinutes() / 60;
+    return t < 12 ? "lunsjtriagen kl. 12 i dag" :
+           t < 21 ? "kveldskjøringen kl. 21 i kveld" : "lunsjtriagen kl. 12 i morgen";
+  }
+  var varsletTil = 0;
+  function pulsPanel(){
+    /* panelet «våkner» visuelt i 15 sekunder når noen bestiller hastebehandling */
+    varsletTil = Date.now() + 15000;
+    visPanel();
+    setTimeout(visPanel, 15500);
+  }
   function visPanel(){
     var n = osloTid(), t = n.getHours() + n.getMinutes() / 60,
-        jobber = (t >= 21 && t < 22) || (t >= 12 && t < 12.25),
+        varslet = Date.now() < varsletTil,
+        jobber = (t >= 21 && t < 22) || (t >= 12 && t < 12.25) || varslet,
         st = document.getElementById("panel-status"),
         rad = document.getElementById("panel-agenter");
     rad.innerHTML = "";
@@ -400,7 +427,10 @@ Statusdata hentes direkte fra app-kanalene</footer>
       chip.textContent = navn;
       rad.appendChild(chip);
     });
-    if(jobber){
+    if(varslet){
+      st.innerHTML = '<b style="color:var(--aurora-a)">● PANELET ER VARSLET</b> — ' +
+        "innspillet er lagt øverst i køen for " + nesteKjoring();
+    } else if(jobber){
       st.innerHTML = '<b style="color:var(--aurora-a)">● PANELET ARBEIDER NÅ</b> — ' +
         (t >= 21 ? "12 agenter vurderer, bygger og tester kveldens leveranse" :
          "lunsjtriagen prioriterer dagens innspill");
@@ -421,6 +451,31 @@ Statusdata hentes direkte fra app-kanalene</footer>
           li.innerHTML = '<span class="prikk"></span><span><b>' + o.dato + "</b> · " +
             o.tekst.replace(/</g, "&lt;") +
             (o.av ? ' <span style="color:var(--aurora-b)">— foreslått av ' + o.av.replace(/</g, "&lt;") + "</span>" : "") + "</span>";
+          ul.appendChild(li);
+        });
+      }).catch(function(){});
+  }
+
+  /* ── svar fra panelet: forslag skrevet av ekspertpanelet, følger med appen ── */
+  function visSvar(){
+    fetch("panelsvar.json?t=" + Date.now(), { cache: "no-store" })
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(svar){
+        if(!svar.length) return;
+        var boks = document.getElementById("panel-svar"),
+            ul = document.getElementById("svar-liste");
+        boks.style.display = "block";
+        ul.innerHTML = "";
+        svar.slice(0, 6).forEach(function(o){
+          var li = document.createElement("li");
+          li.style.flexWrap = "wrap";
+          li.innerHTML = '<span class="prikk"></span>' +
+            '<span style="flex:1"><b>' + String(o.dato).replace(/</g, "&lt;") + "</b> · Til «" +
+            String(o.innspill).replace(/</g, "&lt;") + "»:<br>" +
+            String(o.svar).replace(/</g, "&lt;") +
+            (o.av ? ' <span style="color:var(--aurora-b)">— ' + String(o.av).replace(/</g, "&lt;") + "</span>" : "") +
+            "</span>" +
+            '<span class="svar-pill">' + String(o.status || "forslag").replace(/</g, "&lt;") + "</span>";
           ul.appendChild(li);
         });
       }).catch(function(){});
@@ -465,13 +520,40 @@ Statusdata hentes direkte fra app-kanalene</footer>
           liste.innerHTML = '<li style="border:none;color:var(--dis)">Ingen innspill ennå — de dukker opp her i det sekundet noen sender fra appen.</li>';
           return;
         }
+        innst.bestilt = innst.bestilt || {};
         innspill.slice(0, 12).forEach(function(s){
           var tekst = (s.data.detalj || "").replace(/</g, "&lt;"),
-              gjort = !!innst.handtert[s.id];
+              gjort = !!innst.handtert[s.id],
+              bestilt = !!innst.bestilt[s.id];
           var li = document.createElement("li");
+          li.style.flexWrap = "wrap";
           li.innerHTML = '<span class="prikk" style="' + (gjort ? "opacity:.25" : "") + '"></span>' +
             '<span style="flex:1;' + (gjort ? "opacity:.45" : "") + '"><b>' +
             s.created_at.slice(0, 10) + "</b> · " + tekst + "</span>";
+          var kn0 = document.createElement("button");
+          kn0.className = "mini-knapp behandle";
+          kn0.textContent = bestilt ? "✓ Hos panelet" : "⚡ Behandle nå";
+          if(bestilt) kn0.disabled = true;
+          kn0.addEventListener("click", function(){
+            /* varsle panelet: logg bestillingen (innspillet er allerede delt av brukeren selv) */
+            var post = { "form-name": "pilotlogg", hendelse: "panel-bestilling",
+                         detalj: "Hastebehandling bestilt · " + (s.data.detalj || ""),
+                         tid: new Date().toISOString() };
+            var kropp = Object.keys(post).map(function(k){
+              return encodeURIComponent(k) + "=" + encodeURIComponent(post[k]); }).join("&");
+            fetch("/", { method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: kropp
+            }).catch(function(){});
+            innst.bestilt[s.id] = Date.now(); lagreInnst();
+            kn0.textContent = "✓ Hos panelet"; kn0.disabled = true;
+            var status = document.createElement("div");
+            status.className = "bestilling";
+            status.innerHTML = '<span class="blink"></span><span>Ekspertpanelet er varslet — ' +
+              "Produktsjefen tar innspillet først i " + nesteKjoring() +
+              ". Forslaget dukker opp under «Svar fra panelet».</span>";
+            li.appendChild(status);
+            pulsPanel();
+          });
           var kn1 = document.createElement("button");
           kn1.className = "mini-knapp"; kn1.textContent = "Kopier";
           kn1.addEventListener("click", function(){
@@ -487,7 +569,14 @@ Statusdata hentes direkte fra app-kanalene</footer>
             innst.handtert[s.id] = !innst.handtert[s.id];
             lagreInnst(); hentInnspill();
           });
-          li.appendChild(kn1); li.appendChild(kn2);
+          li.appendChild(kn0); li.appendChild(kn1); li.appendChild(kn2);
+          if(bestilt){
+            var st2 = document.createElement("div");
+            st2.className = "bestilling";
+            st2.innerHTML = '<span class="blink"></span><span>Hos ekspertpanelet — forslaget ' +
+              "kommer under «Svar fra panelet» senest etter " + nesteKjoring() + ".</span>";
+            li.appendChild(st2);
+          }
           liste.appendChild(li);
         });
       })
@@ -499,7 +588,7 @@ Statusdata hentes direkte fra app-kanalene</footer>
   }
 
   function start(){
-    settLenker(); visPuls(); visPanel(); visLeveranser(); hentInnspill();
+    settLenker(); visPuls(); visPanel(); visLeveranser(); visSvar(); hentInnspill();
     Promise.all([
       hentVersjon(innst.stabil, "v-stabil", "s-stabil"),
       hentVersjon(innst.test, "v-test", "s-test")
