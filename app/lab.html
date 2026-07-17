@@ -74,9 +74,36 @@
   .toast.vis{transform:translateX(-50%) translateY(0)}
   footer{margin-top:24px;text-align:center;font-family:var(--mono);font-size:.6rem;
      letter-spacing:.1em;color:var(--dis);text-transform:uppercase;line-height:2}
+  /* adgangsport — samme pilotkode som kommandosentralen */
+  .port{position:fixed;inset:0;z-index:90;background:var(--bunn);display:flex;
+     align-items:center;justify-content:center;padding:24px}
+  .port .boks{max-width:360px;width:100%;background:var(--flate);border:1px solid var(--strek);
+     border-radius:16px;padding:30px;text-align:center}
+  .port h1{font-size:1.3rem;margin-bottom:6px}
+  .port p{font-size:.82rem;color:var(--dis);margin-bottom:16px}
+  .port input{width:100%;background:rgba(0,0,0,.3);border:1px solid var(--strek);
+     border-radius:10px;color:var(--lys);font:inherit;padding:11px 12px;text-align:center;
+     margin-bottom:12px}
+  .port .knapp{width:100%}
+  .port .feil{color:var(--varsel);font-size:.78rem;margin-top:10px;display:none}
+  body.laast .wrap{display:none}
+  body:not(.laast) .port{display:none}
+  .ide-kort .om{white-space:pre-wrap}
 </style>
 </head>
-<body>
+<body class="laast">
+
+<div class="port">
+  <div class="boks">
+    <h1>🧪 Prøverommet</h1>
+    <p>For pilotteamet: Jonathan, Ole Fabian og OP Bygg-ledelsen.
+    Skriv inn pilotkoden (samme som kommandosentralen).</p>
+    <input id="kode" type="password" placeholder="Pilotkode" autocomplete="off">
+    <button class="knapp" id="laas-opp">Åpne</button>
+    <div class="feil" id="kode-feil">Feil kode — spør Jonathan.</div>
+  </div>
+</div>
+
 <div class="wrap">
 
   <div class="brev">🧪 Prøverommet · Kun testkanalen</div>
@@ -88,6 +115,11 @@
   <a class="tilbake" href="index.html">‹ Tilbake til appen</a>
 
   <div id="meny"></div>
+
+  <div class="brev" style="margin:26px 0 8px">💡 Innkomne idéer fra appen</div>
+  <p class="inngang" style="margin-bottom:12px">Alt som meldes inn med 💡-knappen havner
+  også her — så hele pilotteamet kan stemme før panelet bygger.</p>
+  <div id="ideer"><p style="font-size:.84rem;color:var(--dis)">Henter idéene …</p></div>
 
   <footer>Lærling · Prøverommet · Prototyper — data lagres kun lokalt</footer>
 </div>
@@ -101,6 +133,18 @@
   try{ lager = JSON.parse(localStorage.getItem("laerling-lab") || "{}"); }catch(e){ lager = {}; }
   lager.stemmer = lager.stemmer || {}; lager.data = lager.data || {};
   function lagre(){ try{ localStorage.setItem("laerling-lab", JSON.stringify(lager)); }catch(e){} }
+
+  /* ── adgangsport: samme pilotkode som kommandosentralen ── */
+  var KODE = "opbygg2026";
+  function laasOpp(){
+    if(document.getElementById("kode").value.trim() === KODE){
+      lager.opplaast = 1; lagre(); document.body.classList.remove("laast");
+    } else { document.getElementById("kode-feil").style.display = "block"; }
+  }
+  document.getElementById("laas-opp").addEventListener("click", laasOpp);
+  document.getElementById("kode").addEventListener("keydown", function(ev){
+    if(ev.key === "Enter") laasOpp(); });
+  if(lager.opplaast){ document.body.classList.remove("laast"); }
   var bruker = "";
   try{ bruker = (JSON.parse(localStorage.getItem("laerling") || "{}").bruker) || ""; }catch(e){}
   function siFra(t){ var el = document.getElementById("toast");
@@ -509,6 +553,61 @@
     kort.querySelector("[data-ned]").addEventListener("click", function(){ stem("ned"); });
     verk.koble(kort);
   });
+
+  /* ── innkomne idéer fra pilotloggen (via sitens serverfunksjon) ── */
+  function visIdeer(){
+    var boks = document.getElementById("ideer");
+    fetch("/.netlify/functions/innspill?kode=" + encodeURIComponent(KODE), { cache: "no-store" })
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(subs){
+        var ideer = subs.filter(function(s){
+          var d = (s.data || {}).detalj || "";
+          return (s.data || {}).hendelse === "innspill" &&
+            d.indexOf("Prøverommet:") < 0 && d.indexOf("Hastebehandling bestilt") < 0;
+        });
+        boks.innerHTML = "";
+        if(!ideer.length){
+          boks.innerHTML = '<p style="font-size:.84rem;color:var(--dis)">Ingen idéer ennå — ' +
+            "send én med 💡-knappen i appen, så dukker den opp her.</p>";
+          return;
+        }
+        ideer.slice(0, 15).forEach(function(s){
+          var tekst = (s.data.detalj || ""), nokkel = "ide-" + s.id,
+              stemme = lager.stemmer[nokkel];
+          var kort = document.createElement("div");
+          kort.className = "kort ide-kort";
+          kort.innerHTML = '<h2 style="font-size:.92rem"></h2>' +
+            '<p class="om" style="font-family:var(--mono);font-size:.6rem;letter-spacing:.1em">' +
+            s.created_at.slice(0, 10) + "</p>" +
+            '<div class="rad">' +
+            '<button class="knapp stem' + (stemme === "opp" ? " valgt" : "") + '" data-opp>👍 Bygg denne</button>' +
+            '<button class="knapp stem' + (stemme === "ned" ? " valgt ned" : "") + '" data-ned>👎 Dropp</button></div>' +
+            '<div class="stat"' + (stemme ? ' style="display:block"' : "") + ">" +
+            (stemme === "opp" ? "✓ Sendt til ekspertpanelet" : stemme === "ned" ? "Arkivert" : "") + "</div>";
+          kort.querySelector("h2").textContent = tekst;
+          function stemPaa(valg){
+            lager.stemmer[nokkel] = valg; lagre();
+            kort.querySelector("[data-opp]").className = "knapp stem" + (valg === "opp" ? " valgt" : "");
+            kort.querySelector("[data-ned]").className = "knapp stem" + (valg === "ned" ? " valgt ned" : "");
+            var st = kort.querySelector(".stat"); st.style.display = "block";
+            st.textContent = valg === "opp" ? "✓ Sendt til ekspertpanelet" : "Arkivert";
+            loggInnspill("Prøverommet: " + (valg === "opp" ? "👍 BYGG" : "👎 dropp") +
+              " idé «" + tekst.slice(0, 70) + "»");
+            siFra(valg === "opp" ? "<b>✓</b> Panelet har fått beskjed" : "Notert");
+          }
+          kort.querySelector("[data-opp]").addEventListener("click", function(){ stemPaa("opp"); });
+          kort.querySelector("[data-ned]").addEventListener("click", function(){ stemPaa("ned"); });
+          boks.appendChild(kort);
+        });
+      })
+      .catch(function(){
+        boks.innerHTML = '<p style="font-size:.84rem;color:var(--dis)">Fikk ikke hentet ' +
+          "idéene herfra ennå — de vises når serverfunksjonen er koblet til (miljøvariabelen " +
+          "PILOTLOGG_TOKEN i Netlify). Idéene er trygt lagret i pilotloggen uansett, og " +
+          "vises i kommandosentralen.</p>";
+      });
+  }
+  visIdeer();
 
   /* service worker som resten av appen */
   if("serviceWorker" in navigator &&

@@ -3,11 +3,22 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
-## ÉN SAMLET LEVERANSE VENTER: v0.9.4–v0.11.0 — godkjennes under ett
+## ÉN SAMLET LEVERANSE VENTER: v0.9.4–v0.11.1 — godkjennes under ett
 
 Delversjonene under er bygget samme dag og testes kumulativt (fulltesten dekker alt
-sammen). En Godkjenn-stemme på v0.11.0 i testappen godkjenner hele pakken — dette teller
+sammen). En Godkjenn-stemme på v0.11.1 i testappen godkjenner hele pakken — dette teller
 som ÉN leveranse mot køregelen.
+
+## v0.11.1 — 17. juli 2026 (bestilt av Jonathan)
+
+**Hva:** Prøverommet utvidet: (1) «Innkomne idéer fra appen» — alle 💡-innspill hentes
+live via serverfunksjonen og kan stemmes 👍/👎 på samme sted som de 11 prototypene;
+(2) tilgang for hele pilotteamet: adgangsport med pilotkoden (samme som kommandosentralen),
+lenker fra kommandosentralens verktøykasse og ledelsen-siden. Ansatte-appen på STABIL er
+uendret synlig-messig.
+
+**Testet:** Fulltest 141/141 grønne (port, idéhenting m/filtrering, idéstemme til
+pilotloggen, lenker fra admin).
 
 ## v0.11.0 — 17. juli 2026 (Prøverommet — bestilt av Jonathan)
 
