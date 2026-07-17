@@ -1,6 +1,11 @@
 [
   {
     "dato": "2026-07-17",
+    "tekst": "Kommandosentralen fyller nå inn adresser og pilotstart av seg selv i alle nettlesere — kun tokenet må limes inn på nytt.",
+    "av": "Jonathan"
+  },
+  {
+    "dato": "2026-07-17",
     "tekst": "Kommandosentralen viser nå innspill live med hurtighåndtering, godkjenningsstemmer og ekspertpanelet i arbeid — og appen krever ikke lenger Claude for andre enn de som skriver tilbud og rapporter.",
     "av": "Jonathan"
   },

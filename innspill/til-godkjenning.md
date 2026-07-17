@@ -1,5 +1,19 @@
 # Til godkjenning — kveldsteamets leveranser som venter
 
+## v0.9.1 — 17. juli 2026 (levert av Claude på direkte bestilling fra Jonathan)
+
+**Hva:** Kommandosentralen starter aldri tom igjen: STABIL-/TEST-URL og pilotstart ligger nå
+som standardverdier i koden (de er ikke hemmeligheter), og adminen gjenkjenner i tillegg sin
+egen Netlify-adresse automatisk. Egne lagrede verdier vinner alltid over standardene.
+Netlify-tokenet er bevisst fortsatt per nettleser — det er en ekte hemmelighet og skal aldri
+ligge i koden. Oppsett-boksen forklarer dette.
+
+**Hvorfor:** Jonathan åpnet kommandosentralen i en ny nettleser og møtte tomme kanalbokser
+selv om tokenet var limt inn — localStorage er per nettleser, og oppsettet var borte.
+
+**Testet:** 17/17 Playwright-sjekker (fersk nettleser får alt utfylt, lagrede verdier vinner,
+selv-gjenkjenning av vertsnavn, mobil 390×844, null JS-feil).
+
 ## v0.9.0 — 17. juli 2026 (levert av Claude på direkte bestilling fra Jonathan)
 
 **Hva:**

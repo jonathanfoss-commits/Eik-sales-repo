@@ -269,15 +269,18 @@
   </div>
 
   <div class="kort s4">
-    <h2>Oppsett <span style="color:var(--dis)">(lagres kun i denne nettleseren)</span></h2>
+    <h2>Oppsett <span style="color:var(--dis)">(ferdig utfylt — endre kun ved behov)</span></h2>
     <div class="felt"><label for="url-stabil">STABIL-URL</label>
-      <input id="url-stabil" placeholder="https://laerling-app.netlify.app"></div>
+      <input id="url-stabil" placeholder="https://op-bygg-laerling-app.netlify.app"></div>
     <div class="felt"><label for="url-test">TEST-URL</label>
-      <input id="url-test" placeholder="https://laerling-app-test.netlify.app"></div>
+      <input id="url-test" placeholder="https://op-bygg-laerling-app-test.netlify.app"></div>
     <div class="felt"><label for="pilot-start">Pilotstart</label>
       <input id="pilot-start" type="date"></div>
     <div class="felt"><label for="netlify-token">Netlify-token (valgfritt — gir live innspill)</label>
       <input id="netlify-token" type="password" placeholder="nfp_…" autocomplete="off"></div>
+    <p style="font-size:.78rem;color:var(--dis);margin:2px 0 10px">URL-er og pilotstart følger
+    med appen og fylles inn av seg selv. Tokenet er det eneste som må limes inn på nytt i en
+    ny nettleser — det er en hemmelighet og lagres kun lokalt hos deg.</p>
     <button class="knapp" id="lagre-oppsett">Lagre og oppdater</button>
   </div>
 
@@ -294,6 +297,19 @@ Statusdata hentes direkte fra app-kanalene</footer>
   var KODE = "opbygg2026";
   var innst;
   try{ innst = JSON.parse(localStorage.getItem("laerling-admin") || "{}"); }catch(e){ innst = {}; }
+
+  /* ── standardoppsett: URL-er og pilotstart er ikke hemmeligheter og følger med koden,
+     så en ny nettleser starter aldri tom. Egne lagrede verdier vinner alltid.
+     Kun Netlify-tokenet må legges inn per nettleser — det er en ekte hemmelighet. ── */
+  if(/^https?:$/.test(location.protocol) && /\.netlify\.app$/.test(location.hostname)){
+    var egenErTest = /(^|[.-])test([.-]|$)/.test(location.hostname);
+    if(egenErTest && !innst.test) innst.test = location.origin;
+    if(!egenErTest && !innst.stabil) innst.stabil = location.origin;
+  }
+  var STANDARD = { stabil: "https://op-bygg-laerling-app.netlify.app",
+                   test:   "https://op-bygg-laerling-app-test.netlify.app",
+                   start:  "2026-07-17" };
+  Object.keys(STANDARD).forEach(function(k){ if(!innst[k]) innst[k] = STANDARD[k]; });
   function lagreInnst(){ try{ localStorage.setItem("laerling-admin", JSON.stringify(innst)); }catch(e){} }
   function laasOpp(){
     var v = document.getElementById("kode").value.trim();
