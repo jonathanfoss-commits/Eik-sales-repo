@@ -27,6 +27,18 @@ med navn og versjonsnummer. Versjonsnummeret vises nederst på Verktøy-fanen i 
    `kveldsteam-forslag` inn i hovedbranchen og publiserer. Alle ansatte har ny versjon.
    Ved AVVIST: Jonathan noterer hvorfor i `innspill/inbox.md`, og teamet tar det neste kveld.
 
+## Admin-overstyring (nøkkel 1 alene — besluttet av Jonathan 17. juli)
+
+- Jonathan kan som produktansvarlig **hastepublisere uten å vente på Ole Fabians stemme**:
+  han sier «publiser som admin» til Claude, som merger og publiserer umiddelbart.
+- **Alltid åpent logget:** overstyringen føres i publiseringsloggen i
+  `innspill/til-godkjenning.md`, og endringen vises som vanlig i changelog og
+  kommandosentral — Ole Fabian ser alltid hva som skjedde og når.
+- Retten er personlig for Jonathan (eier/drifter). Ole Fabian har den ikke, og Claude
+  publiserer aldri på eget initiativ. Ledelsen er informert via ledelsen-siden.
+- Normalflyten er fortsatt to nøkler — overstyringen er for hastetilfeller
+  (feilretting, blokkert pilot, Ole Fabian utilgjengelig).
+
 ## Køregel (justert 17. juli, besluttet av Jonathan)
 
 - Panelet **stopper ikke** selv om en leveranse venter på godkjenning — det bygger videre

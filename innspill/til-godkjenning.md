@@ -3,6 +3,15 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
+## v0.10.1 — 17. juli 2026 (styringsendring besluttet av Jonathan)
+
+**Hva:** Admin-overstyring formalisert: Jonathan kan hastepublisere alene («publiser som
+admin» til Claude) — alltid åpent logget i publiseringsloggen her, og opplyst i både
+ledelsen-siden og kommandosentralens flytkort. Køregelen (maks 3 i kø, samlet godkjenning)
+dokumentert i samarbeid/godkjenning.md og aktiv i kveldsrutinen fra i kveld.
+
+**Testet:** Fulltest 118/118 grønne.
+
 ## v0.10.0 — 17. juli 2026 (panelkjøring — live-demo bestilt av Jonathan)
 
 **Hva:** ⏱ Timeregistrering — Ole Fabians innspill fra i dag, bygget av panelet:

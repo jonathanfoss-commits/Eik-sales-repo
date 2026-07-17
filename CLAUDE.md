@@ -49,5 +49,9 @@ Opptre som et senior produktteam og innta riktig rolle etter oppgaven:
 - Endringer går til STABIL først når både Jonathan og Ole Fabian har trykket «Godkjenn» i
   TEST-appen (logges i pilotloggen) og Jonathan har merget og publisert.
   Full flyt: `samarbeid/godkjenning.md`.
+- **Admin-overstyring:** Jonathan kan alene beordre publisering til STABIL («publiser som
+  admin»). Claude utfører da umiddelbart, men skal ALLTID loggføre overstyringen åpent i
+  publiseringsloggen i `innspill/til-godkjenning.md` (hva, når, at Ole Fabian ikke hadde
+  stemt). Kun Jonathan har denne retten — aldri Ole Fabian, aldri på eget initiativ.
 - Startlenken til pilotkunden er `<app-URL>/bli-med.html`.
 - Landingssiden ligger i `pitch/landing.html` (publiseres som egen Netlify-site).
