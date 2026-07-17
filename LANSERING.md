@@ -15,12 +15,13 @@ er sendt. Alt materiell finnes allerede i dette repoet — planen under er bare 
 
 1. **Eik-praten** (morgen). Få muntlig OK + send en kort e-post etterpå som bekrefter
    («som avtalt: jeg starter egen virksomhet rettet mot SMB utenfor Eiks marked…»). Skriftlig spor.
-2. **Registrer ENK** på Altinn (Samordnet registermelding) — gratis, 15 minutter.
-   Næringskode: 62.010/70.220. Firmanavn: «[Navn] Foss» eller ønsket navn.
+2. **Eierskap:** Ole Fabian er medeier — ENK er derfor uaktuelt (kan bare ha én eier).
+   Gjør i stedet: opprett GitHub-organisasjonen og signer samarbeidsavtalen
+   (se [samarbeid/eierskap.md](samarbeid/eierskap.md)). AS stiftes ved første betalende kunde.
 3. **Kjøp domenet** og publiser:
    - `laerling-app.zip` → Netlify Drop → omdøp site til `laerling-app` → koble `app.dittdomene.no`
    - `laerling-nettside.zip` → Netlify Drop → koble `dittdomene.no`
-4. **Fiken-konto** (regnskap + faktura, ~200 kr/mnd). Legg inn ENK-orgnummeret når det kommer.
+4. **Fiken-konto** (regnskap + faktura, ~200 kr/mnd) settes opp når selskapet er registrert.
 5. **Opprett firma-e-post** (Domeneshop/Google Workspace) og bytt CTA-adressen i
    `pitch/landing.html` (én konstant øverst i skriptet) → last opp nettsiden på nytt.
 
@@ -71,7 +72,7 @@ er sendt. Alt materiell finnes allerede i dette repoet — planen under er bare 
 
 ## Hva du bevisst IKKE gjør denne uken
 
-- **Ikke AS** — ENK holder til kunde #5. **Ikke logo/profil** — nettsiden er identiteten.
+- **Ikke stift AS ennå** — samarbeidsavtalen holder til første betalende kunde. **Ikke logo/profil** — nettsiden er identiteten.
 - **Ikke bygge programvare** — Claude Projects + deg ER produktet i pilotfasen.
 - **Ikke App Store** — PWA-en på hjemskjermen holder til produktet er bevist.
 - **Ikke betale for annonser** — nettverk og henvisninger er kanalen de første 90 dagene.

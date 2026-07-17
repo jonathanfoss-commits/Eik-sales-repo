@@ -25,7 +25,8 @@ gjør manuelt) bygges først når inntektene beviser hva som skal automatiseres.
 - Flytt alt arbeid med selskapet til privat konto/maskin og eget repo fra nå av.
 
 ### Steg 2 — Registrer selskapet (uke 1–2)
-- **Anbefaling: start som ENK nå** (gratis i Enhetsregisteret, registrert på dager) så du kan
+- **Oppdatert:** med Ole Fabian som medeier er ENK uaktuelt (én-eier-form) — se
+  [samarbeid/eierskap.md](../samarbeid/eierskap.md). Opprinnelig anbefaling (gjelder kun ved én eier): start som ENK så du kan
   fakturere umiddelbart. **Konverter til AS** (30 000 kr aksjekapital) når du passerer
   ~5 betalende kunder eller vil ta inn partner — abonnementskunder og databehandleravtaler
   ser mer seriøst ut med AS, men det skal ikke forsinke første faktura.

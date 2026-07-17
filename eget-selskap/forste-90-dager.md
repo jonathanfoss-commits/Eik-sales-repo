@@ -6,7 +6,8 @@ og dokumenterer, blir enten en mal (skalerer deg) eller kode (skalerer selskapet
 ## Fase 1: Fundament + pilot (uke 1–3)
 
 - [ ] Avklar bierverv med Eik (skriftlig). Privat e-post, egen maskin, eget repo.
-- [ ] Registrer ENK i Enhetsregisteret. Fiken-konto. Egen bankkonto.
+- [ ] Eierskap på plass: GitHub-org + samarbeidsavtale med Ole Fabian (se samarbeid/eierskap.md).
+      AS stiftes ved første betalende kunde; Fiken og bankkonto følger selskapet.
 - [ ] Start OP Bygg-piloten med Ole Fabian (dag 1-oppsettet tar 20 min — gjør det sammen
       med ham fysisk eller på video).
 - [ ] Før logg over ALT: tidsbruk per steg, hva han spør om, hva som ikke virker.

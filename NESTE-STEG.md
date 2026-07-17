@@ -8,7 +8,9 @@ Sist oppdatert: 13. juli 2026. Alt innhold det refereres til ligger i dette repo
    Ta praten åpent og få skriftlig OK. *Alt annet venter på dette.*
 2. **Opprett firmaets GitHub-repo** (f.eks. `laerling-ai`, privat) på github.com/new og flytt
    innholdet hit fra Eik-repoet — dette skiller firmaet fra arbeidsgiver også teknisk.
-3. **Registrer ENK** i Enhetsregisteret (gratis, går på dager). Bestill Fiken-konto.
+3. ~~Registrer ENK~~ **Endret — Ole Fabian er medeier** (ENK kan bare ha én eier):
+   signer samarbeidsavtale nå, stift Lærling AS ved første betalende kunde —
+   se [samarbeid/eierskap.md](samarbeid/eierskap.md). Bestill Fiken-konto når selskapet finnes.
 4. **Send pilot-pakken til Ole Fabian:** `pilot/ole-fabian-op-bygg/grunninstruks.md` og
    `prompter.md`, pluss avtal 20-minutters oppsett sammen (dag 1 i 14-dagersplanen).
 
