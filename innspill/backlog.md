@@ -53,8 +53,9 @@ les begrunnelsen der før bygging.
   «tjener vi penger på denne jobben?» — [SENERE, krever OCR].
 - **Synlig lagret-status overalt:** forskning viser at 2–3 opplevde datatap dreper
   tilliten varig — alle lagringer skal vise eksplisitt kvittering.
-- **Dagslys-modus LØFTES:** mørkt tema er dokumentert dårligere i sollys — lys modus
-  med én-trykks bytte bør opp fra punkt 14 til topp 5 (bekreftet av felt-UX-research).
+- **Dagslys-modus — ✅ GODKJENT AV JONATHAN 17. juli:** mørkt tema er dokumentert
+  dårligere i sollys. Bygges som én-trykks bytte (mørk forblir standard), prioriteres
+  rett etter purring-generatoren — ta den som punkt 2 i køen.
 
 ## Avvist etter research (bygges IKKE — se rapporten for begrunnelse)
 
