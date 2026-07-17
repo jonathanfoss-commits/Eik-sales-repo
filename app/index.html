@@ -282,7 +282,7 @@
       <span>Veiviser · 2 minutter · helt gratis</span></div>
       <div class="pil-h">›</div>
     </button>
-    <div class="sek-tittel">Til godkjenning · <b id="antall">3</b></div>
+    <div class="sek-tittel">Til godkjenning · <b id="antall">4</b></div>
     <div id="utkast-liste">
 
       <div class="kort utkast">
@@ -314,6 +314,25 @@ Mvh Ole Fabian, OP Bygg AS</div>
 Ved åpning av vegg i 2. etasje er det i dag avdekket fuktskade som ikke fremgikk av tilstandsrapporten.
 
 Dette varsles som endring iht. NS 8407 (nøytralt varsel, uten ugrunnet opphold). Konsekvens for pris og fremdrift avklares og oversendes så snart omfanget er kartlagt, senest innen 3 virkedager.
+
+Mvh Ole Fabian, OP Bygg AS</div>
+        <div class="rad">
+          <button class="knapp godkjenn">Godkjenn og send</button>
+          <button class="knapp svak se">Se utkast</button>
+        </div>
+      </div>
+
+      <div class="kort utkast">
+        <span class="badge">VAREMOTTAK</span>
+        <h3>Avvik — leveranse fra Byggmakker, Krohgs gate</h3>
+        <p class="prev">Ved mottak i dag manglet 6 av 24 gipsplater og to karmer har transportskade. Notert på følgeseddel før signering…</p>
+        <div class="full">Til Byggmakker
+
+Ved varemottak i dag på Christian Krohgs gate 60 (ordre 4471) ble følgende avvik registrert og notert på følgeseddelen før signering:
+• 6 av 24 gipsplater mangler
+• 2 karmer med synlig transportskade (bilder vedlagt)
+
+Vi ber om levering av manglende/uskadde varer innen 3 virkedager, alternativt kreditering. Fakturaen kontrolleres mot bestilling og faktisk mottatt vare.
 
 Mvh Ole Fabian, OP Bygg AS</div>
         <div class="rad">
@@ -426,6 +445,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
         <option>Ukesrapport</option>
         <option>Purring til UE</option>
         <option>Byggedagbok</option>
+        <option>Varemottak</option>
         <option>Appen generelt</option>
       </select>
       <textarea id="tilbake-tekst" placeholder="Fortell med dine egne ord — jo mer konkret, jo bedre"
@@ -459,6 +479,10 @@ Mvh Ole Fabian, OP Bygg AS</div>
     <div class="kort vk"><div class="info"><h3>Byggedagbok</h3>
       <p>Dagens logg fra 30 sek diktering — gull ved tvist</p></div>
       <button class="modus auto" data-modus="auto">AUTO</button></div>
+
+    <div class="kort vk"><div class="info"><h3>Varemottak</h3>
+      <p>Avvik meldt samme dag — faktura sjekkes mot mottatt vare</p></div>
+      <button class="modus" data-modus="utkast">UTKAST</button></div>
 
     <div class="kort vk"><div class="info"><h3>Jobbdokumentasjon</h3>
       <p>Bilder og notater til sluttrapport</p></div>
@@ -611,12 +635,14 @@ Mvh Ole Fabian, OP Bygg AS</div>
       p:"Ukesrapport for [prosjekt], uke [nr]: [dikter: hva som ble gjort, status mot plan, avvik, plan neste uke, hva du venter på fra byggherren]. Sett opp i standard ukesrapport-struktur." },
     { t:"Purring til UE", s:"Vennlig, men tydelig",
       p:"Skriv en purring til [firma/navn] om [pristilbud/tegninger/leveranse]. Bakgrunn: [dikter kort historikk og hvorfor det haster]. Vennlig tone, men tydelig frist [dato] og konsekvens." },
+    { t:"Varemottak → avviksmelding", s:"Gjør det FØR du signerer følgeseddelen",
+      p:"Varemottak på [prosjekt], [dato], leverandør [navn]. Bestilling/ordrenr: [nr]. [dikter: hva som kom, hva som mangler eller er skadet, antall mot følgeseddel]. Lag 1) skriftlig avviksmelding til leverandøren med frist for retting/kreditering, og 2) internt notat til regnskap om at fakturaen skal kontrolleres mot bestilling og faktisk mottatt vare." },
     { t:"Byggedagbok", s:"30 sekunder på slutten av dagen",
       p:"Byggedagbok [prosjekt], [dato]: [dikter: hvem som var på plassen, hva som ble gjort, vær, leveranser, hindringer, beskjeder fra byggherre]. Før dette som strukturert dagboknotat." }
   ];
 
   /* ── versjon og kanal (test vs. stabil) ── */
-  var VERSJON = "0.7.1";
+  var VERSJON = "0.7.2";
   var erTest = /(^|[.-])test([.-]|$)/.test(location.hostname);
   document.getElementById("versjon-info").textContent =
     "LÆRLING v" + VERSJON + " · " + (erTest ? "TESTKANAL" : "STABIL") + " · BYGGET FOR OP BYGG";

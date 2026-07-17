@@ -25,7 +25,7 @@
 > Alt dere trenger å vite (2 min lesning, laget for dere):
 > **[APP-URL]/ledelsen.html**
 >
-> Der ligger også mulighetsrapporten (hvilke 11,5 timer/uke som kan tas over) og
+> Der ligger også mulighetsrapporten (hvilke 12,5 timer/uke som kan tas over) og
 > kommandosentralen med live status. Kode til den: opbygg2026.
 >
 > Etter 14 dager evaluerer vi med målte tall — dere beslutter alt videre.

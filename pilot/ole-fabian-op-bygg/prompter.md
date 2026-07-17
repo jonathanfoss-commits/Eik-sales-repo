@@ -70,6 +70,21 @@ ofte det som avgjør hvem som får rett i sluttoppgjøret.*
 
 ---
 
+## 7) Varemottak → avviksmelding (gjør det FØR du signerer følgeseddelen)
+
+> Varemottak på [prosjekt], [dato], leverandør [navn]. Bestilling/ordrenr: [nr].
+> «[dikter: hva som kom, hva som mangler eller er skadet, antall mot følgeseddel,
+> hva du noterte på følgeseddelen]»
+>
+> Lag: 1) en skriftlig avviksmelding til leverandøren (med frist for retting/kreditering),
+> og 2) et kort internt notat til regnskap om at fakturaen skal kontrolleres mot
+> bestilling og faktisk mottatt vare.
+
+*Hvorfor: avvik som ikke meldes skriftlig samme dag, tapes ofte på reklamasjonsfristen —
+og ukontrollerte fakturaer betales i full pris for halv leveranse.*
+
+---
+
 ## Bonus når han blir varm i trøya
 
 - **Snu en sur e-post:** «Her er en e-post jeg har lyst til å sende, men den er for krass.

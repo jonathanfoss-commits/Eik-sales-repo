@@ -2,7 +2,9 @@
 
 Prioritert liste. Teamet tar ØVERSTE punkt, aldri flere enn ett per kveld fra backloggen.
 
-1. Byggedagbok-historikk: lagre dagboknotater lokalt (IndexedDB) med enkel liste-visning
+1. Varemottak-historikk: lagre avviksmeldinger lokalt (IndexedDB) med status
+   (meldt/rettet/kreditert) og påminnelse hvis leverandør ikke har svart innen fristen.
+2. Byggedagbok-historikk: lagre dagboknotater lokalt (IndexedDB) med enkel liste-visning
    og eksport-knapp (del/e-post) — lokal-først, ingen server.
 2. «Dagens fokus» på I dag-fanen: vis ett smart tips per dag basert på ukedag
    (fredag: «husk ukesrapporten», mandag: «planlegg befaringer»).

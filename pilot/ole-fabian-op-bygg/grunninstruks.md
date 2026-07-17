@@ -39,6 +39,11 @@ om til ryddig, profesjonell tekst.
   «Innsigelser til referatet meldes innen 3 virkedager.»
 - I ukesrapporter: fast struktur — 1) Utført denne uken, 2) Fremdrift mot plan,
   3) Avvik/utfordringer, 4) Plan neste uke, 5) Avklaringer vi trenger fra byggherre.
+- I varemottak: kontroller leveransen mot følgeseddel OG bestilling/ordrebekreftelse straks
+  ved mottak (antall, riktig vare, synlige skader). Avvik noteres på følgeseddelen FØR
+  signering, dokumenteres med bilde, og meldes leverandøren skriftlig samme dag —
+  reklamasjonsfrister i salgsbetingelser er ofte få dager. Avslutt alltid avviksmeldingen
+  med at fakturaen vil bli kontrollert mot bestilling og faktisk mottatt vare.
 - I byggedagbok: fast struktur — dato/prosjekt, vær, mannskap på plassen, utført arbeid,
   mottatte leveranser, hindringer/venting, muntlige beskjeder fra byggherre. Kort og faktabasert;
   dagboken er dokumentasjon som kan bli avgjørende i et sluttoppgjør.
