@@ -665,9 +665,10 @@ Mvh Ole Fabian, OP Bygg AS</div>
     Jonathan tar regningen om noe koster.</p>
 
     <div class="v-steg" id="steg-motor">
-      <div class="v-topp"><div class="v-num">1</div><h3>Hent motoren</h3><span class="v-ok">✓ GJORT</span></div>
-      <p>Lærling bruker <b>Claude</b> som hjerne. Gratisversjonen holder til hele testen.
-      Har du den? Hopp videre.</p>
+      <div class="v-topp"><div class="v-num">1</div><h3>Hent motoren (kun for deg som skriver)</h3><span class="v-ok">✓ GJORT</span></div>
+      <p>Skal du bruke <b>skriveverktøyene</b> (tilbud, referater, rapporter) trenger du
+      Claude — gratis. <b>Alt annet virker uten:</b> varemottak, idéer og sjekklister.
+      Ikke skrivejobb? Trykk «Det har jeg gjort» på steg 1–3 og hopp til steg 4.</p>
       <a class="knapp" href="https://claude.ai/download" target="_blank" rel="noopener" data-steg="motor">Last ned Claude-appen</a>
     </div>
 
@@ -741,7 +742,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
   ];
 
   /* ── versjon og kanal (test vs. stabil) ── */
-  var VERSJON = "0.8.0";
+  var VERSJON = "0.9.0";
   var erTest = /(^|[.-])test([.-]|$)/.test(location.hostname);
   document.getElementById("versjon-info").textContent =
     "LÆRLING v" + VERSJON + " · " + (erTest ? "TESTKANAL" : "STABIL") + " · BYGGET FOR OP BYGG";

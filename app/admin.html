@@ -107,6 +107,16 @@
   footer{margin-top:26px;text-align:center;font-family:var(--mono);font-size:.62rem;
      letter-spacing:.1em;color:var(--dis);text-transform:uppercase;line-height:2}
 
+  .agent{font-family:var(--mono);font-size:.56rem;letter-spacing:.08em;padding:5px 9px;
+     border-radius:99px;border:1px solid var(--strek);color:var(--dis)}
+  .agent.jobber{color:var(--aurora-a);border-color:rgba(57,226,155,.5);
+     animation:agentpuls 1.6s ease-in-out infinite}
+  @keyframes agentpuls{50%{opacity:.35}}
+  .mini-knapp{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;padding:5px 10px;
+     border-radius:99px;border:1px solid var(--strek);color:var(--dis);white-space:nowrap}
+  .mini-knapp:hover{border-color:rgba(57,226,155,.5);color:var(--lys)}
+  .mini-knapp.gjort{color:var(--aurora-a);border-color:rgba(57,226,155,.5)}
+
   /* adgangsport */
   .port{position:fixed;inset:0;z-index:90;background:var(--bunn);display:flex;
      align-items:center;justify-content:center;padding:24px}
@@ -165,6 +175,9 @@
         <div style="margin-top:8px"><a id="a-test" href="#" target="_blank" rel="noopener">Åpne testappen ↗</a></div>
       </div>
     </div>
+    <div id="godkjenning-status" style="display:none;margin-top:12px;padding:12px 14px;
+      border-radius:10px;font-size:.85rem;background:rgba(57,226,155,.07);
+      border:1px solid rgba(57,226,155,.3)"></div>
     <div class="diff" id="diff"><b>Forslag venter:</b> testversjonen er nyere enn den stabile.
     Prøv den i testappen og trykk «Godkjenn» — når både Jonathan og Ole Fabian har godkjent,
     publiserer Jonathan til STABIL.</div>
@@ -176,6 +189,30 @@
     <div class="puls-l">av 14 dager i pilotperioden</div>
     <div class="fremdrift"><i id="pilot-bar" style="width:0%"></i></div>
     <div class="milepael" id="pilot-milepael"></div>
+  </div>
+
+  <div class="kort s8">
+    <h2>Innspill fra appen — <b>live</b></h2>
+    <div id="innspill-info" style="font-size:.85rem;color:var(--dis)">
+      Koble til med et Netlify-token i <b style="color:var(--lys)">Oppsett</b> for å se
+      innspillene her i sanntid (app.netlify.com → User settings → Applications →
+      New access token — lagres kun i denne nettleseren).
+    </div>
+    <ul class="liste" id="innspill-liste" style="display:none"></ul>
+    <div id="innspill-handlinger" style="display:none;margin-top:14px">
+      <a class="knapp" style="font-size:.8rem;padding:8px 16px" target="_blank" rel="noopener"
+        href="https://github.com/jonathanfoss-commits/Eik-sales-repo/edit/claude/ai-automation-subscription-concept-647y35/innspill/inbox.md">Åpne inbox.md — lim inn og lagre ↗</a>
+      <span style="font-size:.76rem;color:var(--dis);margin-left:10px">…eller be Claude:
+      «kjør panelet nå» for umiddelbar behandling</span>
+    </div>
+  </div>
+
+  <div class="kort s4">
+    <h2>Ekspertpanelet</h2>
+    <div id="panel-status" style="font-size:.9rem;margin-bottom:10px"></div>
+    <div id="panel-agenter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
+    <h2 style="margin-top:4px">Siste leveranser</h2>
+    <ul class="liste" id="leveranse-liste"><li style="border:none;color:var(--dis)">henter …</li></ul>
   </div>
 
   <div class="kort s12">
@@ -239,6 +276,8 @@
       <input id="url-test" placeholder="https://laerling-app-test.netlify.app"></div>
     <div class="felt"><label for="pilot-start">Pilotstart</label>
       <input id="pilot-start" type="date"></div>
+    <div class="felt"><label for="netlify-token">Netlify-token (valgfritt — gir live innspill)</label>
+      <input id="netlify-token" type="password" placeholder="nfp_…" autocomplete="off"></div>
     <button class="knapp" id="lagre-oppsett">Lagre og oppdater</button>
   </div>
 
@@ -273,7 +312,8 @@ Statusdata hentes direkte fra app-kanalene</footer>
     String(naa.getHours()).padStart(2,"0") + ":" + String(naa.getMinutes()).padStart(2,"0");
 
   /* ── oppsett ── */
-  var felter = { "url-stabil": "stabil", "url-test": "test", "pilot-start": "start" };
+  var felter = { "url-stabil": "stabil", "url-test": "test", "pilot-start": "start",
+                 "netlify-token": "token" };
   Object.keys(felter).forEach(function(id){
     if(innst[felter[id]]) document.getElementById(id).value = innst[felter[id]];
   });
@@ -325,8 +365,125 @@ Statusdata hentes direkte fra app-kanalene</footer>
     document.getElementById("l-blimed").href = s ? s + "/bli-med.html" : "#";
   }
 
+  /* ── ekspertpanelet: kjøreplan og arbeidsvindu ── */
+  var AGENTER = ["Produktsjef","Byggdomene","Jurist","Personvernvakt","UX-design",
+    "Utvikler","QA","Tekst","Innsikt","Forretning","Økonomi","Release"];
+  function osloTid(){
+    return new Date(new Date().toLocaleString("sv-SE", { timeZone: "Europe/Oslo" }).replace(" ", "T"));
+  }
+  function visPanel(){
+    var n = osloTid(), t = n.getHours() + n.getMinutes() / 60,
+        jobber = (t >= 21 && t < 22) || (t >= 12 && t < 12.25),
+        st = document.getElementById("panel-status"),
+        rad = document.getElementById("panel-agenter");
+    rad.innerHTML = "";
+    AGENTER.forEach(function(navn, i){
+      var chip = document.createElement("span");
+      chip.className = "agent" + (jobber ? " jobber" : "");
+      chip.style.animationDelay = (i * .13) + "s";
+      chip.textContent = navn;
+      rad.appendChild(chip);
+    });
+    if(jobber){
+      st.innerHTML = '<b style="color:var(--aurora-a)">● PANELET ARBEIDER NÅ</b> — ' +
+        (t >= 21 ? "12 agenter vurderer, bygger og tester kveldens leveranse" :
+         "lunsjtriagen prioriterer dagens innspill");
+    } else {
+      var neste = t < 12 ? "lunsjtriagen kl. 12.00" :
+                  t < 21 ? "ekspertpanelet kl. 21.00" : "lunsjtriagen kl. 12.00 i morgen";
+      st.innerHTML = "12 agenter i beredskap · neste kjøring: <b style=\"color:var(--lys)\">" + neste + "</b>";
+    }
+  }
+  function visLeveranser(){
+    fetch("changelog.json?t=" + Date.now(), { cache: "no-store" })
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(logg){
+        var ul = document.getElementById("leveranse-liste");
+        ul.innerHTML = "";
+        logg.slice(0, 3).forEach(function(o){
+          var li = document.createElement("li");
+          li.innerHTML = '<span class="prikk"></span><span><b>' + o.dato + "</b> · " +
+            o.tekst.replace(/</g, "&lt;") +
+            (o.av ? ' <span style="color:var(--aurora-b)">— foreslått av ' + o.av.replace(/</g, "&lt;") + "</span>" : "") + "</span>";
+          ul.appendChild(li);
+        });
+      }).catch(function(){});
+  }
+
+  /* ── innspill live fra pilotloggen (Netlify API, token kun i denne nettleseren) ── */
+  var API = "https://api.netlify.com/api/v1";
+  function apiKall(sti){
+    return fetch(API + sti, { headers: { Authorization: "Bearer " + innst.token } })
+      .then(function(r){ if(!r.ok) throw new Error("API " + r.status); return r.json(); });
+  }
+  function hentInnspill(){
+    var info = document.getElementById("innspill-info"),
+        liste = document.getElementById("innspill-liste"),
+        handlinger = document.getElementById("innspill-handlinger");
+    if(!innst.token || !innst.stabil) return;
+    var vert = innst.stabil.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+    apiKall("/sites/" + vert + "/forms")
+      .then(function(skjemaer){
+        var f = skjemaer.filter(function(x){ return x.name === "pilotlogg"; })[0];
+        if(!f) throw new Error("fant ikke pilotlogg-skjemaet ennå (kommer etter første innsending)");
+        return apiKall("/forms/" + f.id + "/submissions?per_page=100");
+      })
+      .then(function(subs){
+        innst.handtert = innst.handtert || {};
+        var innspill = subs.filter(function(s){ return (s.data || {}).hendelse === "innspill"; });
+        var stemmer = subs.filter(function(s){ return (s.data || {}).hendelse === "godkjenning"; });
+        /* godkjenningsstemmer */
+        if(stemmer.length){
+          var g = document.getElementById("godkjenning-status");
+          g.style.display = "block";
+          g.innerHTML = "<b>Siste godkjenningsstemmer:</b> " + stemmer.slice(0, 2).map(function(s){
+            return (s.data.detalj || "").replace(/</g, "&lt;") + " (" + s.created_at.slice(0, 10) + ")";
+          }).join(" · ");
+        }
+        /* innspill-listen */
+        info.style.display = "none";
+        liste.style.display = "block";
+        handlinger.style.display = "block";
+        liste.innerHTML = "";
+        if(!innspill.length){
+          liste.innerHTML = '<li style="border:none;color:var(--dis)">Ingen innspill ennå — de dukker opp her i det sekundet noen sender fra appen.</li>';
+          return;
+        }
+        innspill.slice(0, 12).forEach(function(s){
+          var tekst = (s.data.detalj || "").replace(/</g, "&lt;"),
+              gjort = !!innst.handtert[s.id];
+          var li = document.createElement("li");
+          li.innerHTML = '<span class="prikk" style="' + (gjort ? "opacity:.25" : "") + '"></span>' +
+            '<span style="flex:1;' + (gjort ? "opacity:.45" : "") + '"><b>' +
+            s.created_at.slice(0, 10) + "</b> · " + tekst + "</span>";
+          var kn1 = document.createElement("button");
+          kn1.className = "mini-knapp"; kn1.textContent = "Kopier";
+          kn1.addEventListener("click", function(){
+            var linje = "- [" + s.created_at.slice(0, 10) + "] " + (s.data.detalj || "");
+            (navigator.clipboard ? navigator.clipboard.writeText(linje) : Promise.reject())
+              .then(function(){ kn1.textContent = "Kopiert ✓"; })
+              .catch(function(){ prompt("Kopier denne linjen til inbox.md:", linje); });
+          });
+          var kn2 = document.createElement("button");
+          kn2.className = "mini-knapp" + (gjort ? " gjort" : "");
+          kn2.textContent = gjort ? "Håndtert ✓" : "Marker håndtert";
+          kn2.addEventListener("click", function(){
+            innst.handtert[s.id] = !innst.handtert[s.id];
+            lagreInnst(); hentInnspill();
+          });
+          li.appendChild(kn1); li.appendChild(kn2);
+          liste.appendChild(li);
+        });
+      })
+      .catch(function(e){
+        info.style.display = "block";
+        info.innerHTML = "Fikk ikke hentet innspill: " + String(e.message).replace(/</g, "&lt;") +
+          " — sjekk tokenet i Oppsett.";
+      });
+  }
+
   function start(){
-    settLenker(); visPuls();
+    settLenker(); visPuls(); visPanel(); visLeveranser(); hentInnspill();
     Promise.all([
       hentVersjon(innst.stabil, "v-stabil", "s-stabil"),
       hentVersjon(innst.test, "v-test", "s-test")
@@ -346,6 +503,9 @@ Statusdata hentes direkte fra app-kanalene</footer>
       }
     });
   }
+  setInterval(function(){
+    if(!document.body.classList.contains("laast")){ start(); }
+  }, 60000);
   if(!document.body.classList.contains("laast")) start();
 })();
 </script>
