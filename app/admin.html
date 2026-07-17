@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lærling — Kommandosentral</title>
+<meta name="description" content="Intern oversikt for Lærling-piloten: kanalstatus, godkjenninger, pilotpuls og dokumentasjon.">
+<meta name="theme-color" content="#070D12">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='42' fill='%232FC4D9'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bunn:#070D12; --flate:#0D161E; --flate-2:#121F29;
+    --strek:rgba(140,190,190,.14); --lys:#E9F2EE; --dis:#93A8AA;
+    --aurora-a:#39E29B; --aurora-b:#2FC4D9; --varsel:#E8B64C;
+    --sans:-apple-system,"Segoe UI",system-ui,Roboto,sans-serif;
+    --mono:"SF Mono",ui-monospace,Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bunn);color:var(--lys);font-family:var(--sans);line-height:1.55;min-height:100vh}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;background:
+     radial-gradient(90% 40% at 50% 0%,rgba(47,196,217,.1),transparent 60%),var(--bunn)}
+  a{color:var(--aurora-b)}
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+  button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--aurora-a);outline-offset:2px}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:26px 28px 48px}
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+     flex-wrap:wrap;margin-bottom:22px}
+  header h1{font-size:1.5rem;font-weight:780;letter-spacing:-.02em}
+  header h1 b{color:var(--aurora-a)}
+  .undertekst{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;
+     text-transform:uppercase;color:var(--dis)}
+
+  .rutenett{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+  .kort{background:var(--flate);border:1px solid var(--strek);border-radius:16px;padding:20px}
+  .kort h2{font-size:.72rem;font-family:var(--mono);letter-spacing:.16em;
+     text-transform:uppercase;color:var(--dis);margin-bottom:14px}
+  .kort h2 b{color:var(--aurora-a);font-weight:600}
+  .s12{grid-column:span 12}.s8{grid-column:span 8}.s6{grid-column:span 6}.s4{grid-column:span 4}
+  @media (max-width:900px){.s8,.s6,.s4{grid-column:span 12}}
+
+  /* kanalstatus */
+  .kanaler{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .kanal{background:var(--flate-2);border:1px solid var(--strek);border-radius:12px;padding:16px}
+  .kanal .navn{font-family:var(--mono);font-size:.64rem;letter-spacing:.14em;color:var(--dis)}
+  .kanal .v{font-size:1.9rem;font-weight:780;letter-spacing:-.02em;
+     font-variant-numeric:tabular-nums;margin:2px 0 4px}
+  .kanal .status{font-size:.8rem;color:var(--dis)}
+  .kanal a{font-size:.78rem}
+  .pill{display:inline-block;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;
+     padding:3px 10px;border-radius:99px;border:1px solid var(--strek);color:var(--dis)}
+  .pill.ok{color:#04110B;background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b));
+     border:none;font-weight:700}
+  .pill.vent{color:var(--varsel);border-color:rgba(232,182,76,.5)}
+  .diff{margin-top:12px;padding:12px 14px;border-radius:10px;font-size:.85rem;
+     background:rgba(232,182,76,.08);border:1px solid rgba(232,182,76,.35);display:none}
+  .diff.vis{display:block}
+  .diff b{color:var(--varsel)}
+
+  /* pilotpuls */
+  .puls-tall{font-size:2.6rem;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;
+     background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b));
+     -webkit-background-clip:text;background-clip:text;color:transparent}
+  .puls-l{font-size:.85rem;color:var(--dis)}
+  .fremdrift{height:6px;border-radius:3px;background:rgba(140,190,190,.12);margin:12px 0;overflow:hidden}
+  .fremdrift i{display:block;height:100%;border-radius:3px;
+     background:linear-gradient(90deg,var(--aurora-a),var(--aurora-b))}
+  .milepael{font-size:.82rem;color:var(--dis)}
+  .milepael b{color:var(--lys)}
+
+  /* flyt-diagram */
+  .flyt{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
+  .flyt .trinn{flex:1;min-width:150px;background:var(--flate-2);border:1px solid var(--strek);
+     border-radius:12px;padding:13px 14px;position:relative}
+  .flyt .trinn + .trinn{margin-left:26px}
+  .flyt .trinn + .trinn::before{content:"→";position:absolute;left:-21px;top:50%;
+     transform:translateY(-50%);color:var(--aurora-a);font-size:1.1rem}
+  .flyt .hvem{font-family:var(--mono);font-size:.56rem;letter-spacing:.12em;color:var(--aurora-b)}
+  .flyt .hva{font-size:.82rem;margin-top:3px}
+  @media (max-width:900px){.flyt{flex-direction:column}.flyt .trinn + .trinn{margin:22px 0 0}
+    .flyt .trinn + .trinn::before{content:"↓";left:50%;top:-20px;transform:translateX(-50%)}}
+
+  /* lister */
+  .liste{list-style:none}
+  .liste li{display:flex;gap:10px;align-items:baseline;padding:8px 0;
+     border-bottom:1px solid var(--strek);font-size:.88rem;color:var(--dis)}
+  .liste li:last-child{border-bottom:none}
+  .liste li b{color:var(--lys);font-weight:640}
+  .prikk{flex:none;width:8px;height:8px;border-radius:50%;
+     background:var(--aurora-a);position:relative;top:-1px}
+  .lenker{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+  .lenke{display:block;background:var(--flate-2);border:1px solid var(--strek);border-radius:10px;
+     padding:12px 14px;text-decoration:none;color:var(--lys);font-size:.88rem;transition:border-color .15s}
+  .lenke:hover{border-color:rgba(57,226,155,.45)}
+  .lenke small{display:block;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;
+     color:var(--dis);margin-top:2px;text-transform:uppercase}
+
+  /* oppsett */
+  .felt{display:grid;grid-template-columns:170px 1fr;gap:10px;align-items:center;margin-bottom:10px}
+  .felt label{font-size:.82rem;color:var(--dis)}
+  .felt input{background:rgba(0,0,0,.3);border:1px solid var(--strek);border-radius:9px;
+     color:var(--lys);font:inherit;font-size:.86rem;padding:9px 12px;width:100%}
+  .knapp{display:inline-block;font-weight:650;font-size:.86rem;padding:10px 20px;border-radius:10px;
+     color:#04110B;background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b))}
+
+  footer{margin-top:26px;text-align:center;font-family:var(--mono);font-size:.62rem;
+     letter-spacing:.1em;color:var(--dis);text-transform:uppercase;line-height:2}
+
+  /* adgangsport */
+  .port{position:fixed;inset:0;z-index:90;background:var(--bunn);display:flex;
+     align-items:center;justify-content:center;padding:24px}
+  .port .boks{max-width:360px;width:100%;background:var(--flate);border:1px solid var(--strek);
+     border-radius:16px;padding:30px;text-align:center}
+  .port h1{font-size:1.3rem;font-weight:750;margin-bottom:6px}
+  .port p{font-size:.82rem;color:var(--dis);margin-bottom:16px}
+  .port input{width:100%;background:rgba(0,0,0,.3);border:1px solid var(--strek);border-radius:10px;
+     color:var(--lys);font:inherit;padding:11px 12px;text-align:center;margin-bottom:12px}
+  .port .knapp{width:100%}
+  .port .feil{color:var(--varsel);font-size:.78rem;margin-top:10px;display:none}
+  body.laast .wrap{display:none}
+  body:not(.laast) .port{display:none}
+</style>
+</head>
+<body class="laast">
+
+<div class="port">
+  <div class="boks">
+    <h1>Lærling<span style="color:var(--aurora-a)">.</span> Kommandosentral</h1>
+    <p>Intern side for pilotteamet (Jonathan, Ole Fabian og OP Bygg-ledelsen).
+    Skriv inn pilotkoden dere har fått av Jonathan.</p>
+    <input id="kode" type="password" placeholder="Pilotkode" autocomplete="off">
+    <button class="knapp" id="laas-opp">Åpne</button>
+    <div class="feil" id="kode-feil">Feil kode — spør Jonathan.</div>
+    <p style="margin-top:14px;font-size:.68rem">Enkel kode for å holde siden intern i piloten —
+    full tilgangsstyring kommer i fullversjonen.</p>
+  </div>
+</div>
+
+<div class="wrap">
+
+<header>
+  <div>
+    <h1>Lærling<b>.</b> Kommandosentral</h1>
+    <div class="undertekst">Pilot: OP Bygg AS · intern side for Jonathan, Ole Fabian og ledelsen</div>
+  </div>
+  <div class="undertekst" id="naa"></div>
+</header>
+
+<div class="rutenett">
+
+  <div class="kort s8">
+    <h2>Kanalstatus — <b>hentes live</b></h2>
+    <div class="kanaler">
+      <div class="kanal">
+        <div class="navn">STABIL · ALLE ANSATTE</div>
+        <div class="v" id="v-stabil">–</div>
+        <div class="status" id="s-stabil"><span class="pill">venter på oppsett</span></div>
+        <div style="margin-top:8px"><a id="a-stabil" href="#" target="_blank" rel="noopener">Åpne appen ↗</a></div>
+      </div>
+      <div class="kanal">
+        <div class="navn">TEST · KUN JONATHAN + OLE FABIAN</div>
+        <div class="v" id="v-test">–</div>
+        <div class="status" id="s-test"><span class="pill">venter på oppsett</span></div>
+        <div style="margin-top:8px"><a id="a-test" href="#" target="_blank" rel="noopener">Åpne testappen ↗</a></div>
+      </div>
+    </div>
+    <div class="diff" id="diff"><b>Forslag venter:</b> testversjonen er nyere enn den stabile.
+    Prøv den i testappen og trykk «Godkjenn» — når både Jonathan og Ole Fabian har godkjent,
+    publiserer Jonathan til STABIL.</div>
+  </div>
+
+  <div class="kort s4">
+    <h2>Pilotpuls</h2>
+    <div class="puls-tall" id="pilot-dag">–</div>
+    <div class="puls-l">av 14 dager i pilotperioden</div>
+    <div class="fremdrift"><i id="pilot-bar" style="width:0%"></i></div>
+    <div class="milepael" id="pilot-milepael"></div>
+  </div>
+
+  <div class="kort s12">
+    <h2>Slik blir appen bedre — <b>hver kveld</b></h2>
+    <div class="flyt">
+      <div class="trinn"><div class="hvem">ANSATTE I OP BYGG</div>
+        <div class="hva">Bruker appen og sender innspill (👍/🐞/💡) med navn — rett fra Rapport-fanen</div></div>
+      <div class="trinn"><div class="hvem">KVELDSTEAMET · KL. 21</div>
+        <div class="hva">AI-utviklerteam vurderer innspillene, bygger og tester — leverer forslag, aldri rett i produksjon</div></div>
+      <div class="trinn"><div class="hvem">JONATHAN + OLE FABIAN</div>
+        <div class="hva">Prøver forslaget i testappen og godkjenner — begge må si ja (to nøkler)</div></div>
+      <div class="trinn"><div class="hvem">ALLE ANSATTE</div>
+        <div class="hva">Får den godkjente versjonen i den stabile appen — automatisk, neste gang de åpner den</div></div>
+    </div>
+  </div>
+
+  <div class="kort s6">
+    <h2>For ledelsen: datasikkerhet i piloten</h2>
+    <ul class="liste">
+      <li><span class="prikk"></span><span><b>Ingen Lærling-server har OP Byggs data.</b>
+        Alt i appen lagres lokalt på den enkeltes telefon.</span></li>
+      <li><span class="prikk"></span><span><b>AI-kontoer settes opp med trening avskrudd.</b>
+        Bruksloggen inneholder aldri innhold — kun hendelsestyper og fornavn.</span></li>
+      <li><span class="prikk"></span><span><b>Aldri persondata i diktering:</b> ikke personnummer,
+        lønn eller helseopplysninger. Prosjekter og firmanavn er OK.</span></li>
+      <li><span class="prikk"></span><span><b>Ved videre samarbeid:</b> databehandleravtale,
+        EU-lagring — og mulighet for egen boks hos OP Bygg så data aldri forlater huset.</span></li>
+    </ul>
+  </div>
+
+  <div class="kort s6">
+    <h2>Roller i piloten</h2>
+    <ul class="liste">
+      <li><span class="prikk"></span><span><b>Jonathan Foss</b> — produktansvarlig: drifter,
+        publiserer, godkjenner (nøkkel 1). <a href="mailto:jonathan.foss@eikandfriends.no">Kontakt ↗</a></span></li>
+      <li><span class="prikk"></span><span><b>Ole Fabian Foss</b> — pilotleder i OP Bygg:
+        tester i felt, godkjenner (nøkkel 2).</span></li>
+      <li><span class="prikk"></span><span><b>OP Bygg-ledelsen</b> — innsyn via denne siden;
+        beslutter videre samarbeid etter dag 14-evalueringen.</span></li>
+      <li><span class="prikk"></span><span><b>Ansatte</b> — bruker appen og melder innspill.
+        Ingen konto, ingen opplæring nødvendig: åpne lenken, skriv fornavn, i gang.</span></li>
+    </ul>
+  </div>
+
+  <div class="kort s8">
+    <h2>Verktøykasse</h2>
+    <div class="lenker">
+      <a class="lenke" id="l-app" href="#" target="_blank" rel="noopener">Lærling-appen<small>Stabil · deles med ansatte</small></a>
+      <a class="lenke" id="l-rapport" href="#" target="_blank" rel="noopener">Mulighetsrapporten<small>11,5 t/uke · til ledelsen</small></a>
+      <a class="lenke" id="l-blimed" href="#" target="_blank" rel="noopener">Bli med-siden<small>Onboarding for nye brukere</small></a>
+      <a class="lenke" href="https://app.netlify.com" target="_blank" rel="noopener">Pilotloggen<small>Netlify → Forms → pilotlogg</small></a>
+    </div>
+  </div>
+
+  <div class="kort s4">
+    <h2>Oppsett <span style="color:var(--dis)">(lagres kun i denne nettleseren)</span></h2>
+    <div class="felt"><label for="url-stabil">STABIL-URL</label>
+      <input id="url-stabil" placeholder="https://laerling-app.netlify.app"></div>
+    <div class="felt"><label for="url-test">TEST-URL</label>
+      <input id="url-test" placeholder="https://laerling-app-test.netlify.app"></div>
+    <div class="felt"><label for="pilot-start">Pilotstart</label>
+      <input id="pilot-start" type="date"></div>
+    <button class="knapp" id="lagre-oppsett">Lagre og oppdater</button>
+  </div>
+
+</div>
+
+<footer>Lærling kommandosentral · Intern pilotside — deles kun med pilotteamet ·
+Statusdata hentes direkte fra app-kanalene</footer>
+
+</div>
+
+<script>
+(function(){
+  /* ── enkel adgangskode (intern friksjon, ikke banksikkerhet) ── */
+  var KODE = "opbygg2026";
+  var innst;
+  try{ innst = JSON.parse(localStorage.getItem("laerling-admin") || "{}"); }catch(e){ innst = {}; }
+  function lagreInnst(){ try{ localStorage.setItem("laerling-admin", JSON.stringify(innst)); }catch(e){} }
+  function laasOpp(){
+    var v = document.getElementById("kode").value.trim();
+    if(v === KODE){ innst.opplaast = 1; lagreInnst(); document.body.classList.remove("laast"); start(); }
+    else { document.getElementById("kode-feil").style.display = "block"; }
+  }
+  document.getElementById("laas-opp").addEventListener("click", laasOpp);
+  document.getElementById("kode").addEventListener("keydown", function(e){ if(e.key === "Enter") laasOpp(); });
+  if(innst.opplaast){ document.body.classList.remove("laast"); }
+
+  /* ── klokke ── */
+  var mnd = ["januar","februar","mars","april","mai","juni","juli","august","september","oktober","november","desember"];
+  var naa = new Date();
+  document.getElementById("naa").textContent =
+    "OPPDATERT " + naa.getDate() + ". " + mnd[naa.getMonth()].toUpperCase() + " " +
+    String(naa.getHours()).padStart(2,"0") + ":" + String(naa.getMinutes()).padStart(2,"0");
+
+  /* ── oppsett ── */
+  var felter = { "url-stabil": "stabil", "url-test": "test", "pilot-start": "start" };
+  Object.keys(felter).forEach(function(id){
+    if(innst[felter[id]]) document.getElementById(id).value = innst[felter[id]];
+  });
+  document.getElementById("lagre-oppsett").addEventListener("click", function(){
+    Object.keys(felter).forEach(function(id){
+      innst[felter[id]] = document.getElementById(id).value.trim();
+    });
+    lagreInnst(); start();
+  });
+
+  /* ── kanalstatus: hent versjon.json fra begge kanaler ── */
+  function hentVersjon(url, vEl, sEl){
+    var v = document.getElementById(vEl), s = document.getElementById(sEl);
+    if(!url){ v.textContent = "–";
+      s.innerHTML = '<span class="pill">legg inn URL i Oppsett →</span>'; return Promise.resolve(null); }
+    return fetch(url.replace(/\/+$/,"") + "/versjon.json?t=" + Date.now())
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(d){ v.textContent = "v" + d.versjon;
+        s.innerHTML = '<span class="pill ok">PÅ LUFTA</span>'; return d.versjon; })
+      .catch(function(){ v.textContent = "?";
+        s.innerHTML = '<span class="pill vent">fikk ikke svar — sjekk URL</span>'; return null; });
+  }
+
+  /* ── pilotpuls ── */
+  function visPuls(){
+    var startdato = innst.start ? new Date(innst.start + "T00:00:00") : null,
+        dagEl = document.getElementById("pilot-dag"),
+        mEl = document.getElementById("pilot-milepael");
+    if(!startdato || isNaN(startdato)){
+      dagEl.textContent = "–";
+      mEl.innerHTML = "Sett <b>pilotstart</b> i Oppsett når Ole Fabian har kjørt veiviseren.";
+      return;
+    }
+    var dag = Math.min(14, Math.max(0, Math.floor((Date.now() - startdato) / 864e5) + 1));
+    dagEl.textContent = "Dag " + dag;
+    document.getElementById("pilot-bar").style.width = Math.round(dag / 14 * 100) + "%";
+    mEl.innerHTML = dag < 5 ? "Neste milepæl: <b>første ukesrapport</b> (dag 5)"
+      : dag < 14 ? "Neste milepæl: <b>evalueringsmøte</b> (dag 14) — sjekk pilotloggen før møtet"
+      : "<b>Evaluering nå:</b> hent tall fra pilotloggen og book møtet med ledelsen.";
+  }
+
+  /* ── verktøykasse-lenker følger oppsettet ── */
+  function settLenker(){
+    var s = (innst.stabil || "").replace(/\/+$/,"");
+    document.getElementById("a-stabil").href = s || "#";
+    document.getElementById("a-test").href = (innst.test || "#").replace(/\/+$/,"") || "#";
+    document.getElementById("l-app").href = s || "#";
+    document.getElementById("l-rapport").href = s ? s + "/rapport.html" : "#";
+    document.getElementById("l-blimed").href = s ? s + "/bli-med.html" : "#";
+  }
+
+  function start(){
+    settLenker(); visPuls();
+    Promise.all([
+      hentVersjon(innst.stabil, "v-stabil", "s-stabil"),
+      hentVersjon(innst.test, "v-test", "s-test")
+    ]).then(function(vs){
+      document.getElementById("diff").classList.toggle("vis",
+        !!(vs[0] && vs[1] && vs[0] !== vs[1]));
+    });
+  }
+  if(!document.body.classList.contains("laast")) start();
+})();
+</script>
+
+</body>
+</html>

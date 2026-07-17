@@ -35,7 +35,14 @@ Opptre som et senior produktteam og innta riktig rolle etter oppgaven:
 4. Pilotloggen (Netlify Forms «pilotlogg») er fasit: bygg det Ole Fabian faktisk bruker.
 5. Ved tvil om retning, datahåndtering eller noe som koster penger: spør Jonathan.
 
-## Distribusjon
-- Appen pakkes fra `app/` (inkl. `rapport.html` og `bli-med.html`) og publiseres på Netlify.
+## Distribusjon og godkjenning (to-nøkkel-regelen)
+- Appen pakkes fra `app/` (inkl. `rapport.html` og `bli-med.html`) og publiseres på Netlify
+  i to kanaler: TEST (site med «test» i navnet) og STABIL (alle ansatte i OP Bygg).
+- **Kveldsteamet pusher KUN til branchen `kveldsteam-forslag`** — aldri direkte til
+  hovedbranchen. Hver leveranse: bump `VERSJON`-konstanten i `app/index.html` (patch-siffer),
+  bump cachen i `app/sw.js`, og oppsummer endringen i `innspill/til-godkjenning.md`.
+- Endringer går til STABIL først når både Jonathan og Ole Fabian har trykket «Godkjenn» i
+  TEST-appen (logges i pilotloggen) og Jonathan har merget og publisert.
+  Full flyt: `samarbeid/godkjenning.md`.
 - Startlenken til pilotkunden er `<app-URL>/bli-med.html`.
 - Landingssiden ligger i `pitch/landing.html` (publiseres som egen Netlify-site).

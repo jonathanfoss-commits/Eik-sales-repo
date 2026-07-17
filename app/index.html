@@ -257,6 +257,18 @@
 
 <div class="app">
 
+  <div id="test-banner" style="display:none;background:linear-gradient(135deg,rgba(232,182,76,.15),rgba(57,226,155,.08));
+    border:1px solid rgba(232,182,76,.5);border-radius:14px;padding:12px 14px;margin-bottom:14px">
+    <div style="font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;color:#E8B64C">
+      TESTVERSJON <span id="test-versjon"></span> — VENTER PÅ GODKJENNING</div>
+    <div style="font-size:.8rem;color:var(--dis);margin:6px 0 10px">Kveldsteamet har levert
+    endringer. Jonathan og Ole Fabian må begge godkjenne før de går til alle.</div>
+    <div class="rad" style="margin-top:0">
+      <button class="knapp" id="godkjenn-versjon">✓ Godkjenn</button>
+      <button class="knapp svak" id="avvis-versjon">✗ Avvis</button>
+    </div>
+  </div>
+
   <div class="topp">
     <div class="hilsen"><b id="hilsen">God morgen, Ole Fabian</b>
       <span id="dato"></span></div>
@@ -462,6 +474,8 @@ Mvh Ole Fabian, OP Bygg AS</div>
     <a class="nullstill" style="margin-bottom:-16px"
        href="mailto:jonathan.foss@eikandfriends.no?subject=L%C3%A6rling-pilot%20%E2%80%94%20sp%C3%B8rsm%C3%A5l">Trenger du hjelp? Send melding til Jonathan</a>
     <button class="nullstill" id="nullstill">Nullstill demoen</button>
+    <div id="versjon-info" style="text-align:center;font-family:var(--mono);font-size:.6rem;
+       letter-spacing:.1em;color:var(--dis);margin-top:14px"></div>
   </div>
 
 </div>
@@ -503,11 +517,15 @@ Mvh Ole Fabian, OP Bygg AS</div>
 <div class="velkomst" id="velkomst" role="dialog" aria-label="Velkommen">
   <div class="boks">
     <div class="logo">Lærling<b>.</b></div>
-    <p>Hei Ole Fabian! Dette er din nye <b>AI-medarbeider</b>. Skjermene viser hvordan
+    <p>Hei! Dette er OP Byggs nye <b>AI-medarbeider</b>. Skjermene viser hvordan
     hverdagen blir — og <b>veiviseren gjør deg klar til å teste på ordentlig i dag</b>,
     helt gratis.</p>
     <p style="font-size:.72rem;margin-top:-12px">Pilotversjonen logger anonym bruksstatistikk
     (hvilke verktøy som brukes — aldri innhold), så Lærling lærer av testingen din.</p>
+    <input id="velkomst-navn" placeholder="Fornavnet ditt (så teamet vet hvem som melder inn)"
+      autocomplete="given-name"
+      style="width:100%;margin-bottom:12px;background:rgba(0,0,0,.25);border:1px solid var(--strek);
+      border-radius:10px;color:var(--lys);font:inherit;font-size:.9rem;padding:11px 12px">
     <button class="knapp" id="velkomst-start" style="width:100%;margin-bottom:10px">Start veiviseren (2 min)</button>
     <button class="knapp svak" id="velkomst-lukk" style="width:100%">Utforsk demoen først</button>
   </div>
@@ -592,12 +610,19 @@ Mvh Ole Fabian, OP Bygg AS</div>
       p:"Byggedagbok [prosjekt], [dato]: [dikter: hvem som var på plassen, hva som ble gjort, vær, leveranser, hindringer, beskjeder fra byggherre]. Før dette som strukturert dagboknotat." }
   ];
 
+  /* ── versjon og kanal (test vs. stabil) ── */
+  var VERSJON = "0.7.0";
+  var erTest = /test/.test(location.hostname);
+  document.getElementById("versjon-info").textContent =
+    "LÆRLING v" + VERSJON + " · " + (erTest ? "TESTKANAL" : "STABIL");
+
   /* ── pilotlogg: lærer automatisk av testingen (Netlify Forms, gratis) ──
      Logger kun hendelsestyper — aldri innholdet i utkast eller dikteringer. */
   function loggHendelse(hendelse, detalj){
     if(location.protocol === "file:") return;
+    var hvem = lager.bruker ? lager.bruker + " · " : "";
     var post = { "form-name": "pilotlogg", hendelse: hendelse,
-                 detalj: detalj || "", tid: new Date().toISOString() };
+                 detalj: hvem + (detalj || ""), tid: new Date().toISOString() };
     var kropp = Object.keys(post).map(function(k){
       return encodeURIComponent(k) + "=" + encodeURIComponent(post[k]); }).join("&");
     fetch("/", { method: "POST",
@@ -620,7 +645,27 @@ Mvh Ole Fabian, OP Bygg AS</div>
   }
   addEventListener("online", tomBuffer);
   tomBuffer();
-  loggHendelse("åpnet", navigator.standalone ? "hjemskjerm" : "nettleser");
+  loggHendelse("åpnet", (navigator.standalone ? "hjemskjerm" : "nettleser") + " · v" + VERSJON);
+
+  /* ── godkjenning av testversjon (to-nøkkel: Jonathan + Ole Fabian) ── */
+  if(erTest){
+    var tb = document.getElementById("test-banner");
+    document.getElementById("test-versjon").textContent = "v" + VERSJON;
+    tb.style.display = "block";
+    function stemVersjon(stemme){
+      if(!lager.bruker){
+        var navn = prompt("Hvem godkjenner? Skriv fornavnet ditt:");
+        if(!navn) return;
+        lager.bruker = navn.trim(); lagre();
+      }
+      loggHendelse("godkjenning", stemme + " v" + VERSJON);
+      tb.innerHTML = '<div style="font-size:.85rem;color:var(--dis);text-align:center;padding:4px 0">' +
+        '<b style="color:var(--lys)">' + (stemme === "GODKJENT" ? "✓ Godkjent" : "✗ Avvist") +
+        '</b> av ' + lager.bruker + " — registrert hos teamet.</div>";
+    }
+    document.getElementById("godkjenn-versjon").addEventListener("click", function(){ stemVersjon("GODKJENT"); });
+    document.getElementById("avvis-versjon").addEventListener("click", function(){ stemVersjon("AVVIST"); });
+  }
 
   /* kopier-hjelper med fallback for eldre Safari */
   function kopier(tekst, hva){
@@ -717,16 +762,19 @@ Mvh Ole Fabian, OP Bygg AS</div>
     }).catch(function(){});
   }
 
-  /* velkomst første gang */
+  /* velkomst første gang — med navn (flerbruker: alle i OP Bygg) */
   var velkomst = document.getElementById("velkomst");
   if(!lager.velkommen){ velkomst.classList.add("vis"); }
-  document.getElementById("velkomst-lukk").addEventListener("click", function(){
-    velkomst.classList.remove("vis");
+  function taNavn(){
+    var navn = document.getElementById("velkomst-navn").value.trim();
+    if(navn){ lager.bruker = navn; }
     lager.velkommen = 1; lagre();
-  });
+    velkomst.classList.remove("vis");
+    settHilsen();
+  }
+  document.getElementById("velkomst-lukk").addEventListener("click", taNavn);
   document.getElementById("velkomst-start").addEventListener("click", function(){
-    velkomst.classList.remove("vis");
-    lager.velkommen = 1; lagre();
+    taNavn();
     aapneVeiviser();
   });
   document.getElementById("nullstill").addEventListener("click", function(){
@@ -753,8 +801,12 @@ Mvh Ole Fabian, OP Bygg AS</div>
       d = new Date(), t = d.getHours();
   document.getElementById("dato").textContent =
     no[d.getDay()] + " " + d.getDate() + ". " + mnd[d.getMonth()];
-  document.getElementById("hilsen").textContent =
-    (t < 5 ? "God natt" : t < 10 ? "God morgen" : t < 18 ? "Hei" : "God kveld") + ", Ole Fabian";
+  function settHilsen(){
+    document.getElementById("hilsen").textContent =
+      (t < 5 ? "God natt" : t < 10 ? "God morgen" : t < 18 ? "Hei" : "God kveld") +
+      (lager.bruker ? ", " + lager.bruker : "!");
+  }
+  settHilsen();
 
   /* toast */
   var toast = document.getElementById("toast"), toastT;
