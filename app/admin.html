@@ -492,12 +492,34 @@ Statusdata hentes direkte fra app-kanalene</footer>
         liste = document.getElementById("innspill-liste"),
         handlinger = document.getElementById("innspill-handlinger");
     if(!innst.token || !innst.stabil) return;
-    var vert = innst.stabil.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
-    apiKall("/sites/" + vert + "/forms")
-      .then(function(skjemaer){
-        var f = skjemaer.filter(function(x){ return x.name === "pilotlogg"; })[0];
-        if(!f) throw new Error("fant ikke pilotlogg-skjemaet ennå (kommer etter første innsending)");
-        return apiKall("/forms/" + f.id + "/submissions?per_page=100");
+    /* idéer lander i skjemaet på den siten appen ble åpnet fra —
+       derfor leser vi BEGGE kanalene (stabil + test) og slår dem sammen */
+    var verter = [];
+    [innst.stabil, innst.test].forEach(function(u){
+      if(!u) return;
+      var v = u.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+      if(verter.indexOf(v) < 0) verter.push(v);
+    });
+    Promise.all(verter.map(function(vert){
+      return apiKall("/sites/" + vert + "/forms")
+        .then(function(skjemaer){
+          var f = skjemaer.filter(function(x){ return x.name === "pilotlogg"; })[0];
+          if(!f) return [];
+          return apiKall("/forms/" + f.id + "/submissions?per_page=100")
+            .then(function(subs){
+              subs.forEach(function(s){ s.kanal = vert; });
+              return subs;
+            });
+        })
+        .catch(function(){ return null; });
+    }))
+      .then(function(resultater){
+        if(resultater.every(function(r){ return r === null; }))
+          throw new Error("fikk ikke svar fra Netlify");
+        var subs = [];
+        resultater.forEach(function(r){ if(r) subs = subs.concat(r); });
+        subs.sort(function(a, b){ return a.created_at < b.created_at ? 1 : -1; });
+        return subs;
       })
       .then(function(subs){
         innst.handtert = innst.handtert || {};
@@ -524,12 +546,15 @@ Statusdata hentes direkte fra app-kanalene</footer>
         innspill.slice(0, 12).forEach(function(s){
           var tekst = (s.data.detalj || "").replace(/</g, "&lt;"),
               gjort = !!innst.handtert[s.id],
-              bestilt = !!innst.bestilt[s.id];
+              bestilt = !!innst.bestilt[s.id],
+              fraTest = /(^|[.-])test([.-]|$)/.test(s.kanal || "");
           var li = document.createElement("li");
           li.style.flexWrap = "wrap";
           li.innerHTML = '<span class="prikk" style="' + (gjort ? "opacity:.25" : "") + '"></span>' +
             '<span style="flex:1;' + (gjort ? "opacity:.45" : "") + '"><b>' +
-            s.created_at.slice(0, 10) + "</b> · " + tekst + "</span>";
+            s.created_at.slice(0, 10) + "</b> · " + tekst +
+            (fraTest ? ' <span class="svar-pill" style="color:var(--dis);border-color:var(--strek)">testapp</span>' : "") +
+            "</span>";
           var kn0 = document.createElement("button");
           kn0.className = "mini-knapp behandle";
           kn0.textContent = bestilt ? "✓ Hos panelet" : "⚡ Behandle nå";

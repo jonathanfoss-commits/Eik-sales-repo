@@ -1,5 +1,17 @@
 # Til godkjenning — kveldsteamets leveranser som venter
 
+## v0.9.3 — 17. juli 2026 (levert av Claude på direkte bestilling fra Jonathan)
+
+**Hva:** Kommandosentralen henter nå innspill fra BEGGE kanalene (stabil- og test-sitens
+pilotlogg-skjemaer) og slår dem sammen, nyeste øverst. Innspill sendt fra testappen merkes
+med en liten «testapp»-etikett.
+
+**Hvorfor:** Idéer lander i Netlify-skjemaet på den siten appen ble åpnet fra. Jonathan
+sendte idéer fra testappen og så dem aldri — kommandosentralen leste kun stabil-skjemaet.
+
+**Testet:** Full systemtest 95/95 grønne, inkl. nytt tokanals-scenario (to skjemaer,
+sammenslåing, sortering, testapp-merke, «Behandle nå» på test-innspill).
+
 ## v0.9.2 — 17. juli 2026 (levert av Claude på direkte bestilling fra Jonathan)
 
 **Hva:**
