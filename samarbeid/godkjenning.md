@@ -27,6 +27,15 @@ med navn og versjonsnummer. Versjonsnummeret vises nederst på Verktøy-fanen i 
    `kveldsteam-forslag` inn i hovedbranchen og publiserer. Alle ansatte har ny versjon.
    Ved AVVIST: Jonathan noterer hvorfor i `innspill/inbox.md`, og teamet tar det neste kveld.
 
+## Køregel (justert 17. juli, besluttet av Jonathan)
+
+- Panelet **stopper ikke** selv om en leveranse venter på godkjenning — det bygger videre
+  så lenge **færre enn tre** leveranser står i kø i `innspill/til-godkjenning.md`.
+- **Godkjenning skjer samlet:** en stemme på nyeste testversjon godkjenner alt til og med
+  den (fulltesten kjøres kumulativt hver natt, så alt i køen er testet sammen).
+- Ved tre eller flere i kø: panelet står over natten og minner om at dere må godkjenne
+  eller avvise. **Hastesaker (⚠ HASTER) behandles alltid**, uansett kø.
+
 ## Ansatte i OP Bygg
 
 - Alle ansatte får **STABIL-lenken** (og legger den på hjemskjermen). De ser aldri
