@@ -1,17 +1,46 @@
 # Backlog — forbedringer kveldsteamet kan ta når inbox er tom
 
 Prioritert liste. Teamet tar ØVERSTE punkt, aldri flere enn ett per kveld fra backloggen.
+Punkter merket 🔬 kommer fra bransjeresearchen 17. juli (`innspill/research-rapport.md`) —
+les begrunnelsen der før bygging.
 
-1. Lokal purring-generator (som varemottaket): skjema (til hvem, hva det gjelder, frist,
-   konsekvens) → ferdig purremelding generert i appen, uten AI — Kopier + Åpne i Mail.
-2. Lokal byggedagbok-generator: skjema (mannskap, utført, vær, leveranser, hindringer) →
-   strukturert dagboknotat lagret lokalt (IndexedDB) med eksport — uten AI.
-3. Varemottak-historikk: lagre avviksmeldinger lokalt (IndexedDB) med status
+1. 🔬 Lokal purring-generator med norsk purretrapp: skjema (til hvem, faktura, forfall,
+   beløp) → ferdig purremelding i riktig trinn (vennlig påminnelse → varsel om
+   forsinkelsesrente → inkassovarsel iht. inkassoloven), uten AI — Kopier + Åpne i Mail.
+   Fakturaliste med forfall lagres lokalt så appen kan minne om når neste purring bør gå.
+2. 🔬 Varselvakta (NS 8407): dikter/skriv avviket → datostemplet, formriktig endringsvarsel
+   klar samme dag + lokal varsellogg (sendt/svart/purrefrist). Bygger på eksisterende
+   endringsmelding-prompt. «Et krav som ikke er varslet, finnes ikke.»
+3. 🔬 Tilleggsarbeid-fangeren: 20-sekunders registrering rett etter «vi tar det på
+   regning» → lokal tilleggslogg per prosjekt → fakturagrunnlag med Kopier-knapp.
+   Samme mønster som timeføringen.
+4. 🔬 Bildeknagg: ta/velg bilde + dikter én setning → lagres lokalt (IndexedDB) med dato
+   og prosjekt; gjenbrukes i dagbok, varsler og rapporter. Bevis ved reklamasjon og
+   skjulte konstruksjoner.
+5. 🔬 Byggedagbok-autopilot: dagsutkast settes sammen LOKALT av dagens timeføring,
+   varemottak, tillegg og bilder — brukeren godkjenner med én tommel; låst historikk og
+   ukeeksport (tidsnære bevis — HAB-dommen). Erstatter tidligere «byggedagbok-generator»-
+   og «byggedagbok-historikk»-punktene.
+6. 🔬 Sluttoppgjør-fristvakta: overtakelsesdato per prosjekt → lokale nedtellinger mot
+   preklusive frister (sluttoppstilling 2 mnd., søksmål 8 mnd.) med ferdige utkast-tekster.
+7. Varemottak-historikk: lagre avviksmeldinger lokalt (IndexedDB) med status
    (meldt/rettet/kreditert) og påminnelse hvis leverandør ikke har svart innen fristen.
-4. Byggedagbok-historikk: lagre dagboknotater lokalt (IndexedDB) med enkel liste-visning
-   og eksport-knapp (del/e-post) — lokal-først, ingen server.
-5. «Dagens fokus» på I dag-fanen: vis ett smart tips per dag basert på ukedag
-   (fredag: «husk ukesrapporten», mandag: «planlegg befaringer»).
-6. Prompt-teller: vis i promptbiblioteket hvilke prompter som er mest brukt (lokalt).
-7. Mørk/lys-modus-bryter (behold mørk som standard).
-8. Forbedre tom-tilstanden med ukens tall («I dag: 4 oppgaver unnagjort»).
+8. 🔬 Byggemøte-referat: ny prompt + mal — dikter hovedpunktene rett etter møtet →
+   referat med ansvar og frister.
+9. 🔬 Talesjekklister (KS): 3–4 lokale maler (tett bygg, våtrom, overlevering) med
+   tommel-avkryssing og PDF-eksport. Aldri lov å love «forskriftsoppfyllelse».
+10. 🔬 Tilbud fra egen prisbank: lokal enhetspris-hukommelse fra bedriftens tidligere
+    tilbud, mates inn i tilbudsprompten («du tok 1 200 kr/m² sist»).
+11. 🔬 Overtakelsesprotokollen: rom-for-rom-sjekkliste med diktert mangelliste, foto,
+    deltakere og signatur — låst etter signering (buofl./NS 8407 pkt. 37).
+12. «Dagens fokus» på I dag-fanen: ett smart tips per dag basert på ukedag
+    (fredag: «husk ukesrapporten», mandag: «planlegg befaringer»).
+13. Prompt-teller: vis i promptbiblioteket hvilke prompter som er mest brukt (lokalt).
+14. Mørk/lys-modus-bryter (behold mørk som standard).
+15. Forbedre tom-tilstanden med ukens tall («I dag: 4 oppgaver unnagjort»).
+
+## Avvist etter research (bygges IKKE — se rapporten for begrunnelse)
+
+- Foto-AI som finner feil automatisk (umoden + Personvernvakt-veto)
+- Full mannskapsliste-/HMS-compliance-suite (byggherrens plikt, ansvar vi ikke skal bære)
+- Regnskaps-/lønnsintegrasjoner (Tripletex/Cordel vinner der; kopierbar tekst er broen)
