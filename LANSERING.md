@@ -38,7 +38,7 @@ er sendt. Alt materiell finnes allerede i dette repoet — planen under er bare 
 
 ## Onsdag — Salgsmaskinen (3–4 timer)
 
-1. **Generisk mulighetsrapport-mal:** kopier `mulighetsrapport.html`, bytt OP Bygg-detaljene
+1. **Generisk mulighetsrapport-mal:** kopier `app/rapport.html`, bytt OP Bygg-detaljene
    med [KLAMMER] — nå kan du lage en personlig rapport til enhver bedrift på under en time.
 2. **Tilbudsmal for oppstartspakken:** én side — hva de får (undersøkelse, rapport, 5 verktøy,
    opplæring, 14 dagers oppfølging), pris 14 500 kr intro (ord. 19 500), oppstart innen én uke.

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-<title>Lærling</title>
+<title>Lærling · OP Bygg</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -270,8 +270,8 @@
   </div>
 
   <div class="topp">
-    <div class="hilsen"><b id="hilsen">God morgen, Ole Fabian</b>
-      <span id="dato"></span></div>
+    <div class="hilsen"><b id="hilsen">God morgen</b>
+      <span id="dato"></span> <span style="color:var(--aurora-b)">· OP Bygg AS</span></div>
     <div class="status"><span class="puls"></span><span id="status-tekst">Arbeider</span></div>
   </div>
 
@@ -517,11 +517,14 @@ Mvh Ole Fabian, OP Bygg AS</div>
 <div class="velkomst" id="velkomst" role="dialog" aria-label="Velkommen">
   <div class="boks">
     <div class="logo">Lærling<b>.</b></div>
+    <div style="font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;color:var(--aurora-b);
+      margin:-8px 0 14px">BYGGET FOR OP BYGG AS</div>
     <p>Hei! Dette er OP Byggs nye <b>AI-medarbeider</b>. Skjermene viser hvordan
     hverdagen blir — og <b>veiviseren gjør deg klar til å teste på ordentlig i dag</b>,
     helt gratis.</p>
-    <p style="font-size:.72rem;margin-top:-12px">Pilotversjonen logger anonym bruksstatistikk
-    (hvilke verktøy som brukes — aldri innhold), så Lærling lærer av testingen din.</p>
+    <p style="font-size:.72rem;margin-top:-12px">Pilotversjonen logger bruksstatistikk med fornavn
+    (hvilke verktøy som brukes — aldri innholdet i det du skriver eller dikterer).
+    Innspill du selv sender inn, deles selvsagt med teamet.</p>
     <input id="velkomst-navn" placeholder="Fornavnet ditt (så teamet vet hvem som melder inn)"
       autocomplete="given-name"
       style="width:100%;margin-bottom:12px;background:rgba(0,0,0,.25);border:1px solid var(--strek);
@@ -562,8 +565,10 @@ Mvh Ole Fabian, OP Bygg AS</div>
 
     <div class="v-steg" id="steg-hjem">
       <div class="v-topp"><div class="v-num">4</div><h3>Legg Lærling på hjemskjermen</h3><span class="v-ok">✓ GJORT</span></div>
-      <p id="hjem-tekst">I Safari: trykk <b>Del-knappen</b> (firkant med pil opp) →
-      <b>«Legg til på Hjem-skjerm»</b>. Da åpner appen i fullskjerm og virker uten dekning.</p>
+      <p id="hjem-tekst"><b>iPhone:</b> i Safari, trykk Del-knappen (firkant med pil opp) →
+      «Legg til på Hjem-skjerm». <b>Android:</b> i Chrome, trykk menyen (⋮) →
+      «Legg til på startsiden» / «Installer app». Da åpner appen i fullskjerm og virker
+      uten dekning.</p>
       <button class="knapp svak" data-steg="hjem">Det har jeg gjort</button>
     </div>
 
@@ -611,13 +616,14 @@ Mvh Ole Fabian, OP Bygg AS</div>
   ];
 
   /* ── versjon og kanal (test vs. stabil) ── */
-  var VERSJON = "0.7.0";
-  var erTest = /test/.test(location.hostname);
+  var VERSJON = "0.7.1";
+  var erTest = /(^|[.-])test([.-]|$)/.test(location.hostname);
   document.getElementById("versjon-info").textContent =
-    "LÆRLING v" + VERSJON + " · " + (erTest ? "TESTKANAL" : "STABIL");
+    "LÆRLING v" + VERSJON + " · " + (erTest ? "TESTKANAL" : "STABIL") + " · BYGGET FOR OP BYGG";
 
   /* ── pilotlogg: lærer automatisk av testingen (Netlify Forms, gratis) ──
-     Logger kun hendelsestyper — aldri innholdet i utkast eller dikteringer. */
+     Automatisk logging: kun hendelsestyper — aldri innholdet i utkast/dikteringer.
+     Eneste innhold som sendes, er innspill brukeren selv skriver og aktivt sender. */
   function loggHendelse(hendelse, detalj){
     if(location.protocol === "file:") return;
     var hvem = lager.bruker ? lager.bruker + " · " : "";
@@ -645,7 +651,9 @@ Mvh Ole Fabian, OP Bygg AS</div>
   }
   addEventListener("online", tomBuffer);
   tomBuffer();
-  loggHendelse("åpnet", (navigator.standalone ? "hjemskjerm" : "nettleser") + " · v" + VERSJON);
+  loggHendelse("åpnet", ((navigator.standalone ||
+    (window.matchMedia && matchMedia("(display-mode: standalone)").matches))
+    ? "hjemskjerm" : "nettleser") + " · v" + VERSJON);
 
   /* ── godkjenning av testversjon (to-nøkkel: Jonathan + Ole Fabian) ── */
   if(erTest){
@@ -661,7 +669,8 @@ Mvh Ole Fabian, OP Bygg AS</div>
       loggHendelse("godkjenning", stemme + " v" + VERSJON);
       tb.innerHTML = '<div style="font-size:.85rem;color:var(--dis);text-align:center;padding:4px 0">' +
         '<b style="color:var(--lys)">' + (stemme === "GODKJENT" ? "✓ Godkjent" : "✗ Avvist") +
-        '</b> av ' + lager.bruker + " — registrert hos teamet.</div>";
+        '</b> av <span id="stemme-navn"></span> — registrert hos teamet.</div>';
+      document.getElementById("stemme-navn").textContent = lager.bruker;
     }
     document.getElementById("godkjenn-versjon").addEventListener("click", function(){ stemVersjon("GODKJENT"); });
     document.getElementById("avvis-versjon").addEventListener("click", function(){ stemVersjon("AVVIST"); });
@@ -708,7 +717,9 @@ Mvh Ole Fabian, OP Bygg AS</div>
     var ferdig = lager.veiviser.motor && lager.veiviser.profil && lager.veiviser.verktoy;
     banner.style.display = ferdig ? "none" : "flex";
   }
-  if(navigator.standalone){
+  var erHjemskjerm = navigator.standalone ||
+      (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+  if(erHjemskjerm){
     lager.veiviser.hjem = 1;
     document.getElementById("hjem-tekst").innerHTML =
       "<b>✓ Allerede gjort</b> — du er i fullskjerm-appen nå.";
@@ -757,7 +768,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
 
   /* vis rapport-lenken kun der rapporten faktisk er publisert sammen med appen */
   if(location.protocol !== "file:"){
-    fetch("rapport.html", { method: "HEAD" }).then(function(svar){
+    fetch("rapport.html").then(function(svar){
       if(svar.ok) document.getElementById("rapport-lenke").style.display = "block";
     }).catch(function(){});
   }
@@ -837,7 +848,11 @@ Mvh Ole Fabian, OP Bygg AS</div>
     mailkn.href = "mailto:?subject=" + encodeURIComponent(kort.querySelector("h3").textContent)
       + "&body=" + encodeURIComponent(kort.querySelector(".full").textContent);
     mailkn.addEventListener("click", function(){
-      loggHendelse("åpnet-i-mail", kort.querySelector(".badge").textContent); });
+      loggHendelse("åpnet-i-mail", kort.querySelector(".badge").textContent);
+      /* sikkerhetsnett: lange utkast kan kuttes av mailto-grensen — legg teksten på
+         utklippstavlen også, så kan den limes inn om Mail åpner tomt */
+      try{ navigator.clipboard.writeText(kort.querySelector(".full").textContent); }catch(e){}
+    });
     kort.querySelector(".full").insertAdjacentElement("afterend", mailkn);
     kort.querySelector(".se").addEventListener("click", function(){
       kort.classList.toggle("open");

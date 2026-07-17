@@ -198,7 +198,8 @@
       <li><span class="prikk"></span><span><b>Ingen Lærling-server har OP Byggs data.</b>
         Alt i appen lagres lokalt på den enkeltes telefon.</span></li>
       <li><span class="prikk"></span><span><b>AI-kontoer settes opp med trening avskrudd.</b>
-        Bruksloggen inneholder aldri innhold — kun hendelsestyper og fornavn.</span></li>
+        Automatisk logging er kun hendelsestyper og fornavn — aldri innholdet i utkast
+        eller dikteringer. Innspill de ansatte selv sender, deles med teamet.</span></li>
       <li><span class="prikk"></span><span><b>Aldri persondata i diktering:</b> ikke personnummer,
         lønn eller helseopplysninger. Prosjekter og firmanavn er OK.</span></li>
       <li><span class="prikk"></span><span><b>Ved videre samarbeid:</b> databehandleravtale,
@@ -288,7 +289,7 @@ Statusdata hentes direkte fra app-kanalene</footer>
     var v = document.getElementById(vEl), s = document.getElementById(sEl);
     if(!url){ v.textContent = "–";
       s.innerHTML = '<span class="pill">legg inn URL i Oppsett →</span>'; return Promise.resolve(null); }
-    return fetch(url.replace(/\/+$/,"") + "/versjon.json?t=" + Date.now())
+    return fetch(url.replace(/\/+$/,"") + "/versjon.json?t=" + Date.now(), { cache: "no-store" })
       .then(function(r){ if(!r.ok) throw 0; return r.json(); })
       .then(function(d){ v.textContent = "v" + d.versjon;
         s.innerHTML = '<span class="pill ok">PÅ LUFTA</span>'; return d.versjon; })
@@ -330,8 +331,19 @@ Statusdata hentes direkte fra app-kanalene</footer>
       hentVersjon(innst.stabil, "v-stabil", "s-stabil"),
       hentVersjon(innst.test, "v-test", "s-test")
     ]).then(function(vs){
-      document.getElementById("diff").classList.toggle("vis",
-        !!(vs[0] && vs[1] && vs[0] !== vs[1]));
+      function tall(v){ return String(v).split(".").map(Number); }
+      function nyere(a, b){ // a > b ?
+        var x = tall(a), y = tall(b);
+        for(var i = 0; i < 3; i++){ if((x[i]||0) !== (y[i]||0)) return (x[i]||0) > (y[i]||0); }
+        return false;
+      }
+      var d = document.getElementById("diff");
+      d.classList.toggle("vis", !!(vs[0] && vs[1] && nyere(vs[1], vs[0])));
+      if(vs[0] && vs[1] && nyere(vs[0], vs[1])){
+        d.classList.add("vis");
+        d.innerHTML = "<b>Obs:</b> testkanalen ligger BAK den stabile (v" + vs[1] +
+          " mot v" + vs[0] + ") — publiser siste versjon til testsiten.";
+      }
     });
   }
   if(!document.body.classList.contains("laast")) start();

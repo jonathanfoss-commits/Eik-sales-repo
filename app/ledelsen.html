@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Til ledelsen — Lærling × OP Bygg</title>
+<meta name="description" content="For OP Bygg-ledelsen: hva Lærling-piloten er, hva den koster (ingenting), hvordan data sikres, og hva dere får.">
+<meta name="theme-color" content="#070D12">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='42' fill='%232FC4D9'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bunn:#070D12; --flate:#0D161E; --flate-2:#121F29;
+    --strek:rgba(140,190,190,.14); --lys:#E9F2EE; --dis:#93A8AA;
+    --aurora-a:#39E29B; --aurora-b:#2FC4D9;
+    --sans:-apple-system,"Segoe UI",system-ui,Roboto,sans-serif;
+    --mono:"SF Mono",ui-monospace,Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bunn);color:var(--lys);font-family:var(--sans);line-height:1.6}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;background:
+     radial-gradient(100% 40% at 50% 0%,rgba(47,196,217,.12),transparent 60%),var(--bunn)}
+  .wrap{max-width:680px;margin:0 auto;padding:36px 24px 48px}
+  .brev{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;
+     text-transform:uppercase;color:var(--aurora-b)}
+  h1{font-size:clamp(1.8rem,5vw,2.5rem);line-height:1.12;font-weight:780;
+     letter-spacing:-.025em;margin:14px 0 10px;text-wrap:balance}
+  h1 em{font-style:normal;background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b));
+     -webkit-background-clip:text;background-clip:text;color:transparent}
+  .inngang{color:var(--dis);font-size:1rem;margin-bottom:28px}
+  .inngang b{color:var(--lys)}
+  h2{font-size:1.1rem;font-weight:720;margin:30px 0 10px}
+  .kort{background:var(--flate);border:1px solid var(--strek);border-radius:14px;
+     padding:18px;margin-bottom:12px}
+  .kort ul{list-style:none}
+  .kort li{padding:6px 0 6px 24px;position:relative;font-size:.92rem;color:var(--dis)}
+  .kort li::before{content:"✓";position:absolute;left:0;color:var(--aurora-a);font-weight:700}
+  .kort li b{color:var(--lys)}
+  .tall-rad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
+  .tall{background:var(--flate);border:1px solid var(--strek);border-radius:14px;
+     padding:16px;text-align:center}
+  .tall .n{font-size:1.7rem;font-weight:800;letter-spacing:-.02em;
+     background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b));
+     -webkit-background-clip:text;background-clip:text;color:transparent}
+  .tall .l{font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;
+     text-transform:uppercase;color:var(--dis);margin-top:2px}
+  @media (max-width:520px){.tall-rad{grid-template-columns:1fr}}
+  .knapp{display:block;text-align:center;font-weight:650;font-size:.95rem;
+     padding:13px 16px;border-radius:12px;color:#04110B;text-decoration:none;
+     background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b));margin:8px 0}
+  .knapp.svak{background:var(--flate-2);color:var(--lys);border:1px solid var(--strek)}
+  footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--strek);
+     font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;color:var(--dis);
+     text-transform:uppercase;line-height:2;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brev">Lærling × OP Bygg · Til ledelsen</div>
+  <h1>Prosjektlederne deres drukner i papirarbeid. <em>Piloten gir dere timene tilbake — gratis.</em></h1>
+  <p class="inngang">Lærling er en AI-medarbeider som skriver tilbud, endringsmeldinger,
+  byggedagbok, ukesrapporter og purringer — den ansatte dikterer, leser gjennom og sender selv.
+  OP Bygg er <b>utviklingspartner #1</b>: dere tester gratis, og produktet formes etter
+  deres hverdag. Ole Fabian Foss leder piloten internt.</p>
+
+  <div class="tall-rad">
+    <div class="tall"><div class="n">11,5 t</div><div class="l">per uke kan tas over — per prosjektleder</div></div>
+    <div class="tall"><div class="n">0 kr</div><div class="l">kostnad for OP Bygg i piloten</div></div>
+    <div class="tall"><div class="n">14 dager</div><div class="l">til evaluering med målte tall</div></div>
+  </div>
+
+  <h2>Hvorfor dette er trygt</h2>
+  <div class="kort">
+    <ul>
+      <li><b>Ingen Lærling-server har OP Byggs data</b> — alt i appen lagres lokalt på den
+      enkeltes telefon. Det finnes ikke noe sentralt datalager å lekke fra.</li>
+      <li><b>AI-kontoene settes opp med trening avskrudd.</b> Automatisk logging er kun
+      hendelsestyper og fornavn — aldri innholdet i utkast eller dikteringer. Innspill ansatte
+      selv sender inn, deles med utviklingsteamet.</li>
+      <li><b>Ingenting sendes automatisk:</b> hvert utkast leses og sendes av den ansatte selv.</li>
+      <li><b>Faste kjøreregler:</b> aldri personnummer, lønn eller helseopplysninger i diktering.</li>
+      <li><b>Ved videre samarbeid:</b> databehandleravtale (GDPR art. 28), EU-lagring med null
+      datalagring hos AI-leverandøren — og om ønskelig en <b>egen boks hos OP Bygg</b> slik at
+      bedriftsdata aldri forlater huset.</li>
+    </ul>
+  </div>
+
+  <h2>Hvorfor dette er nyttig</h2>
+  <div class="kort">
+    <ul>
+      <li><b>Kravsikring:</b> «uten ugrunnet opphold» i NS 8407 er dager, ikke uker. Endrings-
+      meldinger samme dag betyr at tilleggskrav ikke tapes på fristen.</li>
+      <li><b>Dokumentasjon:</b> byggedagbok ført daglig på 30 sekunder — bevismaterialet som
+      avgjør sluttoppgjør.</li>
+      <li><b>Byggherreopplevelsen:</b> fast ukesrapport hver fredag — den strukturerte
+      oppfølgingen OP Bygg profilerer seg på, levert konsekvent.</li>
+      <li><b>Forsprang:</b> bare ~16 % av norsk byggebransje bruker AI i dag; av dem som har
+      investert, melder 59 % om gevinster.</li>
+    </ul>
+  </div>
+
+  <h2>Deres innsyn og kontroll</h2>
+  <div class="kort">
+    <ul>
+      <li><b>Kommandosentralen</b> (lenke under, kode fås av Jonathan): live status, pilotpuls
+      og full oversikt — laget for Mac/PC.</li>
+      <li><b>To-nøkkels godkjenning:</b> ingen endring når de ansatte før både Jonathan og
+      Ole Fabian har godkjent den i en egen testkanal.</li>
+      <li><b>Dag 14:</b> evalueringsmøte med målte timer — dere beslutter alt videre.
+      Å avslutte koster ingenting og krever ett tastetrykk.</li>
+    </ul>
+  </div>
+
+  <a class="knapp" href="rapport.html">Se mulighetsrapporten (hva som kan tas over)</a>
+  <a class="knapp svak" href="admin.html">Åpne kommandosentralen (krever pilotkode)</a>
+  <a class="knapp svak" href="mailto:jonathan.foss@eikandfriends.no?subject=L%C3%A6rling%20%C3%97%20OP%20Bygg%20%E2%80%94%20sp%C3%B8rsm%C3%A5l%20fra%20ledelsen">Spørsmål? Kontakt Jonathan Foss</a>
+
+  <footer>Lærling · Pilot hos OP Bygg AS · Utviklingspartner-avtale — ingen kostnad, ingen binding</footer>
+
+</div>
+</body>
+</html>

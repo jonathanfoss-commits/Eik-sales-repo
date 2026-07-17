@@ -73,8 +73,8 @@
     <div class="num">STEG 2 · 2 MIN</div>
     <h2>Åpne appen og kjør veiviseren</h2>
     <p>Trykk <b>«Start veiviseren»</b> når appen åpner — den setter opp alt, gratis.
-    Tips: legg den på hjemskjermen (Del-knappen → «Legg til på Hjem-skjerm»), så virker
-    den også uten dekning.</p>
+    Tips: legg den på hjemskjermen (iPhone: Del-knappen → «Legg til på Hjem-skjerm» ·
+    Android: Chrome-menyen ⋮ → «Legg til på startsiden»), så virker den også uten dekning.</p>
     <a class="knapp" href="index.html">Åpne Lærling-appen</a>
   </div>
 
@@ -91,7 +91,8 @@
     <h2>Til sjefen: hva med dataene våre?</h2>
     <ul>
       <li><b>Ingen Lærling-server har OP Byggs data</b> — alt lagres lokalt på Ole Fabians telefon.</li>
-      <li>AI-kontoen settes opp med <b>trening avskrudd</b>; bruksstatistikk logges uten innhold.</li>
+      <li>AI-kontoen settes opp med <b>trening avskrudd</b>; automatisk logging er kun
+      hendelsestyper — aldri innholdet i utkast eller dikteringer.</li>
       <li>Ved videre samarbeid: databehandleravtale, EU-lagring — og mulighet for en
       <b>egen boks hos OP Bygg</b> så bedriftsdata aldri forlater huset.</li>
     </ul>
@@ -100,5 +101,12 @@
   <footer>Lærling · Pilotversjon · Utvikles sammen med OP Bygg AS</footer>
 
 </div>
+<script>
+  /* startsiden installerer også offline-støtten, så løftet om «virker uten dekning» holder herfra */
+  if("serviceWorker" in navigator &&
+     (location.protocol === "https:" || location.hostname === "localhost")){
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  }
+</script>
 </body>
 </html>

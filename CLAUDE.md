@@ -14,8 +14,9 @@ Opptre som et senior produktteam og innta riktig rolle etter oppgaven:
 - **Arkitekt:** lokal-først er lov nummer én. Data bor hos brukeren (localStorage/IndexedDB,
   senere kundens egen boks). Ingen server-database uten eksplisitt beslutning. Selvforsynt
   kode uten avhengigheter der det går.
-- **Sikkerhetsansvarlig:** aldri logg eller send innhold (utkast, dikteringer) — kun
-  hendelsestyper. GDPR: EU/EØS, dataminimering, sletterett. Flagg enhver endring som
+- **Sikkerhetsansvarlig:** automatisk logging sender aldri innhold (utkast, dikteringer) —
+  kun hendelsestyper. Eneste unntak: innspill brukeren selv skriver og aktivt sender til
+  teamet. All omtale av loggingen i brukerflatene skal være presis på dette skillet. GDPR: EU/EØS, dataminimering, sletterett. Flagg enhver endring som
   flytter data ut av enheten, og stopp for godkjenning.
 - **Byggdomene-ekspert:** NS 8407-varsler «uten ugrunnet opphold» = samme dag. Skill
   forbrukerkunde (bustadoppføringslova/håndverkertjenesteloven, ufravikelig) fra proff
@@ -39,8 +40,10 @@ Opptre som et senior produktteam og innta riktig rolle etter oppgaven:
 - Appen pakkes fra `app/` (inkl. `rapport.html` og `bli-med.html`) og publiseres på Netlify
   i to kanaler: TEST (site med «test» i navnet) og STABIL (alle ansatte i OP Bygg).
 - **Kveldsteamet pusher KUN til branchen `kveldsteam-forslag`** — aldri direkte til
-  hovedbranchen. Hver leveranse: bump `VERSJON`-konstanten i `app/index.html` (patch-siffer),
-  bump cachen i `app/sw.js`, og oppsummer endringen i `innspill/til-godkjenning.md`.
+  hovedbranchen. Hver leveranse bumper versjonen på ALLE tre stedene samtidig (de må
+  aldri drifte): `VERSJON`-konstanten i `app/index.html`, verdien i `app/versjon.json`
+  (kommandosentralen leser denne), og cache-navnet i `app/sw.js` (ellers serveres gamle
+  filer fra cache). Oppsummer endringen i `innspill/til-godkjenning.md`.
 - Endringer går til STABIL først når både Jonathan og Ole Fabian har trykket «Godkjenn» i
   TEST-appen (logges i pilotloggen) og Jonathan har merget og publisert.
   Full flyt: `samarbeid/godkjenning.md`.

@@ -25,9 +25,9 @@ støtte til firmaets eget salgsløfte.
 
 ---
 
-> **Salgsåpneren:** send ham [`mulighetsrapport.html`](mulighetsrapport.html) først — den viser
-> nøyaktig hvilke 11,5 timer/uke Lærling kan ta over, personlig for OP Bygg. (Ligger også som
-> `/rapport.html` på app-URL-en når den er publisert.)
+> **Salgsåpneren:** send ham [`rapport.html`](../../app/rapport.html) først (ligger som
+> `/rapport.html` på app-URL-en) — den viser
+> nøyaktig hvilke 11,5 timer/uke Lærling kan ta over, personlig for OP Bygg.
 
 > **Selvbetjent oppstart:** appen har nå en innebygd **veiviser** («Gjør Lærling klar», 2 min)
 > som gjør stegene under selv: den lenker til gratis Claude-nedlasting, kopierer den ferdige

@@ -96,7 +96,7 @@
   </div>
 </header>
 
-<h1>Jeg har sett på arbeidsuken din. <em>11,5 timer kan du få tilbake.</em></h1>
+<h1>Jeg har sett på arbeidsuken din. <em><span id="h1-tall">11,5</span> timer kan du få tilbake.</em></h1>
 <p class="inngang">OP Bygg selger ryddig prosjektstyring — men den ryddigheten lages i dag
 manuelt, på kvelden, av deg. Under er de seks oppgavene jeg kan ta over fra første uke.
 Du leser gjennom og godkjenner; jeg gjør skrivejobben.</p>
@@ -106,37 +106,37 @@ Du leser gjennom og godkjenner; jeg gjør skrivejobben.</p>
 på OP Byggs størrelse. Tallene kalibreres etter to uker i drift.</p>
 
 <div class="liste">
-  <div class="oppgave">
+  <div class="oppgave" data-t="3.0">
     <div class="o-topp"><h3>Tilbud og befaringsoppfølging</h3><div class="timer">3,0 <span>t/uke</span></div></div>
     <div class="stang"><i style="width:100%"></i></div>
     <p>Du dikterer 2–3 minutter i bilen etter befaring — jeg leverer oppsummerings-e-post til
     kunden og internt tilbudsgrunnlag med <b>omfang, forutsetninger og forbehold</b>.</p>
   </div>
-  <div class="oppgave">
+  <div class="oppgave" data-t="2.0">
     <div class="o-topp"><h3>Byggedagbok</h3><div class="timer">2,0 <span>t/uke</span></div></div>
     <div class="stang"><i style="width:67%"></i></div>
     <p>30 sekunder diktering på slutten av dagen blir strukturert logg: mannskap, utført arbeid,
     leveranser, hindringer. <b>Dokumentasjonen som avgjør sluttoppgjør.</b></p>
   </div>
-  <div class="oppgave">
+  <div class="oppgave" data-t="2.0">
     <div class="o-topp"><h3>UE-purringer og oppfølging</h3><div class="timer">2,0 <span>t/uke</span></div></div>
     <div class="stang"><i style="width:67%"></i></div>
     <p>Purringer på priser, tegninger og leveranser — vennlige, tydelige, og faktisk sendt
     i stedet for utsatt.</p>
   </div>
-  <div class="oppgave">
+  <div class="oppgave" data-t="1.5">
     <div class="o-topp"><h3>Møtereferater</h3><div class="timer">1,5 <span>t/uke</span></div></div>
     <div class="stang"><i style="width:50%"></i></div>
     <p>Byggemøte-notater blir formelt referat med <b>nummererte aksjonspunkter, ansvarlig og
     frist</b> — sendt samme dag.</p>
   </div>
-  <div class="oppgave">
+  <div class="oppgave" data-t="1.5">
     <div class="o-topp"><h3>Endringsmeldinger</h3><div class="timer">1,5 <span>t/uke</span></div></div>
     <div class="stang"><i style="width:50%"></i></div>
     <p>Endringer varsles byggherre <b>samme dag</b>, med riktig NS 8407-språk. Se hvorfor
     dette er mer enn tidsbesparelse under.</p>
   </div>
-  <div class="oppgave">
+  <div class="oppgave" data-t="1.5">
     <div class="o-topp"><h3>Ukesrapport til byggherre</h3><div class="timer">1,5 <span>t/uke</span></div></div>
     <div class="stang"><i style="width:50%"></i></div>
     <p>Fast, profesjonell statusrapport hver fredag — samme struktur hver uke, så byggherren
@@ -145,8 +145,8 @@ på OP Byggs størrelse. Tallene kalibreres etter to uker i drift.</p>
 </div>
 
 <div class="sum">
-  <div class="n">11,5 t/uke</div>
-  <div class="l">≈ <b>7 500 kr/uke</b> i frigjort prosjektledertid (650 kr/t)
+  <div class="n" id="sum-tall">11,5 t/uke</div>
+  <div class="l">≈ <b id="sum-verdi">7 500 kr/uke</b> i frigjort prosjektledertid (650 kr/t)
   — mot et abonnement fra <b>3 990 kr/mnd</b></div>
 </div>
 
@@ -173,6 +173,25 @@ på OP Byggs størrelse. Tallene kalibreres etter to uker i drift.</p>
 </footer>
 
 </div>
+
+<script>
+  /* tallene regnes fra data-t på hver oppgave — én kilde, alt annet følger */
+  (function(){
+    var rader = Array.prototype.slice.call(document.querySelectorAll(".oppgave")),
+        sum = 0, maks = 0;
+    rader.forEach(function(r){ var t = parseFloat(r.dataset.t); sum += t; if(t > maks) maks = t; });
+    rader.forEach(function(r){
+      var t = parseFloat(r.dataset.t);
+      r.querySelector(".timer").firstChild.textContent = t.toFixed(1).replace(".", ",") + " ";
+      r.querySelector(".stang i").style.width = Math.round(t / maks * 100) + "%";
+    });
+    var s = sum.toFixed(1).replace(".", ",");
+    document.getElementById("sum-tall").textContent = s + " t/uke";
+    document.getElementById("h1-tall").textContent = s;
+    document.getElementById("sum-verdi").textContent =
+      (Math.round(sum * 650 / 100) * 100).toLocaleString("nb-NO") + " kr/uke";
+  })();
+</script>
 
 </body>
 </html>
