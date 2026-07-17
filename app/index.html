@@ -175,6 +175,11 @@
      vertical-align:-2px;animation:blink 1s steps(1) infinite}
   @keyframes blink{50%{opacity:0}}
 
+  .vm-felt{width:100%;background:rgba(0,0,0,.25);border:1px solid var(--strek);
+     border-radius:10px;color:var(--lys);font:inherit;font-size:.88rem;
+     padding:11px 12px;margin-bottom:8px}
+  .vm-felt::placeholder{color:var(--dis);opacity:.7}
+
   /* toast */
   .toast{position:fixed;left:50%;bottom:calc(110px + env(safe-area-inset-bottom));z-index:70;
      transform:translate(-50%,20px);background:var(--flate-2);border:1px solid rgba(57,226,155,.4);
@@ -272,7 +277,11 @@
   <div class="topp">
     <div class="hilsen"><b id="hilsen">God morgen</b>
       <span id="dato"></span> <span style="color:var(--aurora-b)">· OP Bygg AS</span></div>
-    <div class="status"><span class="puls"></span><span id="status-tekst">Arbeider</span></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <img src="op-bygg-logo.png" alt="OP Bygg" style="height:26px;border-radius:6px"
+        onerror="this.remove()">
+      <div class="status"><span class="puls"></span><span id="status-tekst">Arbeider</span></div>
+    </div>
   </div>
 
   <!-- ── I DAG ── -->
@@ -280,6 +289,17 @@
     <button class="banner" id="banner-veiviser">
       <div class="t"><b>Gjør Lærling klar for deg</b>
       <span>Veiviser · 2 minutter · helt gratis</span></div>
+      <div class="pil-h">›</div>
+    </button>
+    <button class="banner" id="apne-varemottak" style="background:linear-gradient(135deg,rgba(47,196,217,.12),rgba(57,226,155,.06));border-color:rgba(47,196,217,.45)">
+      <div class="t"><b>📦 Varemottak — meld avvik</b>
+      <span>Gjør det før du signerer følgeseddelen · 1 minutt</span></div>
+      <div class="pil-h">›</div>
+    </button>
+
+    <button class="banner" id="knapp-varemottak" style="background:var(--flate);border-color:var(--strek)">
+      <div class="t"><b>📦 Varemottak</b>
+      <span>Leveranse på plassen? Kontroller og meld avvik — før du signerer</span></div>
       <div class="pil-h">›</div>
     </button>
     <div class="sek-tittel">Til godkjenning · <b id="antall">4</b></div>
@@ -536,10 +556,51 @@ Mvh Ole Fabian, OP Bygg AS</div>
   </div>
 </div>
 
+<!-- varemottak-ark -->
+<div id="varemottak">
+  <div class="ark-bak" id="varemottak-bak"></div>
+  <div class="ark" role="dialog" aria-label="Varemottak — meld avvik" style="max-height:88vh;overflow-y:auto">
+    <button class="v-lukk" id="vm-lukk" aria-label="Lukk"
+      style="position:absolute;top:8px;right:12px">×</button>
+    <div class="hank"></div>
+    <div style="font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;
+      text-transform:uppercase;color:var(--aurora-b);text-align:center;margin-bottom:4px">
+      📦 Varemottak · avviksmelding</div>
+    <p style="font-size:.8rem;color:var(--dis);text-align:center;margin-bottom:12px">
+      Tell mot følgeseddel og bestilling, noter avviket på følgeseddelen
+      <b style="color:var(--lys)">før du signerer</b> — og send meldingen med én gang.</p>
+    <label class="knapp svak" style="display:block;text-align:center;margin-bottom:10px;cursor:pointer">
+      📷 Ta bilde av leveransen
+      <input type="file" accept="image/*" capture="environment" multiple hidden id="varemottak-foto">
+    </label>
+    <div id="foto-rad" style="display:none;gap:8px;margin-bottom:10px;overflow-x:auto"></div>
+    <input class="vm-felt" id="vm-prosjekt" placeholder="Prosjekt (f.eks. Krohgs gate 60)">
+    <input class="vm-felt" id="vm-leverandor" placeholder="Leverandør (f.eks. Byggmakker)">
+    <input class="vm-felt" id="vm-ordre" placeholder="Ordre-/bestillingsnr. (valgfritt)">
+    <textarea class="vm-felt" id="vm-avvik" style="min-height:76px;resize:vertical"
+      placeholder="Avviket: hva mangler eller er skadet? (f.eks. 6 av 24 gipsplater mangler, 2 karmer med transportskade)"></textarea>
+    <button class="knapp" id="vm-lag" style="width:100%">Lag avviksmelding</button>
+    <div id="vm-resultat" style="display:none">
+      <div class="transkript" id="vm-tekst" style="margin-top:12px;white-space:pre-line"></div>
+      <div class="rad">
+        <button class="knapp" id="vm-kopier">Kopier</button>
+        <a class="knapp svak" id="vm-mail" href="#">Åpne i Mail</a>
+      </div>
+      <p style="font-size:.72rem;color:var(--dis);margin-top:10px;text-align:center">
+        Husk: legg ved bildene (de lagres kun på telefonen din), og gi regnskap beskjed —
+        fakturaen skal kontrolleres mot faktisk mottatt vare.</p>
+    </div>
+    <button class="nullstill" id="vm-claude" style="margin-top:12px">Komplisert avvik? Kopier
+      Claude-prompten og diktér i stedet</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <div class="velkomst" id="velkomst" role="dialog" aria-label="Velkommen">
   <div class="boks">
+    <img src="op-bygg-logo.png" alt="" style="height:34px;margin-bottom:10px;border-radius:6px"
+      onerror="this.remove()">
     <div class="logo">Lærling<b>.</b></div>
     <div style="font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;color:var(--aurora-b);
       margin:-8px 0 14px">BYGGET FOR OP BYGG AS</div>
@@ -642,7 +703,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
   ];
 
   /* ── versjon og kanal (test vs. stabil) ── */
-  var VERSJON = "0.7.2";
+  var VERSJON = "0.7.3";
   var erTest = /(^|[.-])test([.-]|$)/.test(location.hostname);
   document.getElementById("versjon-info").textContent =
     "LÆRLING v" + VERSJON + " · " + (erTest ? "TESTKANAL" : "STABIL") + " · BYGGET FOR OP BYGG";
@@ -703,8 +764,9 @@ Mvh Ole Fabian, OP Bygg AS</div>
   }
 
   /* kopier-hjelper med fallback for eldre Safari */
-  function kopier(tekst, hva){
-    function bekreft(){ siFra("<b>✓</b> " + hva + " kopiert — lim inn i Claude");
+  function kopier(tekst, hva, etterord){
+    function bekreft(){ siFra("<b>✓</b> " + hva + " kopiert " +
+      (etterord || "— lim inn i Claude"));
       loggHendelse("kopiert", hva); }
     if(navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(tekst).then(bekreft, fallback);
@@ -965,6 +1027,68 @@ Mvh Ole Fabian, OP Bygg AS</div>
       k.textContent = auto ? "UTKAST" : "AUTO";
       k.classList.toggle("auto", !auto);
     });
+  });
+
+  /* varemottak-arket: lager ferdig avviksmelding lokalt — fungerer offline */
+  var varemottak = document.getElementById("varemottak");
+  document.getElementById("knapp-varemottak").addEventListener("click", function(){
+    varemottak.classList.add("apen");
+    loggHendelse("varemottak-åpnet");
+  });
+  document.getElementById("varemottak-bak").addEventListener("click", function(){
+    varemottak.classList.remove("apen");
+  });
+  document.getElementById("vm-lukk").addEventListener("click", function(){
+    varemottak.classList.remove("apen");
+  });
+  document.getElementById("varemottak-foto").addEventListener("change", function(){
+    var rad = document.getElementById("foto-rad");
+    rad.style.display = "flex";
+    Array.prototype.forEach.call(this.files, function(fil){
+      var img = document.createElement("img");
+      img.src = URL.createObjectURL(fil);
+      img.alt = "Bilde av leveransen";
+      img.style.cssText = "width:64px;height:64px;object-fit:cover;border-radius:8px;" +
+        "border:1px solid rgba(57,226,155,.4);flex:none";
+      rad.appendChild(img);
+    });
+    loggHendelse("varemottak-foto", this.files.length + " bilde(r)");
+    siFra("<b>✓</b> " + this.files.length + " bilde(r) klare — legg dem ved i meldingen");
+  });
+  document.getElementById("vm-lag").addEventListener("click", function(){
+    var prosjekt = document.getElementById("vm-prosjekt").value.trim(),
+        lev = document.getElementById("vm-leverandor").value.trim(),
+        ordre = document.getElementById("vm-ordre").value.trim(),
+        avvik = document.getElementById("vm-avvik").value.trim(),
+        bilder = document.querySelectorAll("#foto-rad img").length;
+    if(!avvik){ siFra("Beskriv avviket først"); return; }
+    var melding = "Til " + (lev || "[leverandør]") + "\n\n"
+      + "Ved varemottak i dag på " + (prosjekt || "[prosjekt]")
+      + (ordre ? " (ordre " + ordre + ")" : "")
+      + " ble følgende avvik registrert og notert på følgeseddelen før signering:\n"
+      + avvik.split("\n").map(function(l){ return "• " + l; }).join("\n") + "\n\n"
+      + (bilder ? "Bilder av leveransen er vedlagt.\n\n" : "")
+      + "Vi ber om levering av manglende/uskadde varer innen 3 virkedager, alternativt "
+      + "kreditering. Fakturaen kontrolleres mot bestilling og faktisk mottatt vare.\n\n"
+      + "Mvh " + (lager.bruker || "[navn]") + ", OP Bygg AS";
+    document.getElementById("vm-tekst").textContent = melding;
+    document.getElementById("vm-resultat").style.display = "block";
+    document.getElementById("vm-mail").href = "mailto:?subject="
+      + encodeURIComponent("Avvik ved leveranse — " + (prosjekt || "varemottak"))
+      + "&body=" + encodeURIComponent(melding);
+    loggHendelse("avviksmelding-laget", (lev ? "leverandør oppgitt" : "uten leverandør")
+      + " · " + bilder + " bilde(r)");
+  });
+  document.getElementById("vm-kopier").addEventListener("click", function(){
+    kopier(document.getElementById("vm-tekst").textContent, "Avviksmeldingen",
+      "— lim inn i e-post eller melding");
+  });
+  document.getElementById("vm-mail").addEventListener("click", function(){
+    loggHendelse("åpnet-i-mail", "VAREMOTTAK");
+  });
+  document.getElementById("vm-claude").addEventListener("click", function(){
+    var pr = PROMPTER.filter(function(p){ return p.t.indexOf("Varemottak") === 0; })[0];
+    kopier(pr.p, "Varemottak-prompten");
   });
 
   /* dikter-arket */

@@ -1,15 +1,15 @@
 # Utsendingspakken — ferdige meldinger til OP Bygg
 
-Én lenke per målgruppe. Bytt `[APP-URL]` med den ekte adressen (f.eks.
-`https://laerling-app.netlify.app`) — alt annet er klart til å sendes.
+Én lenke per målgruppe — ekte adresser fylt inn, alt er klart til å sendes.
+Landingssiden (salg utenfor OP Bygg): https://op-bygg-laerling-nett.netlify.app
 
 ## 1. Til Ole Fabian (pilotleder) — SMS/Messenger
 
 > Hei bror! Du er offisielt utviklingspartner #1. Alt du trenger ligger her —
 > ta steg 1 og 2 i dag, det tar 4 minutter totalt:
-> **[APP-URL]/bli-med.html**
+> **https://op-bygg-laerling-app.netlify.app/bli-med.html**
 > Pilotkoden til kommandosentralen er «opbygg2026» — den gir deg og sjefene full oversikt:
-> **[APP-URL]/admin.html**
+> **https://op-bygg-laerling-app.netlify.app/admin.html**
 
 ## 2. Til ledelsen (Lars/Erik) — e-post, gjerne videresendt via Ole Fabian
 
@@ -23,7 +23,7 @@
 > hos den enkelte — det finnes ingen server med OP Byggs data.
 >
 > Alt dere trenger å vite (2 min lesning, laget for dere):
-> **[APP-URL]/ledelsen.html**
+> **https://op-bygg-laerling-app.netlify.app/ledelsen.html**
 >
 > Der ligger også mulighetsrapporten (hvilke 12,5 timer/uke som kan tas over) og
 > kommandosentralen med live status. Kode til den: opbygg2026.
@@ -36,7 +36,7 @@
 
 > Hei! Vi tester en AI-hjelper i OP Bygg — den skriver tilbud, referater og purringer
 > for deg (du snakker, den skriver). Gratis, frivillig, og du kan ikke gjøre noe galt.
-> Slik kommer du i gang på 2 min: **[APP-URL]/ansatte.html**
+> Slik kommer du i gang på 2 min: **https://op-bygg-laerling-app.netlify.app/ansatte.html**
 
 ## Rekkefølgen som funker
 
