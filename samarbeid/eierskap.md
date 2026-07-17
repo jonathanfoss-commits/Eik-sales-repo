@@ -11,7 +11,9 @@ Et repo på en privat konto har én eier. Riktig struktur for to eiere er en **o
    (kontakt-e-post: din).
 2. Under opprettelsen (eller etterpå: People → Invite member): inviter **Ole Fabians
    GitHub-bruker** → sett rollen til **Owner**. (Har han ikke GitHub-konto: github.com/signup,
-   2 min — gratis.)
+   2 min — gratis.) **Merk:** dette er kun eierskaps-sikring — han trenger aldri *bruke*
+   GitHub i hverdagen (innspill går via appen), og steget kan vente til det passer.
+   Juridisk er det samarbeidsavtalen i punkt 2 som sikrer eierskapet hans.
 3. Opprett repoet **i organisasjonen**: New repository → owner: `laerling-ai` →
    navn: `laerling` → **Private**.
 4. Si fra til Claude (meg): «repoet laerling-ai/laerling er klart» → jeg kobler det til og

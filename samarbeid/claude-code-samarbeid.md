@@ -1,39 +1,39 @@
-# Utvikle Lærling sammen i Claude Code — Jonathan + Ole Fabian
+# Utvikle Lærling sammen — Jonathan + Ole Fabian
 
 Prinsippet: **Ole Fabian er domeneeksperten, Jonathan er produktsjefen, Claude Code er
-utviklingsteamet.** Ingen av dere trenger å skrive kode — men arbeidet må organiseres som
-et utviklingsteam ville gjort det.
+utviklingsteamet.** Ingen av dere trenger å skrive kode.
 
-## Oppsettet (30 minutter, én gang)
+> **Ole Fabian trenger IKKE GitHub.** Hans grensesnitt er appen: Innspill-kortet på
+> Rapport-fanen (👍/🐞/💡 + hvilket verktøy + fritekst). Eierskapet hans sikres i
+> samarbeidsavtalen (se eierskap.md) — GitHub-konto kan komme senere hvis han vil,
+> men er aldri et krav.
 
-1. **Privat GitHub-repo** `laerling-ai` (github.com/new). Innholdet fra dette repoet flyttes
-   dit; Ole Fabian inviteres som collaborator (Settings → Collaborators).
-2. **Claude Code på web** (claude.ai/code): koble repoet. Dette er Jonathans verksted —
-   funker fra hvilken som helst maskin, ingen lokal installasjon nødvendig.
-3. **CLAUDE.md i repo-roten** — teamets hukommelse. Claude Code leser den automatisk i hver
-   økt, så du slipper å forklare prosjektet på nytt hver gang. (Mal nederst.)
-4. **GitHub Issues = backlog.** Hver idé, feil og ønske blir en issue. Ole Fabian oppretter
-   dem rett fra mobilen (GitHub-appen) — eller sender deg melding, så oppretter du.
-5. **Netlify kobles til repoet** (i stedet for Drop): hver endring på `main` publiseres
-   automatisk, og hver pull request får en egen forhåndsvisnings-URL som Ole Fabian kan
-   teste på telefonen **før** det går live.
+## Oppsettet (Jonathans del, én gang)
 
-## Arbeidsflyten (ukentlig rytme)
+1. **GitHub-organisasjon + privat repo** (se eierskap.md) — Jonathans/Claudes verksted.
+2. **Claude Code på web** (claude.ai/code): koble repoet. Funker fra hvilken som helst maskin.
+3. **CLAUDE.md i repo-roten** — teamets hukommelse; leses automatisk i hver økt. (Mal nederst.)
+4. **Netlify kobles til repoet** (Site → «Import from Git» i stedet for Drop): hver push
+   publiseres automatisk — da forsvinner ZIP-opplastingen helt.
+
+## Arbeidsflyten (automatisert kveldsrytme)
 
 ```
-Ole Fabian (på byggeplassen)          Jonathan (i Claude Code)
-────────────────────────────          ─────────────────────────
-Bruker appen daglig                   Leser pilotloggen + issues
-Melder inn: «purringen bommer         Én Claude Code-økt per issue:
-på tonen når det haster» (issue)  →   forklarer problemet, Claude
-                                      implementerer, tester, lager PR
-Tester forhåndsvisnings-URL      ←    Sender preview-lenken
-«Nå sitter den 👍»               →    Merge → auto-publisert
+Ole Fabian (i appen)                  Kveldsteamet (Claude Code-rutine, hver kveld kl. 21)
+────────────────────                  ─────────────────────────────────────────
+Bruker appen daglig                   Leser innspill/inbox.md + backlog
+Sender innspill fra appen:            Vurderer som produktteam, implementerer
+«purringen bommer på tonen»     →     det viktigste, tester i nettleser,
+                                      fører logg i innspill/behandlet.md, pusher
+Ser forbedringen i appen        ←     Jonathan får varsel, ser over om morgenen
+                                      og publiserer (automatisk hvis Netlify er
+                                      koblet til repoet)
 ```
 
-- **Små endringer, ofte** — én issue per økt, aldri «fiks alt».
+- Innspillene når Jonathan via Netlify Forms-varsel på e-post; han limer nye inn i
+  `innspill/inbox.md` (30 sek) — resten går av seg selv. Full flyt: `innspill/README.md`.
+- Kveldsteam-rutinen heter «Lærling kveldsteam» (administreres i Claude → Routines).
 - **Fredag:** 15-min gjennomgang sammen: hva loggene viser, hva som bygges neste uke.
-- Alt Claude Code gjør committes med beskrivende meldinger — historikken er dokumentasjonen.
 
 ## Team-prompten (lim inn som CLAUDE.md i det nye repoet)
 

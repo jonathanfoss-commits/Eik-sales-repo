@@ -395,17 +395,32 @@ Mvh Ole Fabian, OP Bygg AS</div>
     <a class="knapp svak" id="rapport-lenke" href="rapport.html"
        style="display:none;text-align:center;margin-top:4px">Se hele mulighetsrapporten din</a>
 
-    <div class="sek-tittel">Din tilbakemelding lærer opp Lærling</div>
+    <div class="sek-tittel">Innspill — dette styrer hva som bygges</div>
     <div class="kort" id="tilbake">
+      <p style="font-size:.8rem;color:var(--dis);margin-bottom:10px">Du er utviklingspartner:
+      det du melder inn her vurderes av utviklingsteamet <b style="color:var(--lys)">hver kveld</b>.</p>
       <div class="rad" style="margin-top:0">
-        <button class="knapp svak" data-tommel="Nyttig 👍">👍 Nyttig</button>
-        <button class="knapp svak" data-tommel="Ikke helt 👎">👎 Ikke helt</button>
+        <button class="knapp svak" data-type="Funker bra">👍 Funker</button>
+        <button class="knapp svak" data-type="Noe skurrer">🐞 Skurrer</button>
+        <button class="knapp svak" data-type="Idé">💡 Idé</button>
       </div>
-      <textarea id="tilbake-tekst" placeholder="Hva savner du? Hva var bra? (valgfritt)"
+      <select id="innspill-verktoy" style="width:100%;margin-top:10px;background:var(--flate-2);
+        border:1px solid var(--strek);border-radius:10px;color:var(--lys);font:inherit;
+        font-size:.86rem;padding:10px 12px">
+        <option value="">Gjelder … (valgfritt)</option>
+        <option>Befaring → tilbud</option>
+        <option>Byggemøte → referat</option>
+        <option>Endringsmelding</option>
+        <option>Ukesrapport</option>
+        <option>Purring til UE</option>
+        <option>Byggedagbok</option>
+        <option>Appen generelt</option>
+      </select>
+      <textarea id="tilbake-tekst" placeholder="Fortell med dine egne ord — jo mer konkret, jo bedre"
         style="width:100%;margin-top:10px;background:rgba(0,0,0,.25);border:1px solid var(--strek);
         border-radius:10px;color:var(--lys);font:inherit;font-size:.86rem;padding:10px 12px;
         min-height:64px;resize:vertical"></textarea>
-      <button class="knapp" id="tilbake-send" style="width:100%;margin-top:10px">Send til Jonathan</button>
+      <button class="knapp" id="tilbake-send" style="width:100%;margin-top:10px">Send til teamet</button>
     </div>
   </div>
 
@@ -674,23 +689,25 @@ Mvh Ole Fabian, OP Bygg AS</div>
   });
   visSteg();
 
-  /* tilbakemeldingskortet */
-  var tommel = "";
-  document.querySelectorAll("[data-tommel]").forEach(function(k){
+  /* innspill-portalen */
+  var innspillType = "";
+  document.querySelectorAll("[data-type]").forEach(function(k){
     k.addEventListener("click", function(){
-      tommel = k.dataset.tommel;
-      document.querySelectorAll("[data-tommel]").forEach(function(x){
+      innspillType = k.dataset.type;
+      document.querySelectorAll("[data-type]").forEach(function(x){
         x.style.borderColor = x === k ? "rgba(57,226,155,.6)" : ""; });
     });
   });
   document.getElementById("tilbake-send").addEventListener("click", function(){
-    var tekst = document.getElementById("tilbake-tekst").value.trim();
-    if(!tommel && !tekst){ siFra("Velg 👍/👎 eller skriv noen ord først"); return; }
-    loggHendelse("tilbakemelding", (tommel + " " + tekst).trim());
+    var tekst = document.getElementById("tilbake-tekst").value.trim(),
+        verktoy = document.getElementById("innspill-verktoy").value;
+    if(!innspillType && !tekst){ siFra("Velg en knapp eller skriv noen ord først"); return; }
+    loggHendelse("innspill",
+      [innspillType, verktoy, tekst].filter(Boolean).join(" · "));
     document.getElementById("tilbake").innerHTML =
       '<p style="text-align:center;color:var(--dis);font-size:.9rem;padding:8px 0">' +
-      '<b style="color:var(--lys)">Takk!</b> Tilbakemeldingen er sendt til Jonathan ' +
-      'og brukes til å gjøre Lærling bedre.</p>';
+      '<b style="color:var(--lys)">Takk!</b> Innspillet er sendt — teamet vurderer det ' +
+      'i kveld, og du ser resultatet i appen.</p>';
   });
 
   /* vis rapport-lenken kun der rapporten faktisk er publisert sammen med appen */
