@@ -1,0 +1,17 @@
+{
+  "name": "plattformkjerne",
+  "version": "0.1.0",
+  "description": "Plattformkjernen — multi-tenant kjerne for AI-medarbeidere til små byggefirmaer. Lærling (OP Bygg) er første tenant.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node server/index.js",
+    "migrate": "node server/migrate.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.112.2",
+    "pg": "^8.22.0"
+  }
+}

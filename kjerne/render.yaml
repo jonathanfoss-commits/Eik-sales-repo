@@ -1,0 +1,61 @@
+# Render Blueprint — TEST/STABIL-modellen på Render: to tjenester med HVER SIN
+# database (testdata skal aldri i produksjonsbasen). render.com → New →
+# Blueprint → velg repoet/grenen; Render spør kun om ANTHROPIC_API_KEY.
+# Migrasjoner + tenants opprettes automatisk ved oppstart (server/start.js).
+
+databases:
+  - name: laerling-db
+    plan: basic-256mb        # minste betalte plan; «free» slettes etter 30 dager
+    region: frankfurt        # EU/GDPR
+    postgresMajorVersion: "16"
+  - name: laerling-test-db
+    plan: basic-256mb
+    region: frankfurt
+    postgresMajorVersion: "16"
+
+services:
+  - type: web
+    name: laerling           # STABIL — alle ansatte i OP Bygg
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    healthCheckPath: /api/helse
+    autoDeploy: false        # STABIL deployes manuelt etter to-nøkkel-godkjenning
+    envVars:
+      - key: MIGRATE_DATABASE_URL
+        fromDatabase: { name: laerling-db, property: connectionString }
+      - key: PLATTFORM_APP_PASSORD
+        generateValue: true
+      - key: PLATTFORM_AUTH_PASSORD
+        generateValue: true
+      - key: ANTHROPIC_API_KEY
+        sync: false          # fylles inn av deg — aldri i repo
+      - key: TENANTS
+        value: "laerling"
+      - key: NODE_ENV
+        value: production
+      - key: AI_MND_BUDSJETT_ORE
+        value: "50000"       # 500 kr/mnd per organisasjon [JONATHAN]
+
+  - type: web
+    name: laerling-test      # TEST — pilotteamet godkjenner her (to nøkler)
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    healthCheckPath: /api/helse
+    autoDeploy: true         # testkanalen følger grenen automatisk
+    envVars:
+      - key: MIGRATE_DATABASE_URL
+        fromDatabase: { name: laerling-test-db, property: connectionString }
+      - key: PLATTFORM_APP_PASSORD
+        generateValue: true
+      - key: PLATTFORM_AUTH_PASSORD
+        generateValue: true
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: TENANTS
+        value: "laerling,malermester-demo"   # plattformbeviset bor i test
+      - key: NODE_ENV
+        value: production
+      - key: AI_MND_BUDSJETT_ORE
+        value: "50000"
