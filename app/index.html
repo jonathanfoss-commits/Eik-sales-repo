@@ -837,7 +837,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
   ];
 
   /* ── versjon og kanal (test vs. stabil) ── */
-  var VERSJON = "0.14.0";
+  var VERSJON = "0.14.1";
   var erTest = /(^|[.-])test([.-]|$)/.test(location.hostname);
   document.getElementById("versjon-info").textContent =
     "LÆRLING v" + VERSJON + " · " + (erTest ? "TESTKANAL" : "STABIL") + " · BYGGET FOR OP BYGG";
@@ -938,7 +938,10 @@ Mvh Ole Fabian, OP Bygg AS</div>
   /* ── Skrivemotoren: ferdig utkast rett i appen, uten Claude-konto ──
      Innholdet sendes KUN når brukeren aktivt trykker «Lag utkast» — aldri
      automatisk. Loggen får bare hendelsestypen, aldri teksten. */
-  var PILOTKODE = "opbygg2026";
+  /* Ansattkoden gjelder KUN Skrivemotoren (den ligger nødvendigvis åpent i
+     appen alle laster) — kommandosentralen og pilotloggdata har egen kode
+     som aldri står i noen offentlig fil. */
+  var PILOTKODE = "opb-skriv-95";
   var skriv = document.getElementById("skriv"),
       skTittel = document.getElementById("sk-tittel"),
       skHint = document.getElementById("sk-hint"),
