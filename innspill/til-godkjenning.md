@@ -3,11 +3,34 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
-## ÉN SAMLET LEVERANSE VENTER: v0.9.4–v0.14.0 — godkjennes under ett
+## ÉN SAMLET LEVERANSE VENTER: v0.9.4–v0.14.1 — godkjennes under ett
 
 Delversjonene under er bygget fortløpende og testes kumulativt (fulltesten dekker alt
 sammen). En Godkjenn-stemme på v0.14.0 i testappen godkjenner hele pakken — dette teller
 som ÉN leveranse mot køregelen.
+
+## v0.14.1 — 18. juli 2026 (pilotkoden ut av klartekst — fra tjenestegjennomgangen, bestilt av Jonathan)
+
+**Hvorfor:** koden `opbygg2026` lå i klartekst i kildekoden på offentlig hostede sider
+(admin.html, lab.html, index.html) — alle med URL-en kunne lese den og dermed åpne
+kommandosentralen og hente pilotloggdata via innspill-funksjonen.
+
+**Hva:** kodene er splittet i to, siden de gjør to ulike jobber:
+- **Sentralkoden** (kommandosentralen + Prøverommet + pilotloggdata): ny, sterkere kode
+  — `gerikt-laft-beslag-30` — som ikke finnes i noen offentlig fil. Sidene sjekker den
+  mot et PBKDF2-avtrykk (150 000 runder) og husker den lokalt i nettleseren; serverfunksjonen
+  `innspill.js` krever den i header (kan overstyres med miljøvariabelen PILOT_API_KODE).
+- **Ansattkoden** (kun Skrivemotoren): `opb-skriv-95` — må ligge åpent i appen alle
+  laster, og er derfor bare bot-demping, ikke en hemmelighet. Kan overstyres med
+  miljøvariabelen SKRIV_KODE i Netlify.
+
+**Konsekvens for pilotteamet:** den gamle koden slutter å virke ved publisering.
+Jonathan gir Ole Fabian og ledelsen den nye sentralkoden direkte (SMS/muntlig, ikke
+e-post med lenken i samme melding). Nettlesere som var låst opp med gammel kode blir
+bedt om den nye én gang.
+
+**Ellers:** analyserapporten (SaaS-vurderingen av begge produkter) er sjekket inn i
+`analyse/` — den fantes før kun som midlertidig fil i byggemiljøet.
 
 ## v0.14.0 — 18. juli 2026 (Møtehjelperen — «kjør den» fra Jonathan, 4 research-agenter)
 
@@ -22,7 +45,6 @@ for ansatte), vernerunder (byggherrens plikt) og overtakelse (hører til protoko
 som skal signeres og låses). Full research: `innspill/research-rapport.md` runde 3.
 
 **Testet:** fulltest inkl. nye Møtehjelper-scenarier + enhetstester av referat-oppgaven.
-
 ## v0.13.0 — 18. juli 2026 (Skrivemotoren Fase 1 — bestilt av Jonathan, «full tillatelse»)
 
 **Hva:** ⚡ Skrivemotoren: de tre mest brukte promptene (Befaring → tilbud,

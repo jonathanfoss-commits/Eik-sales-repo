@@ -310,8 +310,21 @@ Statusdata hentes direkte fra app-kanalene</footer>
 
 <script>
 (function(){
-  /* ── enkel adgangskode (intern friksjon, ikke banksikkerhet) ── */
-  var KODE = "opbygg2026";
+  /* ── adgangskode: sjekkes mot PBKDF2-avtrykk — koden står ikke i klartekst
+     på en offentlig hostet side. Fortsatt enkel adgang (ikke banksikkerhet):
+     riktig kode huskes i denne nettleseren og brukes som nøkkel mot
+     innspill-funksjonen. Ny kode? Generer avtrykk og oppdater her + i
+     netlify/functions/innspill.js (eller sett PILOT_API_KODE der). ── */
+  var KODE_AVTRYKK = "ef5489a3002e76cce0ad8fcd705d3c98cb182919168a050777a1cde804385205";
+  var KODE_SALT = "laerling-sentral-v1", KODE_RUNDER = 150000;
+  function kodeAvtrykk(kode){
+    var enc = new TextEncoder();
+    return crypto.subtle.importKey("raw", enc.encode(kode), "PBKDF2", false, ["deriveBits"])
+      .then(function(n){ return crypto.subtle.deriveBits(
+        { name: "PBKDF2", hash: "SHA-256", salt: enc.encode(KODE_SALT), iterations: KODE_RUNDER }, n, 256); })
+      .then(function(b){ return Array.prototype.map.call(new Uint8Array(b),
+        function(x){ return x.toString(16).padStart(2, "0"); }).join(""); });
+  }
   var innst;
   try{ innst = JSON.parse(localStorage.getItem("laerling-admin") || "{}"); }catch(e){ innst = {}; }
 
@@ -330,12 +343,20 @@ Statusdata hentes direkte fra app-kanalene</footer>
   function lagreInnst(){ try{ localStorage.setItem("laerling-admin", JSON.stringify(innst)); }catch(e){} }
   function laasOpp(){
     var v = document.getElementById("kode").value.trim();
-    if(v === KODE){ innst.opplaast = 1; lagreInnst(); document.body.classList.remove("laast"); start(); }
-    else { document.getElementById("kode-feil").style.display = "block"; }
+    if(!v || !window.crypto || !crypto.subtle){
+      document.getElementById("kode-feil").style.display = "block"; return;
+    }
+    kodeAvtrykk(v).then(function(h){
+      if(h === KODE_AVTRYKK){
+        innst.opplaast = 1; innst.apikode = v; lagreInnst();
+        document.body.classList.remove("laast"); start();
+      } else { document.getElementById("kode-feil").style.display = "block"; }
+    });
   }
   document.getElementById("laas-opp").addEventListener("click", laasOpp);
   document.getElementById("kode").addEventListener("keydown", function(e){ if(e.key === "Enter") laasOpp(); });
-  if(innst.opplaast){ document.body.classList.remove("laast"); }
+  /* apikode-kravet gjør at nettlesere låst opp med den gamle koden bes om den nye én gang */
+  if(innst.opplaast && innst.apikode){ document.body.classList.remove("laast"); }
 
   /* ── klokke ── */
   var mnd = ["januar","februar","mars","april","mai","juni","juli","august","september","oktober","november","desember"];
@@ -494,7 +515,7 @@ Statusdata hentes direkte fra app-kanalene</footer>
   }
   function hentViaFunksjon(){
     return fetch("/.netlify/functions/innspill",
-        { cache: "no-store", headers: { "X-Pilotkode": innst.apikode || KODE } })
+        { cache: "no-store", headers: { "X-Pilotkode": innst.apikode || "" } })
       .then(function(r){ if(!r.ok) throw new Error("funksjon " + r.status); return r.json(); });
   }
   function hentViaToken(){

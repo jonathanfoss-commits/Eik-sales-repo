@@ -1,6 +1,11 @@
 [
   {
     "dato": "2026-07-18",
+    "tekst": "Kommandosentralen har fått ny, sterkere pilotkode som ikke lenger kan leses i kildekoden — appen og kommandosentralen bruker nå hver sin kode. Pilotteamet får den nye koden direkte.",
+    "av": "Jonathan"
+  },
+  {
+    "dato": "2026-07-18",
     "tekst": "🤝 Møtehjelperen i Prøverommet: fang byggemøtet eller telefonavtalen med notater — få referat, kalenderavtaler med påminnelse og «som avtalt i dag»-e-post etterpå. Prøv og stem!",
     "av": "Jonathan"
   },
