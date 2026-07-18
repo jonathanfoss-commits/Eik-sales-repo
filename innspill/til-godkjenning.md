@@ -3,11 +3,29 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
-## ÉN SAMLET LEVERANSE VENTER: v0.9.4–v0.14.1 — godkjennes under ett
+## ÉN SAMLET LEVERANSE VENTER: v0.9.4–v0.15.0 — godkjennes under ett
 
 Delversjonene under er bygget fortløpende og testes kumulativt (fulltesten dekker alt
 sammen). En Godkjenn-stemme på v0.14.0 i testappen godkjenner hele pakken — dette teller
 som ÉN leveranse mot køregelen.
+
+## v0.15.0 — 18. juli 2026 (eksport-siden + PLATTFORMKJERNEN — ULTRACODE-oppdrag fra Jonathan)
+
+**I den gamle appen (eneste endring):** 📦 `eksport.html` — pakker alt telefonen har
+lagret til én tekst for innflytting i den nye plattformen. Ingenting sendes noe sted.
+Testet: fulltest 173/173 grønne.
+
+**Det store: `kjerne/` — plattformen som grunnpilar.** Bedrifts-agnostisk kjerne
+(Node + Postgres med FORCE RLS, ekte innlogging, live-lag med SSE, offline-kø,
+AI-gateway med kostnadslogg og 500 kr-budsjettsperre) der Lærling er FØRSTE tenant-konfig
+og «Malermester Demo» beviser at kunde nr. 2 er konfig, ikke kode. LIVE: det laget
+registrerer, ser alle umiddelbart — mens timer er privat + ledelse og økonomi kun for
+admin (Jonathans beslutninger), håndhevet i databasen. Verifisert: 21/21 servertester +
+22/22 e2e-bevis i nettleser (live-beviset med to samtidige brukere, tenant-isolasjon,
+rollegrenser, 503-reserve, innflytting) — pluss at testene fant og fikset en reell feil
+i budsjettsperren. Kjører IKKE i produksjon ennå — parallellkjøring og cutover-plan i
+`kjerne/docs/cutover-plan.md`; cutover krever to nøkler. Full leveranse:
+`kjerne/docs/leveranse.md`.
 
 ## v0.14.1 — 18. juli 2026 (pilotkoden ut av klartekst — fra tjenestegjennomgangen, bestilt av Jonathan)
 
