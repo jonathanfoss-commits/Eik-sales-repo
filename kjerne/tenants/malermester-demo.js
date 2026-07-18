@@ -16,7 +16,7 @@ export default {
       strek: 'rgba(214,178,120,.16)', lys: '#F4EDE2', dis: '#B3A48D',
       a: '#E8B64C', b: '#D6753C', graf: '#B98A2E', varsel: '#7FB4D9',
     },
-    moduler: ['hjem', 'timer', 'skriv', 'innspill', 'sentral'],
+    moduler: ['hjem', 'timer', 'skriv', 'innspill', 'sentral', 'tillegg', 'faktura'],
     profil: PROFIL,
     evner: {
       tilbud: {

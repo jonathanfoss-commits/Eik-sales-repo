@@ -1,0 +1,73 @@
+// Demodata for kundedemoer — fyller en tenant med realistisk innhold så en
+// 3-minutters demo aldri viser tomme skjermer. KUN for demo-tenants: nekter å
+// kjøre mot en org med ekte brukere utover tenants-filens egne.
+//
+//   node server/verktoy/demodata.js malermester-demo
+import pg from 'pg';
+
+const slug = process.argv[2];
+const url = process.env.MIGRATE_DATABASE_URL || process.env.DATABASE_URL;
+if (!slug || !url) {
+  console.error('Bruk: MIGRATE_DATABASE_URL=... node server/verktoy/demodata.js <slug>');
+  process.exit(1);
+}
+if (!slug.includes('demo')) {
+  console.error('Sikkerhetsstopp: demodata legges kun i tenants med «demo» i slugen.');
+  process.exit(1);
+}
+
+const klient = new pg.Client({ connectionString: url });
+await klient.connect();
+const org = (await klient.query('SELECT id FROM organisasjoner WHERE slug = $1', [slug])).rows[0];
+if (!org) { console.error('Fant ikke tenanten — kjør ny-tenant.js først.'); process.exit(1); }
+const bruker = (await klient.query(
+  'SELECT id FROM brukere WHERE org_id = $1 ORDER BY opprettet LIMIT 1', [org.id])).rows[0];
+if (!bruker) { console.error('Tenanten har ingen brukere.'); process.exit(1); }
+
+const iDag = new Date();
+const dato = (dagerSiden) =>
+  new Date(iDag - dagerSiden * 86400000).toISOString().slice(0, 10);
+
+// idempotent: rydd gammel demodata (klient_id-prefiks) før ny fylles inn
+for (const tabell of ['dagbok', 'tillegg', 'fakturaer', 'timeforinger']) {
+  await klient.query(`DELETE FROM ${tabell} WHERE org_id = $1 AND klient_id LIKE 'demo-%'`, [org.id]);
+}
+
+const dagbok = [
+  [0, 'Bjerkeveien 14', 'Sparklet og grunnet stue og gang. Kunden valgte NCS S 0502-Y til tak. Lift bestilt til fasaden torsdag.'],
+  [1, 'Bjerkeveien 14', 'Ferdig maskert 2. etasje. Avdekket fukt bak panel på bad — meldt kunden, avventer svar.'],
+  [2, 'Storgata 8 (kontor)', 'To strøk på møterom 1–3. Kunden ønsker mørkere kulør i resepsjonen — prøveoppstrøk i morgen.'],
+  [4, 'Bjerkeveien 14', 'Utvendig vask og skraping sørvegg. Godt vær, ligger foran plan.'],
+];
+for (const [d, prosjekt, tekst] of dagbok) {
+  await klient.query(
+    `INSERT INTO dagbok (org_id, bruker_id, dato, prosjekt, tekst, klient_id)
+     VALUES ($1,$2,$3,$4,$5,$6)`,
+    [org.id, bruker.id, dato(d), prosjekt, tekst, 'demo-dagbok-' + d]);
+}
+
+await klient.query(
+  `INSERT INTO tillegg (org_id, bruker_id, dato, prosjekt, avtalt_med, tekst, klient_id)
+   VALUES ($1,$2,$3,'Bjerkeveien 14','kunden (Sylvi)','Male innsiden av garasjen også — tas på regning, ca. én dag',$4)`,
+  [org.id, bruker.id, dato(1), 'demo-tillegg-1']);
+
+const fakturaer = [
+  ['Storgata 8 AS', 'Faktura 2087 · 64 200 kr', 21],
+  ['Fam. Nordmann', 'Faktura 2081 · 28 500 kr', 47],
+];
+for (const [kunde, ref, dagerOver] of fakturaer) {
+  await klient.query(
+    `INSERT INTO fakturaer (org_id, bruker_id, kunde, referanse, forfall, klient_id)
+     VALUES ($1,$2,$3,$4,$5,$6)`,
+    [org.id, bruker.id, kunde, ref, dato(dagerOver), 'demo-faktura-' + dagerOver]);
+}
+
+await klient.query(
+  `INSERT INTO timeforinger (org_id, bruker_id, dato, prosjekt, timer, notat, klient_id)
+   VALUES ($1,$2,$3,'Bjerkeveien 14',7.5,'sparkling og grunning',$4)
+   ON CONFLICT (org_id, bruker_id, dato, prosjekt) DO NOTHING`,
+  [org.id, bruker.id, dato(0), 'demo-timer-0']);
+
+console.log(`Demodata lagt inn for «${slug}»: ${dagbok.length} dagboklinjer, 1 tillegg, ` +
+  `${fakturaer.length} fakturaer, 1 timeføring. Kjør gjerne igjen — ryddes og fylles på nytt.`);
+await klient.end();

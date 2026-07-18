@@ -22,7 +22,7 @@ export default {
       strek: 'rgba(140,190,190,.14)', lys: '#E9F2EE', dis: '#93A8AA',
       a: '#39E29B', b: '#2FC4D9', graf: '#1F9E66', varsel: '#E8B64C',
     },
-    moduler: ['hjem', 'timer', 'dagbok', 'varsler', 'skriv', 'innspill', 'sentral', 'innflytting'],
+    moduler: ['hjem', 'timer', 'dagbok', 'varsler', 'skriv', 'innspill', 'sentral', 'innflytting', 'tillegg', 'frister', 'faktura'],
     profil: PROFIL,
     evner: {
       tilbud: {

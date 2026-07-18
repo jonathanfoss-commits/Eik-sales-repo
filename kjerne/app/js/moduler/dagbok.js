@@ -14,6 +14,16 @@
         plass: 'Utført arbeid, mannskap, vær, leveranser, hindringer, beskjeder …', kreves: true },
     ]);
     rot.append(s.rot);
+    // Autopiloten: dagsutkast av dagens timer/varsler/tillegg — du godkjenner
+    rot.append(el('button', { klasse: 'knapp svak', style: 'margin-top:8px;width:100%', onclick: async () => {
+      try {
+        const auto = await Api.hent('/api/dagbok/autopilot');
+        if (!auto.antallKilder) return siFra('Ingen registreringer i dag ennå — autopiloten har ingenting å sy av');
+        if (auto.prosjekt && !s.inputs.prosjekt.value) s.inputs.prosjekt.value = auto.prosjekt;
+        s.inputs.tekst.value = auto.utkast;
+        siFra(`Utkast sydd av ${auto.antallKilder} registrering(er) — les over og juster`);
+      } catch (feil) { siFra(feil.message, true); }
+    } }, '🪄 Sy dagens utkast (autopilot)'));
     rot.append(el('button', { klasse: 'knapp', style: 'margin-top:12px;width:100%', onclick: async () => {
       const v = s.verdier();
       if (!v.prosjekt || !v.tekst) return siFra('Prosjekt og tekst må med', true);

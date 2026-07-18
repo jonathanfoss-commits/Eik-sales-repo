@@ -5,6 +5,31 @@ import { ApiFeil } from '../http.js';
 import { publiser } from '../buss.js';
 
 export function registrer(ruter) {
+  // Autopiloten: dagsutkast sydd av dagens egne timer (PRIVAT — kun dine går
+  // inn) + lagets varsler og tillegg (DELT). Brukeren godkjenner med én tommel
+  // — utkastet blir først dagbok når det POSTes.
+  ruter.add('GET', '/api/dagbok/autopilot', ({ ctx }) => medOrg(ctx, async (c) => {
+    const [timer, varsler, tillegg] = await Promise.all([
+      c.query(`SELECT prosjekt, timer, notat FROM timeforinger
+                WHERE dato = CURRENT_DATE AND bruker_id = $1`, [ctx.brukerId]),
+      c.query(`SELECT type, prosjekt, tekst FROM varsler
+                WHERE opprettet::date = CURRENT_DATE`),
+      c.query(`SELECT prosjekt, tekst FROM tillegg WHERE dato = CURRENT_DATE`),
+    ]);
+    const deler = [];
+    for (const t of timer.rows) {
+      deler.push(`Utført: ${t.prosjekt} — ${t.timer} t${t.notat ? ` (${t.notat})` : ''}`);
+    }
+    for (const v of varsler.rows) {
+      deler.push(`${v.type === 'endringsvarsel' ? 'Endringsvarsel' : 'Varemottak/avvik'}: ${v.prosjekt} — ${v.tekst.slice(0, 120)}`);
+    }
+    for (const t of tillegg.rows) {
+      deler.push(`Tilleggsarbeid avtalt: ${t.prosjekt} — ${t.tekst.slice(0, 120)}`);
+    }
+    const prosjekt = timer.rows[0]?.prosjekt || varsler.rows[0]?.prosjekt || tillegg.rows[0]?.prosjekt || '';
+    return { prosjekt, utkast: deler.join('\n'), antallKilder: deler.length };
+  }));
+
   ruter.add('GET', '/api/dagbok', ({ ctx, sok }) => medOrg(ctx, async (c) => {
     const dager = Math.min(Number(sok.get('dager') || 14), 90);
     const res = await c.query(

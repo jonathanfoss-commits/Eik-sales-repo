@@ -24,7 +24,7 @@ export function registrer(ruter) {
   }));
 
   ruter.add('POST', '/api/varsler', ({ ctx, body }) => medOrg(ctx, async (c) => {
-    const { type, prosjekt, leverandor, tekst, klient_id } = body;
+    const { type, prosjekt, leverandor, tekst, svarfrist, klient_id } = body;
     if (!['varemottak', 'endringsvarsel'].includes(type)) throw new ApiFeil(400, 'Ukjent varseltype');
     if (!prosjekt || !tekst) throw new ApiFeil(400, 'Prosjekt og tekst må fylles ut');
     if (klient_id) {
@@ -32,12 +32,12 @@ export function registrer(ruter) {
       if (finnes) return { varsel: finnes };
     }
     const rad = (await c.query(
-      `INSERT INTO varsler (bruker_id, type, prosjekt, leverandor, tekst, klient_id)
-       VALUES ($1,$2,$3,$4,$5,$6)
+      `INSERT INTO varsler (bruker_id, type, prosjekt, leverandor, tekst, svarfrist, klient_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)
        ON CONFLICT (org_id, klient_id) WHERE klient_id IS NOT NULL DO NOTHING
        RETURNING *`,
       [ctx.brukerId, type, String(prosjekt).trim(), leverandor || null,
-        String(tekst).trim(), klient_id || null])).rows[0]
+        String(tekst).trim(), svarfrist || null, klient_id || null])).rows[0]
       || (await c.query('SELECT * FROM varsler WHERE klient_id = $1', [klient_id])).rows[0];
     publiser(ctx.orgId, { modul: 'varsler', type: 'ny', radId: rad.id,
       versjon: rad.versjon, av: ctx.navn });

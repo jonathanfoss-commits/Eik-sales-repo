@@ -32,8 +32,19 @@ for (const epost of KJENT) {
   await eier.query('UPDATE brukere SET passord_hash = $2, aktiv = true WHERE lower(epost) = $1',
     [epost, hashPassord(PASSORD)]);
 }
-await eier.query(`DELETE FROM sesjoner WHERE bruker_id IN (SELECT id FROM brukere WHERE epost LIKE 'e2e-%@opbygg.no')`);
-await eier.query(`DELETE FROM timeforinger WHERE bruker_id IN (SELECT id FROM brukere WHERE epost LIKE 'e2e-%@opbygg.no')`);
+// generisk opprydding av forrige kjørings e2e-brukere: nuller/sletter i ALLE
+// tabeller som refererer brukere (nye moduler blir automatisk med)
+const E2E_FILTER = `IN (SELECT id FROM brukere WHERE epost LIKE 'e2e-%@opbygg.no')`;
+await eier.query(`UPDATE invitasjoner SET brukt_av = NULL WHERE brukt_av ${E2E_FILTER}`);
+for (const [tabell, kolonne] of [
+  ['sesjoner', 'bruker_id'], ['nullstillinger', 'bruker_id'], ['pilotlogg', 'bruker_id'],
+  ['revisjon', 'bruker_id'], ['godkjenninger', 'bruker_id'], ['tillegg', 'bruker_id'],
+  ['dagbok', 'bruker_id'], ['varsler', 'bruker_id'], ['fakturaer', 'bruker_id'],
+  ['prosjektfrister', 'bruker_id'], ['timeforinger', 'bruker_id'], ['innspill', 'bruker_id'],
+  ['ai_logg', 'bruker_id'],
+]) {
+  await eier.query(`DELETE FROM ${tabell} WHERE ${kolonne} ${E2E_FILTER}`).catch(() => {});
+}
 await eier.query(`DELETE FROM brukere WHERE epost LIKE 'e2e-%@opbygg.no'`);
 
 const server = spawn('node', ['server/index.js'], {
@@ -144,8 +155,11 @@ try {
   const mFaner = await pM.$$eval('#tabs .tab', (t) => t.map((x) => x.textContent));
   sjekk('Færre moduler (ingen Dagbok-fane)', !mFaner.some((f) => f.includes('Dagbok')));
   const mDagbok = await pM.evaluate(() => fetch('/api/dagbok').then((r) => r.json()));
+  // Malermester kan ha EGNE demolinjer — beviset er at ingenting fra OP Bygg
+  // lekker over (prosjektet «Krohgs gate» finnes kun hos OP Bygg).
   sjekk('Isolasjon: null OP Bygg-dagbok hos Malermester (RLS)',
-    Array.isArray(mDagbok.linjer) && mDagbok.linjer.length === 0);
+    Array.isArray(mDagbok.linjer) &&
+    !JSON.stringify(mDagbok.linjer).includes('Krohgs gate'));
 
   console.log('── 5: Skrivemotor-reserven (uten API-nøkkel) og innflyttingen ──');
   await pA.click('#pluss');

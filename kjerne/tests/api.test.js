@@ -99,6 +99,11 @@ test.after(async () => {
     await eier.query(`DELETE FROM pilotlogg WHERE org_id = $1`, [orgA]);
     await eier.query(`DELETE FROM ai_logg WHERE org_id = $1`, [orgA]);
     await eier.query(`DELETE FROM dagbok WHERE prosjekt LIKE 'API-%'`);
+    await eier.query(`DELETE FROM varsler WHERE prosjekt LIKE 'API-%'`);
+    await eier.query(`DELETE FROM tillegg WHERE prosjekt LIKE 'API-%'`);
+    await eier.query(`DELETE FROM prosjektfrister WHERE prosjekt LIKE 'API-%'`);
+    await eier.query(`DELETE FROM fakturaer WHERE referanse LIKE 'API-%'`);
+    await eier.query(`DELETE FROM nullstillinger WHERE bruker_id IN (SELECT id FROM brukere WHERE epost LIKE 'api-%@test.local')`);
     await eier.query(`DELETE FROM timeforinger WHERE prosjekt LIKE 'API-%'`);
     await eier.query(`DELETE FROM sesjoner WHERE bruker_id IN (SELECT id FROM brukere WHERE epost LIKE 'api-%@test.local')`);
     await eier.query(`DELETE FROM brukere WHERE epost LIKE 'api-%@test.local'`);
@@ -207,6 +212,68 @@ test('uten sesjon: 401 på alt lukket', async () => {
   if (!tilgjengelig) return;
   const res = await fetch(URL_ROT + '/api/dagbok');
   assert.equal(res.status, 401);
+});
+
+test('NATTSKIFTET: purretrappa er KUN for ledelsen (D22)', async () => {
+  if (!tilgjengelig) return;
+  const gammelDato = new Date(Date.now() - 50 * 86400000).toISOString().slice(0, 10);
+  const ny = await api('leder', 'POST', '/api/fakturaer',
+    { kunde: 'Hansen AS', referanse: 'API-1042 · 48 500 kr', forfall: gammelDato });
+  assert.equal(ny.status, 200);
+  const liste = await api('leder', 'GET', '/api/fakturaer');
+  const f = liste.data.fakturaer.find((x) => x.referanse.startsWith('API-1042'));
+  assert.equal(f.foreslaatt, 3, '50 dager over forfall → inkassovarsel foreslås');
+  const ansatt = await api('ansatt', 'GET', '/api/fakturaer');
+  assert.equal(ansatt.status, 403, 'ansatte ser aldri fakturaer');
+  const purr = await api('leder', 'POST', `/api/fakturaer/${f.id}/purring`, { trinn: 3 });
+  assert.ok(purr.data.tekst.includes('inkassoloven § 9'), 'inkassovarselet har hjemmelen');
+  assert.equal(purr.data.faktura.status, 'varslet');
+  const betalt = await api('leder', 'POST', `/api/fakturaer/${f.id}/betalt`);
+  assert.equal(betalt.data.faktura.status, 'betalt');
+});
+
+test('NATTSKIFTET: tilleggsfangeren — DELT registrering, ledelsens fakturagrunnlag', async () => {
+  if (!tilgjengelig) return;
+  const ny = await api('ansatt', 'POST', '/api/tillegg',
+    { prosjekt: 'API-tillegg', avtalt_med: 'byggherre Berg', tekst: 'flytte sluk 40 cm — på regning' });
+  assert.equal(ny.status, 200);
+  const kollega = await api('leder', 'GET', '/api/tillegg');
+  assert.ok(kollega.data.tillegg.some((t) => t.prosjekt === 'API-tillegg'), 'tillegg er DELT');
+  const grunnlag = await api('leder', 'GET', '/api/tillegg/fakturagrunnlag?prosjekt=API-tillegg');
+  assert.ok(grunnlag.data.tekst.includes('flytte sluk') && grunnlag.data.antall >= 1);
+  const ansattGrunnlag = await api('ansatt', 'GET', '/api/tillegg/fakturagrunnlag?prosjekt=API-tillegg');
+  assert.equal(ansattGrunnlag.status, 403, 'fakturagrunnlaget er ledelsens');
+  await eier.query(`DELETE FROM tillegg WHERE prosjekt = 'API-tillegg'`);
+});
+
+test('NATTSKIFTET: fristvakta regner månedsklampet (31.12 + 2 mnd = 28.2/29.2)', async () => {
+  if (!tilgjengelig) return;
+  const ny = await api('ansatt', 'POST', '/api/frister',
+    { prosjekt: 'API-frist', overtakelse: '2026-12-31' });
+  assert.equal(ny.status, 200);
+  const liste = await api('leder', 'GET', '/api/frister');
+  const f = liste.data.frister.find((x) => x.prosjekt === 'API-frist');
+  assert.equal(f.sluttoppstilling, '2027-02-28', 'aldri 3. mars — kravet er preklusivt');
+  assert.equal(f.soksmaal, '2027-08-31');
+  await eier.query(`DELETE FROM prosjektfrister WHERE prosjekt = 'API-frist'`);
+});
+
+test('NATTSKIFTET: dagbok-autopiloten syr av egne timer + lagets varsler', async () => {
+  if (!tilgjengelig) return;
+  const iDag = new Date().toISOString().slice(0, 10);
+  await api('ansatt', 'POST', '/api/timer', { dato: iDag, prosjekt: 'API-auto', timer: 7.5, notat: 'kledning' });
+  await api('leder', 'POST', '/api/varsler',
+    { type: 'endringsvarsel', prosjekt: 'API-auto', tekst: 'råte i bæring — varslet samme dag' });
+  const auto = await api('ansatt', 'GET', '/api/dagbok/autopilot');
+  assert.ok(auto.data.utkast.includes('API-auto — 7.5 t') || auto.data.utkast.includes('API-auto — 7,5 t'),
+    'egne timer er med');
+  assert.ok(auto.data.utkast.includes('råte i bæring'), 'lagets varsler er med');
+  assert.ok(['API-auto', 'API-timer'].includes(auto.data.prosjekt), 'prosjektet hentes fra dagens kilder');
+  // en ANNEN brukers autopilot skal IKKE inneholde ansattens timer (PRIVAT)
+  const lederAuto = await api('leder', 'GET', '/api/dagbok/autopilot');
+  assert.ok(!lederAuto.data.utkast.includes('7.5 t') && !lederAuto.data.utkast.includes('7,5 t'),
+    'andres timer syes aldri inn');
+  await eier.query(`DELETE FROM varsler WHERE prosjekt = 'API-auto'`);
 });
 
 test('GDPR-sletteretten: admin sletter en ANNENS private data — faktisk (funn-regresjon)', async () => {

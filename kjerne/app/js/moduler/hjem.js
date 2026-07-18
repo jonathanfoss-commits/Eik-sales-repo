@@ -52,6 +52,46 @@
       }
     }
 
+    // Fristvakta — preklusive nedtellinger (DELT)
+    if (Kjerne.org()?.moduler.includes('frister')) {
+      try {
+        const fr = await Api.hent('/api/frister');
+        if (fr.frister.length) {
+          const kort = el('div', { klasse: 'kort' },
+            el('div', { klasse: 'kort-topp' }, el('h3', {}, '⏳ Fristvakta'),
+              el('span', { klasse: 'niva' }, 'delt')));
+          for (const f of fr.frister.slice(0, 4)) {
+            const hast = f.dagerTilSluttoppstilling <= 14;
+            kort.append(el('div', { klasse: 'linje' },
+              el('span', { style: 'flex:1' }, f.prosjekt),
+              el('span', { klasse: 'hvem', style: hast ? 'color:var(--alarm)' : '' },
+                f.dagerTilSluttoppstilling >= 0
+                  ? `sluttoppstilling om ${f.dagerTilSluttoppstilling} d · søksmål om ${f.dagerTilSoksmaal} d`
+                  : `sluttoppstilling UTLØPT · søksmål om ${f.dagerTilSoksmaal} d`)));
+          }
+          rot.append(kort);
+        }
+      } catch { /* vises når nettet er tilbake */ }
+    }
+
+    // Åpne tillegg — det som ikke faktureres, er tapt (DELT)
+    if (Kjerne.org()?.moduler.includes('tillegg')) {
+      try {
+        const ti = await Api.hent('/api/tillegg');
+        if (ti.tillegg.length) {
+          const kort = el('div', { klasse: 'kort' },
+            el('div', { klasse: 'kort-topp' }, el('h3', {}, '➕ Åpne tillegg'),
+              el('span', { klasse: 'niva' }, ti.tillegg.length + ' ufakturert')));
+          for (const t of ti.tillegg.slice(0, 3)) {
+            kort.append(el('div', { klasse: 'linje' },
+              el('span', { klasse: 'hvem' }, penDato(t.dato) + ' · ' + (t.bruker_navn || '').split(' ')[0]),
+              el('span', { style: 'flex:1' }, t.prosjekt + ': ' + t.tekst.slice(0, 70))));
+          }
+          rot.append(kort);
+        }
+      } catch { /* vises når nettet er tilbake */ }
+    }
+
     if (dagbokSvar.status === 'fulfilled' && dagbokSvar.value._fraCache) {
       rot.append(el('div', { klasse: 'under' }, 'Uten dekning — viser sist lagrede data.'));
     }

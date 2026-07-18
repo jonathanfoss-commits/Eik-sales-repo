@@ -3,7 +3,7 @@
    Kjernen kjenner ingen kunde: navn, farger og modulvalg kommer fra /api/meg.
    VERSJON bumpes samtidig i versjon.json og sw.js (cache-navnet) — de tre må aldri drifte. */
 window.Kjerne = (function () {
-  const VERSJON = '0.2.0';
+  const VERSJON = '0.3.0';
   let meg = null;   // { navn, rolle }
   let org = null;   // { slug, navn, appnavn, undertittel, tema, moduler }
   const moduler = {};   // id -> { tittel, ikon, vis: async (rot) => {}, påHendelse?: (h) => {} }
@@ -94,14 +94,21 @@ window.Kjerne = (function () {
     };
   }
 
-  // ── tenant-tema: konfig → CSS-variabler (white-label i praksis) ──
+  // ── tenant-tema: konfig → CSS-variabler (white-label i praksis).
+  //    Dagslys-modus: nøytral lys grunnpalett, tenant-aksentene beholdes —
+  //    valget er brukerens og huskes lokalt (kjerne-tema). ──
+  const LYS_PALETT = { bunn: '#F2F5F4', flate: '#FFFFFF', flate2: '#E9EDEC',
+    strek: 'rgba(15,45,40,.15)', lys: '#101D18', dis: '#4E645D' };
+  const erDagslys = () => localStorage.getItem('kjerne-tema') === 'lys';
   function brukTema(tema = {}) {
+    const grunnlag = erDagslys() ? { ...tema, ...LYS_PALETT } : tema;
     const rot = document.documentElement.style;
     const kart = { bunn: '--bunn', flate: '--flate', flate2: '--flate-2', strek: '--strek',
       lys: '--tekst', dis: '--dis', a: '--aksent', b: '--aksent-b', varsel: '--varsel' };
-    for (const [n, cssVar] of Object.entries(kart)) if (tema[n]) rot.setProperty(cssVar, tema[n]);
+    for (const [n, cssVar] of Object.entries(kart)) if (grunnlag[n]) rot.setProperty(cssVar, grunnlag[n]);
+    document.documentElement.classList.toggle('dagslys', erDagslys());
     const metaTema = document.querySelector('meta[name="theme-color"]');
-    if (metaTema && tema.bunn) metaTema.setAttribute('content', tema.bunn);
+    if (metaTema && grunnlag.bunn) metaTema.setAttribute('content', grunnlag.bunn);
   }
 
   // ── faner: bygges av modulregisteret ∩ org.moduler ──
@@ -266,7 +273,13 @@ window.Kjerne = (function () {
         { navn: 'gammelt', etikett: 'Gammelt passord', type: 'password' },
         { navn: 'nytt', etikett: 'Nytt passord (minst 10 tegn)', type: 'password' },
       ]);
-      rot.append(el('h3', { style: 'margin-top:6px' }, 'Bytt passord'), s.rot);
+      rot.append(el('button', { klasse: 'knapp svak', style: 'margin-top:8px;width:100%', onclick: () => {
+        localStorage.setItem('kjerne-tema', erDagslys() ? 'mork' : 'lys');
+        brukTema(org?.tema || {});
+        lukkArk();
+        siFra(erDagslys() ? 'Dagslys-modus på — bytt tilbake samme sted' : 'Tilbake til mørk modus');
+      } }, erDagslys() ? '🌙 Mørk modus' : '☀️ Dagslys-modus'));
+      rot.append(el('h3', { style: 'margin-top:14px' }, 'Bytt passord'), s.rot);
       rot.append(el('button', { klasse: 'knapp', style: 'margin-top:10px;width:100%', onclick: async () => {
         try {
           await Api.post('/api/passord', { gammelt: s.inputs.gammelt.value, nytt: s.inputs.nytt.value });

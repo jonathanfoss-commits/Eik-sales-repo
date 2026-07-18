@@ -104,6 +104,59 @@
       rot.append(brukerKort);
     } catch { /* ikke-kritisk for sentralen */ }
 
+    // 💸 Purretrappa — KUN LEDELSE (D22): fakturaer med forfall og riktig trinn
+    if (Kjerne.org()?.moduler.includes('faktura')) {
+      try {
+        const fa = await Api.hent('/api/fakturaer');
+        const puKort = el('div', { klasse: 'kort' },
+          el('div', { klasse: 'kort-topp' }, el('h3', {}, '💸 Purretrappa'),
+            el('span', { klasse: 'niva sensitivt' }, 'ledelsen')));
+        if (!fa.fakturaer.length) puKort.append(el('div', { klasse: 'under' }, 'Ingen åpne fakturaer.'));
+        for (const f of fa.fakturaer) {
+          const rad = el('div', { klasse: 'linje' },
+            el('span', { style: 'flex:1' }, f.referanse + ' · ' + f.kunde),
+            el('span', { klasse: 'hvem' },
+              (f.dagerOver > 0 ? f.dagerOver + ' d over forfall' : 'forfaller ' + Kjerne.penDato(f.forfall)) +
+              ' · trinn ' + f.foreslaatt));
+          rad.append(el('button', { klasse: 'lenkeknapp', style: 'width:auto', onclick: async () => {
+            try {
+              const svar4 = await Api.post(`/api/fakturaer/${f.id}/purring`, { trinn: f.foreslaatt });
+              const boks = el('div', {});
+              boks.append(el('h2', {}, '💸 Purring — trinn ' + f.foreslaatt));
+              boks.append(el('div', { klasse: 'utkast-ut' }, svar4.tekst));
+              boks.append(el('button', { klasse: 'knapp', style: 'margin-top:10px;width:100%', onclick: () => {
+                navigator.clipboard?.writeText(svar4.tekst).then(() => siFra('Purringen er kopiert'));
+              } }, 'Kopier'));
+              Kjerne.åpneArk(boks);
+            } catch (feil) { siFra(feil.message, true); }
+          } }, 'purr'));
+          rad.append(el('button', { klasse: 'lenkeknapp', style: 'width:auto', onclick: async () => {
+            await Api.post(`/api/fakturaer/${f.id}/betalt`)
+              .then(() => { siFra('Kvittert ut'); Kjerne.oppdaterFane(); })
+              .catch((feil) => siFra(feil.message, true));
+          } }, 'betalt'));
+          puKort.append(rad);
+        }
+        puKort.append(el('button', { klasse: 'knapp svak', style: 'margin-top:10px', onclick: () => {
+          const s2 = Kjerne.byggSkjema([
+            { navn: 'kunde', etikett: 'Hvem skylder?', kreves: true },
+            { navn: 'referanse', etikett: 'Faktura og beløp', plass: '1042 · 48 500 kr', kreves: true },
+            { navn: 'forfall', etikett: 'Forfallsdato', type: 'date', kreves: true },
+          ]);
+          const boks = el('div', {}, el('h2', {}, '💸 Følg ny faktura'), s2.rot);
+          boks.append(el('button', { klasse: 'knapp', style: 'margin-top:10px;width:100%', onclick: async () => {
+            const v2 = s2.verdier();
+            if (!v2.kunde || !v2.referanse || !v2.forfall) return siFra('Fyll alle feltene', true);
+            await Api.post('/api/fakturaer', v2)
+              .then(() => { Kjerne.lukkArk(); siFra('Fakturaen følges'); Kjerne.oppdaterFane(); })
+              .catch((feil) => siFra(feil.message, true));
+          } }, 'Følg fakturaen'));
+          Kjerne.åpneArk(boks);
+        } }, 'Følg ny faktura'));
+        rot.append(puKort);
+      } catch { /* faktura-modulen kan være av */ }
+    }
+
     // AI-kost — kun admin; 403 for pilotleder er korrekt og forventet.
     if (Kjerne.erAdmin()) {
       try {

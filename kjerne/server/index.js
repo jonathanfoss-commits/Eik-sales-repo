@@ -18,9 +18,13 @@ import * as skriv from './api/skriv.js';
 import * as sentral from './api/sentral.js';
 import * as innflytting from './api/innflytting.js';
 import * as personvern from './api/personvern.js';
+import * as faktura from './api/faktura.js';
+import * as tillegg from './api/tillegg.js';
+import * as frister from './api/frister.js';
 
 const ruter = new Ruter();
-for (const modul of [timer, dagbok, varsler, innspill, skriv, sentral, innflytting, personvern]) {
+for (const modul of [timer, dagbok, varsler, innspill, skriv, sentral, innflytting, personvern,
+  faktura, tillegg, frister]) {
   modul.registrer(ruter);
 }
 
