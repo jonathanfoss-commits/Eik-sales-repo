@@ -1,0 +1,257 @@
+/* Plattformkjernen — designtokens. Verdiene under er nøytral standard;
+   tenant-temaet (organisasjoner.konfig.tema) overstyrer dem ved innlogging
+   via CSS-variabler — kjernen har ingen kundefarger. */
+:root {
+  --bunn: #0e0e10;
+  --flate: #17181c;
+  --flate-2: #1f2127;
+  --strek: rgba(255, 255, 255, 0.09);
+  --tekst: #f2f2ef;
+  --dis: #9a9c95;
+  --aksent: #7aa7ff;
+  --aksent-b: #7aa7ff;
+  --aksent-dyp: #5b8ae6;
+  --aksent-tekst: #08090c;
+  --ok: #37d67a;
+  --varsel: #ffb020;
+  --alarm: #ff5a48;
+  --sans: -apple-system, "Segoe UI", system-ui, Roboto, sans-serif;
+  --mono: "SF Mono", ui-monospace, Consolas, monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  background: var(--bunn); color: var(--tekst); font-family: var(--sans);
+  line-height: 1.5; overscroll-behavior: none;
+}
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--aksent); outline-offset: 2px; border-radius: 8px;
+}
+a { color: var(--aksent); }
+
+/* varselstripe-signaturen */
+.stripe {
+  height: 5px;
+  background: repeating-linear-gradient(-45deg, var(--aksent) 0 14px, #101012 14px 28px);
+}
+
+.app {
+  max-width: 560px; margin: 0 auto; min-height: 100%;
+  padding: calc(10px + env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom));
+}
+
+/* topp */
+.topp { display: flex; align-items: center; justify-content: space-between; margin: 10px 0 14px; }
+.merke { display: flex; flex-direction: column; }
+.merke b { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.02em; }
+.merke b i { color: var(--aksent); font-style: normal; }
+.merke span { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.18em; color: var(--dis); text-transform: uppercase; }
+.bruker-chip {
+  font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; color: var(--dis);
+  border: 1px solid var(--strek); border-radius: 99px; padding: 7px 12px;
+}
+
+/* seksjoner og kort */
+.sek-tittel {
+  font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--dis); margin: 20px 0 8px;
+}
+.sek-tittel b { color: var(--aksent); font-weight: 600; }
+.kort {
+  background: var(--flate); border: 1px solid var(--strek); border-radius: 14px;
+  padding: 14px; margin-bottom: 10px;
+}
+.kort h3 { font-size: 0.98rem; font-weight: 700; }
+.kort .sub { font-size: 0.8rem; color: var(--dis); }
+
+/* lister */
+.rad-liste { list-style: none; }
+.rad-liste li {
+  display: flex; align-items: center; gap: 10px; padding: 11px 2px;
+  border-bottom: 1px solid var(--strek); font-size: 0.9rem; min-height: 48px;
+}
+.rad-liste li:last-child { border-bottom: none; }
+.rad-liste .hoved { flex: 1; min-width: 0; }
+.rad-liste .hoved small { display: block; color: var(--dis); font-size: 0.76rem; }
+
+/* statuschips */
+.chip {
+  flex: none; font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.08em;
+  padding: 4px 10px; border-radius: 99px; border: 1px solid var(--strek);
+  color: var(--dis); text-transform: uppercase; white-space: nowrap;
+}
+.chip.ok { color: var(--ok); border-color: rgba(55, 214, 122, 0.4); }
+.chip.snart { color: var(--varsel); border-color: rgba(255, 176, 32, 0.5); }
+.chip.forfalt { color: #16130a; background: var(--alarm); border-color: transparent; font-weight: 700; }
+.chip.gul { color: #16130a; background: var(--aksent); border-color: transparent; font-weight: 700; }
+
+/* knapper — store nok for hansker */
+.knapp {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 52px; padding: 12px 18px; border-radius: 12px; width: 100%;
+  font-weight: 800; font-size: 0.95rem; color: #16130a;
+  background: linear-gradient(100deg, var(--aksent), var(--aksent-b));
+  color: var(--aksent-tekst, #08090c);
+  box-shadow: 0 4px 14px rgba(255, 196, 0, 0.18);
+}
+.knapp:active { transform: scale(0.97); }
+.knapp.svak { background: var(--flate-2); color: var(--tekst); border: 1px solid var(--strek); box-shadow: none; }
+.knapp.fare { background: var(--alarm); color: #fff; box-shadow: none; }
+.knapp[disabled] { opacity: 0.5; pointer-events: none; }
+.knapp-rad { display: flex; gap: 10px; margin-top: 10px; }
+.knapp-rad .knapp { flex: 1; }
+
+/* skjema */
+label.felt { display: block; font-size: 0.78rem; color: var(--dis); margin: 10px 0 4px; }
+input.felt, select.felt, textarea.felt {
+  width: 100%; background: rgba(0, 0, 0, 0.35); border: 1px solid var(--strek);
+  border-radius: 11px; color: var(--tekst); font: inherit; font-size: 1rem;
+  padding: 13px 13px; min-height: 50px;
+}
+textarea.felt { min-height: 88px; resize: vertical; }
+select.felt { appearance: none; }
+.felt-rad { display: flex; gap: 10px; }
+.felt-rad > * { flex: 1; min-width: 0; }
+
+/* store hurtigknapper */
+.hurtig-rutenett { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.hurtig {
+  background: var(--flate); border: 1px solid var(--strek); border-radius: 14px;
+  padding: 14px; text-align: left; display: flex; flex-direction: column; gap: 3px; min-height: 76px;
+}
+.hurtig b { font-size: 0.95rem; }
+.hurtig span { font-size: 0.72rem; color: var(--dis); line-height: 1.35; }
+.hurtig:active { transform: scale(0.98); }
+
+/* store tall */
+.stort-tall { font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.stort-tall small { font-size: 0.8rem; font-weight: 400; color: var(--dis); letter-spacing: 0; }
+
+/* faner og navigasjon */
+.fane { display: none; }
+.fane.aktiv { display: block; animation: inn 0.22s ease; }
+@keyframes inn { from { opacity: 0; transform: translateY(8px); } }
+nav.bunn {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  background: rgba(14, 14, 16, 0.92); backdrop-filter: blur(14px);
+  border-top: 1px solid var(--strek);
+  padding: 6px 8px calc(8px + env(safe-area-inset-bottom));
+}
+.nav-indre { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 82px 1fr 1fr; align-items: center; }
+.tab { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 0.6rem; color: var(--dis); padding: 6px 0; min-height: 52px; }
+.tab svg { width: 23px; height: 23px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.tab.aktiv { color: var(--aksent); }
+.pluss {
+  width: 62px; height: 62px; border-radius: 16px; margin: -22px auto 0;
+  display: flex; align-items: center; justify-content: center; color: #16130a;
+  background: linear-gradient(100deg, var(--aksent), var(--aksent-b));
+  color: var(--aksent-tekst, #08090c);
+  box-shadow: 0 6px 22px rgba(255, 196, 0, 0.35); font-size: 2rem; font-weight: 800;
+}
+.pluss:active { transform: scale(0.94); }
+
+/* bunn-ark */
+.ark-bak {
+  position: fixed; inset: 0; z-index: 60; background: rgba(0, 0, 0, 0.6);
+  opacity: 0; pointer-events: none; transition: opacity 0.22s;
+}
+.ark {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 61; max-width: 560px; margin: 0 auto;
+  background: var(--flate-2); border: 1px solid var(--strek); border-bottom: none;
+  border-radius: 20px 20px 0 0; padding: 10px 18px calc(24px + env(safe-area-inset-bottom));
+  transform: translateY(105%); transition: transform 0.28s cubic-bezier(0.3, 0.9, 0.3, 1);
+  max-height: 88vh; overflow-y: auto;
+}
+.ark .hank { width: 40px; height: 4px; border-radius: 2px; background: var(--strek); margin: 6px auto 12px; }
+.ark h2 { font-size: 1.05rem; font-weight: 800; margin-bottom: 2px; }
+.ark .under { font-size: 0.8rem; color: var(--dis); margin-bottom: 10px; }
+body.ark-apen .ark { transform: none; }
+body.ark-apen .ark-bak { opacity: 1; pointer-events: auto; }
+.ark-lukk { position: absolute; top: 10px; right: 12px; font-size: 1.5rem; color: var(--dis); padding: 4px 10px; }
+
+/* toast */
+.toast {
+  position: fixed; left: 50%; bottom: calc(108px + env(safe-area-inset-bottom)); z-index: 70;
+  transform: translate(-50%, 20px); background: var(--flate-2); border: 1px solid rgba(255, 196, 0, 0.5);
+  color: var(--tekst); border-radius: 12px; padding: 12px 18px; font-size: 0.88rem; font-weight: 600;
+  opacity: 0; transition: opacity 0.25s, transform 0.25s; pointer-events: none;
+  max-width: min(92vw, 480px); text-align: center;
+}
+.toast.vis { opacity: 1; transform: translate(-50%, 0); }
+.toast b { color: var(--aksent); }
+.toast.feil { border-color: rgba(255, 90, 72, 0.6); }
+
+/* svar-boks fra AI m.m. */
+.svarboks {
+  background: rgba(0, 0, 0, 0.3); border: 1px solid var(--strek); border-radius: 12px;
+  padding: 12px 14px; font-size: 0.88rem; white-space: pre-wrap; margin-top: 10px;
+  max-height: 50vh; overflow-y: auto;
+}
+
+/* offline-merke */
+.offline-merke {
+  display: none; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.12em;
+  color: #16130a; background: var(--varsel); border-radius: 8px; padding: 6px 10px;
+  margin-bottom: 10px; text-align: center; font-weight: 700;
+}
+body.er-offline .offline-merke { display: block; }
+
+/* innlogging */
+.login-side {
+  min-height: 100dvh; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 24px; gap: 0;
+}
+.login-boks { width: 100%; max-width: 380px; }
+.login-logo { text-align: center; margin-bottom: 22px; }
+.login-logo .skilt {
+  display: inline-block; background: var(--aksent); color: #16130a; font-weight: 900;
+  font-size: 1.7rem; letter-spacing: -0.02em; padding: 8px 18px; border-radius: 10px;
+  border: 3px solid #16130a; box-shadow: 0 0 0 2px var(--aksent);
+}
+.login-logo p { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.2em; color: var(--dis); margin-top: 12px; text-transform: uppercase; }
+
+.tomt { text-align: center; color: var(--dis); font-size: 0.86rem; padding: 22px 10px; }
+.mono { font-family: var(--mono); }
+.deling { height: 1px; background: var(--strek); margin: 12px 0; }
+.gul-tekst { color: var(--aksent); }
+.alarm-tekst { color: var(--alarm); }
+.ok-tekst { color: var(--ok); }
+
+/* bilde-miniatyrer */
+.foto-rad { display: flex; gap: 8px; overflow-x: auto; margin-top: 8px; }
+.foto-rad img {
+  width: 64px; height: 64px; object-fit: cover; border-radius: 10px;
+  border: 1px solid rgba(255, 196, 0, 0.4); flex: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ── kjerne-tillegg: dynamiske faner, live-markering, småting ── */
+.tabs-rad { display: flex; flex: 1; justify-content: space-around; }
+.tab-ikon { display: block; font-size: 1.05rem; line-height: 1.2; }
+.live-status {
+  position: fixed; top: 14px; left: 50%; transform: translateX(-50%) translateY(-40px);
+  background: var(--flate-2); border: 1px solid var(--strek); color: var(--tekst);
+  font-size: .74rem; padding: 6px 14px; border-radius: 99px; z-index: 60;
+  transition: transform .25s; max-width: 90vw; white-space: nowrap; overflow: hidden;
+}
+.live-status.vis { transform: translateX(-50%) translateY(0); }
+.lenkeknapp { display: block; width: 100%; text-align: center; font-size: .78rem;
+  color: var(--dis); text-decoration: underline; }
+.niva { font-family: var(--mono); font-size: .56rem; letter-spacing: .1em;
+  text-transform: uppercase; padding: 2px 8px; border-radius: 99px;
+  border: 1px solid var(--strek); color: var(--dis); }
+.niva.privat { border-color: rgba(255,176,32,.5); color: var(--varsel); }
+.niva.sensitivt { border-color: rgba(255,90,72,.5); color: var(--alarm); }
+.linje { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--strek);
+  font-size: .88rem; align-items: baseline; }
+.linje:last-child { border-bottom: none; }
+.linje .hvem { color: var(--dis); font-size: .74rem; white-space: nowrap; }
+.utkast-ut { white-space: pre-wrap; background: rgba(0,0,0,.3);
+  border: 1px solid var(--strek); border-radius: 10px; padding: 12px;
+  font-size: .88rem; margin-top: 10px; user-select: text; -webkit-user-select: text; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
