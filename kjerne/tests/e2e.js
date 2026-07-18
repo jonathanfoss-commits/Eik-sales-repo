@@ -104,6 +104,24 @@ try {
   sjekk('LIVE: «Ole Fabian · skrev i dagboka»-markering vises',
     (await pJ.textContent('#live-status')).includes('Ole Fabian'));
 
+  console.log('── 2b: Prosjektrommet — auto-utledet, bevisdokument ──');
+  await pJ.click('#tabs .tab:has-text("Prosjekt")');
+  await pJ.waitForTimeout(700);
+  sjekk('Prosjektrommet utleder «Krohgs gate 60» automatisk',
+    (await pJ.textContent('#fane-prosjekt')).includes('Krohgs gate 60'));
+  await pJ.click('#fane-prosjekt .linje:has-text("Krohgs gate 60")');
+  await pJ.waitForTimeout(700);
+  sjekk('Prosjektsiden viser tidslinjen med dagboklinjen',
+    (await pJ.textContent('#fane-prosjekt')).includes(beviset.slice(0, 40)));
+  sjekk('«Lag bevisdokument»-knappen er der',
+    await pJ.isVisible('#fane-prosjekt .knapp:has-text("Lag bevisdokument")'));
+  const pBevis = await pJ.context().newPage();
+  await pBevis.goto(URL + '/api/prosjekter/bevis?prosjekt=' + encodeURIComponent('Krohgs gate 60'));
+  const bevisTekst = await pBevis.textContent('body');
+  sjekk('Bevisdokumentet genereres med dagboka i kronologi',
+    bevisTekst.includes('BEVISDOKUMENT') && bevisTekst.includes(beviset.slice(0, 40)));
+  await pBevis.close();
+
   console.log('── 3: Rollenivåene — ansatt via invitasjon ──');
   await pJ.click('#tabs .tab:has-text("Sentral")');
   await pJ.waitForTimeout(700);
@@ -160,6 +178,11 @@ try {
   sjekk('Isolasjon: null OP Bygg-dagbok hos Malermester (RLS)',
     Array.isArray(mDagbok.linjer) &&
     !JSON.stringify(mDagbok.linjer).includes('Krohgs gate'));
+  // prosjektrommet aggregerer på tvers av tabeller — heller ikke DET lekker
+  const mProsjekter = await pM.evaluate(() => fetch('/api/prosjekter').then((r) => r.json()));
+  sjekk('Isolasjon: prosjektrommet viser aldri andre tenanters prosjekter',
+    Array.isArray(mProsjekter.prosjekter) &&
+    !JSON.stringify(mProsjekter.prosjekter).includes('Krohgs gate'));
 
   console.log('── 5: Skrivemotor-reserven (uten API-nøkkel) og innflyttingen ──');
   await pA.click('#pluss');

@@ -32,6 +32,19 @@ selger seg selv når live-øyeblikket treffer.*
   dine er dine og sjefens, økonomien er eierens. Det håndheves i databasen,
   ikke med et filter noen kan glemme.»*
 
+## Minutt 2b — Bevisdokument-øyeblikket (demoens nye knockout)
+
+- Åpne **Prosjekt-fanen** på PC-en: *«Ingen har registrert noe ekstra her —
+  dette rommet bygger seg selv av det laget allerede fører.»* Pek på chipsene:
+  åpne varsler, ufakturerte tillegg, fristen som teller ned.
+- Trykk inn på prosjektet → **«Lag bevisdokument»**. La dokumentet fylle
+  skjermen: *«Byggherren bestrider sluttoppgjøret? Dette er dagboka,
+  varslene og tilleggsavtalene — kronologisk, med navn og tidsstempel,
+  rett fra databasen. Linjer kan aldri slettes, bare rettes med versjonsspor —
+  det står i dokumentet. Dette er det advokaten ber om, ferdig på ett trykk.»*
+- Én setning til slutt: *«Tidsnære notater vinner tvister. Dere fører dem
+  allerede — nå blir de bevis av seg selv.»*
+
 ## Minutt 3 — «Pengene dere taper i dag» (Sentral, på PC-en)
 
 - **Purretrappa:** pek på fakturaen 47 dager over forfall — *«appen foreslår

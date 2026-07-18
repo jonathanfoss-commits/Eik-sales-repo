@@ -218,3 +218,18 @@ godkjenning. Dokumentert i cutover-planen.
 `el()`/`textContent`), autopilot-privathet (kun egne timer), `leggTilMnd`-matten
 (inkl. skuddår 31.12.2027+2 → 29.2.2028), async scrypt-kallerne (alle `await`),
 versjonsbump-konsistens.
+
+## NATTSKIFTET 2 (19. juli) — beslutninger i bygget
+
+- **D24 — Bevisdokumentet er DELT-kun:** timer (PRIVAT) og økonomi (SENSITIVT)
+  går aldri inn i bevisuttrekket, uansett hvem som genererer det — dokumentet
+  skal kunne gis eksternt uten vask. Håndhevet i ruten, testet.
+- **D25 — Ukesrapporten foreslås, sendes aldri:** appen legger aldri en rapport
+  i noen utboks; brukeren kopierer og sender selv (Jonathans føring fra
+  NATTSKIFTET 2-bestillingen). Byggherre-varianten får aldri timetall.
+- **D26 — Prosjektnavn er nøkkelen:** prosjektrommet grupperer på eksakt
+  prosjekttekst (som modulene alt gjør). Skrivevarianter («Krohgs gt 60» vs
+  «Krohgs gate 60») gir to rom — bevisst enkelt nå; normalisering vurderes
+  når piloten viser om det faktisk skjer.
+- **D27 — `_html`-svar i ruteren:** hele dokumenter kan returneres som
+  `{ _html }` (som `_csv`); all brukertekst escapes i ruten som lager dem.

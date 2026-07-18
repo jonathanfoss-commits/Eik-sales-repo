@@ -1,10 +1,10 @@
 /* Plattformkjernen service worker — appskallet virker offline og åpner
    umiddelbart. Cache-navnet bumpes SAMTIDIG med VERSJON i js/app.js og
    versjon.json — de tre må aldri drifte. */
-const CACHE = 'kjerne-v0.3.1';
+const CACHE = 'kjerne-v0.4.0';
 const FILER = ['./', './index.html', './stil.css', './manifest.webmanifest', './ikon.svg',
   './js/api.js', './js/app.js',
-  './js/moduler/hjem.js', './js/moduler/timer.js', './js/moduler/dagbok.js',
+  './js/moduler/hjem.js', './js/moduler/prosjekt.js', './js/moduler/timer.js', './js/moduler/dagbok.js',
   './js/moduler/varsler.js', './js/moduler/skriv.js', './js/moduler/innspill.js',
   './js/moduler/sentral.js', './js/moduler/innflytting.js',
   './js/moduler/tillegg.js', './js/moduler/frister.js'];

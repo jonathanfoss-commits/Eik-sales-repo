@@ -18,7 +18,7 @@ export default {
       // dagslys-aksenter (mot hvit flate, alle ≥4,5:1)
       dagslys: { a: '#8A5E00', b: '#9C4310', varsel: '#1B6E93' },
     },
-    moduler: ['hjem', 'timer', 'skriv', 'innspill', 'sentral', 'tillegg', 'faktura'],
+    moduler: ['hjem', 'prosjekt', 'timer', 'skriv', 'innspill', 'sentral', 'tillegg', 'faktura'],
     profil: PROFIL,
     evner: {
       tilbud: {
@@ -28,6 +28,10 @@ export default {
       purring: {
         navn: 'Purring', modell: 'claude-opus-4-8', maxTokens: 1200,
         instruks: 'Skriv en vennlig purring med tydelig frist, basert på dikteringen. Aldri gebyrer eller renter uten hjemmel.',
+      },
+      ukesrapport: {
+        navn: 'Ukesrapport', modell: 'claude-opus-4-8', maxTokens: 2000,
+        instruks: 'Du får et datagrunnlag med ukens registreringer for ett malerprosjekt og hvilken variant som skal skrives. Skriv en kort, ryddig ukesrapport (utført / fremdrift / avvik / neste uke). Bygg kun på datagrunnlaget. Kundevarianten skal aldri inneholde timetall eller interne økonomidata.',
       },
     },
   },

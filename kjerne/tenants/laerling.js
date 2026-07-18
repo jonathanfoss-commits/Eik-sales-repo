@@ -24,7 +24,7 @@ export default {
       // dagslys-aksenter (mot hvit flate, alle ≥4,5:1) — samme som piloten
       dagslys: { a: '#147A52', b: '#0F6B7A', varsel: '#8A5800' },
     },
-    moduler: ['hjem', 'timer', 'dagbok', 'varsler', 'skriv', 'innspill', 'sentral', 'innflytting', 'tillegg', 'frister', 'faktura'],
+    moduler: ['hjem', 'prosjekt', 'timer', 'dagbok', 'varsler', 'skriv', 'innspill', 'sentral', 'innflytting', 'tillegg', 'frister', 'faktura'],
     profil: PROFIL,
     evner: {
       tilbud: {
@@ -42,6 +42,13 @@ export default {
       referat: {
         navn: 'Møtereferat', modell: KVALITET, maxTokens: 2500,
         instruks: 'Brukeren dikterer notater fra et møte (byggemøte, befaring, vernerunde eller avklaring). Lag et ryddig møtereferat: møtetype, dato, prosjekt og deltakere øverst (bruk [KLAMMER] der det mangler), deretter hovedpunkter, og til slutt nummererte aksjonspunkter med ansvarlig og frist. Ta med avtaler og datoer nøyaktig slik de ble sagt. Avslutt med «Innsigelser til referatet meldes innen 3 virkedager.»',
+      },
+      // Ukesrapporten i prosjektrommet: serveren syr ukens registreringer til
+      // datagrunnlag — modellen skriver rapporten. Variantvalget (byggherre/
+      // ledelse) kommer først i brukerteksten fra serveren.
+      ukesrapport: {
+        navn: 'Ukesrapport', modell: KVALITET, maxTokens: 2500,
+        instruks: 'Du får et datagrunnlag: ukens dagboklinjer, varsler og tillegg for ett prosjekt, og en angivelse av hvilken variant som skal skrives. Skriv ukesrapporten etter firmaets mal (Utført denne uken / Fremdrift mot plan / Avvik / Plan neste uke / Avklaringer vi trenger). Bygg KUN på datagrunnlaget — aldri dikt opp fremdrift eller vær. Mangler grunnlag for et punkt, skriv [MANGLER GRUNNLAG]. Byggherre-varianten skal aldri inneholde timetall eller interne økonomidata.',
       },
       // Småjobb: oppsummering av innspillslisten i kommandosentralen.
       oppsummer: {

@@ -44,7 +44,7 @@ const dato = (dagerSiden) =>
   new Date(iDag - dagerSiden * 86400000).toISOString().slice(0, 10);
 
 // idempotent: rydd gammel demodata (klient_id-prefiks) før ny fylles inn
-for (const tabell of ['dagbok', 'tillegg', 'fakturaer', 'timeforinger']) {
+for (const tabell of ['dagbok', 'tillegg', 'fakturaer', 'timeforinger', 'varsler', 'prosjektfrister']) {
   await klient.query(`DELETE FROM ${tabell} WHERE org_id = $1 AND klient_id LIKE 'demo-%'`, [org.id]);
 }
 
@@ -83,6 +83,28 @@ await klient.query(
    ON CONFLICT (org_id, bruker_id, dato, prosjekt) DO NOTHING`,
   [org.id, bruker.id, dato(0), 'demo-timer-0']);
 
+// konflikt-historien til demoen: et varsel med svarfrist som har gått ut, og
+// en overtakelse der sluttoppstillingsfristen nærmer seg — prosjektrommet
+// viser da chips som driver handling, og bevisdokumentet får en NS 8407-kjede.
+await klient.query(
+  `INSERT INTO varsler (org_id, bruker_id, type, prosjekt, tekst, status, svarfrist, klient_id)
+   VALUES ($1,$2,'endringsvarsel','Bjerkeveien 14',
+     'Byggherren ba muntlig om ekstra strøk på hele sørveggen — varslet skriftlig samme dag med konsekvens for pris og fremdrift.',
+     'sendt',$3,$4)`,
+  [org.id, bruker.id, dato(3), 'demo-varsel-1']);
+await klient.query(
+  `INSERT INTO varsler (org_id, bruker_id, type, prosjekt, tekst, status, klient_id)
+   VALUES ($1,$2,'varemottak','Storgata 8 (kontor)',
+     'Feil glans levert (07 i stedet for 20) på 40 liter — avvik meldt leverandøren med bilde.',
+     'meldt',$3)`,
+  [org.id, bruker.id, 'demo-varsel-2']);
+await klient.query(
+  `INSERT INTO prosjektfrister (org_id, bruker_id, prosjekt, overtakelse, klient_id)
+   VALUES ($1,$2,'Storgata 8 (kontor)',$3,$4)
+   ON CONFLICT (org_id, prosjekt) DO UPDATE SET overtakelse = EXCLUDED.overtakelse`,
+  [org.id, bruker.id, dato(45), 'demo-frist-1']);
+
 console.log(`Demodata lagt inn for «${slug}»: ${dagbok.length} dagboklinjer, 1 tillegg, ` +
-  `${fakturaer.length} fakturaer, 1 timeføring. Kjør gjerne igjen — ryddes og fylles på nytt.`);
+  `${fakturaer.length} fakturaer, 1 timeføring, 2 varsler og 1 overtakelsesfrist ` +
+  `(konflikt-historien til prosjektrommet). Kjør gjerne igjen — ryddes og fylles på nytt.`);
 await klient.end();

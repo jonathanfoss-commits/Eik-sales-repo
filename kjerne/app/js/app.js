@@ -3,7 +3,7 @@
    Kjernen kjenner ingen kunde: navn, farger og modulvalg kommer fra /api/meg.
    VERSJON bumpes samtidig i versjon.json og sw.js (cache-navnet) — de tre må aldri drifte. */
 window.Kjerne = (function () {
-  const VERSJON = '0.3.1';
+  const VERSJON = '0.4.0';
   let meg = null;   // { navn, rolle }
   let org = null;   // { slug, navn, appnavn, undertittel, tema, moduler }
   const moduler = {};   // id -> { tittel, ikon, vis: async (rot) => {}, påHendelse?: (h) => {} }
@@ -194,6 +194,11 @@ window.Kjerne = (function () {
     moduler[h.modul]?.påHendelse?.(h);
     // er fanen for modulen åpen, hent ferskt innhold (bak RLS — aldri fra hendelsen)
     if (aktivFane() === h.modul) visFane(h.modul, true);
+    // moduler som lytter på andres hendelser (prosjektrommet syr av alt):
+    // oppdateres kun når egen fane er åpen — samme regel som over
+    for (const [navn, m] of Object.entries(moduler)) {
+      if (navn !== h.modul && m.lytter?.includes(h.modul) && aktivFane() === navn) visFane(navn, true);
+    }
   }
   const etikett = (m) => ({ timer: 'førte timer', dagbok: 'skrev i dagboka',
     varsler: 'meldte avvik', innspill: 'sendte innspill', godkjenninger: 'stemte' }[m] || m);

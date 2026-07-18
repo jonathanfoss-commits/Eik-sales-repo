@@ -112,3 +112,28 @@ tokens) + js/app (skall/tema/live) + js/api (offline-kø) + js/moduler/*.
 `tenants/` laerling, malermester-demo. `tests/` rls, api, ai-kost, versjon, e2e (CI kjører alt).
 `render.yaml` (to tjenester, to databaser), `Dockerfile`, `docker-compose.yml`
 («egen boks»), `.env.example`.
+
+## NATTSKIFTET 2 (natt til 19. juli) — Prosjektrommet, Bevispakken, Ukesrapporten
+
+- **Prosjektrommet** (`api/prosjekt.js` + `moduler/prosjekt.js`, v0.4.0):
+  prosjektlisten utledes automatisk av dagbok/timer/tillegg/varsler/frister —
+  null ny registreringsbyrde. Per prosjekt: status-chips (åpne varsler,
+  ufakturerte tillegg, nedtelling til sluttoppstilling) og samlet tidslinje.
+  Alt bak RLS: ansatt ser DELT + egne PRIVAT, ledelsen ser sitt. Live via
+  det generiske `lytter`-feltet i modulregisteret (fanen re-henter når
+  dagbok/timer/tillegg/varsler/frister-hendelser treffer).
+- **Bevisdokumentet** (`GET /api/prosjekter/bevis?prosjekt=`): server-generert,
+  utskriftsklar HTML (print → PDF, null avhengigheter, `_html`-gren i index.js).
+  Kun DELT innhold (dagbok/varsler/tillegg) — PRIVATE timer og økonomi holdes
+  utenfor med vilje så dokumentet trygt kan gis til byggherre/advokat.
+  Rettelser vises åpent («rettet — versjon N»); all brukertekst HTML-escapes.
+  Eneste skript er ekstern `js/bevis.js` (CSP-en åpnes aldri for inline, D11).
+- **Ukesrapporten** (`POST /api/prosjekter/ukesrapport`): serveren syr ukens
+  registreringer til datagrunnlag, AI-evnen «ukesrapport» (tenant-konfig,
+  opus D6) skriver. To varianter: byggherre (aldri timer/økonomi) og ledelse
+  (kun ledelsen, 403 ellers). Gjennom gatewayen: budsjettsperre, kostlogg,
+  samme rate-grense som Skrivemotoren. Foreslås alltid — sendes aldri
+  automatisk [JONATHAN].
+- Demodata fikk konflikt-historien (varsel m/utløpt svarfrist + overtakelse
+  45 dager tilbake); demo-manuset fikk bevisdokument-øyeblikket; landingssiden
+  fikk Bevis- og Rapport-kortene. Tester: 30 servertester + 27 e2e-sjekker.

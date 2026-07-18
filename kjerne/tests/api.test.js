@@ -302,6 +302,72 @@ test('NATTSKIFTET: dagbok-autopiloten syr av egne timer + lagets varsler', async
   await eier.query(`DELETE FROM varsler WHERE prosjekt = 'API-auto'`);
 });
 
+test('NATTSKIFTET 2: prosjektrommet — auto-utledet liste, tidslinje med nivåvern', async () => {
+  if (!tilgjengelig) return;
+  const iDag = new Date().toISOString().slice(0, 10);
+  await api('ansatt', 'POST', '/api/dagbok', { prosjekt: 'API-rom', tekst: 'støpt plate, fint vær' });
+  await api('ansatt', 'POST', '/api/tillegg', { prosjekt: 'API-rom', avtalt_med: 'byggherre', tekst: 'ekstra drenering' });
+  await api('ansatt', 'POST', '/api/varsler', { type: 'varemottak', prosjekt: 'API-rom', tekst: 'feil dimensjon levert' });
+  await api('leder', 'POST', '/api/timer', { dato: iDag, prosjekt: 'API-rom', timer: 3, notat: 'LEDERTIME-HEMMELIG' });
+
+  const liste = await api('ansatt', 'GET', '/api/prosjekter');
+  const p = liste.data.prosjekter.find((x) => x.prosjekt === 'API-rom');
+  assert.ok(p, 'prosjektet utledes automatisk av registreringene');
+  assert.ok(p.dagboklinjer >= 1 && p.aapneTillegg >= 1, 'chips telles');
+
+  // nivåvernet: ansattens tidslinje inneholder ALDRI lederens private timer
+  const ansattTl = await api('ansatt', 'GET', '/api/prosjekter/tidslinje?prosjekt=' + encodeURIComponent('API-rom'));
+  assert.ok(ansattTl.data.hendelser.some((h) => h.slag === 'dagbok'), 'dagbok er med (DELT)');
+  assert.ok(ansattTl.data.hendelser.every((h) => /^\d{4}-\d{2}-\d{2}$/.test(h.dato)),
+    'alle hendelser har ISO-dato — også varsler (timestamptz-regresjon)');
+  assert.ok(!JSON.stringify(ansattTl.data).includes('LEDERTIME-HEMMELIG'), 'andres timer lekker aldri');
+  const lederTl = await api('leder', 'GET', '/api/prosjekter/tidslinje?prosjekt=' + encodeURIComponent('API-rom'));
+  assert.ok(JSON.stringify(lederTl.data).includes('LEDERTIME-HEMMELIG'), 'ledelsen ser timene (PRIVAT+LEDELSE)');
+});
+
+test('NATTSKIFTET 2: bevisdokumentet — escapet HTML, versjonsspor, aldri timer/økonomi', async () => {
+  if (!tilgjengelig) return;
+  const ny = await api('ansatt', 'POST', '/api/dagbok',
+    { prosjekt: 'API-rom', tekst: 'farlig <script>alert(1)</script> tegn' });
+  await api('ansatt', 'PUT', '/api/dagbok/' + ny.data.linje.id,
+    { tekst: 'rettet linje uten farlige tegn', versjon: ny.data.linje.versjon });
+
+  const res = await fetch(URL_ROT + '/api/prosjekter/bevis?prosjekt=' + encodeURIComponent('API-rom'),
+    { headers: { Cookie: cookies.ansatt } });
+  assert.equal(res.status, 200);
+  assert.ok(res.headers.get('content-type').includes('text/html'));
+  const html = await res.text();
+  assert.ok(html.includes('BEVISDOKUMENT'), 'dokumentet genereres');
+  assert.ok(!html.includes('<script>alert'), 'brukertekst er escapet — aldri kjørbar');
+  assert.ok(html.includes('rettet — versjon 2'), 'rettelser er åpent merket (bevisverdi)');
+  assert.ok(!html.includes('LEDERTIME-HEMMELIG'), 'timer holdes utenfor bevisdokumentet');
+  const tom = await fetch(URL_ROT + '/api/prosjekter/bevis?prosjekt=API-finnes-ikke',
+    { headers: { Cookie: cookies.ansatt } });
+  assert.equal(tom.status, 404, 'tomt prosjekt gir ærlig 404');
+});
+
+test('NATTSKIFTET 2: ukesrapporten — varianter, rollevern og ekte datagrunnlag', async () => {
+  if (!tilgjengelig) return;
+  const nekt = await api('ansatt', 'POST', '/api/prosjekter/ukesrapport',
+    { prosjekt: 'API-rom', variant: 'ledelse' });
+  assert.equal(nekt.status, 403, 'ledelsesvarianten er ledelsens');
+
+  const bh = await api('ansatt', 'POST', '/api/prosjekter/ukesrapport',
+    { prosjekt: 'API-rom', variant: 'byggherre' });
+  assert.equal(bh.status, 200);
+  assert.equal(bh.data.tekst, 'MOCK-UTKAST fra modellen');
+  const bhKall = JSON.stringify(aiMock.sisteKall.messages);
+  assert.ok(bhKall.includes('BYGGHERRE-varianten'), 'variantinstruksen følger med');
+  assert.ok(bhKall.includes('støpt plate'), 'ukens dagbok er datagrunnlaget');
+  assert.ok(!bhKall.includes('TIMER DENNE UKEN'), 'byggherre-varianten får aldri timetall');
+
+  const led = await api('leder', 'POST', '/api/prosjekter/ukesrapport',
+    { prosjekt: 'API-rom', variant: 'ledelse' });
+  assert.equal(led.status, 200);
+  assert.ok(JSON.stringify(aiMock.sisteKall.messages).includes('TIMER DENNE UKEN'),
+    'ledelsesvarianten har timene i grunnlaget');
+});
+
 test('GDPR-sletteretten: admin sletter en ANNENS private data — faktisk (funn-regresjon)', async () => {
   if (!tilgjengelig) return;
   const ansattId = (await eier.query(

@@ -21,10 +21,11 @@ import * as personvern from './api/personvern.js';
 import * as faktura from './api/faktura.js';
 import * as tillegg from './api/tillegg.js';
 import * as frister from './api/frister.js';
+import * as prosjekt from './api/prosjekt.js';
 
 const ruter = new Ruter();
 for (const modul of [timer, dagbok, varsler, innspill, skriv, sentral, innflytting, personvern,
-  faktura, tillegg, frister]) {
+  faktura, tillegg, frister, prosjekt]) {
   modul.registrer(ruter);
 }
 
@@ -210,7 +211,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === 'GET' && sti === '/api/hendelser') return sseHandler(req, res, ctx);
-    if (req.method === 'POST' && sti === '/api/skriv'
+    if (req.method === 'POST' && ['/api/skriv', '/api/prosjekter/ukesrapport'].includes(sti)
         && forMange('skriv:' + (ctx?.brukerId || 'x'), 30, 10 * 60_000)) {
       throw new ApiFeil(429, 'Mange utkast på kort tid — vent et par minutter');
     }
@@ -224,6 +225,10 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(200, { 'Content-Type': 'text/csv; charset=utf-8',
         'Content-Disposition': `attachment; filename="${resultat.filnavn || 'eksport.csv'}"` });
       res.end(resultat._csv);
+    } else if (resultat && resultat._html !== undefined) {
+      // hele dokumenter (bevisdokumentet) — alt innhold er HTML-escapet i ruten
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+      res.end(resultat._html);
     } else {
       svarJson(res, 200, resultat ?? { ok: true });
     }
