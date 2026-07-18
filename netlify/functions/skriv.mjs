@@ -10,13 +10,9 @@
    Miljøvariabler i Netlify (Site configuration → Environment variables):
    - ANTHROPIC_API_KEY  (påkrevd — uten den svarer funksjonen 503 og appen
                          faller tilbake til kopier-prompten)
-   - SKRIV_KODE         (valgfri — overstyrer ansattkoden under)
+   - PILOT_API_KODE     (valgfri — overstyrer standard pilotkode, som i innspill.js) */
 
-   Ansattkoden her er en ANNEN kode enn sentralkoden i innspill.js: denne må
-   ligge åpent i appen (PILOTKODE i index.html) og er derfor bare bot-demping,
-   mens sentralkoden verner pilotloggdata og holdes utenfor offentlige filer. */
-
-const KODE = "opb-skriv-95";
+const KODE = "opbygg2026";
 const MODELL = "claude-opus-4-8";
 const MAKS_TEGN = 6000;
 
@@ -66,7 +62,7 @@ export default async function handler(req) {
 
   const url = new URL(req.url);
   const kode = req.headers.get("x-pilotkode") || url.searchParams.get("kode") || "";
-  const riktigKode = process.env.SKRIV_KODE || KODE;
+  const riktigKode = process.env.PILOT_API_KODE || KODE;
   if (kode !== riktigKode) return feil(401, "Feil pilotkode.");
 
   const nokkel = process.env.ANTHROPIC_API_KEY;

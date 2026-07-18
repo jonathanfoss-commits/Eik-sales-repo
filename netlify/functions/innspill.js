@@ -1,14 +1,11 @@
 /* Lærling — serverfunksjon som henter pilotloggen for kommandosentralen og Prøverommet.
    Netlify-tokenet bor som miljøvariabel PILOTLOGG_TOKEN i Netlify (settes ÉN gang per
    site) — det skal aldri ligge i nettleseren eller i koden.
-   Adgang: sentralkoden (X-Pilotkode-header) — den deles kun med pilotteamet og
-   står ikke i noen offentlig fil (kommandosentralen/Prøverommet sjekker den mot
-   et PBKDF2-avtrykk og husker den lokalt). Skrivemotoren har egen ansattkode
-   (skriv.mjs) siden den må ligge åpent i appen. Settes miljøvariabelen
-   PILOT_API_KODE, kreves DEN i stedet for koden under.
+   Adgang: pilotkoden (X-Pilotkode-header). Settes miljøvariabelen PILOT_API_KODE,
+   kreves DEN i stedet — da er dataene ikke lenger tilgjengelige med koden fra HTML-en.
    Svarer kun med feltene klientene trenger, og kun relevante hendelsestyper. */
 
-const KODE = "gerikt-laft-beslag-30"; // sentralkoden (kan overstyres med PILOT_API_KODE)
+const KODE = "opbygg2026"; // standard pilotkode (kan overstyres med PILOT_API_KODE)
 const VERTER = [
   "op-bygg-laerling-app.netlify.app",
   "op-bygg-laerling-app-test.netlify.app"

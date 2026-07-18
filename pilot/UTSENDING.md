@@ -8,7 +8,7 @@ Landingssiden (salg utenfor OP Bygg): https://op-bygg-laerling-nett.netlify.app
 > Hei bror! Du er offisielt utviklingspartner #1. Alt du trenger ligger her —
 > ta steg 1 og 2 i dag, det tar 4 minutter totalt:
 > **https://op-bygg-laerling-app.netlify.app/bli-med.html**
-> Pilotkoden til kommandosentralen sender jeg deg i egen melding — den gir deg og sjefene full oversikt:
+> Pilotkoden til kommandosentralen er «opbygg2026» — den gir deg og sjefene full oversikt:
 > **https://op-bygg-laerling-app.netlify.app/admin.html**
 
 ## 2. Til ledelsen (Lars/Erik) — e-post, gjerne videresendt via Ole Fabian
@@ -26,7 +26,7 @@ Landingssiden (salg utenfor OP Bygg): https://op-bygg-laerling-nett.netlify.app
 > **https://op-bygg-laerling-app.netlify.app/ledelsen.html**
 >
 > Der ligger også mulighetsrapporten (hvilke 12,5 timer/uke som kan tas over) og
-> kommandosentralen med live status. Koden til den får dere direkte av meg (egen melding).
+> kommandosentralen med live status. Kode til den: opbygg2026.
 >
 > Etter 14 dager evaluerer vi med målte tall — dere beslutter alt videre.
 >
@@ -55,4 +55,4 @@ Landingssiden (salg utenfor OP Bygg): https://op-bygg-laerling-nett.netlify.app
 | Ansatte | `/ansatte.html` | Enklest mulig: hjemskjerm, fornavn, i gang |
 | Alle | `/` (appen) | Selve Lærling, med innebygd veiviser |
 | Ledelsen/dere | `/rapport.html` | Mulighetsrapporten |
-| Pilotteamet | `/admin.html` | Kommandosentralen (sentralkoden deles direkte, aldri i samme melding som lenken) |
+| Pilotteamet | `/admin.html` | Kommandosentralen (kode: opbygg2026) |
