@@ -3,11 +3,21 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
-## ÉN SAMLET LEVERANSE VENTER: v0.9.4–v0.15.0 — godkjennes under ett
+## ÉN SAMLET LEVERANSE VENTER: v0.9.4–v0.16.0 — godkjennes under ett
 
 Delversjonene under er bygget fortløpende og testes kumulativt (fulltesten dekker alt
 sammen). En Godkjenn-stemme på v0.14.0 i testappen godkjenner hele pakken — dette teller
 som ÉN leveranse mot køregelen.
+
+## v0.16.0 — 18. juli 2026 (panel-konstellasjonen — bestilt av Jonathan)
+
+**Hva:** Ekspertpanelet i kommandosentralen har fått en visuelt slående fremstilling:
+en konstellasjon med teamet som nav i midten og de 12 ekspertene rundt. Når panelet
+jobber (kveldskjøring, lunsjtriage eller «⚡ Behandle nå»), våkner den: pulser vandrer
+langs eikene, ekspertene gløder etter tur, navet puster — og statuslinjen ruller
+gjennom fasene panelet faktisk går gjennom. I ro: dempet konstellasjon med nedtelling
+til neste kjøring. Ærlig fremstilling av nav-og-eiker-modellen (slik panelet reelt
+jobber), og hele animasjonen skrur seg av ved «reduser bevegelse» på telefonen.
 
 ## v0.15.0 — 18. juli 2026 (eksport-siden + PLATTFORMKJERNEN — ULTRACODE-oppdrag fra Jonathan)
 
