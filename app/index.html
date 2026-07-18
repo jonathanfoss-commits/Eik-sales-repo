@@ -268,6 +268,18 @@
   .nullstill{display:block;text-align:center;margin:26px auto 0;font-size:.74rem;
      color:var(--dis);text-decoration:underline}
 
+  /* ── dagslys-modus (godkjent av Jonathan): mørk er standard, dette er
+     én-trykks bytte for sol på byggeplassen. Fargene er kontrastsjekket. ── */
+  :root.dagslys{
+    --bunn:#F2F6F4; --flate:#FFFFFF; --flate-2:#E7EEEB;
+    --strek:rgba(16,50,40,.16); --lys:#0E1F19; --dis:#486058;
+    --aurora-a:#147A52; --aurora-b:#0F6B7A; --varsel:#8A5800;
+  }
+  :root.dagslys body::before{background:
+    radial-gradient(110% 42% at 50% 0%,rgba(20,122,82,.08),transparent 60%),var(--bunn)}
+  :root.dagslys .knapp{color:#FFFFFF}
+  :root.dagslys .kopier{color:#FFFFFF}
+
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{animation:none!important;transition:none!important}
   }
@@ -549,6 +561,17 @@ Mvh Ole Fabian, OP Bygg AS</div>
       <p>SJA-utkast før oppstart av nye arbeidsoperasjoner</p></div>
       <button class="modus" id="aktiver-ny">AKTIVER</button></div>
 
+    <div class="sek-tittel">💸 Purring — norsk purretrapp</div>
+    <div class="kort vk"><div class="info"><h3>Ubetalte fakturaer</h3>
+      <p id="pu-status">Ingen fakturaer registrert — legg inn den første</p></div>
+      <button class="modus" id="pu-aapne">ÅPNE</button></div>
+    <div class="kort" id="pu-liste" style="display:none"></div>
+
+    <div class="sek-tittel">Visning</div>
+    <div class="kort vk"><div class="info"><h3 id="dagslys-tittel">☀️ Dagslys-modus</h3>
+      <p>Lyst tema for sol på plassen — mørkt er standard</p></div>
+      <button class="modus" id="dagslys-bryter" aria-pressed="false">AV</button></div>
+
     <div class="sek-tittel">Prompter — kopier, lim i Claude, dikter</div>
     <div class="kort" id="prompt-liste"></div>
 
@@ -664,6 +687,42 @@ Mvh Ole Fabian, OP Bygg AS</div>
       <p id="sk-feil-tekst" style="font-size:.8rem;color:var(--dis);margin-top:12px;text-align:center"></p>
       <button class="knapp svak" id="sk-reserve" style="width:100%;margin-top:8px">
         Kopier prompten og bruk Claude i stedet</button>
+    </div>
+  </div>
+</div>
+
+<!-- purring-ark: norsk purretrapp, helt lokalt -->
+<div id="purring">
+  <div class="ark-bak" id="purring-bak"></div>
+  <div class="ark" role="dialog" aria-modal="true" aria-label="Purring med norsk purretrapp"
+       style="max-height:88vh;overflow-y:auto">
+    <button class="v-lukk" id="purring-lukk" aria-label="Lukk"
+      style="position:absolute;top:8px;right:12px">×</button>
+    <div class="hank"></div>
+    <div style="font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;
+      text-transform:uppercase;color:var(--aurora-b);text-align:center;margin-bottom:4px">
+      💸 Purring · riktig trinn til riktig tid</div>
+    <p style="font-size:.8rem;color:var(--dis);text-align:center;margin-bottom:12px">
+      Fakturaene lagres kun på din telefon. Appen foreslår riktig trinn ut fra forfallet —
+      vennlig først, inkassovarsel til slutt (inkassoloven § 9).</p>
+    <input class="vm-felt" id="pu-navn" placeholder="Hvem skylder? (f.eks. Hansen AS)">
+    <input class="vm-felt" id="pu-faktura" placeholder="Faktura og beløp (f.eks. 1042 · 48 500 kr)">
+    <label for="pu-forfall" style="font-size:.78rem;color:var(--dis)">Forfallsdato</label>
+    <input class="vm-felt" id="pu-forfall" type="date">
+    <button class="knapp" id="pu-lagre" style="width:100%">Lagre fakturaen</button>
+    <div id="pu-valg" style="display:none">
+      <p id="pu-forslag" style="font-size:.8rem;color:var(--lys);margin:12px 0 8px;text-align:center"></p>
+      <div class="rad">
+        <button class="knapp svak" data-putrinn="1">1 · Vennlig</button>
+        <button class="knapp svak" data-putrinn="2">2 · Rente</button>
+        <button class="knapp svak" data-putrinn="3">3 · Inkassovarsel</button>
+      </div>
+      <div class="transkript" id="pu-ut" style="margin-top:12px;white-space:pre-wrap;display:none;
+        user-select:text;-webkit-user-select:text"></div>
+      <div class="rad" id="pu-handling" style="display:none">
+        <button class="knapp" id="pu-kopier">Kopier</button>
+        <a class="knapp svak" id="pu-mail" href="#">Åpne i Mail</a>
+      </div>
     </div>
   </div>
 </div>
@@ -837,7 +896,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
   ];
 
   /* ── versjon og kanal (test vs. stabil) ── */
-  var VERSJON = "0.16.0";
+  var VERSJON = "0.17.0";
   var erTest = /(^|[.-])test([.-]|$)/.test(location.hostname);
   document.getElementById("versjon-info").textContent =
     "LÆRLING v" + VERSJON + " · " + (erTest ? "TESTKANAL" : "STABIL") + " · BYGGET FOR OP BYGG";
@@ -1450,8 +1509,142 @@ Mvh Ole Fabian, OP Bygg AS</div>
     if(ev.key !== "Escape") return;
     lukkArk(); varemottak.classList.remove("apen");
     ide.classList.remove("apen"); timerArk.classList.remove("apen");
-    lukkSkriv();
+    lukkSkriv(); document.getElementById("purring").classList.remove("apen");
   });
+
+  /* ── dagslys-modus (godkjent av Jonathan) — mørk er standard ── */
+  (function(){
+    var bryter = document.getElementById("dagslys-bryter"),
+        metaTema = document.querySelector('meta[name="theme-color"]');
+    function bruk(){
+      var lys = lager.tema === "lys";
+      document.documentElement.classList.toggle("dagslys", lys);
+      bryter.textContent = lys ? "PÅ" : "AV";
+      bryter.setAttribute("aria-pressed", lys ? "true" : "false");
+      bryter.classList.toggle("auto", lys);
+      if(metaTema) metaTema.setAttribute("content", lys ? "#F2F6F4" : "#070D12");
+    }
+    bryter.addEventListener("click", function(){
+      lager.tema = lager.tema === "lys" ? "mork" : "lys";
+      lagre();
+      loggHendelse("dagslys", lager.tema);
+      bruk();
+      siFra(lager.tema === "lys" ? "<b>✓</b> Dagslys-modus på — mørk finner du samme sted"
+                                 : "<b>✓</b> Tilbake til mørk modus");
+    });
+    bruk();
+  })();
+
+  /* ── purring med norsk purretrapp — helt lokalt, uten AI ── */
+  (function(){
+    var ark = document.getElementById("purring"),
+        valg = document.getElementById("pu-valg");
+    lager.fakturaer = lager.fakturaer || [];
+    function lukk(){ ark.classList.remove("apen"); }
+    document.getElementById("purring-bak").addEventListener("click", lukk);
+    document.getElementById("purring-lukk").addEventListener("click", lukk);
+    document.getElementById("pu-aapne").addEventListener("click", function(){
+      loggHendelse("purring-åpnet");
+      document.getElementById("pu-ut").style.display = "none";
+      document.getElementById("pu-handling").style.display = "none";
+      valg.style.display = lager.fakturaer.length ? "block" : "none";
+      visForslag();
+      ark.classList.add("apen");
+    });
+    function dagerOver(forfall){
+      return Math.floor((Date.now() - new Date(forfall + "T12:00:00").getTime()) / 86400000);
+    }
+    function foreslaattTrinn(dager){ return dager >= 42 ? 3 : dager >= 14 ? 2 : 1; }
+    function sisteFaktura(){ return lager.fakturaer[lager.fakturaer.length - 1]; }
+    function visForslag(){
+      var f = sisteFaktura();
+      if(!f) return;
+      var d = dagerOver(f.forfall), t = foreslaattTrinn(d);
+      document.getElementById("pu-forslag").textContent =
+        f.fakt + " til " + f.navn + " — " + (d > 0 ? d + " dager over forfall" : "ikke forfalt ennå") +
+        ". Foreslått: trinn " + t + (t === 1 ? " (vennlig)" : t === 2 ? " (rente)" : " (inkassovarsel)");
+    }
+    function visListe(){
+      var boks = document.getElementById("pu-liste"),
+          status = document.getElementById("pu-status");
+      var ubetalte = lager.fakturaer;
+      status.textContent = ubetalte.length
+        ? ubetalte.length + " faktura(er) følges — eldste " +
+          Math.max.apply(null, ubetalte.map(function(f){ return dagerOver(f.forfall); })) + " dager over forfall"
+        : "Ingen fakturaer registrert — legg inn den første";
+      boks.style.display = ubetalte.length ? "block" : "none";
+      boks.innerHTML = "";
+      ubetalte.forEach(function(f, i){
+        var d = dagerOver(f.forfall), rad = document.createElement("div");
+        rad.className = "pr";
+        var t = document.createElement("div");
+        t.className = "t";
+        t.textContent = f.fakt + " · " + f.navn;
+        var s = document.createElement("small");
+        s.textContent = d > 0 ? d + " dager over forfall · foreslått trinn " + foreslaattTrinn(d)
+                              : "forfaller " + f.forfall;
+        t.appendChild(s);
+        var kn = document.createElement("button");
+        kn.className = "kopier";
+        kn.textContent = "BETALT";
+        kn.addEventListener("click", function(){
+          lager.fakturaer.splice(i, 1);
+          lagre(); loggHendelse("faktura-betalt");
+          visListe(); siFra("<b>✓</b> Fakturaen er kvittert ut");
+        });
+        rad.appendChild(t); rad.appendChild(kn);
+        boks.appendChild(rad);
+      });
+    }
+    document.getElementById("pu-lagre").addEventListener("click", function(){
+      var navn = document.getElementById("pu-navn").value.trim(),
+          fakt = document.getElementById("pu-faktura").value.trim(),
+          forfall = document.getElementById("pu-forfall").value;
+      if(!navn || !fakt || !forfall){ siFra("Fyll inn hvem, faktura og forfall"); return; }
+      lager.fakturaer.push({ navn: navn, fakt: fakt, forfall: forfall });
+      lagre(); loggHendelse("faktura-lagret");
+      document.getElementById("pu-navn").value = "";
+      document.getElementById("pu-faktura").value = "";
+      document.getElementById("pu-forfall").value = "";
+      valg.style.display = "block";
+      visForslag(); visListe();
+      siFra("<b>✓</b> Fakturaen følges — appen foreslår riktig purretrinn");
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-putrinn]"), function(kn){
+      kn.addEventListener("click", function(){
+        var f = sisteFaktura();
+        if(!f){ siFra("Lagre en faktura først"); return; }
+        var d = Math.max(dagerOver(f.forfall), 0), t = kn.getAttribute("data-putrinn"),
+            hvem = lager.bruker || "", tekst;
+        if(t === "1") tekst = "Hei!\n\nEn liten påminnelse om " + f.fakt + ", som forfalt for " +
+          d + " dager siden. Sikkert bare glemt i farta — fint om dere får ordnet den.\n\n" +
+          "Si fra hvis noe er uklart!\n\nMvh " + hvem + ", OP Bygg AS";
+        if(t === "2") tekst = "Hei,\n\nVi viser til " + f.fakt + ", forfalt for " + d +
+          " dager siden, og vår tidligere påminnelse.\n\nVed fortsatt manglende betaling " +
+          "beregnes forsinkelsesrente etter forsinkelsesrenteloven fra forfallsdato. " +
+          "Vennligst betal omgående, eller ta kontakt hvis dere mener noe er feil.\n\n" +
+          "Mvh " + hvem + ", OP Bygg AS";
+        if(t === "3") tekst = "INKASSOVARSEL\n\nDet vises til " + f.fakt + " til " + f.navn +
+          ", forfalt for " + d + " dager siden, samt tidligere purringer.\n\n" +
+          "Dersom betaling ikke er mottatt innen 14 dager fra dette varselet, oversendes " +
+          "kravet til inkasso uten ytterligere varsel, jf. inkassoloven § 9. " +
+          "Forsinkelsesrente og omkostninger tilkommer.\n\nDato: " +
+          new Date().getDate() + "." + (new Date().getMonth() + 1) + "." + new Date().getFullYear() +
+          "\n\nOP Bygg AS";
+        var ut = document.getElementById("pu-ut");
+        ut.textContent = tekst; ut.style.display = "block";
+        document.getElementById("pu-handling").style.display = "flex";
+        document.getElementById("pu-kopier").onclick = function(){
+          kopier(tekst, "Purringen", "— lim inn der du sender den");
+        };
+        document.getElementById("pu-mail").href = "mailto:?subject=" +
+          encodeURIComponent(t === "3" ? "Inkassovarsel — " + f.fakt : "Påminnelse — " + f.fakt) +
+          "&body=" + encodeURIComponent(tekst);
+        loggHendelse("purring-laget", "trinn " + t);
+      });
+    });
+    visListe();
+  })();
   document.getElementById("vm-foto-knapp").addEventListener("click", function(){
     document.getElementById("varemottak-foto").click();
   });
