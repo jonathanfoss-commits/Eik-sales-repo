@@ -3,11 +3,25 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
-## ÉN SAMLET LEVERANSE VENTER: v0.9.4–v0.13.0 — godkjennes under ett
+## ÉN SAMLET LEVERANSE VENTER: v0.9.4–v0.14.0 — godkjennes under ett
 
 Delversjonene under er bygget fortløpende og testes kumulativt (fulltesten dekker alt
-sammen). En Godkjenn-stemme på v0.13.0 i testappen godkjenner hele pakken — dette teller
+sammen). En Godkjenn-stemme på v0.14.0 i testappen godkjenner hele pakken — dette teller
 som ÉN leveranse mot køregelen.
+
+## v0.14.0 — 18. juli 2026 (Møtehjelperen — «kjør den» fra Jonathan, 4 research-agenter)
+
+**Hva:** 🤝 Møtehjelperen som verktøy 12 i Prøverommet: velg møtetype (byggemøte, befaring,
+telefonavtale, UE-avklaring, sluttoppgjørsmøte), noter/dikter underveis, og få etterpå:
+referat via Skrivemotoren (ny «referat»-oppgavetype i skriv.mjs, lokal mal som reserve),
+kalenderavtaler som .ics-fil med påminnelse (delt via delingsarket — iOS-vennlig),
+«som avtalt i dag»-oppfølgings-e-post, og ⚠-hint om Varselvakta når notatene inneholder
+endringsord. Åpenhets-avkryssing før referat («jeg har sagt i møtet at det tas notater»).
+Bevisst valgt bort etter jus-research: lydopptak (krever samtykkeapparat + aml.-drøfting
+for ansatte), vernerunder (byggherrens plikt) og overtakelse (hører til protokoll-verktøyet
+som skal signeres og låses). Full research: `innspill/research-rapport.md` runde 3.
+
+**Testet:** fulltest inkl. nye Møtehjelper-scenarier + enhetstester av referat-oppgaven.
 
 ## v0.13.0 — 18. juli 2026 (Skrivemotoren Fase 1 — bestilt av Jonathan, «full tillatelse»)
 

@@ -113,3 +113,50 @@ ingen leser rapportene — Lærlings motgrep: synlig lagret-status og mottaker-l
 laveste trinn må inneholde daglig-verktøyene (retensjon). (7) Neste bransje: maler
 (letteste), så murer/flislegger, så rørlegger — elektriker frarådes som først.
 Detaljer: agentrapportene i kjøreloggen + konsept/plattform-notat.md.
+
+---
+
+# Runde 3 — 18. juli (4 agenter: jus, bygg-eller-kjøp, PWA-teknikk, møtetyper) — Møtehjelperen
+
+**Jus (styrer ambisjonen):** Skriftlige møtenotater/referater og diktering av EGNE ord er
+trygt uten samtykke (avtale/berettiget interesse; kun informasjonsplikt via personvern-
+erklæring). Lydopptak av møter man selv deltar i er lovlig etter strl. § 205, men krever i
+næring samtykke-/informasjonssteg (GDPR), og overfor egne ansatte er samtykke IKKE gyldig
+grunnlag — opptak er kontrolltiltak (aml. §§ 9-1/9-2, drøfting med ansatte kreves). RØDT:
+skjult opptak, opptak etter at man forlater rommet (straffbart), alltid-på-opptak,
+skylagring av rålyd, stemmegjenkjenning («hvem sa hva» = biometri, art. 9). Beste
+bevissikring er uansett: send referatet til deltakerne — uimotsagt referat står sterkt.
+
+**Bygg-eller-kjøp:** v1 trenger IKKE transkribering — diktert sammendrag via Skrivemotoren
+gir ~80 % av verdien med null nye databehandlere. Ferdige møteassistenter (Otter, Fireflies,
+tl;dv, Plaud, Teams Copilot) ryker samlet på usynlighetskravet (synlige boter/apper) og de
+fleste på EU-prosessering. HVIS piloten viser behov for ekte opptak: Azure AI Speech batch
+i EU-region (Norway East) bak vår egen serverfunksjon (~$0.18/t, selvbetjent EU + moden
+DPA — OpenAIs EU-residency er salgsgated). Endgame/lokal-først: NB-Whisper
+(Nasjonalbiblioteket, Apache 2.0) — dokumentert BEST på norsk (WER 6,6 vs. 10,4 for
+OpenAI large, trent på 66 000 t norsk m/ dialekter) og kan aldri «dø» — vår ultimate
+exit-plan. Kostnad uansett valg: ~100–200 kr/mnd per bedrift — kostnad er ikke driveren.
+
+**PWA-teknikk (iOS):** Web Speech API er ustabil på iOS — Apples tastatur-diktering i
+textarea forblir primærmønsteret (norsk, offline, virker i PWA). .ics-kalenderfiler med
+VALARM virker ved import, men blob-nedlasting er upålitelig i hjemskjerm-PWA → del filen
+via Web Share (til seg selv i Mail → «Legg til alle»), data:-URL som reserve. Planlagte
+lokale varsler finnes ikke på weben — påminnelsen ER .ics-alarmen (Web Push krever server
+og egen beslutning). mailto er trygt opp til ~2 000 enkodede tegn (æ/ø/å = 6 tegn!) —
+kort e-post + Kopier-knapp. Møtehistorikk bør i IndexedDB + navigator.storage.persist().
+
+**Møtetyper (verdi × hyppighet):** 1. BYGGEMØTET (ukentlig; referatet blir bindende om
+ingen protesterer innen neste møte; HAB-dommen krever tidsnære bevis — «den som skriver
+referatet, eier virkeligheten»). 2. BEFARINGER/TELEFONAVTALER («du sa fredag» — muntlige
+avtaler er bindende men bevisbyrden ligger hos den som hevder; hvtjl. § 32: prisoverslag
+maks +15 %, bevisbyrde hos entreprenøren → 30-sek diktat + «Som avtalt i dag»-e-post).
+3. OVERTAKELSEN (sjelden men høyest verdi; formkrav — egen inngang via protokoll-verktøyet,
+IKKE referat). Deretter: UE-avklaringer (back-to-back-re-varsling, 30-dagers frist),
+sluttoppgjørsmøte, ettårsbefaring. IKKE rør: vernerunder/SHA (byggherrens plikt, dekket
+marked, tilsynsansvar) og interne personalmøter (null tvisteverdi, høy GDPR-risiko).
+
+**Bygget på funnene (v0.14.0):** Møtehjelperen som verktøy 12 i Prøverommet — notater
+(aldri lydopptak), åpenhets-avkryssing, referat via Skrivemotoren (ny «referat»-oppgave)
+med lokal mal som reserve, .ics via Web Share med VALARM-påminnelse, «som avtalt i dag»-
+e-post, endringsvarsel-hint ved endringsord i notatene. Kilder: agentrapportene i
+kjøreloggen (lovdata/Datatilsynet/arXiv 2402.01917/webkit.org/BAHR m.fl.).

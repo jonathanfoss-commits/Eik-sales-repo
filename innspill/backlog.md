@@ -39,6 +39,16 @@ les begrunnelsen der før bygging.
 14. Mørk/lys-modus-bryter (behold mørk som standard).
 15. Forbedre tom-tilstanden med ukens tall («I dag: 4 oppgaver unnagjort»).
 
+## Fra research runde 3 (18. juli) — Møtehjelperen
+
+- **Møtehjelperen (prototype i Prøverommet fra v0.14.0):** byggemøte/befaring/telefonavtale
+  → notater → referat (Skrivemotoren), .ics-avtaler med påminnelse, «som avtalt i dag»-
+  e-post, endringsvarsel-hint. Bygges permanent inn i appen hvis 👍 — da med møtehistorikk
+  i IndexedDB og «protester på forrige referat?»-påminnelse. ALDRI lydopptak uten egen
+  beslutning (se research-rapporten runde 3: aml.-drøfting kreves for ansatte).
+- **Transkribering (SENERE, kun hvis pilotloggen etterspør):** Azure AI Speech batch i
+  EU-region bak egen serverfunksjon; endgame NB-Whisper selvdriftet (best på norsk, åpen).
+
 ## Fra research runde 2 (17. juli kveld) — prioriteres inn av panelet
 
 - **Lærlingtimeteller:** offentlige kontrakter krever fra 1.8.2025 at minst 10 % av

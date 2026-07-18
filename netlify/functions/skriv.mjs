@@ -30,7 +30,13 @@ const OPPGAVER = {
     "Er beløpet ukjent, varsle at konsekvens for pris og fremdrift følger når det er avklart.",
   purring: "Skriv en purring basert på dikteringen. Vennlig tone, men tydelig frist " +
     "og konsekvens. Følg norsk skikk — aldri trusler, og aldri gebyrer eller renter " +
-    "uten hjemmel."
+    "uten hjemmel.",
+  referat: "Brukeren dikterer notater fra et møte (byggemøte, befaring, vernerunde " +
+    "eller avklaring). Lag et ryddig møtereferat: møtetype, dato, prosjekt og deltakere " +
+    "øverst (bruk [KLAMMER] der det mangler), deretter hovedpunkter, og til slutt " +
+    "nummererte aksjonspunkter med ansvarlig og frist. Ta med avtaler og datoer " +
+    "nøyaktig slik de ble sagt. Avslutt med «Innsigelser til referatet meldes innen " +
+    "3 virkedager.»"
 };
 
 /* enkel best-effort-demper mot misbruk: maks 30 utkast per IP per 10 minutter

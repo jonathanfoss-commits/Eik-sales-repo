@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prøverommet — Lærling</title>
-<meta name="description" content="Prøv de 11 foreslåtte funksjonene og stem — det du godkjenner, bygges inn.">
+<meta name="description" content="Prøv de 12 foreslåtte funksjonene og stem — det du godkjenner, bygges inn.">
 <meta name="theme-color" content="#070D12">
 <meta name="robots" content="noindex">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='42' fill='%23E8B64C'/%3E%3C/svg%3E">
@@ -111,7 +111,7 @@
 <div class="wrap">
 
   <div class="brev">🧪 Prøverommet · Kun testkanalen</div>
-  <h1>11 forslag. Din dom.</h1>
+  <h1>12 forslag. Din dom.</h1>
   <p class="inngang">Alt under kommer fra bransjeresearchen — og alt virker, som prototyper
   som lagres <b>kun på denne telefonen</b>. Prøv dem med ekte tall fra hverdagen din, og
   stem: <b>👍 sender forslaget rett til ekspertpanelet</b>, som bygger det permanent inn i
@@ -181,7 +181,7 @@
   function v(id){ return (e(id) && e(id).value || "").trim(); }
   function visUt(id, tekst){ var el = e(id); el.textContent = tekst; el.style.display = "block"; }
 
-  /* ── de 11 verktøyene: {id, navn, om, demoHTML, koble()} ── */
+  /* ── de 12 verktøyene: {id, navn, om, demoHTML, koble()} ── */
   var VERKTOY = [
 
   { id: "purretrapp", navn: "1 · Purring med norsk purretrapp",
@@ -521,6 +521,160 @@
           "\n\nMangler utbedres innen avtalt frist. Protokollen signeres av begge parter " +
           "— den ekte versjonen låses etter signering.");
         rom = [];
+      });
+    } },
+
+  { id: "motehjelper", navn: "12 · Møtehjelperen",
+    om: "Fang møtet mens det skjer — få referat, kalenderavtaler og oppfølgings-e-post " +
+      "etterpå. Notater og diktering av egne ord — ikke lydopptak av andre.",
+    demo:
+      '<p class="om" style="margin-bottom:6px">Notater er lov uten samtykke — men åpenhet ' +
+        'er godt håndverk (og et uimotsagt referat står sterkt som bevis). Lydopptak av ' +
+        'andre er bevisst IKKE med. Alt lagres kun på din telefon.</p>' +
+      '<label class="sjekk"><input type="checkbox" id="mo-samtykke"> Jeg har sagt i ' +
+        'møtet at det tas notater til referat</label>' +
+      '<label for="mo-type">Møtetype</label>' +
+      '<select class="felt" id="mo-type"><option>Byggemøte</option><option>Befaring</option>' +
+        '<option>Telefonavtale</option><option>UE-avklaring</option>' +
+        '<option>Sluttoppgjørsmøte</option></select>' +
+      '<p class="om" style="margin:2px 0 6px;font-size:.72rem">Overtakelse? Bruk ' +
+        'Overtakelsesprotokollen (verktøy 11) — den skal signeres og låses, ikke bare refereres.</p>' +
+      '<label for="mo-prosjekt">Prosjekt</label>' +
+      '<input class="felt" id="mo-prosjekt" placeholder="Krohgs gate 60">' +
+      '<label for="mo-hvem">Hvem er med?</label>' +
+      '<input class="felt" id="mo-hvem" placeholder="Ole Fabian, byggherre Berg">' +
+      '<label for="mo-notat">Notater (dikter gjerne med mikrofonen på tastaturet)</label>' +
+      '<textarea class="felt" id="mo-notat" placeholder="Berg vil flytte kjøkkenøya … ' +
+        'rørlegger lover svar fredag … mulig tillegg på el"></textarea>' +
+      '<label>Avtaler med dato (én per linje: «hva; dato; kl»)</label>' +
+      '<textarea class="felt" id="mo-avtaler" placeholder="Befaring bad; 24.7; 09:00\n' +
+        'Svar fra rørlegger; 25.7"></textarea>' +
+      '<p class="om" id="mo-endring" style="display:none;color:#F2C14E">⚠ Dette høres ut ' +
+        'som en endring — husk Varselvakta (verktøy 2): varsle byggherren SAMME DAG.</p>' +
+      '<button class="knapp" id="mo-referat">Lag referat</button>' +
+      '<button class="knapp svak" id="mo-ics">📅 Kalenderfil</button>' +
+      '<button class="knapp svak" id="mo-epost">✉️ Oppfølging</button>' +
+      '<div class="ut" id="mo-ut"></div>' +
+      '<button class="knapp" id="mo-kopier" style="display:none;margin-top:8px">Kopier</button>',
+    koble: function(){
+      function harSagtFra(){
+        if(!e("mo-samtykke").checked){
+          siFra("Kryss av først: si i møtet at det tas notater"); return false; }
+        return true;
+      }
+      e("mo-notat").addEventListener("input", function(){
+        e("mo-endring").style.display =
+          /endring|tillegg|ekstra|avvik/i.test(this.value) ? "block" : "none";
+      });
+      function avtaleLinjer(){
+        return v("mo-avtaler").split("\n").filter(Boolean).map(function(l){
+          var d = l.split(";").map(function(s){ return s.trim(); });
+          return { hva: d[0] || "", dato: d[1] || "", kl: d[2] || "" };
+        });
+      }
+      function grunnlag(){
+        return "Møtetype: " + v("mo-type") + "\nProsjekt: " + (v("mo-prosjekt") || "[PROSJEKT]") +
+          "\nDato: " + dagensDato() + "\nDeltakere: " + (v("mo-hvem") || "[DELTAKERE]") +
+          "\n\nNotater:\n" + v("mo-notat") +
+          (v("mo-avtaler") ? "\n\nAvtaler gjort i møtet:\n" + v("mo-avtaler") : "");
+      }
+      function lokaltReferat(){
+        var punkter = v("mo-notat").split("\n").filter(Boolean).map(function(p, i){
+          return (i + 1) + ". " + p.trim(); });
+        return v("mo-type").toUpperCase() + " — REFERAT " + dagensDato() +
+          "\nProsjekt: " + (v("mo-prosjekt") || "(fylles inn)") +
+          "\nTil stede: " + (v("mo-hvem") || "(fylles inn)") +
+          "\nReferent: " + (bruker || "") +
+          "\n\nPUNKTER:\n" + punkter.join("\n") +
+          (avtaleLinjer().length ? "\n\nAVTALER:\n" + avtaleLinjer().map(function(a){
+            return "- " + a.hva + (a.dato ? " — " + a.dato + (a.kl ? " kl. " + a.kl : "") : "");
+          }).join("\n") : "") +
+          "\n\nEventuelle innsigelser til referatet meldes innen 3 virkedager.";
+      }
+      function visReferat(t){
+        visUt("mo-ut", t);
+        e("mo-kopier").style.display = "inline-block";
+        e("mo-kopier").onclick = function(){ kopier(t, "Referatet"); };
+      }
+      e("mo-referat").addEventListener("click", function(){
+        if(!harSagtFra()) return;
+        if(!v("mo-notat")){ siFra("Skriv eller dikter notater først"); return; }
+        var knapp = e("mo-referat");
+        knapp.disabled = true; knapp.textContent = "Lærling skriver …";
+        function nullstill(){ knapp.disabled = false; knapp.textContent = "Lag referat"; }
+        fetch("/.netlify/functions/skriv", { method: "POST",
+          headers: { "Content-Type": "application/json", "X-Pilotkode": KODE },
+          body: JSON.stringify({ oppgave: "referat", tekst: grunnlag() })
+        }).then(function(svar){
+          if(!svar.ok) throw 0;
+          return svar.text();
+        }).then(function(t){
+          if(!t.trim()) throw 0;
+          visReferat(t);
+        }).catch(function(){
+          visReferat(lokaltReferat());
+          siFra("Skrivemotoren er ikke koblet til — viser lokal mal");
+        }).then(nullstill, nullstill);
+      });
+      e("mo-ics").addEventListener("click", function(){
+        var alle = avtaleLinjer();
+        if(!alle.length){ siFra("Skriv minst én avtale med dato"); return; }
+        function p2(n){ return (n < 10 ? "0" : "") + n; }
+        var naa = new Date(), stempel = naa.getUTCFullYear() + p2(naa.getUTCMonth() + 1) +
+          p2(naa.getUTCDate()) + "T" + p2(naa.getUTCHours()) + p2(naa.getUTCMinutes()) + "00Z";
+        var evt = [], hoppet = 0;
+        alle.forEach(function(a, i){
+          if(!a.dato){ hoppet++; return; }
+          var aar, mnd, dag, m = a.dato.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+          if(m){ aar = +m[1]; mnd = +m[2]; dag = +m[3]; }
+          else { var d = a.dato.split("."); dag = +d[0]; mnd = +d[1];
+            aar = d[2] ? +d[2] : naa.getFullYear(); if(aar < 100) aar += 2000; }
+          var kl = a.kl.match(/(\d{1,2})[:.](\d{2})/);
+          if(!dag || !mnd || dag > 31 || mnd > 12){ hoppet++; return; }
+          evt.push("BEGIN:VEVENT\r\nUID:laerling-" + Date.now() + "-" + i + "@opbygg" +
+            "\r\nDTSTAMP:" + stempel +
+            "\r\nDTSTART:" + aar + p2(mnd) + p2(dag) + "T" + (kl ? p2(+kl[1]) + kl[2] : "0900") + "00" +
+            "\r\nSUMMARY:" + a.hva.replace(/[,;\\]/g, " ") +
+            (v("mo-prosjekt") ? "\r\nLOCATION:" + v("mo-prosjekt").replace(/[,;\\]/g, " ") : "") +
+            "\r\nDESCRIPTION:Avtalt i " + v("mo-type").toLowerCase() + " " + dagensDato() +
+            "\r\nBEGIN:VALARM\r\nTRIGGER:-PT1H\r\nACTION:DISPLAY" +
+            "\r\nDESCRIPTION:Påminnelse\r\nEND:VALARM\r\nEND:VEVENT");
+        });
+        if(!evt.length){ siFra("Fant ingen linjer med dato («hva; dato; kl»)"); return; }
+        var ics = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Laerling//Motehjelperen//NO\r\n" +
+          evt.join("\r\n") + "\r\nEND:VCALENDAR\r\n";
+        /* iOS-PWA: filnedlasting er upålitelig — del .ics-filen via delingsarket
+           (til deg selv i Mail, trykk vedlegget → «Legg til alle»);
+           nedlasting som reserve for desktop/Android */
+        var fil;
+        try{ fil = new File([ics], "avtaler.ics", { type: "text/calendar" }); }catch(err){}
+        if(fil && navigator.canShare && navigator.canShare({ files: [fil] }) && navigator.share){
+          navigator.share({ files: [fil], title: "Avtaler fra møtet" }).then(function(){
+            siFra("<b>✓</b> Del til deg selv i Mail — trykk vedlegget og «Legg til alle»");
+          }, function(){ /* avbrutt av brukeren */ });
+        } else {
+          var lenke = document.createElement("a");
+          lenke.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
+          lenke.download = "avtaler.ics";
+          document.body.appendChild(lenke); lenke.click(); document.body.removeChild(lenke);
+          siFra("<b>✓</b> avtaler.ics lastet ned — åpne den for å legge inn " +
+            evt.length + " avtale(r)");
+        }
+        if(hoppet) siFra(hoppet + " linje(r) uten gyldig dato ble hoppet over");
+      });
+      e("mo-epost").addEventListener("click", function(){
+        if(!harSagtFra()) return;
+        var alle = avtaleLinjer();
+        var tekst = "Hei!\n\nTakk for møtet i dag" +
+          (v("mo-prosjekt") ? " om " + v("mo-prosjekt") : "") +
+          ". Kort oppsummert avtalte vi:\n\n" +
+          (alle.length ? alle.map(function(a){
+            return "- " + a.hva + (a.dato ? " (" + a.dato + (a.kl ? " kl. " + a.kl : "") + ")" : "");
+          }).join("\n") : "- [AVTALENE]") +
+          "\n\nSi fra om noe er glemt eller feil.\n\nMvh, " + (bruker || "OP Bygg AS");
+        location.href = "mailto:?subject=" +
+          encodeURIComponent("Oppsummering fra møtet " + dagensDato()) +
+          "&body=" + encodeURIComponent(tekst);
       });
     } }
   ];
