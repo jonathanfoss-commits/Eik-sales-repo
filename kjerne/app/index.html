@@ -34,6 +34,21 @@
       <p id="login-feil" class="alarm-tekst" style="font-size:.82rem;margin-top:10px;display:none"></p>
       <button class="lenkeknapp" id="vis-registrering" style="margin-top:12px">
         Ny her? Registrer deg med invitasjonskoden fra lederen din</button>
+      <button class="lenkeknapp" id="vis-glemt" style="margin-top:6px">Glemt passord?</button>
+    </div>
+    <div class="kort" id="glemt-boks" hidden>
+      <label class="felt" for="glemt-epost">E-posten din</label>
+      <input class="felt" id="glemt-epost" type="email" autocomplete="username" inputmode="email">
+      <button class="knapp" id="glemt-knapp" style="margin-top:10px">Send meg kode</button>
+      <p id="glemt-melding" class="under" style="margin-top:10px;display:none"></p>
+      <div style="border-top:1px solid var(--strek);margin:14px 0 10px"></div>
+      <label class="felt" for="null-kode">Har du fått kode? Skriv den her</label>
+      <input class="felt" id="null-kode" autocomplete="one-time-code" autocapitalize="none">
+      <label class="felt" for="null-passord">Nytt passord (minst 10 tegn)</label>
+      <input class="felt" id="null-passord" type="password" autocomplete="new-password">
+      <button class="knapp" id="null-knapp" style="margin-top:10px">Sett nytt passord</button>
+      <p id="glemt-feil" class="alarm-tekst" style="font-size:.82rem;margin-top:10px;display:none"></p>
+      <button class="lenkeknapp" id="glemt-tilbake" style="margin-top:12px">‹ Tilbake til innlogging</button>
     </div>
     <div class="kort" id="reg-boks" hidden>
       <label class="felt" for="reg-kode">Invitasjonskode</label>

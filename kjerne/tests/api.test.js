@@ -225,6 +225,38 @@ test('GDPR-sletteretten: admin sletter en ANNENS private data — faktisk (funn-
   assert.equal(etter, 0, 'alle timeradene er borte');
 });
 
+test('passordflyten: bytte, ledelse-kode og nullstilling [JONATHAN: e-post]', async () => {
+  if (!tilgjengelig) return;
+  // uten e-postoppsett: /api/glemt svarer vennlig og peker på ledelsen
+  const glemt = await api(null, 'POST', '/api/glemt', { epost: 'api-leder@test.local' });
+  assert.equal(glemt.status, 200);
+  assert.ok(glemt.data.melding.includes('Sentral'), 'reserven forklares når e-post ikke er satt opp');
+
+  // bytte med feil gammelt passord avvises
+  const feilBytte = await api('leder', 'POST', '/api/passord', { gammelt: 'feil', nytt: 'nytt-passord-123' });
+  assert.equal(feilBytte.status, 400);
+
+  // ledelsen lager nullstillingskode for leder → koden setter nytt passord
+  const brukere = await api('admin', 'GET', '/api/sentral/brukere');
+  const leder = brukere.data.brukere.find((b) => b.navn === 'Test Leder');
+  const kode = await api('admin', 'POST', '/api/sentral/nullstill', { brukerId: leder.id });
+  assert.equal(kode.status, 200);
+  assert.match(kode.data.kode, /^[a-z2-9]{12}$/);
+  const nullstill = await api(null, 'POST', '/api/nullstill',
+    { kode: kode.data.kode, passord: 'helt-nytt-passord-1' });
+  assert.equal(nullstill.status, 200);
+  const gammelInn = await api(null, 'POST', '/api/login',
+    { epost: 'api-leder@test.local', passord: PASSORD });
+  assert.equal(gammelInn.status, 401, 'gammelt passord virker ikke lenger');
+  const nyInn = await api(null, 'POST', '/api/login',
+    { epost: 'api-leder@test.local', passord: 'helt-nytt-passord-1' });
+  assert.equal(nyInn.status, 200, 'nytt passord virker');
+  // engangs: samme kode kan ikke brukes igjen
+  const omigjen = await api(null, 'POST', '/api/nullstill',
+    { kode: kode.data.kode, passord: 'enda-et-passord-1' });
+  assert.equal(omigjen.status, 400);
+});
+
 // SIST med vilje: demperen sperrer IP-en for videre innlogginger i testen.
 test('feil passord avvises, og rate-demperen svarer 429 til slutt', async () => {
   if (!tilgjengelig) return;

@@ -79,6 +79,31 @@
     } }, 'Lag invitasjonskode'));
     rot.append(invKort);
 
+    // Brukere + nullstilling (reserven når e-post ikke er satt opp)
+    try {
+      const brukereSvar = await Api.hent('/api/sentral/brukere');
+      const brukerKort = el('div', { klasse: 'kort' }, el('h3', {}, '🔑 Brukere og passord'),
+        el('div', { klasse: 'under' }, 'Står noen fast? Lag nullstillingskode — vises ÉN gang, gis direkte.'));
+      for (const b of brukereSvar.brukere) {
+        const rad = el('div', { klasse: 'linje' },
+          el('span', { style: 'flex:1' }, b.navn),
+          el('span', { klasse: 'hvem' }, b.rolle));
+        rad.append(el('button', { klasse: 'lenkeknapp', style: 'width:auto', onclick: async () => {
+          const svar3 = await Api.post('/api/sentral/nullstill', { brukerId: b.id })
+            .catch((feil) => { siFra(feil.message, true); return null; });
+          if (svar3) {
+            Kjerne.åpneArk(el('div', {},
+              el('h2', {}, '🔑 Nullstillingskode — ' + svar3.navn),
+              el('div', { klasse: 'utkast-ut' }, svar3.kode),
+              el('p', { klasse: 'under', style: 'margin-top:10px' },
+                `Gyldig i ${svar3.gyldigTimer} timer. ${svar3.navn} bruker den under «Glemt passord?» → «Har du fått kode?».`)));
+          }
+        } }, 'nullstill'));
+        brukerKort.append(rad);
+      }
+      rot.append(brukerKort);
+    } catch { /* ikke-kritisk for sentralen */ }
+
     // AI-kost — kun admin; 403 for pilotleder er korrekt og forventet.
     if (Kjerne.erAdmin()) {
       try {

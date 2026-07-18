@@ -5,7 +5,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { config } from './config.js';
 import { Ruter, ApiFeil, svarJson, lesJson, lesCookies } from './http.js';
-import { loggInn, loggUt, finnSesjon, registrerMedInvitasjon } from './auth.js';
+import { loggInn, loggUt, finnSesjon, registrerMedInvitasjon,
+  byttPassord, lagNullstilling, finnBrukerPaaEpost, fullforNullstilling } from './auth.js';
+import { sendEpost, epostTilgjengelig } from './epost.js';
 import { medOrg } from './db.js';
 import { abonner } from './buss.js';
 import * as timer from './api/timer.js';
@@ -43,7 +45,8 @@ function klientIp(req) {
 }
 
 // ── Åpne ruter (uten sesjon) ──
-const AAPNE = new Set(['POST /api/login', 'POST /api/registrer', 'GET /api/helse']);
+const AAPNE = new Set(['POST /api/login', 'POST /api/registrer', 'GET /api/helse',
+  'POST /api/glemt', 'POST /api/nullstill']);
 
 ruter.add('GET', '/api/helse', async () => ({ ok: true }));
 
@@ -69,6 +72,40 @@ ruter.add('POST', '/api/registrer', async ({ req, body }) => {
   const resultat = await registrerMedInvitasjon(body);
   if (resultat.feil) throw new ApiFeil(400, resultat.feil);
   return { ok: true, navn: resultat.bruker.navn };
+});
+
+// Glemt passord [JONATHAN: e-postbasert]: svarer alltid likt (røper aldri om
+// e-posten finnes). Uten e-postoppsett: pek på ledelsen (som lager kode i Sentral).
+ruter.add('POST', '/api/glemt', async ({ req, body }) => {
+  if (forMange('glemt:' + klientIp(req), 10, 60 * 60_000)) throw new ApiFeil(429, 'For mange forsøk');
+  if (!epostTilgjengelig()) {
+    return { ok: true, melding: 'E-postutsending er ikke satt opp ennå — be lederen din lage en nullstillingskode i Sentral.' };
+  }
+  const bruker = await finnBrukerPaaEpost(body.epost);
+  if (bruker) {
+    const kode = await lagNullstilling(bruker.id);
+    await sendEpost({
+      til: String(body.epost).trim(),
+      emne: 'Nullstill passordet ditt',
+      tekst: `Hei ${bruker.navn}!\n\nNoen (forhåpentligvis du) ba om å nullstille passordet.\n` +
+        `Kode: ${kode}\n\nÅpne appen → «Glemt passord?» → «Har du fått kode?» og skriv den inn.\n` +
+        `Koden varer i 2 timer. Var ikke dette deg, kan du trygt se bort fra denne e-posten.`,
+    });
+  }
+  return { ok: true, melding: 'Hvis e-posten finnes hos oss, er det sendt en kode dit nå.' };
+});
+
+ruter.add('POST', '/api/nullstill', async ({ req, body }) => {
+  if (forMange('nullstill:' + klientIp(req), 10, 60 * 60_000)) throw new ApiFeil(429, 'For mange forsøk');
+  const resultat = await fullforNullstilling(body.kode, body.passord);
+  if (resultat.feil) throw new ApiFeil(400, resultat.feil);
+  return { ok: true };
+});
+
+ruter.add('POST', '/api/passord', async ({ ctx, body }) => {
+  const resultat = await byttPassord(ctx.brukerId, body.gammelt, body.nytt);
+  if (resultat.feil) throw new ApiFeil(400, resultat.feil);
+  return { ok: true };
 });
 
 ruter.add('POST', '/api/logout', async ({ req, res }) => {
@@ -134,6 +171,15 @@ function serverStatisk(req, res, sti) {
 
 // ── Selve serveren ──
 const server = http.createServer(async (req, res) => {
+  // Driftslogg: metode, sti, status, varighet og rolle — ALDRI kropp/innhold.
+  const t0 = Date.now();
+  res.on('finish', () => {
+    if (req.url.startsWith('/api/') && req.url !== '/api/helse') {
+      console.log(JSON.stringify({ tid: new Date().toISOString(), m: req.method,
+        sti: req.url.split('?')[0], status: res.statusCode, ms: Date.now() - t0,
+        rolle: res._rolle || null }));
+    }
+  });
   // Sikkerhetsheadere på alt (D4): CSP uten eksterne kilder, ingen innramming.
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
@@ -156,6 +202,7 @@ const server = http.createServer(async (req, res) => {
     if (!AAPNE.has(noekkel)) {
       ctx = await finnSesjon(lesCookies(req).plattform_sesjon);
       if (!ctx) throw new ApiFeil(401, 'Logg inn først');
+      res._rolle = ctx.rolle;
     }
 
     if (req.method === 'GET' && sti === '/api/hendelser') return sseHandler(req, res, ctx);

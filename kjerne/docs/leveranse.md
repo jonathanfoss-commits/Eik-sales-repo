@@ -83,6 +83,14 @@ ser bare de som skal: dine timer er dine og sjefens, økonomien er eierens.
 Norsk, bygget for hansker og dårlig dekning, data i EU, aldri trening på
 innholdet ditt.» Live + nivåene er differensieringen ingen av skjema-konkurrentene har.
 
+## Beste praksis-runden (etter Jonathans fire beslutninger)
+
+CI i GitHub Actions håndhever nå hele testsuiten + e2e + hemmelighetsskann på
+hver push (D16). Passordflyt komplett: bytte innlogget, selvbetjent nullstilling
+på e-post (leverandør-uavhengig, D17) og ledelse-kode i Sentral som alltid-
+virkende reserve. Ingen passord i deploy-logger lenger (D20). Strukturert
+driftslogg uten innhold (D21). Pentest planlagt etter pilot/før kunde 2 (D18).
+
 ## Kjente begrensninger (ærlig liste)
 
 - SSE-bussen er in-process — riktig for én instans; LISTEN/NOTIFY-stien er
@@ -91,8 +99,8 @@ innholdet ditt.» Live + nivåene er differensieringen ingen av skjema-konkurren
 - Prøverommet forblir i Netlify-piloten (D7).
 - TOTP er støttet, men håndheves først når hemmelighet settes på admin-brukerne.
 - To samtidige AI-kall kan passere like under budsjettaket (dokumentert).
-- Engangspassord fra ny-tenant må byttes manuelt (passordbytte-UI er ikke bygget
-  ennå — står på listen).
+- E-postutsending må konfigureres av Jonathan (leverandørvalg + DPA) før
+  selvbetjent «Glemt passord?» virker — Sentral-koden er reserven imens.
 
 ## Filkart
 
@@ -101,6 +109,6 @@ buss (live), ai/gateway (modeller/kost/kvote), api/ (timer, dagbok, varsler,
 innspill, skriv, sentral, innflytting, personvern), migrations/ (001 grunnmur,
 002 moduler, 003 kvotefiks), verktoy/ny-tenant. `app/` index + stil (nøytrale
 tokens) + js/app (skall/tema/live) + js/api (offline-kø) + js/moduler/*.
-`tenants/` laerling, malermester-demo. `tests/` rls, api, ai-kost, versjon.
+`tenants/` laerling, malermester-demo. `tests/` rls, api, ai-kost, versjon, e2e (CI kjører alt).
 `render.yaml` (to tjenester, to databaser), `Dockerfile`, `docker-compose.yml`
 («egen boks»), `.env.example`.

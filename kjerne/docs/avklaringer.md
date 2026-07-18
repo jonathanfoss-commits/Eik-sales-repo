@@ -143,6 +143,28 @@ godkjenning. Dokumentert i cutover-planen.
 - **D15 — Engangspassord fra ny-tenant-verktøyet:** passordbytte-UI er ikke bygget i v1;
   byttes av Jonathan via verktøy/psql inntil videre. På forbedringslisten før cutover.
 
+## Beste praksis-runden (18. juli, svar fra Jonathan) **[JONATHAN]**
+
+- **D16 — CI-håndheving:** GitHub Actions (`.github/workflows/kjerne-ci.yml`) kjører
+  migrasjoner + hele testsuiten + e2e i Chromium + hemmelighetsskann på hver push som
+  rører kjerne/. QA-regelen håndheves nå teknisk, ikke av disiplin. (Jonathan bør i
+  tillegg skru på branch protection i GitHub-innstillingene — kun han kan.)
+- **D17 — E-postbasert passordnullstilling** (Jonathans valg, mot anbefalingen om
+  admin-kode-først — begge er bygget): selvbetjent «Glemt passord?» sender engangskode
+  på e-post via leverandør-uavhengig JSON-API (EPOST_API_URL/-NOKKEL/-FRA — Resend,
+  Postmark, Brevo o.l.; ingen npm-avhengighet, ingen innlåsing). Uten e-postoppsett
+  virker reserven alltid: ledelsen lager nullstillingskode i Sentral. Krever at
+  Jonathan velger e-postleverandør + DPA — nytt punkt i cutover-sjekklisten.
+- **D18 — Ekstern pentest: etter pilot, før kunde nr. 2** — pilotdataene er små og
+  kjente; testen legges der den gir mest verdi. Inn i ny-kunde-sjekklisten.
+- **D19 — Stack-linjen består:** null rammeverk/egen auth beholdes, revurderes ved
+  kunde nr. 3 (Jonathans beslutning).
+- **D20 — Aldri passord i deploy-logger:** ny-tenant-verktøyet skriver ikke lenger
+  engangspassord til konsollen — nye brukere får en hashet, engangs nullstillingskode
+  (7 dager) og setter passordet selv i appen.
+- **D21 — Driftslogg:** strukturert forespørselslogg (metode, sti, status, ms, rolle —
+  aldri kropp/innhold). E2E-bevisene flyttet inn i repoet (`tests/e2e.js`) så CI eier dem.
+
 ## Kodegjennomgangens funn (to adversarielle agenter) — rettet og akseptert
 
 **RETTET:**

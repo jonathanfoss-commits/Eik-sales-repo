@@ -1,0 +1,59 @@
+# CI for plattformkjernen — håndhever QA-regelen teknisk [JONATHAN]:
+# hele testsuiten (RLS/API/AI-mock mot ekte Postgres) + e2e i Chromium på hver
+# push/PR som rører kjerne/. Ingen leveranse kan lande med røde tester.
+name: kjerne-ci
+
+on:
+  push:
+    branches: [kveldsteam-forslag, main]
+    paths: ['kjerne/**', '.github/workflows/kjerne-ci.yml']
+  pull_request:
+    paths: ['kjerne/**', '.github/workflows/kjerne-ci.yml']
+
+jobs:
+  tester:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: kjerne_eier
+          POSTGRES_PASSWORD: ci-lokal
+          POSTGRES_DB: plattform
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U kjerne_eier -d plattform"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      MIGRATE_DATABASE_URL: postgres://kjerne_eier:ci-lokal@localhost:5432/plattform
+      DATABASE_URL: postgres://plattform_app:ci-app@localhost:5432/plattform
+      DATABASE_URL_AUTH: postgres://plattform_auth:ci-auth@localhost:5432/plattform
+      PLATTFORM_APP_PASSORD: ci-app
+      PLATTFORM_AUTH_PASSORD: ci-auth
+    defaults:
+      run:
+        working-directory: kjerne
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: kjerne/package-lock.json
+      - run: npm ci
+      - name: Migrasjoner + tenants
+        run: |
+          node server/migrate.js
+          node server/verktoy/ny-tenant.js laerling
+          node server/verktoy/ny-tenant.js malermester-demo
+      - name: Servertester (RLS, API, AI-mock, versjonstriade)
+        run: npm test
+      - name: Chromium for e2e
+        run: npx playwright install --with-deps chromium
+      - name: E2E-bevis (live, isolasjon, roller)
+        run: node tests/e2e.js
+      - name: Hemmelighetsskann
+        run: |
+          ! grep -rniE "sk-ant-[a-zA-Z0-9]|nfp_[a-zA-Z0-9]{20}" --include="*.js" --include="*.sql" --include="*.yaml" . \
+            || (echo "Mulig hemmelighet i koden!" && exit 1)

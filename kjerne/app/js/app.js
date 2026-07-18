@@ -3,7 +3,7 @@
    Kjernen kjenner ingen kunde: navn, farger og modulvalg kommer fra /api/meg.
    VERSJON bumpes samtidig i versjon.json og sw.js (cache-navnet) — de tre må aldri drifte. */
 window.Kjerne = (function () {
-  const VERSJON = '0.1.0';
+  const VERSJON = '0.2.0';
   let meg = null;   // { navn, rolle }
   let org = null;   // { slug, navn, appnavn, undertittel, tema, moduler }
   const moduler = {};   // id -> { tittel, ikon, vis: async (rot) => {}, påHendelse?: (h) => {} }
@@ -259,11 +259,28 @@ window.Kjerne = (function () {
     $('ark-bak').addEventListener('click', lukkArk);
     $('ark-lukk').addEventListener('click', lukkArk);
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') lukkArk(); });
-    $('meg-chip').addEventListener('click', async () => {
-      if (!confirm('Logge ut?')) return;
-      await Api.post('/api/logout').catch(() => {});
-      meg = null;
-      visLogin();
+    $('meg-chip').addEventListener('click', () => {
+      const rot = el('div');
+      rot.append(el('h2', {}, meg?.navn || ''));
+      const s = byggSkjema([
+        { navn: 'gammelt', etikett: 'Gammelt passord', type: 'password' },
+        { navn: 'nytt', etikett: 'Nytt passord (minst 10 tegn)', type: 'password' },
+      ]);
+      rot.append(el('h3', { style: 'margin-top:6px' }, 'Bytt passord'), s.rot);
+      rot.append(el('button', { klasse: 'knapp', style: 'margin-top:10px;width:100%', onclick: async () => {
+        try {
+          await Api.post('/api/passord', { gammelt: s.inputs.gammelt.value, nytt: s.inputs.nytt.value });
+          lukkArk();
+          siFra('Passordet er byttet');
+        } catch (feil) { siFra(feil.message, true); }
+      } }, 'Bytt passord'));
+      rot.append(el('button', { klasse: 'knapp svak', style: 'margin-top:16px;width:100%', onclick: async () => {
+        await Api.post('/api/logout').catch(() => {});
+        meg = null;
+        lukkArk();
+        visLogin();
+      } }, 'Logg ut'));
+      åpneArk(rot);
     });
     $('login-knapp').addEventListener('click', loggInn);
     $('login-passord').addEventListener('keydown', (e) => { if (e.key === 'Enter') loggInn(); });
@@ -274,6 +291,37 @@ window.Kjerne = (function () {
     });
     $('vis-innlogging').addEventListener('click', () => {
       $('reg-boks').hidden = true; $('login-boks').hidden = false;
+    });
+    $('vis-glemt').addEventListener('click', () => {
+      $('login-boks').hidden = true; $('glemt-boks').hidden = false;
+    });
+    $('glemt-tilbake').addEventListener('click', () => {
+      $('glemt-boks').hidden = true; $('login-boks').hidden = false;
+    });
+    $('glemt-knapp').addEventListener('click', async () => {
+      const m = $('glemt-melding');
+      try {
+        const svar = await Api.post('/api/glemt', { epost: $('glemt-epost').value.trim() });
+        m.textContent = svar.melding;
+        m.style.display = 'block';
+      } catch (feil) {
+        m.textContent = feil.message;
+        m.style.display = 'block';
+      }
+    });
+    $('null-knapp').addEventListener('click', async () => {
+      const feilEl = $('glemt-feil');
+      feilEl.style.display = 'none';
+      try {
+        await Api.post('/api/nullstill', {
+          kode: $('null-kode').value.trim(), passord: $('null-passord').value });
+        $('glemt-boks').hidden = true;
+        $('login-boks').hidden = false;
+        siFra('Nytt passord er satt — logg inn');
+      } catch (feil) {
+        feilEl.textContent = feil.message;
+        feilEl.style.display = 'block';
+      }
     });
 
     $('pluss').addEventListener('click', () => {

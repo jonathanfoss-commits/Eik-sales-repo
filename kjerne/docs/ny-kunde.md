@@ -33,6 +33,12 @@ Malermester Demo AS ble opprettet nøyaktig slik.*
 4. **Inviter ansatte** (i appen): Sentral-fanen → «Lag invitasjonskode» → gi
    koden til den ansatte (SMS/muntlig) → de registrerer seg selv.
 
+## Før kunde nr. 2 signerer (engangsjobber)
+
+- **Ekstern pentest** av plattformen [JONATHAN-beslutning: etter pilot, før kunde 2]
+- Async scrypt (ytelse under lastspiss) — se avklaringene
+- Revurder stack-linjen ved kunde nr. 3 (D19)
+
 ## Det som IKKE trengs
 
 - Ingen ny deploy for konfig-endringer (kjør ny-tenant på nytt — idempotent)

@@ -9,8 +9,7 @@
 // For hver NY bruker settes et engangspassord som skrives til konsollen —
 // gis til brukeren utenfor systemet, byttes ved første innlogging.
 import pg from 'pg';
-import crypto from 'node:crypto';
-import { hashPassord } from '../auth.js';
+import { lagInvitasjonskode, hashInvitasjonskode } from '../auth.js';
 
 export async function opprettTenant(navn, url) {
   const { default: tenant } = await import(`../../tenants/${navn}.js`);
@@ -28,11 +27,20 @@ export async function opprettTenant(navn, url) {
       const finnes = (await klient.query(
         'SELECT 1 FROM brukere WHERE lower(epost) = lower($1)', [b.epost])).rows[0];
       if (finnes) { console.log(`  ${b.epost}: finnes fra før — urørt`); continue; }
-      const passord = crypto.randomBytes(9).toString('base64url');
+      // Aldri passord i deploy-logger (funn fra praksisgjennomgangen): brukeren
+      // opprettes uten brukbart passord og får en NULLSTILLINGSKODE i stedet —
+      // settes via «Glemt passord?» → «Har du fått kode?» i appen. Koden er
+      // hashet i databasen, engangs og utløper etter 7 dager.
+      const nyId = (await klient.query(
+        `INSERT INTO brukere (org_id, navn, epost, rolle, passord_hash)
+         VALUES ($1,$2,$3,$4,'ma-nullstilles') RETURNING id`,
+        [org.id, b.navn, b.epost.toLowerCase(), b.rolle])).rows[0].id;
+      const kode = lagInvitasjonskode();
       await klient.query(
-        `INSERT INTO brukere (org_id, navn, epost, rolle, passord_hash) VALUES ($1,$2,$3,$4,$5)`,
-        [org.id, b.navn, b.epost.toLowerCase(), b.rolle, hashPassord(passord)]);
-      console.log(`  ${b.epost} (${b.rolle}) — engangspassord: ${passord}`);
+        `INSERT INTO nullstillinger (bruker_id, kode_hash, utloper)
+         VALUES ($1, $2, now() + interval '7 days')`,
+        [nyId, hashInvitasjonskode(kode)]);
+      console.log(`  ${b.epost} (${b.rolle}) — nullstillingskode (7 dager): ${kode}`);
     }
     console.log('Tenanten er klar — konfigurasjonen bor nå i databasen.');
     return org.id;

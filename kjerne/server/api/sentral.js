@@ -51,6 +51,29 @@ export function registrer(ruter) {
     };
   }));
 
+  // Nullstillingskode for en ansatt (ledelsen) — reserven når e-post ikke er
+  // satt opp, og hjelpen når noen står fast. Koden vises ÉN gang.
+  ruter.add('POST', '/api/sentral/nullstill', async ({ ctx, body }) => {
+    const { lagNullstilling } = await import('../auth.js');
+    return medOrg(ctx, async (c) => {
+      if (!['admin', 'pilotleder'].includes(ctx.rolle)) throw new ApiFeil(403, 'Kun ledelsen');
+      const bruker = (await c.query(
+        'SELECT id, navn FROM brukere WHERE id = $1 AND aktiv', [body.brukerId])).rows[0];
+      if (!bruker) throw new ApiFeil(404, 'Fant ikke brukeren');
+      const kode = await lagNullstilling(bruker.id, 24);
+      await c.query(`INSERT INTO pilotlogg (bruker_id, hendelse) VALUES ($1, 'nullstilling-laget')`,
+        [ctx.brukerId]);
+      return { kode, navn: bruker.navn, gyldigTimer: 24 };
+    });
+  });
+
+  ruter.add('GET', '/api/sentral/brukere', ({ ctx }) => medOrg(ctx, async (c) => {
+    if (!['admin', 'pilotleder'].includes(ctx.rolle)) throw new ApiFeil(403, 'Kun ledelsen');
+    const res = await c.query(
+      'SELECT id, navn, rolle, aktiv FROM brukere ORDER BY navn');
+    return { brukere: res.rows.filter((b) => b.aktiv) };
+  }));
+
   // Invitasjoner (ledelsen): lag kode for ny ansatt. Koden vises ÉN gang.
   ruter.add('POST', '/api/sentral/invitasjon', async ({ ctx, body }) => {
     const { lagInvitasjonskode, hashInvitasjonskode } = await import('../auth.js');

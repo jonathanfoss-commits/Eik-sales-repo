@@ -145,3 +145,59 @@ export async function registrerMedInvitasjon({ kode, navn, epost, passord }) {
     klient.release();
   }
 }
+
+// ── Passordflyt [JONATHAN: e-postbasert nullstilling] ──
+export async function byttPassord(brukerId, gammelt, nytt) {
+  if (String(nytt || '').length < 10) return { feil: 'Nytt passord må ha minst 10 tegn' };
+  const rad = (await authPool.query(
+    'SELECT passord_hash FROM brukere WHERE id = $1 AND aktiv', [brukerId])).rows[0];
+  if (!rad || !sjekkPassord(String(gammelt || ''), rad.passord_hash)) {
+    return { feil: 'Gammelt passord stemmer ikke' };
+  }
+  await authPool.query('UPDATE brukere SET passord_hash = $2 WHERE id = $1',
+    [brukerId, hashPassord(String(nytt))]);
+  return { ok: true };
+}
+
+// Lager nullstillingskode for en bruker (selvbetjent via e-post, eller
+// ledelse-generert i Sentral). Koden returneres i klartekst ÉN gang.
+export async function lagNullstilling(brukerId, levetidTimer = 2) {
+  const kode = lagInvitasjonskode();
+  await authPool.query(
+    `INSERT INTO nullstillinger (bruker_id, kode_hash, utloper)
+     VALUES ($1, $2, now() + ($3 || ' hours')::interval)`,
+    [brukerId, hashInvitasjonskode(kode), String(levetidTimer)]);
+  return kode;
+}
+
+export async function finnBrukerPaaEpost(epost) {
+  const res = await authPool.query(
+    'SELECT id, org_id, navn FROM brukere WHERE lower(epost) = lower($1) AND aktiv',
+    [String(epost || '').trim()]);
+  return res.rows[0] || null;
+}
+
+export async function fullforNullstilling(kode, nyttPassord) {
+  if (String(nyttPassord || '').length < 10) return { feil: 'Passordet må ha minst 10 tegn' };
+  const klient = await authPool.connect();
+  try {
+    await klient.query('BEGIN');
+    const rad = (await klient.query(
+      `SELECT id, bruker_id FROM nullstillinger
+        WHERE kode_hash = $1 AND brukt_tid IS NULL AND utloper > now() FOR UPDATE`,
+      [hashInvitasjonskode(kode)])).rows[0];
+    if (!rad) { await klient.query('ROLLBACK'); return { feil: 'Ugyldig eller utløpt kode' }; }
+    await klient.query('UPDATE brukere SET passord_hash = $2 WHERE id = $1',
+      [rad.bruker_id, hashPassord(String(nyttPassord))]);
+    await klient.query('UPDATE nullstillinger SET brukt_tid = now() WHERE id = $1', [rad.id]);
+    // alle gamle sesjoner ryker — den som nullstiller, eier kontoen alene
+    await klient.query('DELETE FROM sesjoner WHERE bruker_id = $1', [rad.bruker_id]);
+    await klient.query('COMMIT');
+    return { ok: true };
+  } catch (feil) {
+    await klient.query('ROLLBACK').catch(() => {});
+    throw feil;
+  } finally {
+    klient.release();
+  }
+}
