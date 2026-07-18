@@ -5,7 +5,10 @@
 (function () {
   const { el, siFra, åpneArk, lukkArk, penDato, nårSiden, registrerModul } = Kjerne;
 
-  let valgt = null; // prosjektnavn — null = listen
+  let valgt = null;   // prosjektnavn — null = listen
+  let valgtOrg = null; // slug: valget nullstilles ved utlogging/annen tenant
+                       // (granskingsfunn: A-tenantens prosjektnavn må aldri
+                       // henge igjen når B logger inn på samme enhet)
 
   const SLAG = {
     dagbok: { ikon: '📓', navn: 'Dagbok' },
@@ -103,6 +106,8 @@
   }
 
   async function vis(rot) {
+    const slug = Kjerne.org()?.slug;
+    if (slug !== valgtOrg) { valgt = null; valgtOrg = slug; }
     if (valgt) return visProsjekt(rot, valgt);
     const svar = await Api.hent('/api/prosjekter');
     rot.textContent = '';

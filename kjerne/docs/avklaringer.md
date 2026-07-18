@@ -233,3 +233,20 @@ versjonsbump-konsistens.
   når piloten viser om det faktisk skjer.
 - **D27 — `_html`-svar i ruteren:** hele dokumenter kan returneres som
   `{ _html }` (som `_csv`); all brukertekst escapes i ruten som lager dem.
+
+## NATTSKIFTET 2-granskingen (19. juli, adversariell agent) — rettet og verifisert
+
+**Ingen HØY-funn.** Verifisert uten funn: XSS i bevisdokumentet (alt escapes),
+nivålekkasje i API-ene (RLS filtrerer liste/tidslinje/bevis/ukesrapport — testet),
+ukesrapportens rollevern og budsjettsperre, `_html`-grenen, e2e-robusthet.
+
+**RETTET (v0.4.1):**
+- **MIDDELS, klient:** valgt prosjekt overlevde utlogging — bruker B på samme
+  enhet kunne se A-tenantens prosjektnavn i overskriften. Valget nullstilles
+  nå ved tenant-/org-bytte.
+- **LAV:** ukevinduet interpolerte et tall i SQL og regnet i servertid →
+  fra-datoen regnes nå i Oslo-tid hos kalleren og sendes alltid som parameter.
+- **LAV:** tidslinjen sorteres nå på dato først, så tid — etterregistrerte
+  linjer gir ikke lenger dato-overskrifter i feil rekkefølge.
+- **LAV:** demodataens frist-upsert overskrev ikke klient_id/bruker_id ved
+  konflikt med manuelt innlagt rad — nå settes alle tre.

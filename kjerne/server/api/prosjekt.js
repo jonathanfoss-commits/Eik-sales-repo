@@ -21,20 +21,21 @@ const isoDag = (ts) => new Date(ts).toLocaleDateString('sv-SE', { timeZone: 'Eur
 
 // Datagrunnlaget per prosjekt — én kilde for tidslinje, bevis og ukesrapport.
 // RLS avgjør hva spørreren faktisk får (timer: egne, eller alle for ledelsen).
-async function hentGrunnlag(c, prosjekt, { dagerTilbake = null } = {}) {
-  // dagerTilbake tvinges til heltall før den settes inn i SQL-teksten
-  const d = dagerTilbake == null ? null : Math.max(1, Math.trunc(Number(dagerTilbake)));
-  const fraDato = (kol) => (d ? `AND ${kol} >= (CURRENT_DATE - ${d}::int)` : '');
-  const fraTid = (kol) => (d ? `AND ${kol} >= (now() - interval '${d} days')` : '');
+async function hentGrunnlag(c, prosjekt, { fraDag = null } = {}) {
+  // fraDag er en ISO-dato regnet i Oslo-tid hos kalleren — alltid parameter,
+  // aldri interpolert (granskingsfunn: tall-interpolasjonen og UTC-vinduet)
+  const p = fraDag ? [prosjekt, fraDag] : [prosjekt];
+  const datoKrav = (kol) => (fraDag ? `AND ${kol} >= $2::date` : '');
+  const tidKrav = (kol) => (fraDag ? `AND (${kol} AT TIME ZONE 'Europe/Oslo')::date >= $2::date` : '');
   const [dagbok, varsler, tillegg, timer, frist] = await Promise.all([
     c.query(`SELECT d.*, b.navn AS bruker_navn FROM dagbok d JOIN brukere b ON b.id = d.bruker_id
-              WHERE d.prosjekt = $1 ${fraDato('d.dato')} ORDER BY d.dato, d.opprettet`, [prosjekt]),
+              WHERE d.prosjekt = $1 ${datoKrav('d.dato')} ORDER BY d.dato, d.opprettet`, p),
     c.query(`SELECT v.*, b.navn AS bruker_navn FROM varsler v JOIN brukere b ON b.id = v.bruker_id
-              WHERE v.prosjekt = $1 ${fraTid('v.opprettet')} ORDER BY v.opprettet`, [prosjekt]),
+              WHERE v.prosjekt = $1 ${tidKrav('v.opprettet')} ORDER BY v.opprettet`, p),
     c.query(`SELECT t.*, b.navn AS bruker_navn FROM tillegg t JOIN brukere b ON b.id = t.bruker_id
-              WHERE t.prosjekt = $1 ${fraDato('t.dato')} ORDER BY t.dato, t.opprettet`, [prosjekt]),
+              WHERE t.prosjekt = $1 ${datoKrav('t.dato')} ORDER BY t.dato, t.opprettet`, p),
     c.query(`SELECT t.*, b.navn AS bruker_navn FROM timeforinger t JOIN brukere b ON b.id = t.bruker_id
-              WHERE t.prosjekt = $1 ${fraDato('t.dato')} ORDER BY t.dato`, [prosjekt]),
+              WHERE t.prosjekt = $1 ${datoKrav('t.dato')} ORDER BY t.dato`, p),
     c.query(`SELECT * FROM prosjektfrister WHERE prosjekt = $1`, [prosjekt]),
   ]);
   return { dagbok: dagbok.rows, varsler: varsler.rows, tillegg: tillegg.rows,
@@ -103,7 +104,7 @@ export function registrer(ruter) {
         avtaltMed: t.avtalt_med, status: t.status })),
       ...g.timer.map((t) => ({ slag: 'timer', id: t.id, dato: String(t.dato),
         tid: t.opprettet, av: t.bruker_navn, tekst: `${t.timer} t${t.notat ? ` — ${t.notat}` : ''}` })),
-    ].sort((a, b) => (a.tid < b.tid ? 1 : -1));
+    ].sort((a, b) => b.dato.localeCompare(a.dato) || (a.tid < b.tid ? 1 : -1));
     return { prosjekt, frist: g.frist, hendelser: hendelser.slice(0, 300) };
   }));
 
@@ -204,7 +205,10 @@ timeføringer eller interne økonomidata.</div>
       const e = org?.konfig?.evner?.ukesrapport;
       if (!e) throw new ApiFeil(400, 'Ukesrapporten er ikke satt opp for denne organisasjonen');
       await sjekkKvote(c);
-      const g = await hentGrunnlag(c, prosjekt, { dagerTilbake: 7 });
+      // «siste 7 dager» regnet i norsk tid (middag-UTC-trikset er DST-trygt)
+      const fraDag = new Date(new Date(osloDato() + 'T12:00:00Z').getTime() - 7 * 86400000)
+        .toISOString().slice(0, 10);
+      const g = await hentGrunnlag(c, prosjekt, { fraDag });
       return { e, profil: org.konfig.profil || '', orgNavn: org.navn, g };
     });
     const { g } = oppsett;

@@ -101,7 +101,9 @@ await klient.query(
 await klient.query(
   `INSERT INTO prosjektfrister (org_id, bruker_id, prosjekt, overtakelse, klient_id)
    VALUES ($1,$2,'Storgata 8 (kontor)',$3,$4)
-   ON CONFLICT (org_id, prosjekt) DO UPDATE SET overtakelse = EXCLUDED.overtakelse`,
+   ON CONFLICT (org_id, prosjekt) DO UPDATE
+     SET overtakelse = EXCLUDED.overtakelse, klient_id = EXCLUDED.klient_id,
+         bruker_id = EXCLUDED.bruker_id`,
   [org.id, bruker.id, dato(45), 'demo-frist-1']);
 
 console.log(`Demodata lagt inn for «${slug}»: ${dagbok.length} dagboklinjer, 1 tillegg, ` +

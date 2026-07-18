@@ -3,7 +3,7 @@
    Kjernen kjenner ingen kunde: navn, farger og modulvalg kommer fra /api/meg.
    VERSJON bumpes samtidig i versjon.json og sw.js (cache-navnet) — de tre må aldri drifte. */
 window.Kjerne = (function () {
-  const VERSJON = '0.4.0';
+  const VERSJON = '0.4.1';
   let meg = null;   // { navn, rolle }
   let org = null;   // { slug, navn, appnavn, undertittel, tema, moduler }
   const moduler = {};   // id -> { tittel, ikon, vis: async (rot) => {}, påHendelse?: (h) => {} }
