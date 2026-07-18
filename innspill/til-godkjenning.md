@@ -3,11 +3,33 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
-## ÉN SAMLET LEVERANSE VENTER: v0.9.4–v0.12.0 — godkjennes under ett
+## ÉN SAMLET LEVERANSE VENTER: v0.9.4–v0.13.0 — godkjennes under ett
 
-Delversjonene under er bygget samme dag og testes kumulativt (fulltesten dekker alt
-sammen). En Godkjenn-stemme på v0.12.0 i testappen godkjenner hele pakken — dette teller
+Delversjonene under er bygget fortløpende og testes kumulativt (fulltesten dekker alt
+sammen). En Godkjenn-stemme på v0.13.0 i testappen godkjenner hele pakken — dette teller
 som ÉN leveranse mot køregelen.
+
+## v0.13.0 — 18. juli 2026 (Skrivemotoren Fase 1 — bestilt av Jonathan, «full tillatelse»)
+
+**Hva:** ⚡ Skrivemotoren: de tre mest brukte promptene (Befaring → tilbud,
+Endringsmelding, Purring til UE) har fått en «⚡ Utkast»-knapp i promptbiblioteket.
+Brukeren dikterer/skriver rått i et eget ark, trykker «Lag utkast», og ferdig tekst
+strømmes rett inn i appen — ingen Claude-konto, ingen kopiering av prompter. Kopier- og
+Åpne-i-Mail-knapper på resultatet. Serverfunksjonen (`netlify/functions/skriv.mjs`) kaller
+Anthropic-API-et med vår nøkkel (miljøvariabel ANTHROPIC_API_KEY), er ren gjennomstrømming
+(lagrer aldri innhold), krever pilotkoden, og har enkel misbruksdemper. Uten nøkkel svarer
+den 503 og appen viser reserven: «kopier prompten og bruk Claude som før».
+
+**Samtykke/ærlighet:** arket sier eksplisitt at teksten sendes kryptert kun ved knappetrykk,
+aldri lagres og aldri brukes til trening. Loggen får kun hendelsestyper
+(«skrivemotor-åpnet», «utkast-laget») — aldri innholdet. Full arkitektur og
+beslutningsliste: `konsept/skrivemotor-og-innflytting.md`.
+
+**Rydding:** duplisert Escape-lytter som ble registrert på nytt ved hver timer-lagring
+er fjernet; Escape lukker nå også skrivemotor-arket.
+
+**Venter på Jonathan:** ANTHROPIC_API_KEY må legges inn som miljøvariabel i Netlify
+(begge siter) før knappen gir ekte utkast — se sjekklisten i siste Claude-svar.
 
 ## v0.12.0 — 17. juli 2026 (stor kvalitetsrunde — 8 agenter + designgjennomgang)
 

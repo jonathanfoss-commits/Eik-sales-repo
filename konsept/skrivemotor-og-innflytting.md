@@ -96,9 +96,10 @@ installerer noe:
 
 ## Faseplan
 
-1. **Fase 1 (kan bygges nå, ~1 kveld):** `netlify/functions/skriv.js` + «Lag utkast»-knapp
-   på de tre mest brukte promptene (tilbud, endringsmelding, purring). Kun i TEST-kanalen
-   og Prøverommet først — Ole Fabian stemmer som vanlig.
+1. **Fase 1 — ✅ BYGGET 18. juli (v0.13.0):** `netlify/functions/skriv.mjs` + «⚡ Utkast»-
+   knapp på de tre mest brukte promptene (tilbud, endringsmelding, purring). Ligger i
+   TEST-kanalen til to-nøkkel-godkjenning; uten API-nøkkel viser appen reserven
+   (kopier prompten). Gjenstår for Jonathan: legge ANTHROPIC_API_KEY i Netlify.
 2. **Fase 2:** samtykketekst i appen, DPA, og utrulling til STABIL etter to nøkler.
 3. **Fase 3:** opplastingssiden for Innflyttingen (skalerbar onboarding).
 4. **Fase 4 (ved behov):** per-kunde-nøkler og forbruksmåling når kunde nummer to kommer.
