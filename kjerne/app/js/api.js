@@ -64,14 +64,31 @@
     }
   }
 
+  // Kø-poster merkes med eierens bruker-id: en annen bruker på samme enhet
+  // skal ALDRI få en fremmed post bokført på seg (kø-eierskap, kodegjennomgang
+  // funn 1) — fremmede poster blir liggende til eieren logger inn igjen.
+  const eierId = () => window.Kjerne?.meg?.()?.id || null;
+  const minPost = (p) => !p.eier || p.eier === eierId();
+
   async function sendEllerKø(sti, body, beskrivelse) {
     body = { ...body, klient_id: nyKlientId() };
+    const post = { sti, body, beskrivelse, eier: eierId(), tid: new Date().toISOString() };
+    // Ligger det alt egne poster i kø for samme sti, må denne BAK dem —
+    // direktesending forbi køen kunne latt en gammel post overskrive en nyere
+    // rettelse ved replay (kodegjennomgang funn 2).
+    if (lesKø().some((p) => p.sti === sti && minPost(p))) {
+      const kø = lesKø();
+      kø.push(post);
+      if (!skrivKø(kø)) throw new Error('Fullt lokalt lager — ingenting er sendt.');
+      tømKø();
+      return { sendt: false };
+    }
     try {
       return { sendt: true, data: await rå('POST', sti, body) };
     } catch (feil) {
       if (!beholdIKø(feil)) throw feil;
       const kø = lesKø();
-      kø.push({ sti, body, beskrivelse, tid: new Date().toISOString() });
+      kø.push(post);
       if (!skrivKø(kø)) {
         throw new Error('Fikk ikke lagret registreringen lokalt (fullt lager). ' +
           'Prøv igjen når du har dekning — ingenting er sendt.');
@@ -88,12 +105,26 @@
     const avvist = [];
     try {
       for (const post of lesKø()) {
+        if (!minPost(post)) continue; // en annens post — venter på eieren
         try {
           await rå('POST', post.sti, post.body);
           sendt++;
           fjernFraKø(post.body.klient_id);
         } catch (feil) {
-          if (beholdIKø(feil)) continue;
+          if (beholdIKø(feil)) {
+            // forsøksgrense: en post serveren aldri godtar (f.eks. kollisjon)
+            // skal ikke spinne evig — etter 25 forsøk tas den ut med beskjed
+            const kø = lesKø();
+            const p = kø.find((x) => x.body?.klient_id === post.body.klient_id);
+            if (p) {
+              p.forsok = (p.forsok || 0) + 1;
+              if (p.forsok > 25) {
+                avvist.push(`${post.beskrivelse || 'registrering'}: ga opp etter mange forsøk`);
+                fjernFraKø(post.body.klient_id);
+              } else skrivKø(kø);
+            }
+            continue;
+          }
           avvist.push(`${post.beskrivelse || 'registrering'}: ${feil.message}`);
           fjernFraKø(post.body.klient_id);
         }

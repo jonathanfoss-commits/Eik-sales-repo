@@ -142,3 +142,23 @@ godkjenning. Dokumentert i cutover-planen.
   Står på forbedringslisten.
 - **D15 — Engangspassord fra ny-tenant-verktøyet:** passordbytte-UI er ikke bygget i v1;
   byttes av Jonathan via verktøy/psql inntil videre. På forbedringslisten før cutover.
+
+## Kodegjennomgangens funn (to adversarielle agenter) — rettet og akseptert
+
+**RETTET:**
+- GDPR-slettehullet: admin-sletting av en annen bruker traff 0 timerader (RLS-eierkrav
+  gjorde slettingen til stille no-op) → SECURITY DEFINER `slett_brukerdata()`
+  (migrasjon 004) med ærlig kvittering + regresjonstest.
+- Rate-demperen var global bak Renders proxy (samme socket-IP for alle — 10 feilforsøk
+  ville låst hele OP Bygg ute) → klient-IP fra X-Forwarded-For + egen grense per e-post.
+- Kryss-tenant sesjonssletting i personvern-flyten → org-scopet.
+- Budsjettsperren og godkjennings-UPDATE (D12/D13, funnet av egne tester før agentene).
+
+**AKSEPTERT/BEVISST (med begrunnelse):**
+- `migrate.js` ALTER ROLE med interpolert passord: rollen er hardkodet whitelist,
+  passordet er admin-satt miljøvariabel, escaping korrekt — dynamisk DDL kan ikke
+  parametriseres. Står.
+- TOTP håndheves ikke teknisk ved opprettelse — aktivering av admin-TOTP står som
+  eksplisitt punkt i cutover-sjekklisten (før reelle data).
+- `scryptSync` blokkerer event-loopen per innlogging: akseptabelt på pilotens volum
+  (11 brukere); async-scrypt står på forbedringslisten før kunde nr. 3.

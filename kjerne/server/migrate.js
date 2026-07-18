@@ -9,6 +9,9 @@ import { config } from './config.js';
 const url = process.env.MIGRATE_DATABASE_URL || config.databaseUrl;
 const klient = new pg.Client({ connectionString: url });
 await klient.connect();
+// To instanser kan boote samtidig (dobbel-deploy) — advisory-låsen gjør at
+// den ene venter i stedet for å krasje på «already exists».
+await klient.query('SELECT pg_advisory_lock(714201)');
 
 await klient.query(`CREATE TABLE IF NOT EXISTS migrasjoner (
   navn text PRIMARY KEY, kjort timestamptz NOT NULL DEFAULT now())`);
@@ -45,4 +48,5 @@ for (const [rolle, passord] of [
 }
 
 console.log('Databasen er à jour.');
+await klient.query('SELECT pg_advisory_unlock(714201)');
 await klient.end();

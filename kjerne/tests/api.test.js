@@ -209,6 +209,22 @@ test('uten sesjon: 401 på alt lukket', async () => {
   assert.equal(res.status, 401);
 });
 
+test('GDPR-sletteretten: admin sletter en ANNENS private data — faktisk (funn-regresjon)', async () => {
+  if (!tilgjengelig) return;
+  const ansattId = (await eier.query(
+    `SELECT id FROM brukere WHERE epost = 'api-ansatt@test.local'`)).rows[0].id;
+  const foer = (await eier.query(
+    `SELECT count(*)::int AS n FROM timeforinger WHERE bruker_id = $1`, [ansattId])).rows[0].n;
+  assert.ok(foer >= 1, 'fixturen har timerader å slette');
+  const svar = await api('admin', 'POST', '/api/personvern/slett-bruker',
+    { brukerId: ansattId, bekreft: 'SLETT' });
+  assert.equal(svar.status, 200);
+  assert.ok(svar.data.slettet >= 1, 'slettingen er ikke en stille no-op (sikkerhetsfunnet)');
+  const etter = (await eier.query(
+    `SELECT count(*)::int AS n FROM timeforinger WHERE bruker_id = $1`, [ansattId])).rows[0].n;
+  assert.equal(etter, 0, 'alle timeradene er borte');
+});
+
 // SIST med vilje: demperen sperrer IP-en for videre innlogginger i testen.
 test('feil passord avvises, og rate-demperen svarer 429 til slutt', async () => {
   if (!tilgjengelig) return;

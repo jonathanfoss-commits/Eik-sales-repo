@@ -33,14 +33,26 @@ function forMange(nokkel, maks, vinduMs) {
 }
 setInterval(() => { if (teller.size > 10000) teller.clear(); }, 600_000).unref();
 
+// Bak Render/proxy ser socketen én og samme proxy-IP for ALLE brukere — da må
+// klient-IP-en leses fra X-Forwarded-For (settes av plattformen; første ledd er
+// klienten), ellers blir innloggingsgrensen global og et lite antall feilforsøk
+// låser hele organisasjonen ute (funn fra sikkerhetsgjennomgangen).
+function klientIp(req) {
+  const xff = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+  return xff || req.socket.remoteAddress || 'ukjent';
+}
+
 // ── Åpne ruter (uten sesjon) ──
 const AAPNE = new Set(['POST /api/login', 'POST /api/registrer', 'GET /api/helse']);
 
 ruter.add('GET', '/api/helse', async () => ({ ok: true }));
 
 ruter.add('POST', '/api/login', async ({ req, body, res }) => {
-  const ip = req.socket.remoteAddress || 'ukjent';
-  if (forMange('login:' + ip, 10, 15 * 60_000)) {
+  // dobbel nøkkel: per klient-IP OG per e-post — verner kontoen selv når
+  // mange deler IP, uten at én angriper kan låse ute hele organisasjonen
+  const epostNokkel = String(body.epost || '').trim().toLowerCase();
+  if (forMange('login:' + klientIp(req), 30, 15 * 60_000)
+      || forMange('login-epost:' + epostNokkel, 10, 15 * 60_000)) {
     throw new ApiFeil(429, 'For mange forsøk — vent et kvarter');
   }
   const resultat = await loggInn(body.epost, body.passord, body.totp);
@@ -53,8 +65,7 @@ ruter.add('POST', '/api/login', async ({ req, body, res }) => {
 });
 
 ruter.add('POST', '/api/registrer', async ({ req, body }) => {
-  const ip = req.socket.remoteAddress || 'ukjent';
-  if (forMange('registrer:' + ip, 10, 60 * 60_000)) throw new ApiFeil(429, 'For mange forsøk');
+  if (forMange('registrer:' + klientIp(req), 20, 60 * 60_000)) throw new ApiFeil(429, 'For mange forsøk');
   const resultat = await registrerMedInvitasjon(body);
   if (resultat.feil) throw new ApiFeil(400, resultat.feil);
   return { ok: true, navn: resultat.bruker.navn };
@@ -73,7 +84,7 @@ ruter.add('GET', '/api/meg', ({ ctx }) => medOrg(ctx, async (c) => {
     'SELECT slug, navn, konfig FROM organisasjoner WHERE id = $1', [ctx.orgId])).rows[0];
   const k = org?.konfig || {};
   return {
-    bruker: { navn: ctx.navn, rolle: ctx.rolle },
+    bruker: { id: ctx.brukerId, navn: ctx.navn, rolle: ctx.rolle },
     org: {
       slug: org?.slug, navn: org?.navn,
       appnavn: k.appnavn || 'Plattform', undertittel: k.undertittel || '',

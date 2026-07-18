@@ -46,7 +46,8 @@ window.Kjerne = (function () {
 
   const datoFmt = new Intl.DateTimeFormat('nb-NO', { day: 'numeric', month: 'short' });
   const penDato = (iso) => (iso ? datoFmt.format(new Date(String(iso).slice(0, 10) + 'T12:00:00')) : '');
-  const iDag = () => new Date().toISOString().slice(0, 10);
+  // lokal dato — toISOString() er UTC og gir feil dag 00:00–02:00 norsk tid
+  const iDag = () => new Date().toLocaleDateString('sv-SE');
   const tall = (n) => String(Math.round(Number(n || 0) * 10) / 10).replace('.', ',');
   const nårSiden = (iso) => {
     const s = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -119,12 +120,25 @@ window.Kjerne = (function () {
     }
   }
 
-  function visFane(navn) {
+  // Re-render er serialisert per fane: to samtidige vis() (hendelses-burst
+  // mens fanen alt laster) ville tømt og appendet dobbelt (kodegjennomgang
+  // funn 7). «stille» = hendelsesdrevet oppdatering: uten scrollhopp.
+  const visKjorer = {};
+  function visFane(navn, stille) {
     document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('aktiv', t.dataset.fane === navn));
     document.querySelectorAll('.fane').forEach((f) => f.classList.toggle('aktiv', f.id === 'fane-' + navn));
-    scrollTo(0, 0);
+    if (!stille) scrollTo(0, 0);
     const rot = $('fane-' + navn);
-    moduler[navn]?.vis(rot).catch((feil) => siFra(feil.message, true));
+    if (!moduler[navn]) return;
+    if (visKjorer[navn]) { visKjorer[navn].dirty = true; return; }
+    const kjør = { dirty: false };
+    visKjorer[navn] = kjør;
+    moduler[navn].vis(rot)
+      .catch((feil) => siFra(feil.message, true))
+      .finally(() => {
+        visKjorer[navn] = null;
+        if (kjør.dirty) visFane(navn, true);
+      });
   }
   const aktivFane = () => document.querySelector('.tab.aktiv')?.dataset.fane;
 
@@ -142,10 +156,13 @@ window.Kjerne = (function () {
       };
       sse.onerror = () => {
         sseFeil++;
-        if (sseFeil >= 2 && !pollTimer) {
-          // reserve: oppdater aktiv fane hvert 30. sekund til SSE er tilbake
-          pollTimer = setInterval(() => { const f = aktivFane(); if (f) visFane(f); }, 30_000);
+        // CLOSED = EventSource gjenoppretter ALDRI selv (f.eks. 401 ved utløpt
+        // sesjon) — start polling straks og prøv ny tilkobling om 15 s
+        const fatal = sse && sse.readyState === EventSource.CLOSED;
+        if ((fatal || sseFeil >= 2) && !pollTimer) {
+          pollTimer = setInterval(() => { const f = aktivFane(); if (f) visFane(f, true); }, 30_000);
         }
+        if (fatal && meg) setTimeout(() => { if (meg) kobleLive(); }, 15_000);
       };
       sse.onopen = () => { sseFeil = 0; if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } };
     } catch { /* EventSource mangler — polling-reserven tar over via onerror-løpet */ }
@@ -161,7 +178,7 @@ window.Kjerne = (function () {
     }
     moduler[h.modul]?.påHendelse?.(h);
     // er fanen for modulen åpen, hent ferskt innhold (bak RLS — aldri fra hendelsen)
-    if (aktivFane() === h.modul) visFane(h.modul);
+    if (aktivFane() === h.modul) visFane(h.modul, true);
   }
   const etikett = (m) => ({ timer: 'førte timer', dagbok: 'skrev i dagboka',
     varsler: 'meldte avvik', innspill: 'sendte innspill', godkjenninger: 'stemte' }[m] || m);
@@ -169,6 +186,7 @@ window.Kjerne = (function () {
   // ── innlogging ──
   function visLogin() {
     if (sse) { sse.close(); sse = null; }
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
     $('login').hidden = false;
     $('skall').hidden = true;
   }

@@ -14,10 +14,14 @@ export function registrer(ruter) {
     }
     if (body.bekreft !== 'SLETT') throw new ApiFeil(400, 'Skriv SLETT i bekreftelsesfeltet');
 
+    let slettet = 0;
     await medOrg(ctx, async (c) => {
-      // Private data slettes helt; delte bevisdata (dagbok/varsler) anonymiseres.
-      await c.query('DELETE FROM timeforinger WHERE bruker_id = $1', [maalId]);
-      await c.query('UPDATE innspill SET bruker_id = NULL WHERE bruker_id = $1', [maalId]);
+      // Private data slettes helt via SECURITY DEFINER-funksjonen (migrasjon 004)
+      // — admin sletter andres data, og RLS-eierkravet på timer skal ikke gjøre
+      // slettingen til en stille no-op (funn fra sikkerhetsgjennomgangen).
+      // Delte bevisdata (dagbok/varsler) består anonymisert.
+      const res = await c.query('SELECT slett_brukerdata($1) AS antall', [maalId]);
+      slettet = res.rows[0].antall;
       await c.query(`INSERT INTO pilotlogg (bruker_id, hendelse) VALUES ($1, 'bruker-slettet')`,
         [ctx.brukerId]);
     });
@@ -27,7 +31,10 @@ export function registrer(ruter) {
               epost = 'slettet-' || id || '@ugyldig.local', passord_hash = 'slettet',
               totp_hemmelighet = NULL
         WHERE id = $1 AND org_id = $2`, [maalId, ctx.orgId]);
-    await authPool.query('DELETE FROM sesjoner WHERE bruker_id = $1', [maalId]);
-    return { ok: true, merknad: 'Private data slettet. Dagboklinjer består anonymisert (bevismateriale).' };
+    // org-scopet — en admin skal aldri kunne logge ut brukere i andre tenants
+    await authPool.query('DELETE FROM sesjoner WHERE bruker_id = $1 AND org_id = $2',
+      [maalId, ctx.orgId]);
+    return { ok: true, slettet,
+      merknad: `${slettet} private timeføring(er) slettet. Dagboklinjer består anonymisert (bevismateriale).` };
   });
 }

@@ -6,10 +6,12 @@ import { medOrg } from '../db.js';
 import { ApiFeil } from '../http.js';
 import { publiser } from '../buss.js';
 
-const iDag = () => new Date().toISOString().slice(0, 10);
+// Oslo-dato — serveren kjører i UTC, og «i dag»/«denne uka» skal følge norsk
+// kalender (kodegjennomgang funn 6: UTC ga feil dag 00:00–02:00 norsk tid)
+const iDag = () => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Oslo' }).format(new Date());
 const ukestart = (d) => {
-  const dato = new Date(d + 'T12:00:00');
-  dato.setDate(dato.getDate() - ((dato.getDay() + 6) % 7));
+  const dato = new Date(d + 'T12:00:00Z');
+  dato.setUTCDate(dato.getUTCDate() - ((dato.getUTCDay() + 6) % 7));
   return dato.toISOString().slice(0, 10);
 };
 

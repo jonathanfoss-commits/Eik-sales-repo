@@ -69,8 +69,12 @@
       const svar2 = await Api.post('/api/sentral/invitasjon', { rolle: 'ansatt' })
         .catch((feil) => { siFra(feil.message, true); return null; });
       if (svar2) {
-        invKort.append(el('div', { klasse: 'utkast-ut' },
-          `Invitasjonskode: ${svar2.kode} (gyldig ${svar2.gyldigDager} dager)`));
+        // i ark — koden vises ÉN gang og skal ikke viskes ut av en live-oppdatering
+        Kjerne.åpneArk(el('div', {},
+          el('h2', {}, '👷 Invitasjonskode'),
+          el('div', { klasse: 'utkast-ut' }, svar2.kode),
+          el('p', { klasse: 'under', style: 'margin-top:10px' },
+            `Gyldig i ${svar2.gyldigDager} dager. Gi den direkte (SMS/muntlig) — koden vises kun nå.`)));
       }
     } }, 'Lag invitasjonskode'));
     rot.append(invKort);
