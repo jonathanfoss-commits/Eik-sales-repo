@@ -15,6 +15,8 @@ export default {
       bunn: '#14100B', flate: '#1E1812', flate2: '#28211A',
       strek: 'rgba(214,178,120,.16)', lys: '#F4EDE2', dis: '#B3A48D',
       a: '#E8B64C', b: '#D6753C', graf: '#B98A2E', varsel: '#7FB4D9',
+      // dagslys-aksenter (mot hvit flate, alle ≥4,5:1)
+      dagslys: { a: '#8A5E00', b: '#9C4310', varsel: '#1B6E93' },
     },
     moduler: ['hjem', 'timer', 'skriv', 'innspill', 'sentral', 'tillegg', 'faktura'],
     profil: PROFIL,

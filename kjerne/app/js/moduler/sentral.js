@@ -120,13 +120,20 @@
               ' · trinn ' + f.foreslaatt));
           rad.append(el('button', { klasse: 'lenkeknapp', style: 'width:auto', onclick: async () => {
             try {
+              // forhåndsvisning — statusen endres først ved «Marker som sendt»
+              // (fristen i inkassoloven § 9 løper fra faktisk utsendelse)
               const svar4 = await Api.post(`/api/fakturaer/${f.id}/purring`, { trinn: f.foreslaatt });
               const boks = el('div', {});
               boks.append(el('h2', {}, '💸 Purring — trinn ' + f.foreslaatt));
               boks.append(el('div', { klasse: 'utkast-ut' }, svar4.tekst));
-              boks.append(el('button', { klasse: 'knapp', style: 'margin-top:10px;width:100%', onclick: () => {
+              boks.append(el('button', { klasse: 'knapp svak', style: 'margin-top:10px;width:100%', onclick: () => {
                 navigator.clipboard?.writeText(svar4.tekst).then(() => siFra('Purringen er kopiert'));
               } }, 'Kopier'));
+              boks.append(el('button', { klasse: 'knapp', style: 'margin-top:10px;width:100%', onclick: async () => {
+                await Api.post(`/api/fakturaer/${f.id}/purring`, { trinn: f.foreslaatt, registrer: true })
+                  .then(() => { Kjerne.lukkArk(); siFra('Purringen er registrert som sendt'); Kjerne.oppdaterFane(); })
+                  .catch((feil) => siFra(feil.message, true));
+              } }, 'Marker som sendt'));
               Kjerne.åpneArk(boks);
             } catch (feil) { siFra(feil.message, true); }
           } }, 'purr'));
@@ -144,9 +151,11 @@
             { navn: 'forfall', etikett: 'Forfallsdato', type: 'date', kreves: true },
           ]);
           const boks = el('div', {}, el('h2', {}, '💸 Følg ny faktura'), s2.rot);
+          const klientId = crypto.randomUUID(); // én per skjema: dobbelttrykk = samme faktura
           boks.append(el('button', { klasse: 'knapp', style: 'margin-top:10px;width:100%', onclick: async () => {
             const v2 = s2.verdier();
             if (!v2.kunde || !v2.referanse || !v2.forfall) return siFra('Fyll alle feltene', true);
+            v2.klient_id = klientId;
             await Api.post('/api/fakturaer', v2)
               .then(() => { Kjerne.lukkArk(); siFra('Fakturaen følges'); Kjerne.oppdaterFane(); })
               .catch((feil) => siFra(feil.message, true));

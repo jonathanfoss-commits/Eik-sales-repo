@@ -4,6 +4,7 @@
 import { medOrg } from '../db.js';
 import { ApiFeil } from '../http.js';
 import { publiser } from '../buss.js';
+import { osloDato } from '../dato.js';
 
 // månedsklampet datoberegning (31.12 + 2 mnd skal bli 28./29.2, aldri 3.3 —
 // lærdommen fra pilotens fristvakt-feil)
@@ -20,7 +21,7 @@ export function registrer(ruter) {
     const res = await c.query(
       `SELECT f.*, b.navn AS bruker_navn FROM prosjektfrister f
          JOIN brukere b ON b.id = f.bruker_id ORDER BY f.overtakelse DESC LIMIT 100`);
-    const iDag = new Date().toISOString().slice(0, 10);
+    const iDag = osloDato();
     return {
       frister: res.rows.map((f) => {
         const slutt2 = leggTilMnd(f.overtakelse, 2);

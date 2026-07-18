@@ -3,11 +3,19 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
-## ÉN SAMLET LEVERANSE VENTER: v0.9.4–v0.17.0 — godkjennes under ett
+## ÉN SAMLET LEVERANSE VENTER: v0.9.4–v0.17.1 — godkjennes under ett
 
 Delversjonene under er bygget fortløpende og testes kumulativt (fulltesten dekker alt
 sammen). En Godkjenn-stemme på v0.14.0 i testappen godkjenner hele pakken — dette teller
 som ÉN leveranse mot køregelen.
+
+## v0.17.1 — 18. juli 2026 (nattens gransking — to funn rettet i piloten)
+
+**Hva:** Den adversarielle gjennomgangen av nattens leveranse fant to ting i piloten,
+begge rettet: (1) i dagslys-modus fikk også de svake knappene og motor-merket hvit
+tekst på lys flate (uleselig) — nå får bare de mørke knappene hvit tekst; (2) purringens
+trinnknapper brukte alltid den sist lagrede fakturaen — nå velger du fakturaen i lista
+(markeres VALGT), og forslag og purretekst følger valget. Fulltest 183/183 grønne.
 
 ## v0.17.0 — 18. juli 2026 (NATTSKIFTET, pilotdelen — purring + dagslys)
 

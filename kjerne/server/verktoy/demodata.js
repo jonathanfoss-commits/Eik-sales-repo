@@ -1,9 +1,12 @@
 // Demodata for kundedemoer — fyller en tenant med realistisk innhold så en
-// 3-minutters demo aldri viser tomme skjermer. KUN for demo-tenants: nekter å
-// kjøre mot en org med ekte brukere utover tenants-filens egne.
+// 3-minutters demo aldri viser tomme skjermer. KUN for demo-tenants: slugen
+// må slutte på «-demo», ha en tenants/<slug>.js-fil, og orgen kan ha maks
+// 3 brukere — ellers stopper verktøyet uten å røre databasen.
 //
 //   node server/verktoy/demodata.js malermester-demo
 import pg from 'pg';
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 const slug = process.argv[2];
 const url = process.env.MIGRATE_DATABASE_URL || process.env.DATABASE_URL;
@@ -11,8 +14,14 @@ if (!slug || !url) {
   console.error('Bruk: MIGRATE_DATABASE_URL=... node server/verktoy/demodata.js <slug>');
   process.exit(1);
 }
-if (!slug.includes('demo')) {
-  console.error('Sikkerhetsstopp: demodata legges kun i tenants med «demo» i slugen.');
+// Tre uavhengige sperrer: verktøyet DELETEr i dagbok (bevistabell), så en
+// ekte tenant må aldri kunne passere ved uhell.
+if (!slug.endsWith('-demo')) {
+  console.error('Sikkerhetsstopp: demodata legges kun i tenants med slug som slutter på «-demo».');
+  process.exit(1);
+}
+if (!existsSync(fileURLToPath(new URL(`../../tenants/${slug}.js`, import.meta.url)))) {
+  console.error(`Sikkerhetsstopp: fant ingen tenants/${slug}.js — ukjent slug kjøres ikke.`);
   process.exit(1);
 }
 
@@ -20,6 +29,12 @@ const klient = new pg.Client({ connectionString: url });
 await klient.connect();
 const org = (await klient.query('SELECT id FROM organisasjoner WHERE slug = $1', [slug])).rows[0];
 if (!org) { console.error('Fant ikke tenanten — kjør ny-tenant.js først.'); process.exit(1); }
+const antallBrukere = Number((await klient.query(
+  'SELECT count(*) FROM brukere WHERE org_id = $1', [org.id])).rows[0].count);
+if (antallBrukere > 3) {
+  console.error(`Sikkerhetsstopp: tenanten har ${antallBrukere} brukere — ser ut som en ekte org, ikke en demo.`);
+  process.exit(1);
+}
 const bruker = (await klient.query(
   'SELECT id FROM brukere WHERE org_id = $1 ORDER BY opprettet LIMIT 1', [org.id])).rows[0];
 if (!bruker) { console.error('Tenanten har ingen brukere.'); process.exit(1); }

@@ -255,3 +255,10 @@ body.er-offline .offline-merke { display: block; }
   border: 1px solid var(--strek); border-radius: 10px; padding: 12px;
   font-size: .88rem; margin-top: 10px; user-select: text; -webkit-user-select: text; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+
+/* dagslys: aksent/varsel/alarm blir mørke flater — hvit tekst der mørk var
+   hardkodet for de lyse mørk-tema-aksentene (kontrastmålt ≥4,5:1) */
+:root.dagslys .chip.gul, :root.dagslys .chip.forfalt,
+:root.dagslys .offline-merke, :root.dagslys .login-logo .skilt { color: #FFFFFF; }
+:root.dagslys .login-logo .skilt { border-color: var(--aksent); }
+:root.dagslys .utkast-ut { background: rgba(15, 45, 40, .06); }

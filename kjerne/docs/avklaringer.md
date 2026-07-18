@@ -184,3 +184,37 @@ godkjenning. Dokumentert i cutover-planen.
   eksplisitt punkt i cutover-sjekklisten (før reelle data).
 - `scryptSync` blokkerer event-loopen per innlogging: akseptabelt på pilotens volum
   (11 brukere); async-scrypt står på forbedringslisten før kunde nr. 3.
+
+## Nattskiftets gransking (18.–19. juli, adversariell agent på nattens diff) — rettet og akseptert
+
+**RETTET:**
+- **HØY, pilot:** `:root.dagslys .knapp{color:#FFF}` rammet også `.knapp.svak` og
+  `.kopier.motor` (hvit tekst på lys flate, ~1,2:1) → `:not(.svak)`/`:not(.motor)`.
+- **HØY, kjerne:** dagslys-paletten beholdt mørk-tema-aksentene (`#39E29B` på hvitt =
+  1,68:1) → `LYS_PALETT` har nå kontrastmålte mørke aksenter (aksent/varsel/alarm/
+  aksent-tekst, alle ≥4,5:1), tenants kan overstyre via `tema.dagslys`
+  (laerling `#147A52`/`#0F6B7A`, malermester `#8A5E00`/`#9C4310`), og stil.css
+  fikk dagslys-overstyringer der mørk tekst var hardkodet på aksentflater.
+- **MIDDELS, pilot:** purre-trinnknappene brukte alltid siste faktura → brukeren
+  velger nå faktura i lista (markeres VALGT), forslag og tekst følger valget.
+- **MIDDELS, kjerne:** POST `/purring` eskalerte statusløpet ved *generering* →
+  nå ren forhåndsvisning; status flyttes først ved `{ registrer: true }`
+  («Marker som sendt»-knapp) — fristen i inkassoloven § 9 løper fra utsendelsen.
+  Regresjonstest på begge stegene.
+- **MIDDELS, demodata:** guarden `slug.includes('demo')` slapp gjennom f.eks.
+  «demolering-as» → tre sperrer: slug må slutte på «-demo», tenants-fil må finnes,
+  maks 3 brukere i orgen. Kommentaren lover ikke lenger mer enn koden holder.
+- **LAV, UTC-drift:** «i dag» regnes nå i Europe/Oslo (felles `server/dato.js`) i
+  fristvakta og dagbok-autopiloten — 00–02 norsk tid ga før gårsdagens dato.
+- **LAV, faktura-rollesjekk:** POST/purring/betalt har nå eksplisitt ledelse-sjekk
+  (403 med forklaring i stedet for 500 fra RLS). RLS var og er tett.
+- **LAV, tillegg_endre:** WITH CHECK var kun org — eieren kunne i teorien selv sette
+  `status='fakturert'` via direkte UPDATE → migrasjon 007 håndhever i databasen at
+  kun ledelsen endrer status/eierskap. RLS-regresjonstest (42501) lagt til.
+- **LAV, idempotens:** «Følg ny faktura» sender nå `klient_id` (én per skjema) —
+  dobbelttrykk gir samme faktura, ikke duplikat.
+
+**INGEN FUNN (verifisert av agenten):** purretekst-XSS (alt går via
+`el()`/`textContent`), autopilot-privathet (kun egne timer), `leggTilMnd`-matten
+(inkl. skuddår 31.12.2027+2 → 29.2.2028), async scrypt-kallerne (alle `await`),
+versjonsbump-konsistens.

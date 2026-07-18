@@ -27,8 +27,14 @@ export function purretekst({ trinn, kunde, referanse, dager, avsender, firma }) 
 }
 
 export function registrer(ruter) {
-  ruter.add('GET', '/api/fakturaer', ({ ctx }) => medOrg(ctx, async (c) => {
+  // RLS (fakturaer_ledelse) tetter uansett — sjekken her gir ryddig 403
+  // i stedet for 500 ved RLS-brudd.
+  const kunLedelse = (ctx) => {
     if (!['admin', 'pilotleder'].includes(ctx.rolle)) throw new ApiFeil(403, 'Purretrappa er for ledelsen');
+  };
+
+  ruter.add('GET', '/api/fakturaer', ({ ctx }) => medOrg(ctx, async (c) => {
+    kunLedelse(ctx);
     const res = await c.query(
       `SELECT * FROM fakturaer WHERE status <> 'betalt' ORDER BY forfall ASC LIMIT 200`);
     return {
@@ -39,6 +45,7 @@ export function registrer(ruter) {
   }));
 
   ruter.add('POST', '/api/fakturaer', ({ ctx, body }) => medOrg(ctx, async (c) => {
+    kunLedelse(ctx);
     const { kunde, referanse, forfall, klient_id } = body;
     if (!kunde || !referanse || !forfall) throw new ApiFeil(400, 'Kunde, referanse og forfall må med');
     if (klient_id) {
@@ -57,8 +64,11 @@ export function registrer(ruter) {
   }));
 
   // Purremelding for et gitt trinn — teksten genereres på serveren så malene
-  // er felles for alle klienter; purringen registreres i statusløpet.
+  // er felles for alle klienter. Uten { registrer: true } er dette en ren
+  // forhåndsvisning: statusløpet rører vi først når purringen faktisk er
+  // sendt, for 14-dagersfristen i inkassoloven § 9 løper fra utsendelsen.
   ruter.add('POST', '/api/fakturaer/:id/purring', ({ ctx, params, body }) => medOrg(ctx, async (c) => {
+    kunLedelse(ctx);
     const trinn = Number(body.trinn);
     if (![1, 2, 3].includes(trinn)) throw new ApiFeil(400, 'Trinn må være 1, 2 eller 3');
     const f = (await c.query('SELECT * FROM fakturaer WHERE id = $1', [params.id])).rows[0];
@@ -68,6 +78,7 @@ export function registrer(ruter) {
       trinn, kunde: f.kunde, referanse: f.referanse,
       dager: dagerOver(f.forfall), avsender: ctx.navn, firma: org?.navn || '',
     });
+    if (!body.registrer) return { tekst, faktura: f };
     const nyStatus = trinn === 3 ? 'varslet' : trinn === 2 ? 'purret2' : 'purret1';
     const rad = (await c.query(
       `UPDATE fakturaer SET status = $2, versjon = versjon + 1, endret = now()
@@ -78,6 +89,7 @@ export function registrer(ruter) {
   }));
 
   ruter.add('POST', '/api/fakturaer/:id/betalt', ({ ctx, params }) => medOrg(ctx, async (c) => {
+    kunLedelse(ctx);
     const rad = (await c.query(
       `UPDATE fakturaer SET status = 'betalt', versjon = versjon + 1, endret = now()
         WHERE id = $1 RETURNING *`, [params.id])).rows[0];

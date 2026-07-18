@@ -225,9 +225,16 @@ test('NATTSKIFTET: purretrappa er KUN for ledelsen (D22)', async () => {
   assert.equal(f.foreslaatt, 3, '50 dager over forfall → inkassovarsel foreslås');
   const ansatt = await api('ansatt', 'GET', '/api/fakturaer');
   assert.equal(ansatt.status, 403, 'ansatte ser aldri fakturaer');
-  const purr = await api('leder', 'POST', `/api/fakturaer/${f.id}/purring`, { trinn: 3 });
-  assert.ok(purr.data.tekst.includes('inkassoloven § 9'), 'inkassovarselet har hjemmelen');
-  assert.equal(purr.data.faktura.status, 'varslet');
+  const ansattSkriv = await api('ansatt', 'POST', '/api/fakturaer',
+    { kunde: 'X', referanse: 'API-nei', forfall: gammelDato });
+  assert.equal(ansattSkriv.status, 403, 'ansatte registrerer heller aldri fakturaer');
+  // forhåndsvisning: teksten kommer, men statusløpet står stille (inkassoloven
+  // § 9 — fristen løper fra faktisk utsendelse, ikke fra at arket ble åpnet)
+  const forhaand = await api('leder', 'POST', `/api/fakturaer/${f.id}/purring`, { trinn: 3 });
+  assert.ok(forhaand.data.tekst.includes('inkassoloven § 9'), 'inkassovarselet har hjemmelen');
+  assert.equal(forhaand.data.faktura.status, 'aapen', 'forhåndsvisning endrer ikke status');
+  const purr = await api('leder', 'POST', `/api/fakturaer/${f.id}/purring`, { trinn: 3, registrer: true });
+  assert.equal(purr.data.faktura.status, 'varslet', '«registrer sendt» flytter statusløpet');
   const betalt = await api('leder', 'POST', `/api/fakturaer/${f.id}/betalt`);
   assert.equal(betalt.data.faktura.status, 'betalt');
 });
@@ -243,6 +250,25 @@ test('NATTSKIFTET: tilleggsfangeren — DELT registrering, ledelsens fakturagrun
   assert.ok(grunnlag.data.tekst.includes('flytte sluk') && grunnlag.data.antall >= 1);
   const ansattGrunnlag = await api('ansatt', 'GET', '/api/tillegg/fakturagrunnlag?prosjekt=API-tillegg');
   assert.equal(ansattGrunnlag.status, 403, 'fakturagrunnlaget er ledelsens');
+
+  // RLS-vernet fra migration 007: selv med direkte databasetilgang som seg
+  // selv kan ikke eieren (ansatt) sette status='fakturert' — databasen nekter.
+  const pg = await import('pg');
+  const appDb = new pg.default.Client({ connectionString: process.env.DATABASE_URL });
+  await appDb.connect();
+  try {
+    const ansattId = (await eier.query(
+      `SELECT id FROM brukere WHERE epost = 'api-ansatt@test.local'`)).rows[0].id;
+    await appDb.query('BEGIN');
+    await appDb.query(`SELECT set_config('app.org_id', $1, true)`, [orgA]);
+    await appDb.query(`SELECT set_config('app.bruker_id', $1, true)`, [ansattId]);
+    await appDb.query(`SELECT set_config('app.rolle', 'ansatt', true)`);
+    const smugl = await appDb.query(
+      `UPDATE tillegg SET status = 'fakturert' WHERE prosjekt = 'API-tillegg' RETURNING id`)
+      .then(() => 'slapp gjennom', (feil) => feil.code);
+    await appDb.query('ROLLBACK');
+    assert.equal(smugl, '42501', 'RLS (007) stopper eieren fra å fakturere selv');
+  } finally { await appDb.end(); }
   await eier.query(`DELETE FROM tillegg WHERE prosjekt = 'API-tillegg'`);
 });
 

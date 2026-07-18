@@ -3,7 +3,7 @@
    Kjernen kjenner ingen kunde: navn, farger og modulvalg kommer fra /api/meg.
    VERSJON bumpes samtidig i versjon.json og sw.js (cache-navnet) — de tre må aldri drifte. */
 window.Kjerne = (function () {
-  const VERSJON = '0.3.0';
+  const VERSJON = '0.3.1';
   let meg = null;   // { navn, rolle }
   let org = null;   // { slug, navn, appnavn, undertittel, tema, moduler }
   const moduler = {};   // id -> { tittel, ikon, vis: async (rot) => {}, påHendelse?: (h) => {} }
@@ -95,16 +95,24 @@ window.Kjerne = (function () {
   }
 
   // ── tenant-tema: konfig → CSS-variabler (white-label i praksis).
-  //    Dagslys-modus: nøytral lys grunnpalett, tenant-aksentene beholdes —
-  //    valget er brukerens og huskes lokalt (kjerne-tema). ──
+  //    Dagslys-modus: nøytral lys grunnpalett med MØRKE aksenter — tenantens
+  //    mørk-tema-aksenter er bygget for mørk flate og faller under 4,5:1 på
+  //    hvitt. Tenanten kan overstyre via tema.dagslys; alle standardverdier
+  //    her er kontrastmålt ≥4,5:1 mot både #FFFFFF og #E9EDEC.
+  //    Valget er brukerens og huskes lokalt (kjerne-tema). ──
   const LYS_PALETT = { bunn: '#F2F5F4', flate: '#FFFFFF', flate2: '#E9EDEC',
-    strek: 'rgba(15,45,40,.15)', lys: '#101D18', dis: '#4E645D' };
+    strek: 'rgba(15,45,40,.15)', lys: '#101D18', dis: '#4E645D',
+    a: '#147A52', b: '#0F6B7A', varsel: '#8A5800', alarm: '#B3261E', aksentTekst: '#FFFFFF' };
+  const MORK_STANDARD = { alarm: '#ff5a48', aksentTekst: '#08090c' };
   const erDagslys = () => localStorage.getItem('kjerne-tema') === 'lys';
   function brukTema(tema = {}) {
-    const grunnlag = erDagslys() ? { ...tema, ...LYS_PALETT } : tema;
+    const grunnlag = erDagslys()
+      ? { ...LYS_PALETT, ...(tema.dagslys || {}) }
+      : { ...MORK_STANDARD, ...tema };
     const rot = document.documentElement.style;
     const kart = { bunn: '--bunn', flate: '--flate', flate2: '--flate-2', strek: '--strek',
-      lys: '--tekst', dis: '--dis', a: '--aksent', b: '--aksent-b', varsel: '--varsel' };
+      lys: '--tekst', dis: '--dis', a: '--aksent', b: '--aksent-b', varsel: '--varsel',
+      alarm: '--alarm', aksentTekst: '--aksent-tekst' };
     for (const [n, cssVar] of Object.entries(kart)) if (grunnlag[n]) rot.setProperty(cssVar, grunnlag[n]);
     document.documentElement.classList.toggle('dagslys', erDagslys());
     const metaTema = document.querySelector('meta[name="theme-color"]');

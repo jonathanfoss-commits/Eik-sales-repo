@@ -21,6 +21,8 @@ export default {
       bunn: '#070D12', flate: '#0D161E', flate2: '#121F29',
       strek: 'rgba(140,190,190,.14)', lys: '#E9F2EE', dis: '#93A8AA',
       a: '#39E29B', b: '#2FC4D9', graf: '#1F9E66', varsel: '#E8B64C',
+      // dagslys-aksenter (mot hvit flate, alle ≥4,5:1) — samme som piloten
+      dagslys: { a: '#147A52', b: '#0F6B7A', varsel: '#8A5800' },
     },
     moduler: ['hjem', 'timer', 'dagbok', 'varsler', 'skriv', 'innspill', 'sentral', 'innflytting', 'tillegg', 'frister', 'faktura'],
     profil: PROFIL,

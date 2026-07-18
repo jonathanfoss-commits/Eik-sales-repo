@@ -251,6 +251,7 @@
   .pr:last-child{border-bottom:none}
   .pr .t{flex:1;font-size:.9rem}
   .pr .t small{display:block;font-size:.72rem;color:var(--dis)}
+  .pr.valgt .t{color:var(--aurora-a)}
   .kopier{flex:none;font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;
      padding:8px 14px;border-radius:99px;color:#04110B;font-weight:700;
      background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b))}
@@ -277,8 +278,8 @@
   }
   :root.dagslys body::before{background:
     radial-gradient(110% 42% at 50% 0%,rgba(20,122,82,.08),transparent 60%),var(--bunn)}
-  :root.dagslys .knapp{color:#FFFFFF}
-  :root.dagslys .kopier{color:#FFFFFF}
+  :root.dagslys .knapp:not(.svak){color:#FFFFFF}
+  :root.dagslys .kopier:not(.motor){color:#FFFFFF}
 
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{animation:none!important;transition:none!important}
@@ -896,7 +897,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
   ];
 
   /* ── versjon og kanal (test vs. stabil) ── */
-  var VERSJON = "0.17.0";
+  var VERSJON = "0.17.1";
   var erTest = /(^|[.-])test([.-]|$)/.test(location.hostname);
   document.getElementById("versjon-info").textContent =
     "LÆRLING v" + VERSJON + " · " + (erTest ? "TESTKANAL" : "STABIL") + " · BYGGET FOR OP BYGG";
@@ -1555,9 +1556,13 @@ Mvh Ole Fabian, OP Bygg AS</div>
       return Math.floor((Date.now() - new Date(forfall + "T12:00:00").getTime()) / 86400000);
     }
     function foreslaattTrinn(dager){ return dager >= 42 ? 3 : dager >= 14 ? 2 : 1; }
-    function sisteFaktura(){ return lager.fakturaer[lager.fakturaer.length - 1]; }
+    var valgtIndeks = -1; /* -1 = nyeste faktura */
+    function valgtFaktura(){
+      if(valgtIndeks >= 0 && valgtIndeks < lager.fakturaer.length) return lager.fakturaer[valgtIndeks];
+      return lager.fakturaer[lager.fakturaer.length - 1];
+    }
     function visForslag(){
-      var f = sisteFaktura();
+      var f = valgtFaktura();
       if(!f) return;
       var d = dagerOver(f.forfall), t = foreslaattTrinn(d);
       document.getElementById("pu-forslag").textContent =
@@ -1574,23 +1579,29 @@ Mvh Ole Fabian, OP Bygg AS</div>
         : "Ingen fakturaer registrert — legg inn den første";
       boks.style.display = ubetalte.length ? "block" : "none";
       boks.innerHTML = "";
+      var aktiv = lager.fakturaer.indexOf(valgtFaktura());
       ubetalte.forEach(function(f, i){
         var d = dagerOver(f.forfall), rad = document.createElement("div");
-        rad.className = "pr";
+        rad.className = i === aktiv ? "pr valgt" : "pr";
         var t = document.createElement("div");
         t.className = "t";
         t.textContent = f.fakt + " · " + f.navn;
         var s = document.createElement("small");
-        s.textContent = d > 0 ? d + " dager over forfall · foreslått trinn " + foreslaattTrinn(d)
-                              : "forfaller " + f.forfall;
+        s.textContent = (d > 0 ? d + " dager over forfall · foreslått trinn " + foreslaattTrinn(d)
+                              : "forfaller " + f.forfall) + (i === aktiv ? " · VALGT" : " · trykk for å velge");
         t.appendChild(s);
+        t.addEventListener("click", function(){
+          valgtIndeks = i;
+          visForslag(); visListe();
+        });
         var kn = document.createElement("button");
         kn.className = "kopier";
         kn.textContent = "BETALT";
         kn.addEventListener("click", function(){
           lager.fakturaer.splice(i, 1);
+          valgtIndeks = -1;
           lagre(); loggHendelse("faktura-betalt");
-          visListe(); siFra("<b>✓</b> Fakturaen er kvittert ut");
+          visForslag(); visListe(); siFra("<b>✓</b> Fakturaen er kvittert ut");
         });
         rad.appendChild(t); rad.appendChild(kn);
         boks.appendChild(rad);
@@ -1602,6 +1613,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
           forfall = document.getElementById("pu-forfall").value;
       if(!navn || !fakt || !forfall){ siFra("Fyll inn hvem, faktura og forfall"); return; }
       lager.fakturaer.push({ navn: navn, fakt: fakt, forfall: forfall });
+      valgtIndeks = -1; /* ny faktura blir den valgte */
       lagre(); loggHendelse("faktura-lagret");
       document.getElementById("pu-navn").value = "";
       document.getElementById("pu-faktura").value = "";
@@ -1612,7 +1624,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
     });
     Array.prototype.forEach.call(document.querySelectorAll("[data-putrinn]"), function(kn){
       kn.addEventListener("click", function(){
-        var f = sisteFaktura();
+        var f = valgtFaktura();
         if(!f){ siFra("Lagre en faktura først"); return; }
         var d = Math.max(dagerOver(f.forfall), 0), t = kn.getAttribute("data-putrinn"),
             hvem = lager.bruker || "", tekst;

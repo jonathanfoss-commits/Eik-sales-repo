@@ -3,18 +3,20 @@
 import { medOrg } from '../db.js';
 import { ApiFeil } from '../http.js';
 import { publiser } from '../buss.js';
+import { osloDato } from '../dato.js';
 
 export function registrer(ruter) {
   // Autopiloten: dagsutkast sydd av dagens egne timer (PRIVAT — kun dine går
   // inn) + lagets varsler og tillegg (DELT). Brukeren godkjenner med én tommel
-  // — utkastet blir først dagbok når det POSTes.
+  // — utkastet blir først dagbok når det POSTes. «I dag» = norsk tid.
   ruter.add('GET', '/api/dagbok/autopilot', ({ ctx }) => medOrg(ctx, async (c) => {
+    const iDag = osloDato();
     const [timer, varsler, tillegg] = await Promise.all([
       c.query(`SELECT prosjekt, timer, notat FROM timeforinger
-                WHERE dato = CURRENT_DATE AND bruker_id = $1`, [ctx.brukerId]),
+                WHERE dato = $2::date AND bruker_id = $1`, [ctx.brukerId, iDag]),
       c.query(`SELECT type, prosjekt, tekst FROM varsler
-                WHERE opprettet::date = CURRENT_DATE`),
-      c.query(`SELECT prosjekt, tekst FROM tillegg WHERE dato = CURRENT_DATE`),
+                WHERE (opprettet AT TIME ZONE 'Europe/Oslo')::date = $1::date`, [iDag]),
+      c.query(`SELECT prosjekt, tekst FROM tillegg WHERE dato = $1::date`, [iDag]),
     ]);
     const deler = [];
     for (const t of timer.rows) {
