@@ -2,21 +2,25 @@
 // Passord hashes med scrypt (node:crypto — ingen avhengigheter). Sesjonstoken
 // lagres kun som SHA-256-hash i databasen. Invitasjonskoder lagres kun hashet.
 import crypto from 'node:crypto';
+import { promisify } from 'node:util';
 import { authPool } from './db.js';
 
 const SCRYPT = { N: 16384, r: 8, p: 1, keylen: 64 };
 const SESJON_LEVETID_TIMER = 24 * 14;
+// async scrypt (D23): den synkrone varianten blokkerte event-loopen ~50 ms per
+// innlogging — merkbart under lastspiss når SSE-strømmer deler samme tråd.
+const scryptAsync = promisify(crypto.scrypt);
 
-export function hashPassord(passord) {
+export async function hashPassord(passord) {
   const salt = crypto.randomBytes(16).toString('hex');
-  const hash = crypto.scryptSync(passord, salt, SCRYPT.keylen, SCRYPT).toString('hex');
+  const hash = (await scryptAsync(passord, salt, SCRYPT.keylen, SCRYPT)).toString('hex');
   return `scrypt:${salt}:${hash}`;
 }
 
-export function sjekkPassord(passord, lagret) {
+export async function sjekkPassord(passord, lagret) {
   const [ordning, salt, hash] = String(lagret || '').split(':');
   if (ordning !== 'scrypt' || !salt || !hash) return false;
-  const kandidat = crypto.scryptSync(passord, salt, SCRYPT.keylen, SCRYPT);
+  const kandidat = await scryptAsync(passord, salt, SCRYPT.keylen, SCRYPT);
   const fasit = Buffer.from(hash, 'hex');
   return kandidat.length === fasit.length && crypto.timingSafeEqual(kandidat, fasit);
 }
@@ -72,7 +76,7 @@ export async function loggInn(epost, passord, totp) {
   );
   const bruker = res.rows[0];
   // Kjør alltid en hash-sammenlikning så svartiden ikke røper om e-posten finnes.
-  const ok = sjekkPassord(String(passord || ''), bruker?.passord_hash || 'scrypt:00:00');
+  const ok = await sjekkPassord(String(passord || ''), bruker?.passord_hash || 'scrypt:00:00');
   if (!bruker || !bruker.aktiv || !ok) return null;
   // Har brukeren TOTP satt (kravet gjelder admin i produksjon), må koden stemme.
   if (bruker.totp_hemmelighet && !sjekkTotp(bruker.totp_hemmelighet, totp)) {
@@ -132,7 +136,7 @@ export async function registrerMedInvitasjon({ kode, navn, epost, passord }) {
       `INSERT INTO brukere (org_id, navn, epost, rolle, passord_hash)
        VALUES ($1, $2, $3, $4, $5) RETURNING id, org_id, navn, rolle`,
       [inv.org_id, String(navn).trim(), String(epost).trim().toLowerCase(), inv.rolle,
-        hashPassord(String(passord))])).rows[0];
+        await hashPassord(String(passord))])).rows[0];
     await klient.query(
       'UPDATE invitasjoner SET brukt_av = $2, brukt_tid = now() WHERE id = $1',
       [inv.id, bruker.id]);
@@ -151,11 +155,11 @@ export async function byttPassord(brukerId, gammelt, nytt) {
   if (String(nytt || '').length < 10) return { feil: 'Nytt passord må ha minst 10 tegn' };
   const rad = (await authPool.query(
     'SELECT passord_hash FROM brukere WHERE id = $1 AND aktiv', [brukerId])).rows[0];
-  if (!rad || !sjekkPassord(String(gammelt || ''), rad.passord_hash)) {
+  if (!rad || !(await sjekkPassord(String(gammelt || ''), rad.passord_hash))) {
     return { feil: 'Gammelt passord stemmer ikke' };
   }
   await authPool.query('UPDATE brukere SET passord_hash = $2 WHERE id = $1',
-    [brukerId, hashPassord(String(nytt))]);
+    [brukerId, await hashPassord(String(nytt))]);
   return { ok: true };
 }
 
@@ -188,7 +192,7 @@ export async function fullforNullstilling(kode, nyttPassord) {
       [hashInvitasjonskode(kode)])).rows[0];
     if (!rad) { await klient.query('ROLLBACK'); return { feil: 'Ugyldig eller utløpt kode' }; }
     await klient.query('UPDATE brukere SET passord_hash = $2 WHERE id = $1',
-      [rad.bruker_id, hashPassord(String(nyttPassord))]);
+      [rad.bruker_id, await hashPassord(String(nyttPassord))]);
     await klient.query('UPDATE nullstillinger SET brukt_tid = now() WHERE id = $1', [rad.id]);
     // alle gamle sesjoner ryker — den som nullstiller, eier kontoen alene
     await klient.query('DELETE FROM sesjoner WHERE bruker_id = $1', [rad.bruker_id]);

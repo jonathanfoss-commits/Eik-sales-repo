@@ -30,7 +30,7 @@ await eier.connect();
 // kjente fixture-passord (kun test-databasen) + rydd tidligere e2e-brukere
 for (const epost of KJENT) {
   await eier.query('UPDATE brukere SET passord_hash = $2, aktiv = true WHERE lower(epost) = $1',
-    [epost, hashPassord(PASSORD)]);
+    [epost, await hashPassord(PASSORD)]);
 }
 // generisk opprydding av forrige kjørings e2e-brukere: nuller/sletter i ALLE
 // tabeller som refererer brukere (nye moduler blir automatisk med)

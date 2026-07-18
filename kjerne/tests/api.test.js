@@ -49,7 +49,7 @@ test.before(async () => {
       await eier.query(
         `INSERT INTO brukere (org_id, navn, epost, rolle, passord_hash) VALUES ($1,$2,$3,$4,$5)
          ON CONFLICT (epost) DO UPDATE SET passord_hash = EXCLUDED.passord_hash, aktiv = true`,
-        [orgA, navn, epost, rolle, hashPassord(PASSORD)]);
+        [orgA, navn, epost, rolle, await hashPassord(PASSORD)]);
     }
 
     // AI-mock: later som den er Anthropic Messages API.
