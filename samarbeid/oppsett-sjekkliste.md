@@ -178,6 +178,12 @@ i miljøet. Publisert: pilot v0.17.1 ligger på `main` og STABIL-siten
   TEST, og API-et avviser uautentiserte kall med `401`.
   Nullstillingskodene til de nye brukerne står i Render-oppstartsloggen
   (Dashboard → tjenesten → Logs) — deles utenfor systemet, som designet.
+- [x] **Testbevis (samme økt):** hele CI-løpet kjørt lokalt mot Postgres 16
+  med migrasjon 008: 30/30 servertester grønne (inkl. RLS-isolasjonstestene)
+  og 27/27 e2e-bevis i Chromium (tenant-isolasjon, roller, LIVE),
+  hemmelighetsskann rent. Render-backup: første døgnbackup finnes ikke ennå
+  (databasene er nye) — kveldsteamet sjekker automatisk i morgen og melder
+  fra; «gjenopprettingsprøve mot test-databasen» står igjen etter det.
 - **Gjenstår for Jonathan:** (1) merg fiks-branchen til `main` og pek begge
   Render-tjenestene tilbake på `main` (Settings → Branch) — de bygger
   midlertidig fra `claude/arbeidsorden-fortsettelse-6vh2f9` fordi
