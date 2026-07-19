@@ -124,6 +124,32 @@ leverandøravtaler.
    `NETLIFY_AUTH_TOKEN` = Netlify-tokenet, `RENDER_API_KEY` = Render-nøkkelen.
 4. Si fra i neste økt — da tester jeg begge og overtar driftspunktene.
 
+### Arbeidsordre for Claude-økten som ser nøklene («nøklene er inne»)
+
+*Status 19. juli 2026: Jonathan har lagt inn alle tre nøklene + Netlify-domenene
+i miljøet. Publisert: pilot v0.17.1 ligger på `main` og STABIL-siten
+(`op-bygg-laerling-app`, production branch = `main`). TEST = `op-bygg-laerling-app-test`
+(bygger fra `kveldsteam-forslag`). PILOTLOGG_TOKEN ligger alt på begge siter.*
+
+1. **Verifiser nøklene skånsomt (kun les-kall):**
+   `NETLIFY_AUTH_TOKEN` → `GET https://api.netlify.com/api/v1/sites` (Bearer);
+   `RENDER_API_KEY` → `GET https://api.render.com/v1/services` (Bearer);
+   `KUNDE_ANTHROPIC_KEY` → `GET https://api.anthropic.com/v1/models` (x-api-key).
+   ALDRI skriv nøkkelverdier til logg/terminal/repo.
+2. **Skrivemotoren på Netlify:** sett miljøvariabelen `ANTHROPIC_API_KEY` =
+   verdien av `KUNDE_ANTHROPIC_KEY` på BEGGE sitene (`op-bygg-laerling-app` og
+   `op-bygg-laerling-app-test`) via API-et, trigg deploy på begge, og verifiser
+   etterpå at `/versjon.json` svarer riktig versjon på begge.
+3. **Render:** opprett tjenestene fra `kjerne/render.yaml` (Blueprint via API,
+   eller tjenester + databaser enkeltvis hvis Blueprint-API-et ikke strekker til).
+   Generer sterke `PLATTFORM_APP_PASSORD`/`PLATTFORM_AUTH_PASSORD` (lagres KUN
+   som Render-miljøvariabler — gi dem aldri til noen, heller ikke i chat),
+   sett `ANTHROPIC_API_KEY` fra `KUNDE_ANTHROPIC_KEY`, vent på grønt bygg,
+   verifiser `GET /api/helse`, kjør/verifiser migrasjoner og tenant-seeding
+   (`laerling` + `malermester-demo`), og følg `kjerne/docs/cutover-plan.md`.
+4. **Rapportér** til Jonathan med kvitteringer (statuskoder/versjoner — aldri
+   hemmeligheter), og oppdater denne filen: kryss av det som nå er automatisert.
+
 ---
 
 ## Påminnelse til slutt
