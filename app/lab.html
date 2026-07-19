@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prøverommet — Lærling</title>
+<meta name="description" content="Prøv de 12 foreslåtte funksjonene og stem — det du godkjenner, bygges inn.">
+<meta name="theme-color" content="#070D12">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='42' fill='%23E8B64C'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bunn:#070D12; --flate:#0D161E; --flate-2:#121F29;
+    --strek:rgba(140,190,190,.14); --lys:#E9F2EE; --dis:#93A8AA;
+    --aurora-a:#39E29B; --aurora-b:#2FC4D9; --varsel:#E8B64C;
+    --sans:-apple-system,"Segoe UI",system-ui,Roboto,sans-serif;
+    --mono:"SF Mono",ui-monospace,Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bunn);color:var(--lys);font-family:var(--sans);line-height:1.55;
+     padding-bottom:60px}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;background:
+     radial-gradient(110% 40% at 50% 0%,rgba(232,182,76,.10),transparent 60%),var(--bunn)}
+  .wrap{max-width:560px;margin:0 auto;padding:26px 20px}
+  .brev{font-family:var(--mono);font-size:.64rem;letter-spacing:.16em;
+     text-transform:uppercase;color:var(--varsel)}
+  h1{font-size:1.6rem;font-weight:780;letter-spacing:-.02em;margin:8px 0 6px}
+  .inngang{font-size:.9rem;color:var(--dis);margin-bottom:8px}
+  .inngang b{color:var(--lys)}
+  .tilbake{display:inline-block;font-size:.8rem;color:var(--aurora-b);
+     text-decoration:none;margin-bottom:18px}
+  .kort{background:var(--flate);border:1px solid var(--strek);border-radius:16px;
+     padding:16px;margin-bottom:12px}
+  .kort h2{font-size:1rem;font-weight:720}
+  .kort .om{font-size:.84rem;color:var(--dis);margin:4px 0 10px}
+  .rad{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .knapp{font:inherit;font-weight:650;font-size:.86rem;padding:11px 16px;border-radius:11px;
+     border:none;cursor:pointer;color:#04110B;
+     background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b))}
+  .knapp.svak{background:var(--flate-2);color:var(--lys);border:1px solid var(--strek)}
+  .knapp.stem{background:none;border:1px solid var(--strek);color:var(--dis);padding:9px 14px}
+  .knapp.stem.valgt{border-color:rgba(57,226,155,.6);color:var(--aurora-a)}
+  .knapp.stem.valgt.ned{border-color:rgba(232,182,76,.6);color:var(--varsel)}
+  .demo{display:none;margin-top:12px;border-top:1px solid var(--strek);padding-top:12px}
+  .kort.apen .demo{display:block}
+  .felt{width:100%;background:rgba(0,0,0,.25);border:1px solid var(--strek);border-radius:10px;
+     color:var(--lys);font:inherit;font-size:.9rem;padding:11px 12px;margin-bottom:8px}
+  textarea.felt{min-height:70px;resize:vertical}
+  label{font-size:.78rem;color:var(--dis);display:block;margin-bottom:3px}
+  .ut{white-space:pre-wrap;background:rgba(0,0,0,.3);border:1px solid rgba(57,226,155,.3);
+     border-radius:10px;padding:12px;font-size:.86rem;margin-top:10px;display:none}
+  .merk{font-family:var(--mono);font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;
+     padding:3px 9px;border-radius:99px;border:1px solid var(--strek);color:var(--dis)}
+  .stat{font-size:.78rem;color:var(--aurora-a);margin-top:8px;display:none}
+  .sjekk{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--strek);
+     font-size:.9rem}
+  .sjekk:last-of-type{border-bottom:none}
+  .sjekk input{width:26px;height:26px;accent-color:#39E29B;flex:none}
+  .liste-el{display:flex;gap:8px;align-items:baseline;padding:7px 0;
+     border-bottom:1px solid var(--strek);font-size:.85rem;color:var(--dis)}
+  .liste-el b{color:var(--lys)}
+  .chipknapp{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;padding:4px 9px;
+     border-radius:99px;border:1px solid var(--strek);color:var(--dis);background:none;cursor:pointer;
+     margin-left:auto;white-space:nowrap}
+  .foto-rad{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .foto-rad figure{width:84px}
+  .foto-rad img{width:84px;height:84px;object-fit:cover;border-radius:8px;
+     border:1px solid rgba(57,226,155,.4)}
+  .foto-rad figcaption{font-size:.64rem;color:var(--dis);line-height:1.3;margin-top:2px}
+  .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(80px);
+     background:var(--flate-2);border:1px solid rgba(57,226,155,.4);color:var(--lys);
+     padding:11px 18px;border-radius:12px;font-size:.86rem;transition:transform .25s;z-index:50;
+     max-width:90vw}
+  .toast.vis{transform:translateX(-50%) translateY(0)}
+  footer{margin-top:24px;text-align:center;font-family:var(--mono);font-size:.6rem;
+     letter-spacing:.1em;color:var(--dis);text-transform:uppercase;line-height:2}
+  /* adgangsport — samme pilotkode som kommandosentralen */
+  .port{position:fixed;inset:0;z-index:90;background:var(--bunn);display:flex;
+     align-items:center;justify-content:center;padding:24px}
+  .port .boks{max-width:360px;width:100%;background:var(--flate);border:1px solid var(--strek);
+     border-radius:16px;padding:30px;text-align:center}
+  .port h1{font-size:1.3rem;margin-bottom:6px}
+  .port p{font-size:.82rem;color:var(--dis);margin-bottom:16px}
+  .port input{width:100%;background:rgba(0,0,0,.3);border:1px solid var(--strek);
+     border-radius:10px;color:var(--lys);font:inherit;padding:11px 12px;text-align:center;
+     margin-bottom:12px}
+  .port .knapp{width:100%}
+  .port .feil{color:var(--varsel);font-size:.78rem;margin-top:10px;display:none}
+  body.laast .wrap{display:none}
+  body:not(.laast) .port{display:none}
+  .ide-kort .om{white-space:pre-wrap}
+  button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
+     outline:2px solid var(--aurora-a);outline-offset:2px}
+  .chipknapp{min-height:36px}
+  @media (prefers-reduced-motion: reduce){.blink{animation:none}}
+</style>
+</head>
+<body class="laast">
+
+<div class="port">
+  <div class="boks">
+    <h1>🧪 Prøverommet</h1>
+    <p>For pilotteamet: Jonathan, Ole Fabian og OP Bygg-ledelsen.
+    Skriv inn pilotkoden (samme som kommandosentralen).</p>
+    <input id="kode" type="password" placeholder="Pilotkode" autocomplete="off">
+    <button class="knapp" id="laas-opp">Åpne</button>
+    <div class="feil" id="kode-feil">Feil kode — spør Jonathan.</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="brev">🧪 Prøverommet · Kun testkanalen</div>
+  <h1>12 forslag. Din dom.</h1>
+  <p class="inngang">Alt under kommer fra bransjeresearchen — og alt virker, som prototyper
+  som lagres <b>kun på denne telefonen</b>. Prøv dem med ekte tall fra hverdagen din, og
+  stem: <b>👍 sender forslaget rett til ekspertpanelet</b>, som bygger det permanent inn i
+  appen (etter vanlig godkjenning). 👎 arkiverer det.</p>
+  <a class="tilbake" href="index.html">‹ Tilbake til appen</a>
+
+  <div id="meny"></div>
+
+  <div class="brev" style="margin:26px 0 8px">💡 Innkomne idéer fra appen</div>
+  <p class="inngang" style="margin-bottom:12px">Alt som meldes inn med 💡-knappen havner
+  også her — så hele pilotteamet kan stemme før panelet bygger.</p>
+  <div id="ideer"><p style="font-size:.84rem;color:var(--dis)">Henter idéene …</p></div>
+
+  <footer>Lærling · Prøverommet · Prototyper — data lagres kun lokalt</footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+  /* ── felles ── */
+  var lager;
+  try{ lager = JSON.parse(localStorage.getItem("laerling-lab") || "{}"); }catch(e){ lager = {}; }
+  lager.stemmer = lager.stemmer || {}; lager.data = lager.data || {};
+  function lagre(){ try{ localStorage.setItem("laerling-lab", JSON.stringify(lager)); }catch(e){} }
+
+  /* ── adgangsport: samme sentralkode som kommandosentralen, sjekket mot
+     PBKDF2-avtrykk — koden står ikke i klartekst i noen offentlig fil ── */
+  var SKRIVKODE = "opb-skriv-95"; /* ansattkoden — kun Skrivemotoren, samme som i appen */
+  var KODE_AVTRYKK = "ef5489a3002e76cce0ad8fcd705d3c98cb182919168a050777a1cde804385205";
+  var KODE_SALT = "laerling-sentral-v1", KODE_RUNDER = 150000;
+  function kodeAvtrykk(kode){
+    var enc = new TextEncoder();
+    return crypto.subtle.importKey("raw", enc.encode(kode), "PBKDF2", false, ["deriveBits"])
+      .then(function(n){ return crypto.subtle.deriveBits(
+        { name: "PBKDF2", hash: "SHA-256", salt: enc.encode(KODE_SALT), iterations: KODE_RUNDER }, n, 256); })
+      .then(function(b){ return Array.prototype.map.call(new Uint8Array(b),
+        function(x){ return x.toString(16).padStart(2, "0"); }).join(""); });
+  }
+  function laasOpp(){
+    var v = document.getElementById("kode").value.trim();
+    if(!v || !window.crypto || !crypto.subtle){
+      document.getElementById("kode-feil").style.display = "block"; return;
+    }
+    kodeAvtrykk(v).then(function(h){
+      if(h === KODE_AVTRYKK){
+        lager.opplaast = 1; lager.apikode = v; lagre();
+        document.body.classList.remove("laast");
+      } else { document.getElementById("kode-feil").style.display = "block"; }
+    });
+  }
+  document.getElementById("laas-opp").addEventListener("click", laasOpp);
+  document.getElementById("kode").addEventListener("keydown", function(ev){
+    if(ev.key === "Enter") laasOpp(); });
+  if(lager.opplaast && lager.apikode){ document.body.classList.remove("laast"); }
+  var bruker = "";
+  try{ bruker = (JSON.parse(localStorage.getItem("laerling") || "{}").bruker) || ""; }catch(e){}
+  function siFra(t){ var el = document.getElementById("toast");
+    el.textContent = String(t).replace(/<[^>]*>/g, ""); el.classList.add("vis");
+    clearTimeout(el._t); el._t = setTimeout(function(){ el.classList.remove("vis"); }, 2600); }
+  function loggInnspill(detalj){
+    if(location.protocol === "file:") return;
+    var post = { "form-name": "pilotlogg", hendelse: "innspill",
+                 detalj: (bruker ? bruker + " · " : "") + detalj, tid: new Date().toISOString() };
+    var kropp = Object.keys(post).map(function(k){
+      return encodeURIComponent(k) + "=" + encodeURIComponent(post[k]); }).join("&");
+    fetch("/", { method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: kropp
+    }).catch(function(){});
+  }
+  function dagensDato(){ var n = new Date();
+    return n.getDate() + "." + (n.getMonth() + 1) + "." + n.getFullYear(); }
+  function kopier(tekst, hva){
+    function ok(){ siFra("<b>✓</b> " + hva + " kopiert"); }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(tekst).then(ok, fall);
+    } else { fall(); }
+    function fall(){ var ta = document.createElement("textarea");
+      ta.value = tekst; ta.style.cssText = "position:fixed;opacity:0";
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand("copy"); ok(); }catch(e){ siFra("Kunne ikke kopiere"); }
+      document.body.removeChild(ta); }
+  }
+  function e(id){ return document.getElementById(id); }
+  function v(id){ return (e(id) && e(id).value || "").trim(); }
+  function visUt(id, tekst){ var el = e(id); el.textContent = tekst; el.style.display = "block"; }
+
+  /* ── de 12 verktøyene: {id, navn, om, demoHTML, koble()} ── */
+  var VERKTOY = [
+
+  { id: "purretrapp", navn: "1 · Purring med norsk purretrapp",
+    om: "Velg trinn — vennlig, forsinkelsesrente eller inkassovarsel — og få ferdig melding.",
+    demo: '<label for="pu-navn">Hvem skylder?</label><input class="felt" id="pu-navn" placeholder="Hansen AS">' +
+      '<label for="pu-faktura">Faktura og beløp</label><input class="felt" id="pu-faktura" placeholder="Faktura 1042 · 48 500 kr">' +
+      '<label for="pu-dager">Forfall (dager siden)</label><input class="felt" id="pu-dager" type="number" value="14">' +
+      '<div class="rad"><button class="knapp svak" data-trinn="1">Trinn 1 · Vennlig</button>' +
+      '<button class="knapp svak" data-trinn="2">Trinn 2 · Rente</button>' +
+      '<button class="knapp svak" data-trinn="3">Trinn 3 · Inkassovarsel</button></div>' +
+      '<div class="ut" id="pu-ut"></div><div class="rad" style="margin-top:8px">' +
+      '<button class="knapp" id="pu-kopier" style="display:none">Kopier</button></div>',
+    koble: function(kort){
+      kort.querySelectorAll("[data-trinn]").forEach(function(kn){
+        kn.addEventListener("click", function(){
+          var navn = v("pu-navn") || "kunden", fakt = v("pu-faktura") || "fakturaen",
+              dager = v("pu-dager") || "14", t = kn.getAttribute("data-trinn"), tekst;
+          if(t === "1") tekst = "Hei!\n\nEn liten påminnelse om " + fakt + ", som forfalt for " +
+            dager + " dager siden. Sikkert bare glemt i farta — fint om dere får ordnet den.\n\n" +
+            "Si fra hvis noe er uklart!\n\nMvh " + (bruker || "") + ", OP Bygg AS";
+          if(t === "2") tekst = "Hei,\n\nVi viser til " + fakt + ", forfalt for " + dager +
+            " dager siden, og vår tidligere påminnelse.\n\nVed fortsatt manglende betaling " +
+            "beregnes forsinkelsesrente etter forsinkelsesrenteloven fra forfallsdato. " +
+            "Vennligst betal omgående, eller ta kontakt hvis dere mener noe er feil.\n\n" +
+            "Mvh " + (bruker || "") + ", OP Bygg AS";
+          if(t === "3") tekst = "INKASSOVARSEL\n\nDet vises til " + fakt + " til " + navn +
+            ", forfalt for " + dager + " dager siden, samt tidligere purringer.\n\n" +
+            "Dersom betaling ikke er mottatt innen 14 dager fra dette varselet, oversendes " +
+            "kravet til inkasso uten ytterligere varsel, jf. inkassoloven § 9. " +
+            "Forsinkelsesrente og omkostninger tilkommer.\n\nDato: " + dagensDato() +
+            "\n\nOP Bygg AS";
+          visUt("pu-ut", tekst); e("pu-kopier").style.display = "inline-block";
+          e("pu-kopier").onclick = function(){ kopier(tekst, "Purringen"); };
+        });
+      });
+    } },
+
+  { id: "varselvakta", navn: "2 · Varselvakta (NS 8407)",
+    om: "Skriv avviket — få datostemplet endringsvarsel samme dag, med logg. «Et krav som ikke er varslet, finnes ikke.»",
+    demo: '<label for="va-prosjekt">Prosjekt</label><input class="felt" id="va-prosjekt" placeholder="Solveien 12">' +
+      '<label for="va-hva">Hva skjedde? (dikter gjerne)</label><textarea class="felt" id="va-hva" ' +
+      'placeholder="Råte i bæring bak kledning, må skiftes før vi kan lukke veggen"></textarea>' +
+      '<button class="knapp" id="va-lag">Lag varselet</button>' +
+      '<div class="ut" id="va-ut"></div>' +
+      '<div class="rad" style="margin-top:8px"><button class="knapp" id="va-kopier" style="display:none">Kopier</button>' +
+      '<button class="knapp svak" id="va-logg-kn" style="display:none">Loggfør som sendt</button></div>' +
+      '<div id="va-logg" style="margin-top:10px"></div>',
+    koble: function(){
+      var sisteTekst = "";
+      function visLogg(){
+        var l = lager.data.varsler || [], boks = e("va-logg");
+        boks.innerHTML = l.length ? "<label>Varselloggen din</label>" : "";
+        l.slice(-4).reverse().forEach(function(o){
+          var d = document.createElement("div"); d.className = "liste-el";
+          d.innerHTML = "<b>" + o.dato + "</b><span style='flex:1'></span>";
+          d.children[1].textContent = o.prosjekt + " — " + o.hva.slice(0, 42) + "…";
+          boks.appendChild(d);
+        });
+      }
+      e("va-lag").addEventListener("click", function(){
+        var p = v("va-prosjekt") || "prosjektet", hva = v("va-hva");
+        if(!hva){ siFra("Skriv hva som skjedde først"); return; }
+        sisteTekst = "VARSEL OM ENDRING — " + p + "\nDato: " + dagensDato() +
+          " (sendt uten ugrunnet opphold, jf. NS 8407 pkt. 32.2)\n\n" +
+          "Det varsles med dette om følgende forhold som antas å utgjøre en endring:\n\n" +
+          hva + "\n\nForholdet antas å påvirke fremdrift og/eller vederlag. Nærmere " +
+          "spesifisert krav følger så snart omfanget er avklart.\n\nVi ber om byggherrens " +
+          "tilbakemelding uten ugrunnet opphold.\n\nMvh " + (bruker || "") + ", OP Bygg AS";
+        visUt("va-ut", sisteTekst);
+        e("va-kopier").style.display = "inline-block";
+        e("va-logg-kn").style.display = "inline-block";
+        e("va-kopier").onclick = function(){ kopier(sisteTekst, "Varselet"); };
+      });
+      e("va-logg-kn").addEventListener("click", function(){
+        lager.data.varsler = lager.data.varsler || [];
+        lager.data.varsler.push({ dato: dagensDato(), prosjekt: v("va-prosjekt") || "?", hva: v("va-hva") });
+        lagre(); visLogg(); siFra("<b>✓</b> Loggført med dato — bevis sikret");
+      });
+      visLogg();
+    } },
+
+  { id: "tillegg", navn: "3 · Tilleggsarbeid-fangeren",
+    om: "20 sekunder etter «vi tar det på regning» — så blir det faktisk fakturert.",
+    demo: '<label for="ti-prosjekt">Prosjekt</label><input class="felt" id="ti-prosjekt" placeholder="Solveien 12">' +
+      '<label for="ti-hva">Hva ble avtalt?</label><input class="felt" id="ti-hva" placeholder="Ekstra stikkontakter på kjøkken, 4 stk">' +
+      '<label for="ti-med">Avtalt med / anslag</label><input class="felt" id="ti-med" placeholder="Byggherre Berg · ca. 6 500 kr">' +
+      '<button class="knapp" id="ti-lagre">Fang tillegget</button>' +
+      '<div id="ti-liste" style="margin-top:10px"></div>' +
+      '<button class="knapp svak" id="ti-grunnlag" style="display:none;margin-top:8px">Kopier fakturagrunnlag</button>',
+    koble: function(){
+      function visListe(){
+        var l = lager.data.tillegg || [], boks = e("ti-liste");
+        boks.innerHTML = l.length ? "<label>Fangede tillegg</label>" : "";
+        l.forEach(function(o){
+          var d = document.createElement("div"); d.className = "liste-el";
+          d.innerHTML = "<b>" + o.dato + "</b><span style='flex:1'></span>";
+          d.children[1].textContent = o.prosjekt + ": " + o.hva + " (" + o.med + ")";
+          boks.appendChild(d);
+        });
+        e("ti-grunnlag").style.display = l.length ? "inline-block" : "none";
+      }
+      e("ti-lagre").addEventListener("click", function(){
+        if(!v("ti-hva")){ siFra("Skriv hva som ble avtalt"); return; }
+        lager.data.tillegg = lager.data.tillegg || [];
+        lager.data.tillegg.push({ dato: dagensDato(), prosjekt: v("ti-prosjekt") || "?",
+          hva: v("ti-hva"), med: v("ti-med") || "ikke oppgitt" });
+        lagre(); visListe(); siFra("<b>✓</b> Fanget — dette blir fakturert");
+      });
+      e("ti-grunnlag").addEventListener("click", function(){
+        var l = lager.data.tillegg || [];
+        kopier("FAKTURAGRUNNLAG — TILLEGGSARBEID\n" + l.map(function(o){
+          return "- [" + o.dato + "] " + o.prosjekt + ": " + o.hva + " · avtalt med " + o.med;
+        }).join("\n"), "Fakturagrunnlaget");
+      });
+      visListe();
+    } },
+
+  { id: "bildeknagg", navn: "4 · Bildeknagg",
+    om: "Bilde + én diktert setning = bevis som ikke drukner i kamerarullen.",
+    demo: '<label for="bi-tekst">Merkelapp (dikter gjerne)</label><input class="felt" id="bi-tekst" ' +
+      'placeholder="Membran lagt på bad 2. etg — før flislegging">' +
+      '<input type="file" accept="image/*" capture="environment" id="bi-fil" hidden>' +
+      '<button class="knapp" id="bi-ta">📷 Ta / velg bilde</button>' +
+      '<div class="foto-rad" id="bi-rad"></div>' +
+      '<p style="font-size:.72rem;color:var(--dis);margin-top:8px">Prototype: bildene vises her, ' +
+      'men lagres ikke permanent ennå — den ekte versjonen lagrer lokalt per prosjekt (IndexedDB).</p>',
+    koble: function(){
+      e("bi-ta").addEventListener("click", function(){ e("bi-fil").click(); });
+      e("bi-fil").addEventListener("change", function(){
+        var merkelapp = v("bi-tekst") || "(uten merkelapp)";
+        Array.prototype.forEach.call(this.files, function(fil){
+          var fig = document.createElement("figure");
+          var img = document.createElement("img"); img.src = URL.createObjectURL(fil); img.alt = "";
+          var cap = document.createElement("figcaption");
+          cap.textContent = dagensDato() + " · " + merkelapp;
+          fig.appendChild(img); fig.appendChild(cap); e("bi-rad").appendChild(fig);
+        });
+        siFra("✓ Knagget med dato og tekst");
+        this.value = "";
+      });
+    } },
+
+  { id: "dagbok", navn: "5 · Byggedagbok-autopilot",
+    om: "Dagsutkastet skriver seg selv av det du alt har gjort i appen — du bare godkjenner.",
+    demo: '<button class="knapp" id="da-lag">Lag dagens utkast</button>' +
+      '<div class="ut" id="da-ut"></div>' +
+      '<button class="knapp" id="da-kopier" style="display:none;margin-top:8px">Kopier</button>',
+    koble: function(){
+      e("da-lag").addEventListener("click", function(){
+        var timer = [];
+        try{ timer = (JSON.parse(localStorage.getItem("laerling") || "{}").timer) || []; }catch(er){}
+        var idag = new Date(), iso = idag.getFullYear() + "-" +
+          String(idag.getMonth() + 1).padStart(2, "0") + "-" + String(idag.getDate()).padStart(2, "0");
+        var dagens = timer.filter(function(f){ return f.dato === iso; });
+        var tillegg = (lager.data.tillegg || []).filter(function(o){ return o.dato === dagensDato(); });
+        var varsler = (lager.data.varsler || []).filter(function(o){ return o.dato === dagensDato(); });
+        var tekst = "BYGGEDAGBOK — " + dagensDato() + "\n" +
+          "Ført av: " + (bruker || "…") + "\n\n" +
+          "ARBEID UTFØRT:\n" + (dagens.length ? dagens.map(function(f){
+            return "- " + f.prosjekt + ": " + String(f.timer).replace(".", ",") + " t" +
+              (f.notat ? " — " + f.notat : ""); }).join("\n")
+            : "- (ingen timer ført i appen i dag ennå)") + "\n\n" +
+          "TILLEGG AVTALT:\n" + (tillegg.length ? tillegg.map(function(o){
+            return "- " + o.hva + " (" + o.med + ")"; }).join("\n") : "- ingen") + "\n\n" +
+          "VARSLER SENDT:\n" + (varsler.length ? varsler.map(function(o){
+            return "- " + o.prosjekt + ": " + o.hva.slice(0, 60); }).join("\n") : "- ingen") + "\n\n" +
+          "VÆR/HINDRINGER: (fyll inn)\n\nDagboken er ført samme dag. Tidsnære notater " +
+          "veier tyngst som bevis (jf. HAB-dommen, HR-2019).";
+        visUt("da-ut", tekst); e("da-kopier").style.display = "inline-block";
+        e("da-kopier").onclick = function(){ kopier(tekst, "Dagboksutkastet"); };
+      });
+    } },
+
+  { id: "fristvakt", navn: "6 · Sluttoppgjør-fristvakta",
+    om: "Appen teller ned mot de preklusive fristene — de som gjør at kravet dør hvis du somler.",
+    demo: '<label>Overtakelsesdato for prosjektet</label>' +
+      '<input class="felt" id="fr-dato" type="date">' +
+      '<button class="knapp" id="fr-regn">Vis fristene</button>' +
+      '<div class="ut" id="fr-ut"></div>',
+    koble: function(){
+      e("fr-regn").addEventListener("click", function(){
+        var d = e("fr-dato").value;
+        if(!d){ siFra("Velg overtakelsesdato først"); return; }
+        var start = new Date(d + "T12:00:00");
+        function leggTilMnd(dato, mnd){
+          /* klamper til siste dag i målmåneden — 31.12 + 2 mnd = 28/29.2, ikke 3.3 */
+          var r = new Date(dato), dag = r.getDate();
+          r.setDate(1); r.setMonth(r.getMonth() + mnd);
+          r.setDate(Math.min(dag, new Date(r.getFullYear(), r.getMonth() + 1, 0).getDate()));
+          return r;
+        }
+        var slutt2 = leggTilMnd(start, 2), slutt8 = leggTilMnd(start, 8);
+        function igjen(m){ return Math.ceil((m - Date.now()) / 864e5); }
+        function pen(m){ return m.getDate() + "." + (m.getMonth() + 1) + "." + m.getFullYear(); }
+        visUt("fr-ut",
+          "FRISTVAKT (NS 8407)\nOvertakelse: " + pen(start) + "\n\n" +
+          "1) SLUTTOPPSTILLING med sluttfaktura:\n   frist " + pen(slutt2) + " — " +
+          igjen(slutt2) + " dager igjen.\n   Oversittes fristen, tapes krav som ikke alt er fakturert.\n\n" +
+          "2) SØKSMÅL om omtvistede krav:\n   frist " + pen(slutt8) + " — " +
+          igjen(slutt8) + " dager igjen.\n   Etter dette er kravet prekludert — tapt uansett hvor godt det er.\n\n" +
+          "Den ekte versjonen varsler deg automatisk i god tid.");
+      });
+    } },
+
+  { id: "vmhistorikk", navn: "7 · Varemottak-historikk",
+    om: "Avviksmeldingene dine får status — og purrer selv når leverandøren ikke svarer.",
+    demo: '<div id="vh-liste"></div>' +
+      '<button class="knapp svak" id="vh-demo" style="margin-top:8px">Legg til demo-avvik</button>',
+    koble: function(){
+      function visListe(){
+        var l = lager.data.vmh || [], boks = e("vh-liste");
+        boks.innerHTML = l.length ? "" : "<p style='font-size:.84rem;color:var(--dis)'>Ingen avvik ennå — legg til et demo-avvik og trykk på statusen for å flytte det videre.</p>";
+        var STEG = ["meldt", "rettet", "kreditert"];
+        l.forEach(function(o, i){
+          var d = document.createElement("div"); d.className = "liste-el";
+          d.innerHTML = "<b>" + o.dato + "</b><span style='flex:1'></span>";
+          d.children[1].textContent = o.hva;
+          var kn = document.createElement("button"); kn.className = "chipknapp";
+          kn.textContent = o.status.toUpperCase();
+          kn.addEventListener("click", function(){
+            o.status = STEG[(STEG.indexOf(o.status) + 1) % STEG.length]; lagre(); visListe();
+          });
+          d.appendChild(kn); boks.appendChild(d);
+        });
+      }
+      e("vh-demo").addEventListener("click", function(){
+        lager.data.vmh = lager.data.vmh || [];
+        lager.data.vmh.push({ dato: dagensDato(), hva: "Byggmakker · 2 gipsplater knekt, ordre B-12345", status: "meldt" });
+        lagre(); visListe();
+      });
+      visListe();
+    } },
+
+  { id: "referat", navn: "8 · Byggemøte-referatet",
+    om: "Dikter hovedpunktene rett etter møtet — få referat med ansvar og frister.",
+    demo: '<label for="re-hvem">Hvem var med?</label><input class="felt" id="re-hvem" placeholder="Ole Fabian, byggherre Berg, rørlegger Olsen">' +
+      '<label>Hovedpunkter (ett per linje — «hva; hvem; frist»)</label>' +
+      '<textarea class="felt" id="re-punkter" placeholder="Flytte sluk 40 cm; Olsen; fredag\nBestille fliser; Berg; mandag"></textarea>' +
+      '<button class="knapp" id="re-lag">Lag referatet</button>' +
+      '<div class="ut" id="re-ut"></div>' +
+      '<button class="knapp" id="re-kopier" style="display:none;margin-top:8px">Kopier</button>',
+    koble: function(){
+      e("re-lag").addEventListener("click", function(){
+        var punkter = v("re-punkter");
+        if(!punkter){ siFra("Skriv minst ett punkt"); return; }
+        var rader = punkter.split("\n").filter(Boolean).map(function(l, i){
+          var deler = l.split(";");
+          return (i + 1) + ". " + (deler[0] || "").trim() +
+            "\n   Ansvar: " + ((deler[1] || "avklares").trim()) +
+            " · Frist: " + ((deler[2] || "neste møte").trim());
+        });
+        var tekst = "BYGGEMØTEREFERAT — " + dagensDato() +
+          "\nTil stede: " + (v("re-hvem") || "(fylles inn)") +
+          "\nReferent: " + (bruker || "") + "\n\nBESLUTNINGER OG OPPFØLGING:\n" +
+          rader.join("\n") + "\n\nEventuelle innsigelser til referatet meldes innen 3 virkedager.";
+        visUt("re-ut", tekst); e("re-kopier").style.display = "inline-block";
+        e("re-kopier").onclick = function(){ kopier(tekst, "Referatet"); };
+      });
+    } },
+
+  { id: "sjekkliste", navn: "9 · Talesjekklister (KS)",
+    om: "KS-dokumentasjon med tommelen — her: våtromsmalen.",
+    demo: '<div id="sj-liste"></div>' +
+      '<button class="knapp" id="sj-lag" style="margin-top:8px">Lag KS-oppsummering</button>' +
+      '<div class="ut" id="sj-ut"></div>',
+    koble: function(){
+      var PUNKTER = ["Membran heldekkende, oppbrett min. 25 mm over topp sluk",
+        "Fall mot sluk min. 1:50 i dusjsone (1:100 ellers)", "Sluk tilgjengelig og rengjort",
+        "Rørgjennomføringer tettet med godkjent mansjett", "Egenkontroll utført med foto"];
+      var boks = e("sj-liste");
+      PUNKTER.forEach(function(p, i){
+        var l = document.createElement("label"); l.className = "sjekk";
+        var c = document.createElement("input"); c.type = "checkbox"; c.id = "sj-" + i;
+        l.appendChild(c); l.appendChild(document.createTextNode(p));
+        boks.appendChild(l);
+      });
+      e("sj-lag").addEventListener("click", function(){
+        var linjer = PUNKTER.map(function(p, i){
+          return (e("sj-" + i).checked ? "[x] " : "[ ] ") + p; });
+        visUt("sj-ut", "KS-SJEKKLISTE VÅTROM — " + dagensDato() + "\nUtført av: " +
+          (bruker || "…") + "\n\n" + linjer.join("\n") +
+          "\n\nNB: intern egenkontroll — erstatter ikke uavhengig kontroll der det kreves.");
+      });
+    } },
+
+  { id: "prisbank", navn: "10 · Tilbud fra egen prisbank",
+    om: "Appen husker hva DU tok sist — og minner deg på det når du priser nytt.",
+    demo: '<label for="pb-type">Jobbtype</label><input class="felt" id="pb-type" placeholder="Legge fliser bad">' +
+      '<label for="pb-pris">Pris du tok (per enhet)</label><input class="felt" id="pb-pris" placeholder="1 250 kr/m²">' +
+      '<button class="knapp svak" id="pb-lagre">Husk prisen</button>' +
+      '<div style="margin:10px 0 4px"><label>…og neste gang du priser:</label>' +
+      '<input class="felt" id="pb-sok" placeholder="Skriv jobbtype — f.eks. fliser"></div>' +
+      '<div class="ut" id="pb-ut"></div>',
+    koble: function(){
+      e("pb-lagre").addEventListener("click", function(){
+        if(!v("pb-type") || !v("pb-pris")){ siFra("Fyll ut jobbtype og pris"); return; }
+        lager.data.priser = lager.data.priser || [];
+        lager.data.priser.push({ type: v("pb-type"), pris: v("pb-pris"), dato: dagensDato() });
+        lagre(); siFra("<b>✓</b> Prisen ligger i banken (kun lokalt)");
+      });
+      e("pb-sok").addEventListener("input", function(){
+        var s = this.value.trim().toLowerCase(), treff = (lager.data.priser || []).filter(function(o){
+          return s.length > 1 && o.type.toLowerCase().indexOf(s) >= 0; });
+        if(treff.length){
+          visUt("pb-ut", treff.map(function(o){
+            return "Du tok " + o.pris + " for «" + o.type + "» (" + o.dato + ")"; }).join("\n") +
+            "\n\nDen ekte versjonen mater dette rett inn i tilbudsprompten.");
+        } else { e("pb-ut").style.display = "none"; }
+      });
+    } },
+
+  { id: "protokoll", navn: "11 · Overtakelsesprotokollen",
+    om: "Rom for rom med mangelliste — beviset som gjelder i fem år.",
+    demo: '<label for="pr-rom">Rom</label><input class="felt" id="pr-rom" placeholder="Bad 2. etasje">' +
+      '<label>Mangler i rommet (én per linje, tomt = godkjent)</label>' +
+      '<textarea class="felt" id="pr-mangler" placeholder="Ripe i flis ved dør\nFuge mangler bak servant"></textarea>' +
+      '<button class="knapp svak" id="pr-neste">Neste rom</button>' +
+      '<button class="knapp" id="pr-ferdig">Fullfør protokollen</button>' +
+      '<div class="ut" id="pr-ut"></div>',
+    koble: function(){
+      var rom = [];
+      e("pr-neste").addEventListener("click", function(){
+        if(!v("pr-rom")){ siFra("Skriv romnavnet"); return; }
+        rom.push({ navn: v("pr-rom"), mangler: v("pr-mangler") });
+        e("pr-rom").value = ""; e("pr-mangler").value = "";
+        siFra("<b>✓</b> " + rom[rom.length - 1].navn + " registrert (" + rom.length + " rom)");
+      });
+      e("pr-ferdig").addEventListener("click", function(){
+        if(v("pr-rom")) rom.push({ navn: v("pr-rom"), mangler: v("pr-mangler") });
+        if(!rom.length){ siFra("Registrér minst ett rom"); return; }
+        visUt("pr-ut", "OVERTAKELSESPROTOKOLL — " + dagensDato() +
+          "\nFor OP Bygg AS: " + (bruker || "…") + "\n\n" +
+          rom.map(function(r){
+            return r.navn.toUpperCase() + ":\n" + (r.mangler ?
+              r.mangler.split("\n").filter(Boolean).map(function(m){ return "- MANGEL: " + m; }).join("\n")
+              : "- Godkjent uten merknader"); }).join("\n\n") +
+          "\n\nMangler utbedres innen avtalt frist. Protokollen signeres av begge parter " +
+          "— den ekte versjonen låses etter signering.");
+        rom = [];
+      });
+    } },
+
+  { id: "motehjelper", navn: "12 · Møtehjelperen",
+    om: "Fang møtet mens det skjer — få referat, kalenderavtaler og oppfølgings-e-post " +
+      "etterpå. Notater og diktering av egne ord — ikke lydopptak av andre.",
+    demo:
+      '<p class="om" style="margin-bottom:6px">Notater er lov uten samtykke — men åpenhet ' +
+        'er godt håndverk (og et uimotsagt referat står sterkt som bevis). Lydopptak av ' +
+        'andre er bevisst IKKE med. Alt lagres kun på din telefon.</p>' +
+      '<label class="sjekk"><input type="checkbox" id="mo-samtykke"> Jeg har sagt i ' +
+        'møtet at det tas notater til referat</label>' +
+      '<label for="mo-type">Møtetype</label>' +
+      '<select class="felt" id="mo-type"><option>Byggemøte</option><option>Befaring</option>' +
+        '<option>Telefonavtale</option><option>UE-avklaring</option>' +
+        '<option>Sluttoppgjørsmøte</option></select>' +
+      '<p class="om" style="margin:2px 0 6px;font-size:.72rem">Overtakelse? Bruk ' +
+        'Overtakelsesprotokollen (verktøy 11) — den skal signeres og låses, ikke bare refereres.</p>' +
+      '<label for="mo-prosjekt">Prosjekt</label>' +
+      '<input class="felt" id="mo-prosjekt" placeholder="Krohgs gate 60">' +
+      '<label for="mo-hvem">Hvem er med?</label>' +
+      '<input class="felt" id="mo-hvem" placeholder="Ole Fabian, byggherre Berg">' +
+      '<label for="mo-notat">Notater (dikter gjerne med mikrofonen på tastaturet)</label>' +
+      '<textarea class="felt" id="mo-notat" placeholder="Berg vil flytte kjøkkenøya … ' +
+        'rørlegger lover svar fredag … mulig tillegg på el"></textarea>' +
+      '<label>Avtaler med dato (én per linje: «hva; dato; kl»)</label>' +
+      '<textarea class="felt" id="mo-avtaler" placeholder="Befaring bad; 24.7; 09:00\n' +
+        'Svar fra rørlegger; 25.7"></textarea>' +
+      '<p class="om" id="mo-endring" style="display:none;color:#F2C14E">⚠ Dette høres ut ' +
+        'som en endring — husk Varselvakta (verktøy 2): varsle byggherren SAMME DAG.</p>' +
+      '<button class="knapp" id="mo-referat">Lag referat</button>' +
+      '<button class="knapp svak" id="mo-ics">📅 Kalenderfil</button>' +
+      '<button class="knapp svak" id="mo-epost">✉️ Oppfølging</button>' +
+      '<div class="ut" id="mo-ut"></div>' +
+      '<button class="knapp" id="mo-kopier" style="display:none;margin-top:8px">Kopier</button>',
+    koble: function(){
+      function harSagtFra(){
+        if(!e("mo-samtykke").checked){
+          siFra("Kryss av først: si i møtet at det tas notater"); return false; }
+        return true;
+      }
+      e("mo-notat").addEventListener("input", function(){
+        e("mo-endring").style.display =
+          /endring|tillegg|ekstra|avvik/i.test(this.value) ? "block" : "none";
+      });
+      function avtaleLinjer(){
+        return v("mo-avtaler").split("\n").filter(Boolean).map(function(l){
+          var d = l.split(";").map(function(s){ return s.trim(); });
+          return { hva: d[0] || "", dato: d[1] || "", kl: d[2] || "" };
+        });
+      }
+      function grunnlag(){
+        return "Møtetype: " + v("mo-type") + "\nProsjekt: " + (v("mo-prosjekt") || "[PROSJEKT]") +
+          "\nDato: " + dagensDato() + "\nDeltakere: " + (v("mo-hvem") || "[DELTAKERE]") +
+          "\n\nNotater:\n" + v("mo-notat") +
+          (v("mo-avtaler") ? "\n\nAvtaler gjort i møtet:\n" + v("mo-avtaler") : "");
+      }
+      function lokaltReferat(){
+        var punkter = v("mo-notat").split("\n").filter(Boolean).map(function(p, i){
+          return (i + 1) + ". " + p.trim(); });
+        return v("mo-type").toUpperCase() + " — REFERAT " + dagensDato() +
+          "\nProsjekt: " + (v("mo-prosjekt") || "(fylles inn)") +
+          "\nTil stede: " + (v("mo-hvem") || "(fylles inn)") +
+          "\nReferent: " + (bruker || "") +
+          "\n\nPUNKTER:\n" + punkter.join("\n") +
+          (avtaleLinjer().length ? "\n\nAVTALER:\n" + avtaleLinjer().map(function(a){
+            return "- " + a.hva + (a.dato ? " — " + a.dato + (a.kl ? " kl. " + a.kl : "") : "");
+          }).join("\n") : "") +
+          "\n\nEventuelle innsigelser til referatet meldes innen 3 virkedager.";
+      }
+      function visReferat(t){
+        visUt("mo-ut", t);
+        e("mo-kopier").style.display = "inline-block";
+        e("mo-kopier").onclick = function(){ kopier(t, "Referatet"); };
+      }
+      e("mo-referat").addEventListener("click", function(){
+        if(!harSagtFra()) return;
+        if(!v("mo-notat")){ siFra("Skriv eller dikter notater først"); return; }
+        var knapp = e("mo-referat");
+        knapp.disabled = true; knapp.textContent = "Lærling skriver …";
+        function nullstill(){ knapp.disabled = false; knapp.textContent = "Lag referat"; }
+        fetch("/.netlify/functions/skriv", { method: "POST",
+          headers: { "Content-Type": "application/json", "X-Pilotkode": SKRIVKODE },
+          body: JSON.stringify({ oppgave: "referat", tekst: grunnlag() })
+        }).then(function(svar){
+          if(!svar.ok) throw 0;
+          return svar.text();
+        }).then(function(t){
+          if(!t.trim()) throw 0;
+          visReferat(t);
+        }).catch(function(){
+          visReferat(lokaltReferat());
+          siFra("Skrivemotoren er ikke koblet til — viser lokal mal");
+        }).then(nullstill, nullstill);
+      });
+      e("mo-ics").addEventListener("click", function(){
+        var alle = avtaleLinjer();
+        if(!alle.length){ siFra("Skriv minst én avtale med dato"); return; }
+        function p2(n){ return (n < 10 ? "0" : "") + n; }
+        var naa = new Date(), stempel = naa.getUTCFullYear() + p2(naa.getUTCMonth() + 1) +
+          p2(naa.getUTCDate()) + "T" + p2(naa.getUTCHours()) + p2(naa.getUTCMinutes()) + "00Z";
+        var evt = [], hoppet = 0;
+        alle.forEach(function(a, i){
+          if(!a.dato){ hoppet++; return; }
+          var aar, mnd, dag, m = a.dato.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+          if(m){ aar = +m[1]; mnd = +m[2]; dag = +m[3]; }
+          else { var d = a.dato.split("."); dag = +d[0]; mnd = +d[1];
+            aar = d[2] ? +d[2] : naa.getFullYear(); if(aar < 100) aar += 2000; }
+          var kl = a.kl.match(/(\d{1,2})[:.](\d{2})/);
+          if(!dag || !mnd || dag > 31 || mnd > 12){ hoppet++; return; }
+          evt.push("BEGIN:VEVENT\r\nUID:laerling-" + Date.now() + "-" + i + "@opbygg" +
+            "\r\nDTSTAMP:" + stempel +
+            "\r\nDTSTART:" + aar + p2(mnd) + p2(dag) + "T" + (kl ? p2(+kl[1]) + kl[2] : "0900") + "00" +
+            "\r\nSUMMARY:" + a.hva.replace(/[,;\\]/g, " ") +
+            (v("mo-prosjekt") ? "\r\nLOCATION:" + v("mo-prosjekt").replace(/[,;\\]/g, " ") : "") +
+            "\r\nDESCRIPTION:Avtalt i " + v("mo-type").toLowerCase() + " " + dagensDato() +
+            "\r\nBEGIN:VALARM\r\nTRIGGER:-PT1H\r\nACTION:DISPLAY" +
+            "\r\nDESCRIPTION:Påminnelse\r\nEND:VALARM\r\nEND:VEVENT");
+        });
+        if(!evt.length){ siFra("Fant ingen linjer med dato («hva; dato; kl»)"); return; }
+        var ics = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Laerling//Motehjelperen//NO\r\n" +
+          evt.join("\r\n") + "\r\nEND:VCALENDAR\r\n";
+        /* iOS-PWA: filnedlasting er upålitelig — del .ics-filen via delingsarket
+           (til deg selv i Mail, trykk vedlegget → «Legg til alle»);
+           nedlasting som reserve for desktop/Android */
+        var fil;
+        try{ fil = new File([ics], "avtaler.ics", { type: "text/calendar" }); }catch(err){}
+        if(fil && navigator.canShare && navigator.canShare({ files: [fil] }) && navigator.share){
+          navigator.share({ files: [fil], title: "Avtaler fra møtet" }).then(function(){
+            siFra("<b>✓</b> Del til deg selv i Mail — trykk vedlegget og «Legg til alle»");
+          }, function(){ /* avbrutt av brukeren */ });
+        } else {
+          var lenke = document.createElement("a");
+          lenke.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
+          lenke.download = "avtaler.ics";
+          document.body.appendChild(lenke); lenke.click(); document.body.removeChild(lenke);
+          siFra("<b>✓</b> avtaler.ics lastet ned — åpne den for å legge inn " +
+            evt.length + " avtale(r)");
+        }
+        if(hoppet) siFra(hoppet + " linje(r) uten gyldig dato ble hoppet over");
+      });
+      e("mo-epost").addEventListener("click", function(){
+        if(!harSagtFra()) return;
+        var alle = avtaleLinjer();
+        var tekst = "Hei!\n\nTakk for møtet i dag" +
+          (v("mo-prosjekt") ? " om " + v("mo-prosjekt") : "") +
+          ". Kort oppsummert avtalte vi:\n\n" +
+          (alle.length ? alle.map(function(a){
+            return "- " + a.hva + (a.dato ? " (" + a.dato + (a.kl ? " kl. " + a.kl : "") + ")" : "");
+          }).join("\n") : "- [AVTALENE]") +
+          "\n\nSi fra om noe er glemt eller feil.\n\nMvh, " + (bruker || "OP Bygg AS");
+        location.href = "mailto:?subject=" +
+          encodeURIComponent("Oppsummering fra møtet " + dagensDato()) +
+          "&body=" + encodeURIComponent(tekst);
+      });
+    } }
+  ];
+
+  /* ── bygg menyen ── */
+  var meny = document.getElementById("meny");
+  VERKTOY.forEach(function(verk){
+    var kort = document.createElement("div");
+    kort.className = "kort"; kort.id = "lab-" + verk.id;
+    var stemme = lager.stemmer[verk.id];
+    kort.innerHTML =
+      '<h2>' + verk.navn + '</h2><p class="om">' + verk.om + '</p>' +
+      '<div class="rad">' +
+        '<button class="knapp svak" data-prov>Prøv den ▾</button>' +
+        '<button class="knapp stem' + (stemme === "opp" ? " valgt" : "") + '" data-opp>👍 Bygg</button>' +
+        '<button class="knapp stem' + (stemme === "ned" ? " valgt ned" : "") + '" data-ned>👎 Dropp</button>' +
+      '</div>' +
+      '<div class="stat"' + (stemme ? ' style="display:block"' : "") + ">" +
+        (stemme === "opp" ? "✓ Sendt til ekspertpanelet — bygges inn etter godkjenning" :
+         stemme === "ned" ? "Arkivert — ombestem deg når som helst" : "") + "</div>" +
+      '<div class="demo">' + verk.demo + "</div>";
+    meny.appendChild(kort);
+    kort.querySelector("[data-prov]").addEventListener("click", function(){
+      kort.classList.toggle("apen");
+      this.textContent = kort.classList.contains("apen") ? "Lukk ▴" : "Prøv den ▾";
+    });
+    function stem(valg){
+      lager.stemmer[verk.id] = valg; lagre();
+      var opp = kort.querySelector("[data-opp]"), ned = kort.querySelector("[data-ned]"),
+          st = kort.querySelector(".stat");
+      opp.className = "knapp stem" + (valg === "opp" ? " valgt" : "");
+      ned.className = "knapp stem" + (valg === "ned" ? " valgt ned" : "");
+      st.style.display = "block";
+      st.textContent = valg === "opp" ? "✓ Sendt til ekspertpanelet — bygges inn etter godkjenning"
+                                      : "Arkivert — ombestem deg når som helst";
+      loggInnspill("Prøverommet: " + (valg === "opp" ? "👍 BYGG" : "👎 dropp") + " «" + verk.navn + "»");
+      siFra(valg === "opp" ? "<b>✓</b> Panelet har fått beskjed — bygges inn etter godkjenning"
+                           : "Notert — forslaget er arkivert");
+    }
+    kort.querySelector("[data-opp]").addEventListener("click", function(){ stem("opp"); });
+    kort.querySelector("[data-ned]").addEventListener("click", function(){ stem("ned"); });
+    verk.koble(kort);
+  });
+
+  /* ── innkomne idéer fra pilotloggen (via sitens serverfunksjon) ── */
+  function visIdeer(){
+    var boks = document.getElementById("ideer");
+    fetch("/.netlify/functions/innspill", { cache: "no-store", headers: { "X-Pilotkode": lager.apikode || "" } })
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(subs){
+        var ideer = subs.filter(function(s){
+          var d = (s.data || {}).detalj || "";
+          return (s.data || {}).hendelse === "innspill" &&
+            d.indexOf("Prøverommet:") < 0 && d.indexOf("Hastebehandling bestilt") < 0;
+        });
+        boks.innerHTML = "";
+        if(!ideer.length){
+          boks.innerHTML = '<p style="font-size:.84rem;color:var(--dis)">Ingen idéer ennå — ' +
+            "send én med 💡-knappen i appen, så dukker den opp her.</p>";
+          return;
+        }
+        ideer.slice(0, 15).forEach(function(s){
+          var tekst = (s.data.detalj || ""), nokkel = "ide-" + s.id,
+              stemme = lager.stemmer[nokkel];
+          var kort = document.createElement("div");
+          kort.className = "kort ide-kort";
+          kort.innerHTML = '<h2 style="font-size:.92rem"></h2>' +
+            '<p class="om" style="font-family:var(--mono);font-size:.6rem;letter-spacing:.1em">' +
+            s.created_at.slice(0, 10) + "</p>" +
+            '<div class="rad">' +
+            '<button class="knapp stem' + (stemme === "opp" ? " valgt" : "") + '" data-opp>👍 Bygg</button>' +
+            '<button class="knapp stem' + (stemme === "ned" ? " valgt ned" : "") + '" data-ned>👎 Dropp</button></div>' +
+            '<div class="stat"' + (stemme ? ' style="display:block"' : "") + ">" +
+            (stemme === "opp" ? "✓ Sendt til ekspertpanelet" : stemme === "ned" ? "Arkivert" : "") + "</div>";
+          kort.querySelector("h2").textContent = tekst;
+          function stemPaa(valg){
+            lager.stemmer[nokkel] = valg; lagre();
+            kort.querySelector("[data-opp]").className = "knapp stem" + (valg === "opp" ? " valgt" : "");
+            kort.querySelector("[data-ned]").className = "knapp stem" + (valg === "ned" ? " valgt ned" : "");
+            var st = kort.querySelector(".stat"); st.style.display = "block";
+            st.textContent = valg === "opp" ? "✓ Sendt til ekspertpanelet" : "Arkivert";
+            loggInnspill("Prøverommet: " + (valg === "opp" ? "👍 BYGG" : "👎 dropp") +
+              " idé «" + tekst.slice(0, 70) + "»");
+            siFra(valg === "opp" ? "<b>✓</b> Panelet har fått beskjed" : "Notert");
+          }
+          kort.querySelector("[data-opp]").addEventListener("click", function(){ stemPaa("opp"); });
+          kort.querySelector("[data-ned]").addEventListener("click", function(){ stemPaa("ned"); });
+          boks.appendChild(kort);
+        });
+      })
+      .catch(function(){
+        boks.innerHTML = '<p style="font-size:.84rem;color:var(--dis)">Fikk ikke hentet ' +
+          "idéene herfra ennå — de vises når serverfunksjonen er koblet til (miljøvariabelen " +
+          "PILOTLOGG_TOKEN i Netlify). Idéene er trygt lagret i pilotloggen uansett, og " +
+          "vises i kommandosentralen.</p>";
+      });
+  }
+  visIdeer();
+
+  /* service worker som resten av appen */
+  if("serviceWorker" in navigator &&
+     (location.protocol === "https:" || location.hostname === "localhost")){
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  }
+})();
+</script>
+</body>
+</html>

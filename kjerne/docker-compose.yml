@@ -1,0 +1,36 @@
+# Lokal utvikling / «egen boks»: app + Postgres med én kommando.
+#   KJERNE_EIER_PASSORD=... PLATTFORM_APP_PASSORD=... PLATTFORM_AUTH_PASSORD=... \
+#   docker compose up -d
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: plattform
+      POSTGRES_USER: kjerne_eier
+      POSTGRES_PASSWORD: ${KJERNE_EIER_PASSORD:?sett KJERNE_EIER_PASSORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kjerne_eier -d plattform"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      MIGRATE_DATABASE_URL: postgres://kjerne_eier:${KJERNE_EIER_PASSORD}@db:5432/plattform
+      PLATTFORM_APP_PASSORD: ${PLATTFORM_APP_PASSORD:?sett PLATTFORM_APP_PASSORD}
+      PLATTFORM_AUTH_PASSORD: ${PLATTFORM_AUTH_PASSORD:?sett PLATTFORM_AUTH_PASSORD}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      TENANTS: laerling,malermester-demo
+
+volumes:
+  db-data:

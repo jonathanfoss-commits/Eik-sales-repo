@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Plattform</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0E0E10">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="ikon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="stil.css">
+</head>
+<body>
+
+<!-- ── Innlogging / innrullering (invitasjonskode) ── -->
+<div id="login" class="login-side" hidden>
+  <div class="login-boks">
+    <div class="login-logo">
+      <span class="skilt" id="login-tittel">LOGG INN</span>
+      <p>Bygget for hansker, dårlig dekning og én tommel.</p>
+    </div>
+    <div class="kort" id="login-boks">
+      <label class="felt" for="login-epost">E-post</label>
+      <input class="felt" id="login-epost" type="email" autocomplete="username" inputmode="email">
+      <label class="felt" for="login-passord">Passord</label>
+      <input class="felt" id="login-passord" type="password" autocomplete="current-password">
+      <div id="login-totp-rad" hidden>
+        <label class="felt" for="login-totp">Engangskode (autentiseringsapp)</label>
+        <input class="felt" id="login-totp" inputmode="numeric" autocomplete="one-time-code">
+      </div>
+      <button class="knapp" id="login-knapp" style="margin-top:14px">Logg inn</button>
+      <p id="login-feil" class="alarm-tekst" style="font-size:.82rem;margin-top:10px;display:none"></p>
+      <button class="lenkeknapp" id="vis-registrering" style="margin-top:12px">
+        Ny her? Registrer deg med invitasjonskoden fra lederen din</button>
+      <button class="lenkeknapp" id="vis-glemt" style="margin-top:6px">Glemt passord?</button>
+    </div>
+    <div class="kort" id="glemt-boks" hidden>
+      <label class="felt" for="glemt-epost">E-posten din</label>
+      <input class="felt" id="glemt-epost" type="email" autocomplete="username" inputmode="email">
+      <button class="knapp" id="glemt-knapp" style="margin-top:10px">Send meg kode</button>
+      <p id="glemt-melding" class="under" style="margin-top:10px;display:none"></p>
+      <div style="border-top:1px solid var(--strek);margin:14px 0 10px"></div>
+      <label class="felt" for="null-kode">Har du fått kode? Skriv den her</label>
+      <input class="felt" id="null-kode" autocomplete="one-time-code" autocapitalize="none">
+      <label class="felt" for="null-passord">Nytt passord (minst 10 tegn)</label>
+      <input class="felt" id="null-passord" type="password" autocomplete="new-password">
+      <button class="knapp" id="null-knapp" style="margin-top:10px">Sett nytt passord</button>
+      <p id="glemt-feil" class="alarm-tekst" style="font-size:.82rem;margin-top:10px;display:none"></p>
+      <button class="lenkeknapp" id="glemt-tilbake" style="margin-top:12px">‹ Tilbake til innlogging</button>
+    </div>
+    <div class="kort" id="reg-boks" hidden>
+      <label class="felt" for="reg-kode">Invitasjonskode</label>
+      <input class="felt" id="reg-kode" autocomplete="off" autocapitalize="none">
+      <label class="felt" for="reg-navn">Navnet ditt</label>
+      <input class="felt" id="reg-navn" autocomplete="name">
+      <label class="felt" for="reg-epost">E-post</label>
+      <input class="felt" id="reg-epost" type="email" autocomplete="username" inputmode="email">
+      <label class="felt" for="reg-passord">Velg passord (minst 10 tegn)</label>
+      <input class="felt" id="reg-passord" type="password" autocomplete="new-password">
+      <button class="knapp" id="reg-knapp" style="margin-top:14px">Registrer meg</button>
+      <p id="reg-feil" class="alarm-tekst" style="font-size:.82rem;margin-top:10px;display:none"></p>
+      <button class="lenkeknapp" id="vis-innlogging" style="margin-top:12px">‹ Tilbake til innlogging</button>
+    </div>
+    <p style="font-size:.72rem;color:var(--dis);text-align:center;margin-top:10px">
+      Data lagres kryptert i EU. Automatisk logging sender aldri innhold — kun hendelsestyper.</p>
+  </div>
+</div>
+
+<!-- ── Appen ── -->
+<div id="skall" hidden>
+<div class="stripe" style="position:fixed;top:0;left:0;right:0;z-index:50"></div>
+<div class="app">
+  <div class="topp">
+    <div class="merke"><b id="app-navn">Plattform</b><span id="app-under"></span></div>
+    <button class="bruker-chip" id="meg-chip" title="Logg ut"></button>
+  </div>
+  <div class="offline-merke">INGEN DEKNING — REGISTRERINGER LEGGES I KØ OG SENDES AUTOMATISK</div>
+  <div id="live-status" class="live-status" role="status" aria-live="polite"></div>
+  <div id="faner"></div>
+</div>
+
+<nav class="bunn">
+  <div class="nav-indre">
+    <div id="tabs" class="tabs-rad"></div>
+    <button class="pluss" id="pluss" aria-label="Ny registrering">+</button>
+  </div>
+</nav>
+</div>
+
+<!-- ── Bunn-ark (gjenbrukes av alle skjema) ── -->
+<div class="ark-bak" id="ark-bak"></div>
+<div class="ark" id="ark" role="dialog" aria-modal="true">
+  <button class="ark-lukk" id="ark-lukk" aria-label="Lukk">×</button>
+  <div class="hank"></div>
+  <div id="ark-innhold"></div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+<script src="js/moduler/hjem.js"></script>
+<script src="js/moduler/prosjekt.js"></script>
+<script src="js/moduler/timer.js"></script>
+<script src="js/moduler/dagbok.js"></script>
+<script src="js/moduler/varsler.js"></script>
+<script src="js/moduler/skriv.js"></script>
+<script src="js/moduler/innspill.js"></script>
+<script src="js/moduler/sentral.js"></script>
+<script src="js/moduler/innflytting.js"></script>
+<script src="js/moduler/tillegg.js"></script>
+<script src="js/moduler/frister.js"></script>
+<!-- oppstarten skjer i app.js (DOMContentLoaded) — CSP-en tillater ingen inline-script -->
+</body>
+</html>

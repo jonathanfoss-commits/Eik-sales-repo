@@ -1,0 +1,25 @@
+# Publiseringsvakta — vokter versjonstriadene automatisk, så ingen mennesker
+# trenger å huske dem: piloten (app/index.html VERSJON == app/versjon.json,
+# og sw-cachen MÅ bumpes når cachede filer endres) og kjernen (VERSJON i
+# app.js == versjon.json == cache-navnet i sw.js). Feiler høyt før drift
+# når triaden drifter — det er hele jobben dens.
+name: publiseringsvakt
+
+on:
+  push:
+    branches: [main, kveldsteam-forslag]
+  pull_request:
+    branches: [main]
+
+jobs:
+  triade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Versjonstriadene
+        run: node .github/publiseringsvakt.mjs

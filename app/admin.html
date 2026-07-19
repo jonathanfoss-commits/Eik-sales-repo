@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lærling — Kommandosentral</title>
+<meta name="description" content="Intern oversikt for Lærling-piloten: kanalstatus, godkjenninger, pilotpuls og dokumentasjon.">
+<meta name="theme-color" content="#070D12">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='42' fill='%232FC4D9'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bunn:#070D12; --flate:#0D161E; --flate-2:#121F29;
+    --strek:rgba(140,190,190,.14); --lys:#E9F2EE; --dis:#93A8AA;
+    --aurora-a:#39E29B; --aurora-b:#2FC4D9; --varsel:#E8B64C;
+    --sans:-apple-system,"Segoe UI",system-ui,Roboto,sans-serif;
+    --mono:"SF Mono",ui-monospace,Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bunn);color:var(--lys);font-family:var(--sans);line-height:1.55;min-height:100vh}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;background:
+     radial-gradient(90% 40% at 50% 0%,rgba(47,196,217,.1),transparent 60%),var(--bunn)}
+  a{color:var(--aurora-b)}
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+  button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--aurora-a);outline-offset:2px}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:26px 28px 48px}
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+     flex-wrap:wrap;margin-bottom:22px}
+  header h1{font-size:1.5rem;font-weight:780;letter-spacing:-.02em}
+  header h1 b{color:var(--aurora-a)}
+  .undertekst{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;
+     text-transform:uppercase;color:var(--dis)}
+
+  .rutenett{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+  .kort{background:var(--flate);border:1px solid var(--strek);border-radius:16px;padding:20px}
+  .kort h2{font-size:.72rem;font-family:var(--mono);letter-spacing:.16em;
+     text-transform:uppercase;color:var(--dis);margin-bottom:14px}
+  .kort h2 b{color:var(--aurora-a);font-weight:600}
+  .s12{grid-column:span 12}.s8{grid-column:span 8}.s6{grid-column:span 6}.s4{grid-column:span 4}
+  @media (max-width:900px){.s8,.s6,.s4{grid-column:span 12}}
+
+  /* kanalstatus */
+  .kanaler{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .kanal{background:var(--flate-2);border:1px solid var(--strek);border-radius:12px;padding:16px}
+  .kanal .navn{font-family:var(--mono);font-size:.64rem;letter-spacing:.14em;color:var(--dis)}
+  .kanal .v{font-size:1.9rem;font-weight:780;letter-spacing:-.02em;
+     font-variant-numeric:tabular-nums;margin:2px 0 4px}
+  .kanal .status{font-size:.8rem;color:var(--dis)}
+  .kanal a{font-size:.78rem}
+  .pill{display:inline-block;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;
+     padding:3px 10px;border-radius:99px;border:1px solid var(--strek);color:var(--dis)}
+  .pill.ok{color:#04110B;background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b));
+     border:none;font-weight:700}
+  .pill.vent{color:var(--varsel);border-color:rgba(232,182,76,.5)}
+  .diff{margin-top:12px;padding:12px 14px;border-radius:10px;font-size:.85rem;
+     background:rgba(232,182,76,.08);border:1px solid rgba(232,182,76,.35);display:none}
+  .diff.vis{display:block}
+  .diff b{color:var(--varsel)}
+
+  /* pilotpuls */
+  .puls-tall{font-size:2.6rem;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;
+     background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b));
+     -webkit-background-clip:text;background-clip:text;color:transparent}
+  .puls-l{font-size:.85rem;color:var(--dis)}
+  .fremdrift{height:6px;border-radius:3px;background:rgba(140,190,190,.12);margin:12px 0;overflow:hidden}
+  .fremdrift i{display:block;height:100%;border-radius:3px;
+     background:linear-gradient(90deg,var(--aurora-a),var(--aurora-b))}
+  .milepael{font-size:.82rem;color:var(--dis)}
+  .milepael b{color:var(--lys)}
+
+  /* flyt-diagram */
+  .flyt{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
+  .flyt .trinn{flex:1;min-width:150px;background:var(--flate-2);border:1px solid var(--strek);
+     border-radius:12px;padding:13px 14px;position:relative}
+  .flyt .trinn + .trinn{margin-left:26px}
+  .flyt .trinn + .trinn::before{content:"→";position:absolute;left:-21px;top:50%;
+     transform:translateY(-50%);color:var(--aurora-a);font-size:1.1rem}
+  .flyt .hvem{font-family:var(--mono);font-size:.56rem;letter-spacing:.12em;color:var(--aurora-b)}
+  .flyt .hva{font-size:.82rem;margin-top:3px}
+  @media (max-width:900px){.flyt{flex-direction:column}.flyt .trinn + .trinn{margin:22px 0 0}
+    .flyt .trinn + .trinn::before{content:"↓";left:50%;top:-20px;transform:translateX(-50%)}}
+
+  /* lister */
+  .liste{list-style:none}
+  .liste li{display:flex;gap:10px;align-items:baseline;padding:8px 0;
+     border-bottom:1px solid var(--strek);font-size:.88rem;color:var(--dis)}
+  .liste li:last-child{border-bottom:none}
+  .liste li b{color:var(--lys);font-weight:640}
+  .prikk{flex:none;width:8px;height:8px;border-radius:50%;
+     background:var(--aurora-a);position:relative;top:-1px}
+  .lenker{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+  .lenke{display:block;background:var(--flate-2);border:1px solid var(--strek);border-radius:10px;
+     padding:12px 14px;text-decoration:none;color:var(--lys);font-size:.88rem;transition:border-color .15s}
+  .lenke:hover{border-color:rgba(57,226,155,.45)}
+  .lenke small{display:block;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;
+     color:var(--dis);margin-top:2px;text-transform:uppercase}
+
+  /* oppsett */
+  .felt{display:grid;grid-template-columns:170px 1fr;gap:10px;align-items:center;margin-bottom:10px}
+  .felt label{font-size:.82rem;color:var(--dis)}
+  .felt input{background:rgba(0,0,0,.3);border:1px solid var(--strek);border-radius:9px;
+     color:var(--lys);font:inherit;font-size:.86rem;padding:9px 12px;width:100%}
+  .knapp{display:inline-block;font-weight:650;font-size:.86rem;padding:10px 20px;border-radius:10px;
+     color:#04110B;background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b))}
+
+  footer{margin-top:26px;text-align:center;font-family:var(--mono);font-size:.62rem;
+     letter-spacing:.1em;color:var(--dis);text-transform:uppercase;line-height:2}
+
+  .agent{font-family:var(--mono);font-size:.56rem;letter-spacing:.08em;padding:5px 9px;
+     border-radius:99px;border:1px solid var(--strek);color:var(--dis)}
+  .agent.jobber{color:var(--aurora-a);border-color:rgba(57,226,155,.5);
+     animation:agentpuls 1.6s ease-in-out infinite}
+  @keyframes agentpuls{50%{opacity:.35}}
+
+  /* ── panel-konstellasjonen: navet i midten, ekspertene rundt ── */
+  .konst{position:relative;max-width:430px;margin:2px auto 6px}
+  .konst svg{width:100%;height:auto;display:block}
+  .k-eik{stroke:var(--strek);stroke-width:1}
+  .konst.aktiv .k-eik{stroke:rgba(57,226,155,.4);stroke-dasharray:3 9;
+     animation:eikflyt 1.1s linear infinite}
+  @keyframes eikflyt{to{stroke-dashoffset:-12}}
+  .konst .agent{padding:0;border:none;animation:none}
+  .konst .k-prikk{fill:var(--flate-2);stroke:var(--strek);stroke-width:1.2}
+  .konst .k-navn{fill:var(--dis);font-family:var(--mono);font-size:8.6px;
+     letter-spacing:.07em;text-transform:uppercase}
+  .konst.aktiv .k-prikk{fill:rgba(57,226,155,.18);stroke:rgba(57,226,155,.65)}
+  .konst.aktiv .k-navn{fill:var(--aurora-a)}
+  .konst.aktiv .agent{animation:nodeglod 4.8s ease-in-out infinite}
+  @keyframes nodeglod{0%,100%{opacity:.45}10%{opacity:1}20%{opacity:.45}}
+  .k-kjerne{filter:drop-shadow(0 0 6px rgba(57,226,155,.35))}
+  .konst.aktiv .k-kjerne{animation:kjernepust 2.6s ease-in-out infinite;
+     transform-origin:center;transform-box:fill-box}
+  @keyframes kjernepust{50%{transform:scale(1.1);
+     filter:drop-shadow(0 0 22px rgba(57,226,155,.85))}}
+  .k-ring{fill:none;stroke:rgba(57,226,155,.28);stroke-width:1;stroke-dasharray:1 7}
+  .konst.aktiv .k-ring{animation:ringspinn 26s linear infinite;
+     transform-origin:center;transform-box:fill-box}
+  @keyframes ringspinn{to{transform:rotate(360deg)}}
+  .k-puls{fill:var(--aurora-a);opacity:0}
+  .konst.aktiv .k-puls{animation:pulsfart 2.8s ease-in-out infinite}
+  @keyframes pulsfart{
+     0%{transform:translate(var(--x0),var(--y0));opacity:0}
+     12%{opacity:1}
+     46%{transform:translate(var(--x1),var(--y1));opacity:.9}
+     54%{transform:translate(var(--x1),var(--y1));opacity:.9}
+     88%{opacity:1}
+     100%{transform:translate(var(--x0),var(--y0));opacity:0}}
+  .k-kjernetekst{fill:#04110B;font-family:var(--mono);font-weight:700;
+     font-size:9.5px;letter-spacing:.12em}
+  .konst-note{font-size:.68rem;color:var(--dis);text-align:center;margin-top:2px}
+  @media (prefers-reduced-motion:reduce){
+    .konst *{animation:none!important}
+    .konst.aktiv .k-puls{opacity:.7;transform:translate(var(--x1),var(--y1))}
+  }
+  .mini-knapp{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;padding:9px 13px;
+     border-radius:99px;border:1px solid var(--strek);color:var(--dis);white-space:nowrap}
+  .mini-knapp:hover{border-color:rgba(57,226,155,.5);color:var(--lys)}
+  .mini-knapp.gjort{color:var(--aurora-a);border-color:rgba(57,226,155,.5)}
+  .mini-knapp.behandle{color:var(--aurora-a);border-color:rgba(57,226,155,.4);font-weight:700}
+  .bestilling{width:100%;display:flex;gap:8px;align-items:center;font-size:.76rem;
+     color:var(--aurora-a);padding:6px 0 0 18px}
+  .bestilling .blink{flex:none;width:7px;height:7px;border-radius:50%;
+     background:var(--aurora-a);animation:agentpuls 1.2s ease-in-out infinite}
+  .svar-pill{font-family:var(--mono);font-size:.54rem;letter-spacing:.08em;padding:3px 8px;
+     border-radius:99px;border:1px solid rgba(57,226,155,.5);color:var(--aurora-a);
+     text-transform:uppercase;white-space:nowrap}
+
+  /* adgangsport */
+  .port{position:fixed;inset:0;z-index:90;background:var(--bunn);display:flex;
+     align-items:center;justify-content:center;padding:24px}
+  .port .boks{max-width:360px;width:100%;background:var(--flate);border:1px solid var(--strek);
+     border-radius:16px;padding:30px;text-align:center}
+  .port h1{font-size:1.3rem;font-weight:750;margin-bottom:6px}
+  .port p{font-size:.82rem;color:var(--dis);margin-bottom:16px}
+  .port input{width:100%;background:rgba(0,0,0,.3);border:1px solid var(--strek);border-radius:10px;
+     color:var(--lys);font:inherit;padding:11px 12px;text-align:center;margin-bottom:12px}
+  .port .knapp{width:100%}
+  .port .feil{color:var(--varsel);font-size:.78rem;margin-top:10px;display:none}
+  body.laast .wrap{display:none}
+  body:not(.laast) .port{display:none}
+  @media (prefers-reduced-motion: reduce){.agent.jobber,.bestilling .blink{animation:none}}
+</style>
+</head>
+<body class="laast">
+
+<div class="port">
+  <div class="boks">
+    <h1>Lærling<span style="color:var(--aurora-a)">.</span> Kommandosentral</h1>
+    <p>Intern side for pilotteamet (Jonathan, Ole Fabian og OP Bygg-ledelsen).
+    Skriv inn pilotkoden dere har fått av Jonathan.</p>
+    <input id="kode" type="password" placeholder="Pilotkode" autocomplete="off">
+    <button class="knapp" id="laas-opp">Åpne</button>
+    <div class="feil" id="kode-feil">Feil kode — spør Jonathan.</div>
+    <p style="margin-top:14px;font-size:.68rem">Enkel kode for å holde siden intern i piloten —
+    full tilgangsstyring kommer i fullversjonen.</p>
+  </div>
+</div>
+
+<div class="wrap">
+
+<header>
+  <div>
+    <h1>Lærling<b>.</b> Kommandosentral</h1>
+    <div class="undertekst">Pilot: OP Bygg AS · intern side for Jonathan, Ole Fabian og ledelsen</div>
+  </div>
+  <div class="undertekst" id="naa"></div>
+</header>
+
+<div class="rutenett">
+
+  <div class="kort s8">
+    <h2>Kanalstatus — <b>hentes live</b></h2>
+    <div class="kanaler">
+      <div class="kanal">
+        <div class="navn">STABIL · ALLE ANSATTE</div>
+        <div class="v" id="v-stabil">–</div>
+        <div class="status" id="s-stabil"><span class="pill">venter på oppsett</span></div>
+        <div style="margin-top:8px"><a id="a-stabil" href="#" target="_blank" rel="noopener">Åpne appen ↗</a></div>
+      </div>
+      <div class="kanal">
+        <div class="navn">TEST · KUN JONATHAN + OLE FABIAN</div>
+        <div class="v" id="v-test">–</div>
+        <div class="status" id="s-test"><span class="pill">venter på oppsett</span></div>
+        <div style="margin-top:8px"><a id="a-test" href="#" target="_blank" rel="noopener">Åpne testappen ↗</a></div>
+      </div>
+    </div>
+    <div id="godkjenning-status" style="display:none;margin-top:12px;padding:12px 14px;
+      border-radius:10px;font-size:.85rem;background:rgba(57,226,155,.07);
+      border:1px solid rgba(57,226,155,.3)"></div>
+    <div class="diff" id="diff"><b>Forslag venter:</b> testversjonen er nyere enn den stabile.
+    Prøv den i testappen og trykk «Godkjenn» — når både Jonathan og Ole Fabian har godkjent,
+    publiserer Jonathan til STABIL.</div>
+  </div>
+
+  <div class="kort s4">
+    <h2>Pilotpuls</h2>
+    <div class="puls-tall" id="pilot-dag">–</div>
+    <div class="puls-l">av 14 dager i pilotperioden</div>
+    <div class="fremdrift"><i id="pilot-bar" style="width:0%"></i></div>
+    <div class="milepael" id="pilot-milepael"></div>
+  </div>
+
+  <div class="kort s8">
+    <h2>Innspill fra appen — <b>live</b></h2>
+    <div id="innspill-info" style="font-size:.85rem;color:var(--dis)">
+      Henter innspill …
+    </div>
+    <ul class="liste" id="innspill-liste" style="display:none"></ul>
+    <div id="panel-svar" style="display:none;margin-top:16px">
+      <h2>Svar fra panelet</h2>
+      <ul class="liste" id="svar-liste"></ul>
+    </div>
+    <div id="innspill-handlinger" style="display:none;margin-top:12px;font-size:.76rem;color:var(--dis)">
+      <b style="color:var(--lys)">⚡ Behandle nå</b> varsler ekspertpanelet umiddelbart —
+      forslaget dukker opp her under «Svar fra panelet».
+      <span style="display:block;margin-top:3px">For Jonathan: Kopier-knappen +
+      <a href="https://github.com/jonathanfoss-commits/Eik-sales-repo/edit/claude/ai-automation-subscription-concept-647y35/innspill/inbox.md"
+        target="_blank" rel="noopener" style="color:var(--aurora-b)">inbox.md ↗</a>,
+      eller si «kjør panelet nå» til Claude.</span>
+    </div>
+  </div>
+
+  <div class="kort s4">
+    <h2>Ekspertpanelet</h2>
+    <div id="panel-status" style="font-size:.9rem;margin-bottom:6px"></div>
+    <div class="konst" id="panel-konst" aria-hidden="true"></div>
+    <div class="konst-note">Navet i midten er teamet som ruter og beslutter —
+      ekspertene rundt gir hvert sitt blikk. Slik jobber panelet faktisk.</div>
+    <h2 style="margin-top:4px">Siste leveranser</h2>
+    <ul class="liste" id="leveranse-liste"><li style="border:none;color:var(--dis)">henter …</li></ul>
+  </div>
+
+  <div class="kort s12">
+    <h2>Slik blir appen bedre — <b>hver kveld</b></h2>
+    <div class="flyt">
+      <div class="trinn"><div class="hvem">ANSATTE I OP BYGG</div>
+        <div class="hva">Bruker appen og sender innspill (👍/🐞/💡) med navn — rett fra Rapport-fanen</div></div>
+      <div class="trinn"><div class="hvem">KVELDSTEAMET · KL. 21</div>
+        <div class="hva">AI-utviklerteam vurderer innspillene, bygger og tester — leverer forslag, aldri rett i produksjon</div></div>
+      <div class="trinn"><div class="hvem">JONATHAN + OLE FABIAN</div>
+        <div class="hva">Prøver forslaget i testappen og godkjenner — begge må si ja (to nøkler).
+        Jonathan kan hastepublisere alene som admin — logges alltid åpent</div></div>
+      <div class="trinn"><div class="hvem">ALLE ANSATTE</div>
+        <div class="hva">Får den godkjente versjonen i den stabile appen — automatisk, neste gang de åpner den</div></div>
+    </div>
+  </div>
+
+  <div class="kort s6">
+    <h2>For ledelsen: datasikkerhet i piloten</h2>
+    <ul class="liste">
+      <li><span class="prikk"></span><span><b>Ingen Lærling-server har OP Byggs data.</b>
+        Alt i appen lagres lokalt på den enkeltes telefon.</span></li>
+      <li><span class="prikk"></span><span><b>AI-kontoer settes opp med trening avskrudd.</b>
+        Automatisk logging er kun hendelsestyper og fornavn — aldri innholdet i utkast
+        eller dikteringer. Innspill de ansatte selv sender, deles med teamet.</span></li>
+      <li><span class="prikk"></span><span><b>Aldri persondata i diktering:</b> ikke personnummer,
+        lønn eller helseopplysninger. Prosjekter og firmanavn er OK.</span></li>
+      <li><span class="prikk"></span><span><b>Ved videre samarbeid:</b> databehandleravtale,
+        EU-lagring — og mulighet for egen boks hos OP Bygg så data aldri forlater huset.</span></li>
+    </ul>
+  </div>
+
+  <div class="kort s6">
+    <h2>Roller i piloten</h2>
+    <ul class="liste">
+      <li><span class="prikk"></span><span><b>Jonathan Foss</b> — produktansvarlig: drifter,
+        publiserer, godkjenner (nøkkel 1). <a href="mailto:jonathan.foss@eikandfriends.no">Kontakt ↗</a></span></li>
+      <li><span class="prikk"></span><span><b>Ole Fabian Foss</b> — pilotleder i OP Bygg:
+        tester i felt, godkjenner (nøkkel 2).</span></li>
+      <li><span class="prikk"></span><span><b>OP Bygg-ledelsen</b> — innsyn via denne siden;
+        beslutter videre samarbeid etter dag 14-evalueringen.</span></li>
+      <li><span class="prikk"></span><span><b>Ansatte</b> — bruker appen og melder innspill.
+        Ingen konto, ingen opplæring nødvendig: åpne lenken, skriv fornavn, i gang.</span></li>
+    </ul>
+  </div>
+
+  <div class="kort s8">
+    <h2>Verktøykasse</h2>
+    <div class="lenker">
+      <a class="lenke" id="l-app" href="#" target="_blank" rel="noopener">Lærling-appen<small>Stabil · deles med ansatte</small></a>
+      <a class="lenke" id="l-rapport" href="#" target="_blank" rel="noopener">Mulighetsrapporten<small>12,5 t/uke · til ledelsen</small></a>
+      <a class="lenke" id="l-blimed" href="#" target="_blank" rel="noopener">Bli med-siden<small>Onboarding for nye brukere</small></a>
+      <a class="lenke" href="https://app.netlify.com" target="_blank" rel="noopener">Pilotloggen<small>Netlify → Forms → pilotlogg</small></a>
+      <a class="lenke" href="lab.html">🧪 Prøverommet<small>Prøv og stem på nye funksjoner</small></a>
+    </div>
+  </div>
+
+  <div class="kort s4">
+    <h2>Oppsett <span style="color:var(--dis)">(ferdig utfylt — endre kun ved behov)</span></h2>
+    <div class="felt"><label for="url-stabil">STABIL-URL</label>
+      <input id="url-stabil" placeholder="https://op-bygg-laerling-app.netlify.app"></div>
+    <div class="felt"><label for="url-test">TEST-URL</label>
+      <input id="url-test" placeholder="https://op-bygg-laerling-app-test.netlify.app"></div>
+    <div class="felt"><label for="pilot-start">Pilotstart</label>
+      <input id="pilot-start" type="date"></div>
+    <div class="felt"><label for="netlify-token">Netlify-token (reserve — trengs normalt ikke)</label>
+      <input id="netlify-token" type="password" placeholder="nfp_…" autocomplete="off"></div>
+    <div class="felt"><label for="api-kode">API-kode (kun hvis satt i Netlify)</label>
+      <input id="api-kode" type="password" placeholder="(valgfri ekstra sikring)" autocomplete="off"></div>
+    <p style="font-size:.78rem;color:var(--dis);margin:2px 0 10px">Alt fylles inn av seg selv.
+    Innspill-feeden bruker sitens egen serverfunksjon (miljøvariabelen PILOTLOGG_TOKEN i
+    Netlify, settes én gang) — token-feltet er kun reserve hvis funksjonen ikke er satt opp.</p>
+    <button class="knapp" id="lagre-oppsett">Lagre og oppdater</button>
+  </div>
+
+</div>
+
+<footer>Lærling kommandosentral · Intern pilotside — deles kun med pilotteamet ·
+Statusdata hentes direkte fra app-kanalene</footer>
+
+</div>
+
+<script>
+(function(){
+  /* ── adgangskode: sjekkes mot PBKDF2-avtrykk — koden står ikke i klartekst
+     på en offentlig hostet side. Fortsatt enkel adgang (ikke banksikkerhet):
+     riktig kode huskes i denne nettleseren og brukes som nøkkel mot
+     innspill-funksjonen. Ny kode? Generer avtrykk og oppdater her + i
+     netlify/functions/innspill.js (eller sett PILOT_API_KODE der). ── */
+  var KODE_AVTRYKK = "ef5489a3002e76cce0ad8fcd705d3c98cb182919168a050777a1cde804385205";
+  var KODE_SALT = "laerling-sentral-v1", KODE_RUNDER = 150000;
+  function kodeAvtrykk(kode){
+    var enc = new TextEncoder();
+    return crypto.subtle.importKey("raw", enc.encode(kode), "PBKDF2", false, ["deriveBits"])
+      .then(function(n){ return crypto.subtle.deriveBits(
+        { name: "PBKDF2", hash: "SHA-256", salt: enc.encode(KODE_SALT), iterations: KODE_RUNDER }, n, 256); })
+      .then(function(b){ return Array.prototype.map.call(new Uint8Array(b),
+        function(x){ return x.toString(16).padStart(2, "0"); }).join(""); });
+  }
+  var innst;
+  try{ innst = JSON.parse(localStorage.getItem("laerling-admin") || "{}"); }catch(e){ innst = {}; }
+
+  /* ── standardoppsett: URL-er og pilotstart er ikke hemmeligheter og følger med koden,
+     så en ny nettleser starter aldri tom. Egne lagrede verdier vinner alltid.
+     Kun Netlify-tokenet må legges inn per nettleser — det er en ekte hemmelighet. ── */
+  if(/^https?:$/.test(location.protocol) && /\.netlify\.app$/.test(location.hostname)){
+    var egenErTest = /(^|[.-])test([.-]|$)/.test(location.hostname);
+    if(egenErTest && !innst.test) innst.test = location.origin;
+    if(!egenErTest && !innst.stabil) innst.stabil = location.origin;
+  }
+  var STANDARD = { stabil: "https://op-bygg-laerling-app.netlify.app",
+                   test:   "https://op-bygg-laerling-app-test.netlify.app",
+                   start:  "2026-07-17" };
+  Object.keys(STANDARD).forEach(function(k){ if(!innst[k]) innst[k] = STANDARD[k]; });
+  function lagreInnst(){ try{ localStorage.setItem("laerling-admin", JSON.stringify(innst)); }catch(e){} }
+  function laasOpp(){
+    var v = document.getElementById("kode").value.trim();
+    if(!v || !window.crypto || !crypto.subtle){
+      document.getElementById("kode-feil").style.display = "block"; return;
+    }
+    kodeAvtrykk(v).then(function(h){
+      if(h === KODE_AVTRYKK){
+        innst.opplaast = 1; innst.apikode = v; lagreInnst();
+        document.body.classList.remove("laast"); start();
+      } else { document.getElementById("kode-feil").style.display = "block"; }
+    });
+  }
+  document.getElementById("laas-opp").addEventListener("click", laasOpp);
+  document.getElementById("kode").addEventListener("keydown", function(e){ if(e.key === "Enter") laasOpp(); });
+  /* apikode-kravet gjør at nettlesere låst opp med den gamle koden bes om den nye én gang */
+  if(innst.opplaast && innst.apikode){ document.body.classList.remove("laast"); }
+
+  /* ── klokke ── */
+  var mnd = ["januar","februar","mars","april","mai","juni","juli","august","september","oktober","november","desember"];
+  var naa = new Date();
+  document.getElementById("naa").textContent =
+    "OPPDATERT " + naa.getDate() + ". " + mnd[naa.getMonth()].toUpperCase() + " " +
+    String(naa.getHours()).padStart(2,"0") + ":" + String(naa.getMinutes()).padStart(2,"0");
+
+  /* ── oppsett ── */
+  var felter = { "url-stabil": "stabil", "url-test": "test", "pilot-start": "start",
+                 "netlify-token": "token", "api-kode": "apikode" };
+  Object.keys(felter).forEach(function(id){
+    if(innst[felter[id]]) document.getElementById(id).value = innst[felter[id]];
+  });
+  document.getElementById("lagre-oppsett").addEventListener("click", function(){
+    Object.keys(felter).forEach(function(id){
+      innst[felter[id]] = document.getElementById(id).value.trim();
+    });
+    lagreInnst(); start();
+  });
+
+  /* ── kanalstatus: hent versjon.json fra begge kanaler ── */
+  function hentVersjon(url, vEl, sEl){
+    var v = document.getElementById(vEl), s = document.getElementById(sEl);
+    if(!url){ v.textContent = "–";
+      s.innerHTML = '<span class="pill">legg inn URL i Oppsett →</span>'; return Promise.resolve(null); }
+    return fetch(url.replace(/\/+$/,"") + "/versjon.json?t=" + Date.now(), { cache: "no-store" })
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(d){ v.textContent = "v" + d.versjon;
+        s.innerHTML = '<span class="pill ok">PÅ LUFTA</span>'; return d.versjon; })
+      .catch(function(){ v.textContent = "?";
+        s.innerHTML = '<span class="pill vent">fikk ikke svar — sjekk URL</span>'; return null; });
+  }
+
+  /* ── pilotpuls ── */
+  function visPuls(){
+    var startdato = innst.start ? new Date(innst.start + "T00:00:00") : null,
+        dagEl = document.getElementById("pilot-dag"),
+        mEl = document.getElementById("pilot-milepael");
+    if(!startdato || isNaN(startdato)){
+      dagEl.textContent = "–";
+      mEl.innerHTML = "Sett <b>pilotstart</b> i Oppsett når Ole Fabian har kjørt veiviseren.";
+      return;
+    }
+    var dag = Math.min(14, Math.max(0, Math.floor((Date.now() - startdato) / 864e5) + 1));
+    dagEl.textContent = "Dag " + dag;
+    document.getElementById("pilot-bar").style.width = Math.round(dag / 14 * 100) + "%";
+    mEl.innerHTML = dag < 5 ? "Neste milepæl: <b>første ukesrapport</b> (dag 5)"
+      : dag < 14 ? "Neste milepæl: <b>evalueringsmøte</b> (dag 14) — sjekk pilotloggen før møtet"
+      : "<b>Evaluering nå:</b> hent tall fra pilotloggen og book møtet med ledelsen.";
+  }
+
+  /* ── verktøykasse-lenker følger oppsettet ── */
+  function settLenker(){
+    var s = (innst.stabil || "").replace(/\/+$/,"");
+    document.getElementById("a-stabil").href = s || "#";
+    document.getElementById("a-test").href = (innst.test || "#").replace(/\/+$/,"") || "#";
+    document.getElementById("l-app").href = s || "#";
+    document.getElementById("l-rapport").href = s ? s + "/rapport.html" : "#";
+    document.getElementById("l-blimed").href = s ? s + "/bli-med.html" : "#";
+  }
+
+  /* ── ekspertpanelet: kjøreplan og arbeidsvindu ── */
+  var AGENTER = ["Produktsjef","Byggdomene","Jurist","Personvernvakt","UX-design",
+    "Utvikler","QA","Tekst","Innsikt","Forretning","Økonomi","Release"];
+  function osloTid(){
+    return new Date(new Date().toLocaleString("sv-SE", { timeZone: "Europe/Oslo" }).replace(" ", "T"));
+  }
+  function nesteKjoring(){
+    var t = osloTid().getHours() + osloTid().getMinutes() / 60;
+    return t < 12 ? "lunsjtriagen kl. 12 i dag" :
+           t < 21 ? "kveldskjøringen kl. 21 i kveld" : "lunsjtriagen kl. 12 i morgen";
+  }
+  var varsletTil = 0;
+  function pulsPanel(){
+    /* panelet «våkner» visuelt i 15 sekunder når noen bestiller hastebehandling */
+    varsletTil = Date.now() + 15000;
+    visPanel();
+    setTimeout(visPanel, 15500);
+  }
+  /* faser panelet faktisk går gjennom om kvelden — ærlig fremstilling, ruller i status */
+  var FASER = ["leser innspillene fra pilotloggen", "Byggdomene vurderer NS-kravene",
+    "Personvernvakten sjekker datanivåene", "Juristen ettergår formuleringene",
+    "utkast bygges på riktig gren", "QA jakter JS-feil i iPhone-visning",
+    "Tekst finpusser bokmålet", "leveransen pakkes til godkjenning"];
+  var faseTimer = null, faseNr = 0;
+  var SVGNS = "http://www.w3.org/2000/svg";
+  function sEl(navn, attrs){
+    var e = document.createElementNS(SVGNS, navn);
+    for(var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function tegnKonstellasjon(jobber){
+    var boks = document.getElementById("panel-konst");
+    boks.className = "konst" + (jobber ? " aktiv" : "");
+    boks.innerHTML = "";
+    var W = 420, H = 315, cx = W / 2, cy = H / 2, rx = 165, ry = 116;
+    var svg = sEl("svg", { viewBox: "0 0 " + W + " " + H });
+
+    /* eiker først (bak), så ytterring, noder og nav */
+    var punkter = AGENTER.map(function(_, i){
+      var v = (i / AGENTER.length) * 2 * Math.PI - Math.PI / 2;
+      return { x: cx + rx * Math.cos(v), y: cy + ry * Math.sin(v), v: v };
+    });
+    punkter.forEach(function(p){
+      svg.appendChild(sEl("line", { x1: cx, y1: cy, x2: p.x, y2: p.y, "class": "k-eik" }));
+    });
+    svg.appendChild(sEl("ellipse", { cx: cx, cy: cy, rx: rx + 14, ry: ry + 12, "class": "k-ring" }));
+
+    AGENTER.forEach(function(navn, i){
+      var p = punkter[i];
+      var g = sEl("g", { "class": "agent" + (jobber ? " jobber" : "") });
+      g.style.animationDelay = (i * .4) + "s";
+      g.appendChild(sEl("circle", { cx: p.x, cy: p.y, r: 4.5, "class": "k-prikk" }));
+      var over = p.y < cy - 4, midt = Math.abs(p.y - cy) <= ry * .55;
+      var tekst = sEl("text", {
+        x: p.x + (midt ? (p.x < cx ? -9 : 9) : 0),
+        y: p.y + (midt ? 3 : over ? -9 : 15),
+        "text-anchor": midt ? (p.x < cx ? "end" : "start") : "middle",
+        "class": "k-navn"
+      });
+      tekst.textContent = navn;
+      g.appendChild(tekst);
+      svg.appendChild(g);
+    });
+
+    /* pulser som vandrer mellom nav og eksperter — kun i aktiv tilstand */
+    if(jobber){
+      [1, 4, 7, 10].forEach(function(idx, nr){
+        var p = punkter[idx];
+        var puls = sEl("circle", { r: 2.6, cx: 0, cy: 0, "class": "k-puls" });
+        puls.style.setProperty("--x0", cx + "px");
+        puls.style.setProperty("--y0", cy + "px");
+        puls.style.setProperty("--x1", p.x + "px");
+        puls.style.setProperty("--y1", p.y + "px");
+        puls.style.animationDelay = (nr * .7) + "s";
+        svg.appendChild(puls);
+      });
+    }
+
+    /* navet: teamet som ruter og beslutter */
+    var nav = sEl("g", { "class": "k-kjerne" });
+    var grad = sEl("radialGradient", { id: "aurora-nav" });
+    grad.appendChild(sEl("stop", { offset: "0%", "stop-color": "#39E29B" }));
+    grad.appendChild(sEl("stop", { offset: "100%", "stop-color": "#2FC4D9" }));
+    var defs = sEl("defs", {});
+    defs.appendChild(grad);
+    svg.appendChild(defs);
+    nav.appendChild(sEl("circle", { cx: cx, cy: cy, r: 27, fill: "url(#aurora-nav)" }));
+    var navTekst = sEl("text", { x: cx, y: cy + 3.5, "text-anchor": "middle", "class": "k-kjernetekst" });
+    navTekst.textContent = "TEAMET";
+    nav.appendChild(navTekst);
+    svg.appendChild(nav);
+    boks.appendChild(svg);
+  }
+  function visPanel(){
+    var n = osloTid(), t = n.getHours() + n.getMinutes() / 60,
+        varslet = Date.now() < varsletTil,
+        jobber = (t >= 21 && t < 22) || (t >= 12 && t < 12.25) || varslet,
+        st = document.getElementById("panel-status");
+    tegnKonstellasjon(jobber);
+    clearInterval(faseTimer);
+    if(varslet){
+      st.innerHTML = '<b style="color:var(--aurora-a)">● PANELET ER VARSLET</b> — ' +
+        "innspillet er lagt øverst i køen for " + nesteKjoring();
+    } else if(jobber){
+      var visFase = function(){
+        st.innerHTML = '<b style="color:var(--aurora-a)">● PANELET ARBEIDER NÅ</b> — ' +
+          (t >= 21 ? FASER[faseNr % FASER.length] : "lunsjtriagen prioriterer dagens innspill");
+        faseNr++;
+      };
+      visFase();
+      if(t >= 21 && !matchMedia("(prefers-reduced-motion: reduce)").matches){
+        faseTimer = setInterval(visFase, 3200);
+      }
+    } else {
+      var neste = t < 12 ? "lunsjtriagen kl. 12.00" :
+                  t < 21 ? "ekspertpanelet kl. 21.00" : "lunsjtriagen kl. 12.00 i morgen";
+      st.innerHTML = "12 eksperter i beredskap · neste kjøring: <b style=\"color:var(--lys)\">" + neste + "</b>";
+    }
+  }
+  function visLeveranser(){
+    fetch("changelog.json?t=" + Date.now(), { cache: "no-store" })
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(logg){
+        var ul = document.getElementById("leveranse-liste");
+        ul.innerHTML = "";
+        logg.slice(0, 3).forEach(function(o){
+          var li = document.createElement("li");
+          li.innerHTML = '<span class="prikk"></span><span><b>' + String(o.dato).replace(/</g, "&lt;") + "</b> · " +
+            o.tekst.replace(/</g, "&lt;") +
+            (o.av ? ' <span style="color:var(--aurora-b)">— foreslått av ' + o.av.replace(/</g, "&lt;") + "</span>" : "") + "</span>";
+          ul.appendChild(li);
+        });
+      }).catch(function(){});
+  }
+
+  /* ── svar fra panelet: forslag skrevet av ekspertpanelet, følger med appen ── */
+  function visSvar(){
+    fetch("panelsvar.json?t=" + Date.now(), { cache: "no-store" })
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(svar){
+        if(!svar.length) return;
+        var boks = document.getElementById("panel-svar"),
+            ul = document.getElementById("svar-liste");
+        boks.style.display = "block";
+        ul.innerHTML = "";
+        svar.slice(0, 6).forEach(function(o){
+          var li = document.createElement("li");
+          li.style.flexWrap = "wrap";
+          li.innerHTML = '<span class="prikk"></span>' +
+            '<span style="flex:1"><b>' + String(o.dato).replace(/</g, "&lt;") + "</b> · Til «" +
+            String(o.innspill).replace(/</g, "&lt;") + "»:<br>" +
+            String(o.svar).replace(/</g, "&lt;") +
+            (o.av ? ' <span style="color:var(--aurora-b)">— ' + String(o.av).replace(/</g, "&lt;") + "</span>" : "") +
+            "</span>" +
+            '<span class="svar-pill">' + String(o.status || "forslag").replace(/</g, "&lt;") + "</span>";
+          ul.appendChild(li);
+        });
+      }).catch(function(){});
+  }
+
+  /* ── innspill live fra pilotloggen ──
+     Førstevalg: sitens egen serverfunksjon (tokenet bor i Netlify som miljøvariabel,
+     PILOTLOGG_TOKEN — null oppsett i nettleseren). Reserve: token fra Oppsett. */
+  var API = "https://api.netlify.com/api/v1";
+  function apiKall(sti){
+    return fetch(API + sti, { headers: { Authorization: "Bearer " + innst.token } })
+      .then(function(r){ if(!r.ok) throw new Error("API " + r.status); return r.json(); });
+  }
+  function hentViaFunksjon(){
+    return fetch("/.netlify/functions/innspill",
+        { cache: "no-store", headers: { "X-Pilotkode": innst.apikode || "" } })
+      .then(function(r){ if(!r.ok) throw new Error("funksjon " + r.status); return r.json(); });
+  }
+  function hentViaToken(){
+    if(!innst.token || !innst.stabil) return Promise.reject(new Error("UOPPSATT"));
+    /* idéer lander i skjemaet på den siten appen ble åpnet fra —
+       derfor leser vi BEGGE kanalene (stabil + test) og slår dem sammen */
+    var verter = [];
+    [innst.stabil, innst.test].forEach(function(u){
+      if(!u) return;
+      var v = u.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+      if(verter.indexOf(v) < 0) verter.push(v);
+    });
+    return Promise.all(verter.map(function(vert){
+      return apiKall("/sites/" + vert + "/forms")
+        .then(function(skjemaer){
+          var f = skjemaer.filter(function(x){ return x.name === "pilotlogg"; })[0];
+          if(!f) return [];
+          return apiKall("/forms/" + f.id + "/submissions?per_page=100")
+            .then(function(subs){
+              subs.forEach(function(s){ s.kanal = vert; });
+              return subs;
+            });
+        })
+        .catch(function(){ return null; });
+    }))
+      .then(function(resultater){
+        if(resultater.every(function(r){ return r === null; }))
+          throw new Error("fikk ikke svar fra Netlify — sjekk tokenet i Oppsett");
+        var subs = [];
+        resultater.forEach(function(r){ if(r) subs = subs.concat(r); });
+        subs.sort(function(a, b){ return a.created_at < b.created_at ? 1 : -1; });
+        return subs;
+      });
+  }
+  function hentInnspill(){
+    var info = document.getElementById("innspill-info"),
+        liste = document.getElementById("innspill-liste"),
+        handlinger = document.getElementById("innspill-handlinger");
+    hentViaFunksjon()
+      .catch(function(){ return hentViaToken(); })
+      .then(function(subs){
+        innst.handtert = innst.handtert || {};
+        var innspill = subs.filter(function(s){ return (s.data || {}).hendelse === "innspill"; });
+        var stemmer = subs.filter(function(s){ return (s.data || {}).hendelse === "godkjenning"; });
+        /* godkjenningsstemmer */
+        if(stemmer.length){
+          var g = document.getElementById("godkjenning-status");
+          g.style.display = "block";
+          g.innerHTML = "<b>Siste godkjenningsstemmer:</b> " + stemmer.slice(0, 2).map(function(s){
+            return (s.data.detalj || "").replace(/</g, "&lt;") + " (" + s.created_at.slice(0, 10) + ")";
+          }).join(" · ");
+        }
+        /* innspill-listen */
+        info.style.display = "none";
+        liste.style.display = "block";
+        handlinger.style.display = "block";
+        liste.innerHTML = "";
+        if(!innspill.length){
+          liste.innerHTML = '<li style="border:none;color:var(--dis)">Ingen innspill ennå — de dukker opp her i det sekundet noen sender fra appen.</li>';
+          return;
+        }
+        innst.bestilt = innst.bestilt || {};
+        innspill.slice(0, 12).forEach(function(s){
+          var tekst = (s.data.detalj || "").replace(/</g, "&lt;"),
+              gjort = !!innst.handtert[s.id],
+              bestilt = !!innst.bestilt[s.id],
+              fraTest = /(^|[.-])test([.-]|$)/.test(s.kanal || "");
+          var li = document.createElement("li");
+          li.style.flexWrap = "wrap";
+          li.innerHTML = '<span class="prikk" style="' + (gjort ? "opacity:.25" : "") + '"></span>' +
+            '<span style="flex:1;' + (gjort ? "opacity:.45" : "") + '"><b>' +
+            s.created_at.slice(0, 10) + "</b> · " + tekst +
+            (fraTest ? ' <span class="svar-pill" style="color:var(--dis);border-color:var(--strek)">testapp</span>' : "") +
+            "</span>";
+          var kn0 = document.createElement("button");
+          kn0.className = "mini-knapp behandle";
+          kn0.textContent = bestilt ? "✓ Hos panelet" : "⚡ Behandle nå";
+          if(bestilt) kn0.disabled = true;
+          kn0.addEventListener("click", function(){
+            /* varsle panelet: logg bestillingen (innspillet er allerede delt av brukeren selv) */
+            var post = { "form-name": "pilotlogg", hendelse: "panel-bestilling",
+                         detalj: "Hastebehandling bestilt · " + (s.data.detalj || ""),
+                         tid: new Date().toISOString() };
+            var kropp = Object.keys(post).map(function(k){
+              return encodeURIComponent(k) + "=" + encodeURIComponent(post[k]); }).join("&");
+            fetch("/", { method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: kropp
+            }).catch(function(){});
+            innst.bestilt[s.id] = Date.now(); lagreInnst();
+            kn0.textContent = "✓ Hos panelet"; kn0.disabled = true;
+            var status = document.createElement("div");
+            status.className = "bestilling";
+            status.innerHTML = '<span class="blink"></span><span>Ekspertpanelet er varslet — ' +
+              "Produktsjefen tar innspillet først i " + nesteKjoring() +
+              ". Forslaget dukker opp under «Svar fra panelet».</span>";
+            li.appendChild(status);
+            pulsPanel();
+          });
+          var kn1 = document.createElement("button");
+          kn1.className = "mini-knapp"; kn1.textContent = "Kopier";
+          kn1.addEventListener("click", function(){
+            var linje = "- [" + s.created_at.slice(0, 10) + "] " + (s.data.detalj || "");
+            (navigator.clipboard ? navigator.clipboard.writeText(linje) : Promise.reject())
+              .then(function(){ kn1.textContent = "Kopiert ✓"; })
+              .catch(function(){ prompt("Kopier denne linjen til inbox.md:", linje); });
+          });
+          var kn2 = document.createElement("button");
+          kn2.className = "mini-knapp" + (gjort ? " gjort" : "");
+          kn2.textContent = gjort ? "Håndtert ✓" : "Marker håndtert";
+          kn2.addEventListener("click", function(){
+            innst.handtert[s.id] = !innst.handtert[s.id];
+            lagreInnst(); hentInnspill();
+          });
+          li.appendChild(kn0); li.appendChild(kn1); li.appendChild(kn2);
+          if(bestilt){
+            var st2 = document.createElement("div");
+            st2.className = "bestilling";
+            st2.innerHTML = '<span class="blink"></span><span>Hos ekspertpanelet — forslaget ' +
+              "kommer under «Svar fra panelet» senest etter " + nesteKjoring() + ".</span>";
+            li.appendChild(st2);
+          }
+          liste.appendChild(li);
+        });
+      })
+      .catch(function(e){
+        info.style.display = "block";
+        if(String(e.message) === "UOPPSATT"){
+          info.innerHTML = "Innspill-feeden er ikke koblet til ennå. <b style=\"color:var(--lys)\">" +
+            "Engangsoppsett (gjøres av Jonathan i Netlify):</b> legg miljøvariabelen " +
+            "<b style=\"color:var(--lys)\">PILOTLOGG_TOKEN</b> inn på siten " +
+            "(Site configuration → Environment variables) og kjør «Trigger deploy» — " +
+            "så virker feeden i alle nettlesere uten mer oppsett. " +
+            "Reserve: lim inn et Netlify-token i Oppsett under.";
+        } else {
+          info.innerHTML = "Fikk ikke hentet innspill: " + String(e.message).replace(/</g, "&lt;");
+        }
+      });
+  }
+
+  function start(){
+    settLenker(); visPuls(); visPanel(); visLeveranser(); visSvar(); hentInnspill();
+    Promise.all([
+      hentVersjon(innst.stabil, "v-stabil", "s-stabil"),
+      hentVersjon(innst.test, "v-test", "s-test")
+    ]).then(function(vs){
+      function tall(v){ return String(v).split(".").map(Number); }
+      function nyere(a, b){ // a > b ?
+        var x = tall(a), y = tall(b);
+        for(var i = 0; i < 3; i++){ if((x[i]||0) !== (y[i]||0)) return (x[i]||0) > (y[i]||0); }
+        return false;
+      }
+      var d = document.getElementById("diff");
+      d.classList.toggle("vis", !!(vs[0] && vs[1] && nyere(vs[1], vs[0])));
+      if(vs[0] && vs[1] && nyere(vs[0], vs[1])){
+        d.classList.add("vis");
+        d.innerHTML = "<b>Obs:</b> testkanalen ligger BAK den stabile (v" + String(vs[1]).replace(/</g, "&lt;") +
+          " mot v" + String(vs[0]).replace(/</g, "&lt;") + ") — publiser siste versjon til testsiten.";
+      }
+    });
+  }
+  setInterval(function(){
+    if(!document.body.classList.contains("laast")){ start(); }
+  }, 60000);
+  if(!document.body.classList.contains("laast")) start();
+})();
+</script>
+
+</body>
+</html>

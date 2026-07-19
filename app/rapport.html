@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mulighetsrapport — OP Bygg AS</title>
+<meta name="description" content="Lærling har undersøkt OP Bygg AS: 12,5 timer per uke kan tas over. Her er de sju verktøyene.">
+<meta name="theme-color" content="#070D12">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='42' fill='%2339E29B'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bunn:#070D12; --flate:#0D161E; --flate-2:#121F29;
+    --strek:rgba(140,190,190,.14); --lys:#E9F2EE; --dis:#93A8AA;
+    --aurora-a:#39E29B; --aurora-b:#2FC4D9;
+    --graf:#1F9E66; /* validert mot mørk flate */
+    --sans:-apple-system,"Segoe UI",system-ui,Roboto,sans-serif;
+    --mono:"SF Mono",ui-monospace,Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bunn);color:var(--lys);font-family:var(--sans);line-height:1.6}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;background:
+     radial-gradient(120% 45% at 50% 0%,rgba(31,158,102,.16),transparent 60%),var(--bunn)}
+  .wrap{max-width:760px;margin:0 auto;padding:0 22px}
+  header{padding:34px 0 0}
+  .brev{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;
+     text-transform:uppercase;color:var(--aurora-a)}
+  .meta{font-family:var(--mono);font-size:.72rem;color:var(--dis);margin-top:8px;line-height:1.9}
+  .meta b{color:var(--lys);font-weight:600}
+  h1{font-size:clamp(1.9rem,5.5vw,2.9rem);line-height:1.12;font-weight:780;
+     letter-spacing:-.025em;margin:34px 0 12px;text-wrap:balance}
+  h1 em{font-style:normal;background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b));
+     -webkit-background-clip:text;background-clip:text;color:transparent}
+  .inngang{font-size:1.05rem;color:var(--dis);max-width:36em}
+  h2{font-size:1.25rem;font-weight:720;letter-spacing:-.01em;margin:52px 0 6px}
+  .sub{font-size:.86rem;color:var(--dis);margin-bottom:20px}
+
+  /* oppgaveliste med timer */
+  .liste{display:flex;flex-direction:column;gap:12px}
+  .oppgave{background:var(--flate);border:1px solid var(--strek);border-radius:14px;padding:16px 18px}
+  .o-topp{display:flex;justify-content:space-between;align-items:baseline;gap:14px}
+  .o-topp h3{font-size:1rem;font-weight:660}
+  .o-topp .timer{font-family:var(--mono);font-size:.9rem;font-weight:700;color:var(--lys);
+     font-variant-numeric:tabular-nums;white-space:nowrap}
+  .o-topp .timer span{color:var(--dis);font-weight:400;font-size:.68rem}
+  .stang{height:7px;border-radius:4px;background:rgba(140,190,190,.1);margin:10px 0 8px;overflow:hidden}
+  .stang i{display:block;height:100%;border-radius:4px;background:var(--graf);
+     box-shadow:0 0 8px rgba(31,158,102,.5)}
+  .oppgave p{font-size:.86rem;color:var(--dis)}
+  .oppgave p b{color:var(--lys);font-weight:600}
+
+  /* sum-kort */
+  .sum{margin-top:16px;background:linear-gradient(135deg,rgba(57,226,155,.1),rgba(47,196,217,.06));
+     border:1px solid rgba(57,226,155,.35);border-radius:16px;padding:22px;text-align:center}
+  .sum .n{font-size:2.6rem;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;
+     background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b));
+     -webkit-background-clip:text;background-clip:text;color:transparent}
+  .sum .l{font-size:.88rem;color:var(--dis)}
+  .sum .l b{color:var(--lys)}
+
+  /* callout */
+  .obs{border-left:3px solid var(--aurora-a);background:rgba(57,226,155,.05);
+     border-radius:0 12px 12px 0;padding:16px 18px;margin-top:22px}
+  .obs h3{font-size:.95rem;font-weight:700;margin-bottom:4px}
+  .obs p{font-size:.88rem;color:var(--dis)}
+  .obs p b{color:var(--lys)}
+
+  /* start-steg */
+  .steg{display:flex;flex-direction:column;gap:10px;counter-reset:s}
+  .steg div{display:flex;gap:14px;align-items:baseline;background:var(--flate);
+     border:1px solid var(--strek);border-radius:12px;padding:14px 16px;font-size:.92rem;color:var(--dis)}
+  .steg div::before{counter-increment:s;content:counter(s);flex:none;width:26px;height:26px;
+     border-radius:50%;display:flex;align-items:center;justify-content:center;
+     font-family:var(--mono);font-size:.72rem;font-weight:700;color:#04110B;
+     background:linear-gradient(135deg,var(--aurora-a),var(--aurora-b));align-self:center}
+  .steg b{color:var(--lys)}
+
+  footer{margin:56px 0 40px;padding-top:18px;border-top:1px solid var(--strek);
+     font-family:var(--mono);font-size:.66rem;letter-spacing:.08em;color:var(--dis);
+     text-transform:uppercase;line-height:2}
+  @media print{
+    body{background:#fff;color:#111}
+    body::before{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header>
+  <div class="brev">Lærling · Mulighetsrapport</div>
+  <div class="meta">
+    Utarbeidet for: <b>Ole Fabian Foss, prosjektleder — OP Bygg AS</b><br>
+    Grunnlag: opb.no · offentlige registre · bransjeanalyse · intervju (bekreftes)<br>
+    Dato: 13. juli 2026
+  </div>
+</header>
+
+<h1>Jeg har sett på arbeidsuken din. <em><span id="h1-tall">11,5</span> timer kan du få tilbake.</em></h1>
+<p class="inngang">OP Bygg selger ryddig prosjektstyring — men den ryddigheten lages i dag
+manuelt, på kvelden, av deg. Under er de seks oppgavene jeg kan ta over fra første uke.
+Du leser gjennom og godkjenner; jeg gjør skrivejobben.</p>
+
+<h2>De sju verktøyene — rangert etter timer spart</h2>
+<p class="sub">Estimert per uke, basert på en typisk prosjektleder-uke i en totalentreprenør
+på OP Byggs størrelse. Tallene kalibreres etter to uker i drift.</p>
+
+<div class="liste">
+  <div class="oppgave" data-t="3.0">
+    <div class="o-topp"><h3>Tilbud og befaringsoppfølging</h3><div class="timer">3,0 <span>t/uke</span></div></div>
+    <div class="stang"><i style="width:100%"></i></div>
+    <p>Du dikterer 2–3 minutter i bilen etter befaring — jeg leverer oppsummerings-e-post til
+    kunden og internt tilbudsgrunnlag med <b>omfang, forutsetninger og forbehold</b>.</p>
+  </div>
+  <div class="oppgave" data-t="2.0">
+    <div class="o-topp"><h3>Byggedagbok</h3><div class="timer">2,0 <span>t/uke</span></div></div>
+    <div class="stang"><i style="width:67%"></i></div>
+    <p>30 sekunder diktering på slutten av dagen blir strukturert logg: mannskap, utført arbeid,
+    leveranser, hindringer. <b>Dokumentasjonen som avgjør sluttoppgjør.</b></p>
+  </div>
+  <div class="oppgave" data-t="2.0">
+    <div class="o-topp"><h3>UE-purringer og oppfølging</h3><div class="timer">2,0 <span>t/uke</span></div></div>
+    <div class="stang"><i style="width:67%"></i></div>
+    <p>Purringer på priser, tegninger og leveranser — vennlige, tydelige, og faktisk sendt
+    i stedet for utsatt.</p>
+  </div>
+  <div class="oppgave" data-t="1.5">
+    <div class="o-topp"><h3>Møtereferater</h3><div class="timer">1,5 <span>t/uke</span></div></div>
+    <div class="stang"><i style="width:50%"></i></div>
+    <p>Byggemøte-notater blir formelt referat med <b>nummererte aksjonspunkter, ansvarlig og
+    frist</b> — sendt samme dag.</p>
+  </div>
+  <div class="oppgave" data-t="1.5">
+    <div class="o-topp"><h3>Endringsmeldinger</h3><div class="timer">1,5 <span>t/uke</span></div></div>
+    <div class="stang"><i style="width:50%"></i></div>
+    <p>Endringer varsles byggherre <b>samme dag</b>, med riktig NS 8407-språk. Se hvorfor
+    dette er mer enn tidsbesparelse under.</p>
+  </div>
+  <div class="oppgave" data-t="1.0">
+    <div class="o-topp"><h3>Varemottak og avvik</h3><div class="timer">1,0 <span>t/uke</span></div></div>
+    <div class="stang"><i style="width:33%"></i></div>
+    <p>Kontroll mot følgeseddel og bestilling, avviksmelding til leverandør <b>samme dag</b>
+    — og notat til regnskap så fakturaen kontrolleres mot faktisk mottatt vare.
+    Kobles mot regnskapssystemet i fullversjonen.</p>
+  </div>
+  <div class="oppgave" data-t="1.5">
+    <div class="o-topp"><h3>Ukesrapport til byggherre</h3><div class="timer">1,5 <span>t/uke</span></div></div>
+    <div class="stang"><i style="width:50%"></i></div>
+    <p>Fast, profesjonell statusrapport hver fredag — samme struktur hver uke, så byggherren
+    ser nettopp den strukturerte oppfølgingen OP Bygg lover.</p>
+  </div>
+</div>
+
+<div class="sum">
+  <div class="n" id="sum-tall">11,5 t/uke</div>
+  <div class="l">≈ <b id="sum-verdi">7 500 kr/uke</b> i frigjort prosjektledertid (650 kr/t)
+  — mot et abonnement fra <b>3 990 kr/mnd</b></div>
+</div>
+
+<div class="obs">
+  <h3>Det skjulte våpenet: varslingsfristen</h3>
+  <p>«Uten ugrunnet opphold» i NS 8407 tolkes som <b>dager, ikke uker</b> — varsles en endring
+  for sent, tapes hele kravet på tilleggsvederlag. Endringsmeldinger samme dag er derfor
+  <b>kravsikring</b>, ikke bare spart tid. Én reddet endring kan alene dekke et års abonnement.</p>
+</div>
+
+<h2>Slik starter vi</h2>
+<div class="steg">
+  <div><span><b>20 minutter sammen:</b> vi setter opp verktøyene på telefonen din og kjører
+  første befaring-til-tilbud live.</span></div>
+  <div><span><b>14 dager i drift:</b> du bruker verktøyene i den vanlige arbeidsuken.
+  Alt går via din godkjenning — ingenting sendes uten deg.</span></div>
+  <div><span><b>Evaluering:</b> vi måler timene, ser på tallene i denne rapporten på nytt,
+  og du bestemmer om Lærling fortsetter.</span></div>
+</div>
+
+<footer>
+  Lærling · Eksempelrapport for pilot — estimater bekreftes i intervju og kalibreres etter
+  14 dager i drift · Ingenting sendes uten din godkjenning
+</footer>
+
+</div>
+
+<script>
+  /* tallene regnes fra data-t på hver oppgave — én kilde, alt annet følger */
+  (function(){
+    var rader = Array.prototype.slice.call(document.querySelectorAll(".oppgave")),
+        sum = 0, maks = 0;
+    rader.forEach(function(r){ var t = parseFloat(r.dataset.t); sum += t; if(t > maks) maks = t; });
+    rader.forEach(function(r){
+      var t = parseFloat(r.dataset.t);
+      r.querySelector(".timer").firstChild.textContent = t.toFixed(1).replace(".", ",") + " ";
+      r.querySelector(".stang i").style.width = Math.round(t / maks * 100) + "%";
+    });
+    var s = sum.toFixed(1).replace(".", ",");
+    document.getElementById("sum-tall").textContent = s + " t/uke";
+    document.getElementById("h1-tall").textContent = s;
+    document.getElementById("sum-verdi").textContent =
+      (Math.round(sum * 650 / 100) * 100).toLocaleString("nb-NO") + " kr/uke";
+  })();
+</script>
+
+</body>
+</html>
