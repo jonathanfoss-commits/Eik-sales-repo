@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl https://api.netlify.com/*)",
+      "Bash(curl https://api.render.com/*)",
+      "Bash(curl https://api.anthropic.com/*)",
+      "Bash(curl https://op-bygg-laerling-app.netlify.app/*)",
+      "Bash(curl https://op-bygg-laerling-app-test.netlify.app/*)",
+      "Bash(curl https://laerling.onrender.com/*)",
+      "Bash(curl https://laerling-test.onrender.com/*)"
+    ]
+  }
+}
