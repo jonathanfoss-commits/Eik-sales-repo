@@ -3,11 +3,11 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
-## ÉN SAMLET LEVERANSE VENTER: v0.9.4–v0.17.1 — godkjennes under ett
+## INGEN LEVERANSER VENTER
 
-Delversjonene under er bygget fortløpende og testes kumulativt (fulltesten dekker alt
-sammen). En Godkjenn-stemme på v0.14.0 i testappen godkjenner hele pakken — dette teller
-som ÉN leveranse mot køregelen.
+Pakken v0.9.4–v0.17.1 ble publisert til STABIL 19. juli 2026 på admin-overstyring
+fra Jonathan (se publiseringsloggen nederst). Delversjonene under står som
+historikk over hva pakken inneholdt.
 
 ## v0.17.1 — 18. juli 2026 (nattens gransking — to funn rettet i piloten)
 
@@ -206,6 +206,15 @@ publiser» til Claude.
 ---
 
 ## Publiseringslogg
+
+- **19. juli 2026 — v0.9.4–v0.17.1 publisert til STABIL.** Innhold: Skrivemotoren
+  serverless, sikkerhetspakken (pilotkode-splitten v0.14.1), panel-konstellasjonen,
+  purring med norsk purretrapp, dagslys-modus og granskingsrettelsene (v0.17.1).
+  Testet: fulltest 183/183 grønne før merge.
+  **Avvik fra to-nøkkel-regelen:** publisert på direkte ordre fra Jonathan alene
+  («publiser versjon 17 — det gjør du nå, ikke vent på to nøkler»). Ole Fabian
+  hadde ikke stemt i testappen da publiseringen skjedde. Utført av kveldsteamet
+  (Claude) med merge kveldsteam-forslag → main. Kun Jonathan har denne retten.
 
 - **17. juli 2026 — v0.9.0–v0.9.3 publisert til STABIL.** Innhold: kommandosentral med
   live innspill fra begge kanaler («testapp»-merke), «⚡ Behandle nå» med panelvarsling,

@@ -70,3 +70,22 @@ Ordentlig pålogging/roller krever backend og brukeradministrasjon — feil peng
 Denne modellen gir det samme i praksis: separate kanaler, navngitte stemmer, full logg, og
 null endringer hos ansatte uten to godkjenninger. Når fullversjonen bygges, arver den
 flyten med ekte innlogging.
+
+## Publisering i praksis (fra 19. juli 2026) — Jonathan gjør nesten ingenting
+
+Selve publiseringen er nå kveldsteamets jobb, ikke Jonathans:
+
+1. **Vanlig flyt:** to Godkjenn-stemmer i TEST-appen → Jonathan sier «publiser» til
+   Claude → Claude merger `kveldsteam-forslag` → `main`, loggfører i publiseringsloggen
+   og verifiserer. Netlify bygger STABIL automatisk fra `main`.
+2. **Admin-overstyring:** Jonathan sier «publiser som admin» (eller tilsvarende
+   direkte ordre) → Claude utfører umiddelbart og loggfører åpent at Ole Fabian
+   ikke hadde stemt. Kun Jonathan har denne retten.
+3. **Publiseringsvakta** (`.github/workflows/publiseringsvakt.yml`) kjører på hver
+   push til `main` og `kveldsteam-forslag`: den håndhever versjonstriadene maskinelt
+   (pilot: index.html == versjon.json + sw-cache bumpet ved fil-endringer; kjerne:
+   app.js == versjon.json == cache-navn). Drifter noe, feiler bygget FØR det når
+   noen bruker — ingen mennesker trenger å sjekke dette igjen.
+
+Det eneste Jonathan fortsatt må gjøre selv, er engangsting Claude ikke har nøkler
+til: miljøvariabler i Netlify/Render, GitHub-innstillinger og leverandøravtaler.
