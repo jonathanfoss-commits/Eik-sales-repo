@@ -52,9 +52,11 @@ backlog/rapporter. Deretter: eksporter CSV fra Netlify-panelet til
 
 ## Sjekkliste før cutover erklæres ferdig
 
-- [ ] CI er grønn på siste commit og branch protection er skrudd på i GitHub (Jonathan)
+- [x] CI er grønn på siste commit og branch protection er skrudd på i GitHub
+      (ruleset «main-vern» aktivert av Jonathan 19. juli: krever triade + tester)
 - [ ] E-postleverandør valgt og satt opp (EPOST_API_URL/-NOKKEL/-FRA) + DPA — til
-      «Glemt passord?»-flyten (reserven med Sentral-kode virker uansett)
+      «Glemt passord?»-flyten. Besluttet 19. juli: UTSATT til kunde #2 eller
+      reelt behov — reserven med Sentral-kode dekker piloten.
 - [ ] To nøkler på plattform-versjonen i TEST (autentiserte stemmer i Sentral)
 - [ ] Alle pilotbrukere har importert med grønn kvittering
 - [x] ANTHROPIC_API_KEY satt på begge Render-tjenestene (Skrivemotoren virker)
