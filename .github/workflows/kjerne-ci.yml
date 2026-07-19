@@ -1,6 +1,11 @@
 # CI for plattformkjernen — håndhever QA-regelen teknisk [JONATHAN]:
 # hele testsuiten (RLS/API/AI-mock mot ekte Postgres) + e2e i Chromium på hver
 # push/PR som rører kjerne/. Ingen leveranse kan lande med røde tester.
+#
+# «tester» er en påkrevd sjekk i branch protection på main. En påkrevd sjekk
+# som aldri starter blokkerer merge for alltid, så jobben må kjøre på ALLE
+# PR-er: «endringer»-jobben sjekker om kjernen er rørt, og er den ikke det,
+# hoppes «tester» over (skipped regnes som bestått av branch protection).
 name: kjerne-ci
 
 on:
@@ -8,10 +13,31 @@ on:
     branches: [kveldsteam-forslag, main]
     paths: ['kjerne/**', '.github/workflows/kjerne-ci.yml']
   pull_request:
-    paths: ['kjerne/**', '.github/workflows/kjerne-ci.yml']
 
 jobs:
+  endringer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      kjerne: ${{ steps.diff.outputs.kjerne }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: diff
+        name: Rører endringen kjernen?
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "kjerne=ja" >> "$GITHUB_OUTPUT"
+          elif git diff --name-only HEAD^1 HEAD | grep -qE '^(kjerne/|\.github/workflows/kjerne-ci\.yml)'; then
+            echo "kjerne=ja" >> "$GITHUB_OUTPUT"
+          else
+            echo "kjerne=nei" >> "$GITHUB_OUTPUT"
+          fi
+
   tester:
+    needs: endringer
+    if: needs.endringer.outputs.kjerne == 'ja'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
