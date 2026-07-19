@@ -184,12 +184,20 @@ i miljøet. Publisert: pilot v0.17.1 ligger på `main` og STABIL-siten
   hemmelighetsskann rent. Render-backup: første døgnbackup finnes ikke ennå
   (databasene er nye) — kveldsteamet sjekker automatisk i morgen og melder
   fra; «gjenopprettingsprøve mot test-databasen» står igjen etter det.
-- **Gjenstår for Jonathan:** (1) merg fiks-branchen til `main` og pek begge
-  Render-tjenestene tilbake på `main` (Settings → Branch) — de bygger
-  midlertidig fra `claude/arbeidsorden-fortsettelse-6vh2f9` fordi
-  kveldsteamet ikke pusher til `main`; si gjerne bare «bytt Render til main»
-  til Claude etter merge. (2) Steg 4 (branch protection) og steg 5
-  (e-postleverandør + DPA) er fortsatt manuelle engangsjobber.
+- [x] **Alt over er fullført og verifisert 19. juli:** RLS-fiksen og
+  CI-fellen-fiksen er merget til `main` (PR #16 og #18), begge Render-tjenestene
+  bygger fra `main`, branch protection («main-vern»: triade + tester) er aktiv,
+  og hele kjeden er kontrollert ende til ende (nøkler 200, begge Netlify-siter
+  v0.17.1 med fungerende Skrivemotor, begge Render-tjenester friske med
+  auth-vern, CI grønn på main).
+- **Besluttet 19. juli:** Steg 5 (e-postleverandør + DPA) er UTSATT til kunde #2
+  eller reelt behov — Sentral-kode-reserven dekker piloten. Steg 6 sin
+  admin-nøkkel droppes (individuell Anthropic-konto har ikke Admin API);
+  kostnadsvakten minner i stedet om månedlig Usage/Limits-titt.
+- **Automatisert:** daglig driftsvakt, ukentlig mandagsrapport og månedlig
+  kostnadssjekk kjører som rutiner (alle feiler høyt, aldri stille), og
+  gjenopprettingsprøven av backup kjøres automatisk 20. juli med Jonathans
+  forhåndsgodkjenning.
 
 ---
 
