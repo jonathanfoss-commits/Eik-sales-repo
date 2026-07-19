@@ -57,7 +57,7 @@ backlog/rapporter. Deretter: eksporter CSV fra Netlify-panelet til
       «Glemt passord?»-flyten (reserven med Sentral-kode virker uansett)
 - [ ] To nøkler på plattform-versjonen i TEST (autentiserte stemmer i Sentral)
 - [ ] Alle pilotbrukere har importert med grønn kvittering
-- [ ] ANTHROPIC_API_KEY satt på begge Render-tjenestene (Skrivemotoren virker)
+- [x] ANTHROPIC_API_KEY satt på begge Render-tjenestene (Skrivemotoren virker)
 - [ ] Backup verifisert i Render (gjenopprettingsprøve mot test-databasen)
 - [ ] TOTP aktivert for admin-brukeren (Jonathan)
 - [ ] Engangspassord byttet for alle brukere
