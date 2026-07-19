@@ -7,7 +7,19 @@
       "Bash(curl https://op-bygg-laerling-app.netlify.app/*)",
       "Bash(curl https://op-bygg-laerling-app-test.netlify.app/*)",
       "Bash(curl https://laerling.onrender.com/*)",
-      "Bash(curl https://laerling-test.onrender.com/*)"
+      "Bash(curl https://laerling-test.onrender.com/*)",
+      "Bash(git fetch:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git show:*)",
+      "Bash(git status:*)",
+      "Bash(git ls-remote:*)",
+      "Bash(git push origin kveldsteam-forslag)",
+      "Bash(git push -u origin kveldsteam-forslag)"
     ]
   }
 }
