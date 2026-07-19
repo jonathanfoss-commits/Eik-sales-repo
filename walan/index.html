@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Anlegg — Walan Maskin</title>
+<meta name="description" content="Anlegg er AI-medarbeideren til Walan Maskin AS: maskinpark, timeføring, prosjektdagbok, HMS og digitale kjøresedler i én mobil-først app.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700&family=Geist:wght@400;500&family=Geist+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Hallmark · macrostructure: Narrative Workflow · H1 marquee knobs: size=xxl-single-word, alignment=left-bias, underlay=rule-below
+ * theme: custom · vibe: "sikkerhetsgul, sort stål, hanskevennlig, nøkternt" · paper: oklch(16% 0.010 90) · accent: oklch(85% 0.17 90)
+ * display: Big Shoulders Display · body: Geist · outlier: Geist Mono (metadata: versjonschip + kolofon)
+ * axes: dark / display-condensed-bold / chromatic-amber (~90°) · nav: N9 · footer: Ft4 · F4 knobs: numbering=klokkeslett, layout=vertical, connector=rule
+ * studied: no · context: inferred (tone delegert) · genre: editorial
+ * pre-emit critique: P4 H5 E4 S5 R4 V4
+ */
+:root {
+  --color-paper:      oklch(16% 0.010 90);
+  --color-paper-2:    oklch(20% 0.012 90);
+  --color-paper-3:    oklch(24% 0.012 90);
+  --color-ink:        oklch(93% 0.010 95);
+  --color-ink-2:      oklch(78% 0.010 95);
+  --color-muted:      oklch(63% 0.014 92);
+  --color-rule:       oklch(31% 0.014 90);
+  --color-rule-2:     oklch(25% 0.012 90);
+  --color-accent:     oklch(85% 0.17 90);
+  --color-accent-ink: oklch(18% 0.020 90);
+  --color-focus:      oklch(85% 0.20 90);
+
+  --font-display: "Big Shoulders Display", "Arial Narrow", system-ui, sans-serif;
+  --font-body:    "Geist", "Segoe UI", system-ui, sans-serif;
+  --font-mono:    "Geist Mono", ui-monospace, monospace;
+
+  --text-sm:   0.8rem;
+  --text-base: 1rem;
+  --text-md:   1.25rem;
+  --text-lg:   1.5625rem;
+  --text-xl:   1.9531rem;
+  --text-2xl:  2.4414rem;
+  --text-display: clamp(2.75rem, 5vw + 1rem, 5.25rem);
+  --text-marquee: clamp(4.5rem, 16vw, 7rem);
+
+  --space-2xs: 0.25rem;
+  --space-xs:  0.5rem;
+  --space-sm:  0.75rem;
+  --space-md:  1rem;
+  --space-lg:  1.5rem;
+  --space-xl:  2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+  --space-4xl: 9rem;
+  --page-gutter: clamp(1rem, 4vw, 3rem);
+
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:     cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long:  420ms;
+
+  --z-base: 1;
+  --z-raised: 10;
+  --z-sticky: 200;
+
+  --rule-hair: 1px solid var(--color-rule);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { overflow-x: clip; }
+body { overflow-x: clip; }
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--text-base);
+  line-height: 1.55;
+}
+
+a { color: var(--color-ink); }
+a:focus-visible, button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+/* varselstripe-signaturen fra appen */
+.stripe {
+  height: 5px;
+  background: repeating-linear-gradient(-45deg,
+    var(--color-accent) 0 14px, var(--color-paper) 14px 28px);
+}
+
+/* N9 · edge-aligned minimal */
+.nav-edge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--page-gutter);
+  border-bottom: var(--rule-hair);
+}
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-md);
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  min-height: 44px;
+}
+.wordmark .chip {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  letter-spacing: 0.08em;
+  color: var(--color-muted);
+}
+.cta-outline {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--text-base);
+  color: var(--color-accent);
+  text-decoration: none;
+  border: 1px solid var(--color-accent);
+  padding: var(--space-sm) var(--space-lg);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  transition: background-color var(--dur-micro) var(--ease-out),
+              color var(--dur-micro) var(--ease-out),
+              transform 100ms var(--ease-out);
+}
+.cta-outline:hover { background: var(--color-accent); color: var(--color-accent-ink); }
+.cta-outline:active { transform: translateY(1px); }
+
+/* H1 · marquee — enkeltordet er budskapet */
+.hero-marquee {
+  min-height: 78dvh;
+  display: grid;
+  align-content: end;
+  padding: var(--space-xl) var(--page-gutter) var(--space-2xl);
+}
+.hero-marquee h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-marquee);
+  line-height: 1.02;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.hero-marquee .hero-rule {
+  margin-top: var(--space-md);
+  height: 3px;
+  width: min(28rem, 60%);
+  background: var(--color-accent);
+}
+
+/* intro — bred venstremarg på store flater */
+.intro {
+  padding: var(--space-2xl) var(--page-gutter) var(--space-3xl);
+}
+.intro p {
+  max-width: 58ch;
+  font-size: var(--text-md);
+  color: var(--color-ink-2);
+}
+.intro p strong { color: var(--color-ink); font-weight: 500; }
+
+section > h2, .sek-hode {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-2xl);
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  overflow-wrap: anywhere;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.sek-hode::before {
+  content: "";
+  width: 0.55em;
+  height: 0.55em;
+  background: var(--color-accent);
+  flex: none;
+  align-self: center;
+}
+
+/* F4 · etappesekvens — klokkeslett som etappenummer */
+.dag {
+  padding: 0 var(--page-gutter) var(--space-3xl);
+}
+.dag .sek-hode { margin-bottom: var(--space-xl); }
+.steps { list-style: none; }
+.steps li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-sm);
+  max-width: 44rem;
+  padding: var(--space-xl) 0;
+  border-top: var(--rule-hair);
+  position: relative;
+}
+.steps li::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  height: 1px;
+  width: 100%;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.steps li.is-seen::before {
+  transition: transform var(--dur-long) var(--ease-out);
+  transform: scaleX(1);
+}
+.steps .stage {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2.2rem, 4vw, 3rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink-2);
+}
+.steps h3 {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--text-lg);
+  line-height: 1.25;
+  margin-bottom: var(--space-sm);
+}
+.steps p { max-width: 60ch; color: var(--color-ink-2); }
+
+/* T4 · tallstripe — kun tall fra repoet */
+.stat-strip {
+  margin: 0 var(--page-gutter) var(--space-3xl);
+  border-top: 2px solid var(--color-rule);
+  border-bottom: var(--rule-hair);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  font-variant-numeric: tabular-nums;
+}
+.stat-strip > div {
+  padding: var(--space-lg) var(--space-md) var(--space-lg) 0;
+}
+.stat-strip b {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-xl);
+  line-height: 1.05;
+}
+.stat-strip span { color: var(--color-muted); font-size: var(--text-sm); }
+
+/* F3 · spesifikasjonstabell */
+.spec {
+  padding: 0 var(--page-gutter) var(--space-4xl);
+}
+.spec .sek-hode { margin-bottom: var(--space-xl); }
+.spec table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.spec th, .spec td {
+  text-align: left;
+  vertical-align: top;
+  padding: var(--space-sm) var(--space-lg) var(--space-sm) 0;
+  border-top: 1px solid var(--color-rule-2);
+}
+.spec th {
+  font-family: var(--font-body);
+  font-weight: 500;
+  white-space: nowrap;
+  width: 1%;
+}
+.spec td.muted { color: var(--color-muted); }
+
+/* C4 · sticky bunnlinje — avdekkes etter folden */
+.cta-sticky {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--page-gutter)
+           calc(var(--space-sm) + env(safe-area-inset-bottom, 0px));
+  background: var(--color-paper-2);
+  border-top: var(--rule-hair);
+  transform: translateY(105%);
+}
+.cta-sticky.is-vist {
+  transition: transform var(--dur-short) var(--ease-out);
+  transform: translateY(0);
+}
+.cta-sticky span { color: var(--color-ink-2); font-size: var(--text-sm); }
+
+/* Ft4 · tett kolofon */
+.foot-dense {
+  padding: var(--space-2xl) var(--page-gutter) calc(var(--space-4xl));
+  border-top: 2px solid var(--color-rule);
+}
+.foot-dense p {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1.7;
+  color: var(--color-muted);
+  max-width: 72ch;
+}
+
+/* mobil */
+@media (max-width: 40rem) {
+  .stat-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .spec th { white-space: normal; width: auto; }
+  .spec td.muted { display: none; }
+  .cta-sticky span { display: none; }
+  .cta-sticky { justify-content: stretch; }
+  .cta-sticky .cta-outline { flex: 1; justify-content: center; }
+}
+
+@media (max-width: 24rem) {
+  .wordmark .chip { display: none; }
+  .nav-edge .cta-outline { padding-inline: var(--space-md); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 150ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 150ms !important;
+  }
+  .steps li::before { transform: none; }
+  .cta-sticky { transform: none; visibility: hidden; }
+  .cta-sticky.is-vist { visibility: visible; }
+}
+</style>
+</head>
+<body>
+
+<div class="stripe" aria-hidden="true"></div>
+
+<header class="nav-edge">
+  <a class="wordmark" href="#topp">Anlegg <span class="chip">v 1.10.1</span></a>
+  <a class="cta-outline" href="https://walan-anlegg.onrender.com">Åpne appen</a>
+</header>
+
+<main id="topp">
+
+  <section class="hero-marquee" aria-label="Anlegg">
+    <h1>Anlegg</h1>
+    <div class="hero-rule" aria-hidden="true"></div>
+  </section>
+
+  <section class="intro">
+    <p><strong>AI-medarbeideren til Walan Maskin AS, Jessheim.</strong>
+    Maskinpark med kontrollfrister, timeføring med maskintimer, prosjektdagbok,
+    HMS og digitale kjøresedler — samlet i én mobil-først app som installeres
+    rett fra nettleseren og tåler at dekningen ryker.</p>
+  </section>
+
+  <section class="dag" aria-labelledby="dag-tittel">
+    <h2 class="sek-hode" id="dag-tittel">Én arbeidsdag</h2>
+    <ol class="steps">
+      <li>
+        <span class="stage">06:40</span>
+        <div>
+          <h3>Kjøreseddelen er digital</h3>
+          <p>Sjåføren har dagens kjøreseddel på telefonen før første lass.
+          Lassene summeres automatisk — ingen gule lapper i førerhytta.</p>
+        </div>
+      </li>
+      <li>
+        <span class="stage">09:15</span>
+        <div>
+          <h3>Timene føres der jobben gjøres</h3>
+          <p>Mann- og maskintimer registreres i felt. Ryker dekningen, legger
+          appen registreringen i offline-køen og sender når nettet er tilbake.</p>
+        </div>
+      </li>
+      <li>
+        <span class="stage">13:30</span>
+        <div>
+          <h3>Dagboka får bilder, HMS får SJA</h3>
+          <p>Prosjektdagboka tar imot bilder rett fra grøfta. Trengs en
+          sikker jobb-analyse, skriver AI-assistenten utkastet — folkene dine
+          kontrollerer og signerer.</p>
+        </div>
+      </li>
+      <li>
+        <span class="stage">16:45</span>
+        <div>
+          <h3>Dagsrapporten skriver seg selv</h3>
+          <p>AI-assistenten oppsummerer dagen mot appens egne data og legger
+          rapporten klar til godkjenning. Du leser, retter og sender.</p>
+        </div>
+      </li>
+      <li>
+        <span class="stage">02:00</span>
+        <div>
+          <h3>Fabrikken tar nattskiftet</h3>
+          <p>Tolv AI-eksperter behandler innspill fra folkene dine mens alle
+          sover. De diskuterer, markerer uenighet åpent og leverer ferdige
+          forslag med testplan — daglig leder godkjenner om morgenen. Et skift
+          på to saker koster typisk under én krone.</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="stat-strip" aria-label="Nøkkeltall fra appen">
+    <div><b>12</b><span>AI-eksperter i Fabrikken</span></div>
+    <div><b>02:00</b><span>nattskiftet går automatisk</span></div>
+    <div><b>5</b><span>AI-evner røyktestes mot ekte nøkkel</span></div>
+    <div><b>1.10.1</b><span>versjonen i drift</span></div>
+  </section>
+
+  <section class="spec" aria-labelledby="spec-tittel">
+    <h2 class="sek-hode" id="spec-tittel">Innebygd</h2>
+    <table>
+      <tbody>
+        <tr><th>Maskinpark</th><td>kontrollfrister per maskin, varsler før forfall</td><td class="muted">sakkyndig kontroll</td></tr>
+        <tr><th>Timeføring</th><td>mann- og maskintimer, CSV-eksport</td><td class="muted">til lønn og faktura</td></tr>
+        <tr><th>Kompetanse</th><td>M-koder valideres mot maskinen</td><td class="muted">riktig fører på riktig maskin</td></tr>
+        <tr><th>Kjøresedler</th><td>digitale, med automatisk summering</td><td class="muted">per prosjekt</td></tr>
+        <tr><th>Miljø</th><td>miljøregnskap og fossilfri-rapport</td><td class="muted">for anbud som krever det</td></tr>
+        <tr><th>Vinterdrift</th><td>egen modul for sesongen</td><td class="muted"></td></tr>
+        <tr><th>Tilgang</th><td>Row Level Security per organisasjon</td><td class="muted">testene beviser isolasjonen</td></tr>
+        <tr><th>AI-kostnad</th><td>budsjettvakt med hardt månedstak</td><td class="muted">kostnadslogg på hvert kall</td></tr>
+        <tr><th>Ledelsen</th><td>kommandosentral med innspillsløkke</td><td class="muted">og storskjermvisning</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+<aside class="cta-sticky" aria-hidden="true">
+  <span>Demobrukerne ligger klare — passord får du av Jonathan.</span>
+  <a class="cta-outline" href="https://walan-anlegg.onrender.com">Åpne appen →</a>
+</aside>
+
+<footer class="foot-dense">
+  <p>Anlegg v 1.10.1 · Bygget for Walan Maskin AS, Jessheim. Node.js uten
+  rammeverk + PostgreSQL med Row Level Security. Mobil-først PWA med
+  offline-kø. Satt i Big Shoulders Display, Geist og Geist Mono.
+  Eksempelside — utkast, 2026.</p>
+</footer>
+
+<script>
+(function () {
+  var redusert = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var io = new IntersectionObserver(function (poster) {
+    poster.forEach(function (p) {
+      if (p.isIntersecting) { p.target.classList.add("is-seen"); io.unobserve(p.target); }
+    });
+  }, { threshold: 0.4 });
+  if (!redusert) {
+    document.querySelectorAll(".steps li").forEach(function (li) { io.observe(li); });
+  }
+
+  var bar = document.querySelector(".cta-sticky");
+  var hero = document.querySelector(".hero-marquee");
+  var heroIo = new IntersectionObserver(function (poster) {
+    var borte = !poster[0].isIntersecting;
+    bar.classList.toggle("is-vist", borte);
+    bar.setAttribute("aria-hidden", String(!borte));
+  });
+  heroIo.observe(hero);
+})();
+</script>
+
+</body>
+</html>

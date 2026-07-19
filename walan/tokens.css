@@ -1,0 +1,62 @@
+/* Hallmark · macrostructure: Narrative Workflow · H1 marquee knobs: size=xxl-single-word, alignment=left-bias, underlay=rule-below
+ * theme: custom · vibe: "sikkerhetsgul, sort stål, hanskevennlig, nøkternt" · paper: oklch(16% 0.010 90) · accent: oklch(85% 0.17 90)
+ * display: Big Shoulders Display · body: Geist · outlier: Geist Mono (metadata: versjonschip + kolofon)
+ * axes: dark / display-condensed-bold / chromatic-amber (~90°) · nav: N9 · footer: Ft4 · F4 knobs: numbering=klokkeslett, layout=vertical, connector=rule
+ * studied: no · context: inferred (tone delegert) · genre: editorial
+ */
+:root {
+  /* farger — forankret i appens sikkerhetsgul/sort-profil (app/stil.css) */
+  --color-paper:      oklch(16% 0.010 90);
+  --color-paper-2:    oklch(20% 0.012 90);
+  --color-paper-3:    oklch(24% 0.012 90);
+  --color-ink:        oklch(93% 0.010 95);
+  --color-ink-2:      oklch(78% 0.010 95);
+  --color-muted:      oklch(63% 0.014 92);
+  --color-rule:       oklch(31% 0.014 90);
+  --color-rule-2:     oklch(25% 0.012 90);
+  --color-accent:     oklch(85% 0.17 90);
+  --color-accent-ink: oklch(18% 0.020 90);
+  --color-focus:      oklch(85% 0.20 90);
+
+  /* typografi */
+  --font-display: "Big Shoulders Display", "Arial Narrow", system-ui, sans-serif;
+  --font-body:    "Geist", "Segoe UI", system-ui, sans-serif;
+  --font-mono:    "Geist Mono", ui-monospace, monospace;
+
+  --text-sm:   0.8rem;
+  --text-base: 1rem;
+  --text-md:   1.25rem;
+  --text-lg:   1.5625rem;
+  --text-xl:   1.9531rem;
+  --text-2xl:  2.4414rem;
+  --text-3xl:  3.0518rem;
+  --text-display:   clamp(2.75rem, 5vw + 1rem, 5.25rem);
+  --text-marquee:   clamp(4.5rem, 16vw, 7rem); /* enkeltord ≤ 12 ch */
+
+  /* rom — 4 pt-skala */
+  --space-2xs: 0.25rem;
+  --space-xs:  0.5rem;
+  --space-sm:  0.75rem;
+  --space-md:  1rem;
+  --space-lg:  1.5rem;
+  --space-xl:  2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+  --space-4xl: 9rem;
+  --page-gutter: clamp(1rem, 4vw, 3rem);
+
+  /* bevegelse */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:     cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long:  420ms;
+
+  /* lag */
+  --z-base: 1;
+  --z-raised: 10;
+  --z-sticky: 200;
+
+  --rule-hair: 1px solid var(--color-rule);
+}
