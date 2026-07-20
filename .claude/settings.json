@@ -19,7 +19,21 @@
       "Bash(git status:*)",
       "Bash(git ls-remote:*)",
       "Bash(git push origin kveldsteam-forslag)",
-      "Bash(git push -u origin kveldsteam-forslag)"
+      "Bash(git push -u origin kveldsteam-forslag)",
+      "mcp__Claude_Code_Remote__create_trigger",
+      "mcp__Claude_Code_Remote__delete_trigger",
+      "mcp__Claude_Code_Remote__update_trigger",
+      "mcp__Claude_Code_Remote__fire_trigger",
+      "mcp__Claude_Code_Remote__send_later",
+      "mcp__Claude_Code_Remote__list_triggers",
+      "mcp__Claude_Code_Remote__subscribe_pr_activity",
+      "mcp__Claude_Code_Remote__unsubscribe_pr_activity",
+      "mcp__github__list_commits",
+      "mcp__github__list_branches",
+      "mcp__github__actions_list",
+      "mcp__github__actions_get",
+      "mcp__github__pull_request_read",
+      "mcp__github__get_file_contents"
     ]
   }
 }
