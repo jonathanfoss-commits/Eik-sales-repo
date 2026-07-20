@@ -28,8 +28,8 @@ exports.handler = async (event) => {
   });
 
   const riktigKode = process.env.PILOT_API_KODE || KODE;
-  const gittKode = (event.headers && (event.headers["x-pilotkode"] || event.headers["X-Pilotkode"])) ||
-    ((event.queryStringParameters || {}).kode || "");
+  /* kun header — kode i URL havner i logger og nettleserhistorikk */
+  const gittKode = (event.headers && (event.headers["x-pilotkode"] || event.headers["X-Pilotkode"])) || "";
   if (gittKode !== riktigKode) return svar(401, { feil: "feil pilotkode" });
 
   const token = process.env.PILOTLOGG_TOKEN;

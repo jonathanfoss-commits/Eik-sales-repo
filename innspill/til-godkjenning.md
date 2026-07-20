@@ -3,6 +3,20 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
+## Musk-tiltak — 20. juli 2026 (infrastruktur, bestilt av Jonathan: «alt du kan gjøre auto»)
+
+**Hva:** (1) `.github/workflows/pages.yml` slettet — den publiserte HELE repoet (pilotdata,
+forretningsdokumenter) offentlig på GitHub Pages; Jonathan må i tillegg skru av Pages i
+repo-innstillingene. (2) Query-string-veien for sentralkoden fjernet i `innspill.js` (kun
+header; alle klientene brukte allerede header). (3) Cache-navnet i `sw.js` bundet til
+versjonsnummeret («laerling-0.18.0») — ny regel: alltid «laerling-» + VERSJON, én kilde.
+(4) `samarbeid/datasikkerhet.md` presisert med Skrivemotorens gjennomstrømming + DPA-punkt.
+(5) `innspill/pilotlogg-innsikt.md` opprettet med faktiske brukstall (17 hendelser, null
+verktøybruk målt). (6) Rutinesanering utenfor repoet: lunsjtriage og kostnadssjekk slettet,
+kveldsteamet gjenskapt med behovsstyrt panel (maks 3 eksperter), tidlig-slutt-regel og
+automatisk innspill-henting fra Netlify Forms. Sentralkode-rotasjon lagt som HASTER i
+prioritering.md.
+
 ## v0.18.0 — 20. juli 2026 (Lov- og regelsjekk — brukerinnspill fra pilotloggen)
 
 **Hva:** Ny rad i prompt-biblioteket på Verktøy-fanen: «Lov- og regelsjekk» (undertekst
