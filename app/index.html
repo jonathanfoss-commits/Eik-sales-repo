@@ -893,11 +893,13 @@ Mvh Ole Fabian, OP Bygg AS</div>
     { t:"Varemottak → avviksmelding", s:"Gjør det FØR du signerer følgeseddelen",
       p:"Varemottak på [prosjekt], [dato], leverandør [navn]. Bestilling/ordrenr: [nr]. [dikter: hva som kom, hva som mangler eller er skadet, antall mot følgeseddel]. Lag 1) skriftlig avviksmelding til leverandøren med frist for retting/kreditering, og 2) internt notat til regnskap om at fakturaen skal kontrolleres mot bestilling og faktisk mottatt vare." },
     { t:"Byggedagbok", s:"30 sekunder på slutten av dagen",
-      p:"Byggedagbok [prosjekt], [dato]: [dikter: hvem som var på plassen, hva som ble gjort, vær, leveranser, hindringer, beskjeder fra byggherre]. Før dette som strukturert dagboknotat." }
+      p:"Byggedagbok [prosjekt], [dato]: [dikter: hvem som var på plassen, hva som ble gjort, vær, leveranser, hindringer, beskjeder fra byggherre]. Før dette som strukturert dagboknotat." },
+    { t:"Lov- og regelsjekk", s:"Veileder — erstatter ikke rådgiver", m:"lovregel",
+      p:"Hva sier regelverket om: [spør rett fram: «må vi ha rekkverk ved to meter?», «hvem har SHA-ansvaret her?»]. Oppgi hvilken forskrift og paragraf som gjelder (TEK17, arbeidsplassforskriften, byggherreforskriften, SAK10 …), svar generelt uten å konkludere i min konkrete sak, og er hjemmelen usikker, skriv «dette må sjekkes». Avslutt med linjen: «⚠️ Dette er veiledning om hva regelverket sier — ikke juridisk rådgivning, og det kan være feil eller utdatert. Bekreft med kommunen, Arbeidstilsynet eller rådgiveren din før du bestemmer deg.»" }
   ];
 
   /* ── versjon og kanal (test vs. stabil) ── */
-  var VERSJON = "0.17.1";
+  var VERSJON = "0.18.0";
   var erTest = /(^|[.-])test([.-]|$)/.test(location.hostname);
   document.getElementById("versjon-info").textContent =
     "LÆRLING v" + VERSJON + " · " + (erTest ? "TESTKANAL" : "STABIL") + " · BYGGET FOR OP BYGG";

@@ -3,7 +3,32 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
-## INGEN LEVERANSER VENTER
+## v0.18.0 — 20. juli 2026 (Lov- og regelsjekk — brukerinnspill fra pilotloggen)
+
+**Hva:** Ny rad i prompt-biblioteket på Verktøy-fanen: «Lov- og regelsjekk» (undertekst
+«Veileder — erstatter ikke rådgiver»). Spør rett fram — «må vi ha rekkverk ved to
+meter?» — og Skrivemotoren svarer med hva regelverket sier og hvilken forskrift og
+paragraf som gjelder (TEK17, arbeidsplassforskriften, byggherreforskriften, SAK10 m.fl.).
+Instruksen er avgrenset etter jurist-vilkårene: aldri konklusjon i den konkrete saken,
+aldri «dette er lov/ulovlig», «dette må sjekkes» ved usikker hjemmel, stans-arbeidet-svar
+ved pågående farlige situasjoner, og fast ansvarsfraskrivelse nederst i hvert svar.
+KOPIER-fallbacken (Claude-appen ved dårlig dekning) har samme avgrensning bakt inn i
+prompten. Ingen ny dataflyt: samme rene gjennomstrømming som resten av Skrivemotoren,
+loggen får kun hendelsestypen.
+
+**Panelets vedtak:** 5 × JA, 1 × ENDRE (tekst). Ingen personvern-veto.
+
+**Sjekkpunkt til Jonathan (fra Kontraktsjuristen):** databehandleravtale (DPA) med
+API-leverandøren bør bekreftes/signeres — samme punkt som Musk-reviewen 20. juli flagget
+for `pilot/datasikkerhet.md`.
+
+**QA:** Playwright 390×844 + 1440×900, null JS-feil, ny rad og ark verifisert i begge.
+Funn under QA (pre-eksisterende, IKKE rettet i natt): `op-bygg-logo.png` refereres to
+steder i index.html men finnes ikke — 404 også på live STABIL. Bildet har alt-tekst, så
+det vises bare som tomrom. Rettes ved at Jonathan legger logofilen i `app/`, eller at
+referansene fjernes i en egen leveranse.
+
+---
 
 Pakken v0.9.4–v0.17.1 ble publisert til STABIL 19. juli 2026 på admin-overstyring
 fra Jonathan (se publiseringsloggen nederst). Delversjonene under står som
