@@ -151,7 +151,7 @@ export async function registrerMedInvitasjon({ kode, navn, epost, passord }) {
 }
 
 // ── Passordflyt [JONATHAN: e-postbasert nullstilling] ──
-export async function byttPassord(brukerId, gammelt, nytt) {
+export async function byttPassord(brukerId, gammelt, nytt, beholdToken) {
   if (String(nytt || '').length < 10) return { feil: 'Nytt passord må ha minst 10 tegn' };
   const rad = (await authPool.query(
     'SELECT passord_hash FROM brukere WHERE id = $1 AND aktiv', [brukerId])).rows[0];
@@ -160,6 +160,10 @@ export async function byttPassord(brukerId, gammelt, nytt) {
   }
   await authPool.query('UPDATE brukere SET passord_hash = $2 WHERE id = $1',
     [brukerId, await hashPassord(String(nytt))]);
+  // Den som bytter passord gjør det gjerne fordi noen andre KAN ha det gamle —
+  // alle andre sesjoner ryker, kun den som byttet beholder sin.
+  await authPool.query('DELETE FROM sesjoner WHERE bruker_id = $1 AND token_hash <> $2',
+    [brukerId, sha256(String(beholdToken || ''))]);
   return { ok: true };
 }
 

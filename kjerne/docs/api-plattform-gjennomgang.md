@@ -148,3 +148,33 @@ et lite skript som itererer `ruter.ruter` og skriver metode + sti + modul til
 3. Funn 4–6 som del av neste ordinære runde; 7–11 når man er borti filene.
 4. S1/S4 som beslutningspunkter når første integrasjons-/API-kunde er reell —
    ikke bygg dem på forskudd, men ikke lov dem bort i salg før stien er valgt.
+
+## Utbedret (20. juli 2026, samme gren)
+
+Alle kodefunnene (1–11) og S2 er utbedret:
+
+- **Funn 1:** `klientIp` leser nå *siste* ledd i `X-Forwarded-For` (leddet
+  proxyen selv appender) — spoofing av rate-grensene er tettet.
+- **Funn 2:** rate-demperen rydder per nøkkel (inaktive > 1 t) i stedet for
+  `teller.clear()` — brute-force-tellerne kan ikke lenger nullstilles utenfra.
+- **Funn 3:** `byttPassord` sletter alle brukerens andre sesjoner; egen sesjon
+  består. Regresjonstest med to samtidige sesjoner.
+- **Funn 4:** sentral UUID-vakt i ruteren — ugyldig `:id` gir 400 i alle moduler.
+- **Funn 5:** `lesCookies` dropper verdier med ødelagt %-koding i stedet for 500.
+- **Funn 6:** eksplisitt 403 på `POST /api/godkjenninger` for ansatte (RLS
+  tettet allerede); testen som forventet 500 er oppdatert til 403.
+- **Funn 7:** utløpte sesjoner og nullstillingskoder slettes ved oppstart og
+  hvert døgn.
+- **Funn 8:** stivakten for statiske filer krever nå `APP_DIR + path.sep`.
+- **Funn 9:** `sendEpost` har 10 s tidsavbrudd (`AbortSignal.timeout`).
+- **Funn 10:** AI-rutene merker seg selv med `{ ai: true }` i rutetabellen —
+  sti-listen i serveren er borte.
+- **Funn 11:** JSON-grensen er 1 MB som standard; kun innflyttingen ber om
+  15 MB via rute-opsjonen `maksKropp`.
+- **S2:** `sjekkKvote` leser `aiMndBudsjettOre` fra tenant-konfigen først;
+  miljøvariabelen er reserven. Regresjonstest: tenant-kvote 1 øre sperrer,
+  fjernet verdi faller tilbake til miljøvariabelen.
+
+Verifisert: 34/34 servertester (fire nye regresjonstester for funn 3/4/5/6 og
+S2), 27/27 e2e-sjekker i Chromium (390×844, null JS-feil), hemmelighetsskann
+rent. S1, S3 og S4 står som beslutningspunkter — ingenting av det er bygget.

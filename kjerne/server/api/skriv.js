@@ -35,5 +35,5 @@ export function registrer(ruter) {
       modell: resultat.modell, usage: resultat.usage, kostOre: resultat.kostOre,
     }));
     return { tekst: resultat.tekst };
-  });
+  }, { ai: true });
 }

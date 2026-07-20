@@ -64,6 +64,11 @@ export function registrer(ruter) {
   }));
 
   ruter.add('POST', '/api/godkjenninger', ({ ctx, body }) => medOrg(ctx, async (c) => {
+    // RLS (godkjenninger_skriv krever er_ledelse) tetter uansett — sjekken her
+    // gir ryddig 403 i stedet for 500 ved RLS-brudd (samme mønster som faktura).
+    if (!['admin', 'pilotleder'].includes(ctx.rolle)) {
+      throw new ApiFeil(403, 'Godkjenningsstemmer er for ledelsen');
+    }
     const { versjon, stemme } = body;
     if (!versjon || !['godkjent', 'avvist'].includes(stemme)) {
       throw new ApiFeil(400, 'Versjon og stemme (godkjent/avvist) må med');

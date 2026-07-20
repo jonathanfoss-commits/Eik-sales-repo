@@ -26,6 +26,8 @@ export async function sendEpost({ til, emne, tekst }) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ from: process.env.EPOST_FRA, to: [til], subject: emne, text: tekst }),
+      // en hengende leverandør skal ikke henge forespørselen som venter på oss
+      signal: AbortSignal.timeout(10_000),
     });
     if (!res.ok) console.error('epost: leverandøren svarte', res.status);
     return res.ok;

@@ -8,7 +8,7 @@ import { Ruter, ApiFeil, svarJson, lesJson, lesCookies } from './http.js';
 import { loggInn, loggUt, finnSesjon, registrerMedInvitasjon,
   byttPassord, lagNullstilling, finnBrukerPaaEpost, fullforNullstilling } from './auth.js';
 import { sendEpost, epostTilgjengelig } from './epost.js';
-import { medOrg } from './db.js';
+import { medOrg, authPool, UUID_RE } from './db.js';
 import { abonner } from './buss.js';
 import * as timer from './api/timer.js';
 import * as dagbok from './api/dagbok.js';
@@ -38,15 +38,26 @@ function forMange(nokkel, maks, vinduMs) {
   teller.set(nokkel, liste);
   return liste.length > maks;
 }
-setInterval(() => { if (teller.size > 10000) teller.clear(); }, 600_000).unref();
+// Opprydding per nøkkel — aldri teller.clear(): en full nullstilling ville
+// også nullstilt brute-force-tellerne per e-post, og kunne fremprovoseres ved
+// å fylle kartet med søppelnøkler (funn fra API-gjennomgangen). Nøkler uten
+// aktivitet i det lengste vinduet (1 t) er trygge å fjerne.
+setInterval(() => {
+  const naa = Date.now();
+  for (const [nokkel, liste] of teller) {
+    if (naa - liste[liste.length - 1] > 60 * 60_000) teller.delete(nokkel);
+  }
+}, 600_000).unref();
 
 // Bak Render/proxy ser socketen én og samme proxy-IP for ALLE brukere — da må
-// klient-IP-en leses fra X-Forwarded-For (settes av plattformen; første ledd er
-// klienten), ellers blir innloggingsgrensen global og et lite antall feilforsøk
-// låser hele organisasjonen ute (funn fra sikkerhetsgjennomgangen).
+// klient-IP-en leses fra X-Forwarded-For, ellers blir innloggingsgrensen global
+// og et lite antall feilforsøk låser hele organisasjonen ute (funn fra
+// sikkerhetsgjennomgangen). SISTE ledd, ikke første: proxyen APPENDER klientens
+// ekte IP, mens alt foran er klientstyrt og kan spoofes til vilkårlige «IP-er».
 function klientIp(req) {
-  const xff = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
-  return xff || req.socket.remoteAddress || 'ukjent';
+  const ledd = String(req.headers['x-forwarded-for'] || '')
+    .split(',').map((s) => s.trim()).filter(Boolean);
+  return ledd[ledd.length - 1] || req.socket.remoteAddress || 'ukjent';
 }
 
 // ── Åpne ruter (uten sesjon) ──
@@ -107,8 +118,10 @@ ruter.add('POST', '/api/nullstill', async ({ req, body }) => {
   return { ok: true };
 });
 
-ruter.add('POST', '/api/passord', async ({ ctx, body }) => {
-  const resultat = await byttPassord(ctx.brukerId, body.gammelt, body.nytt);
+ruter.add('POST', '/api/passord', async ({ req, ctx, body }) => {
+  // egen sesjon beholdes — alle andre slettes (den som bytter, eier kontoen alene)
+  const resultat = await byttPassord(ctx.brukerId, body.gammelt, body.nytt,
+    lesCookies(req).plattform_sesjon);
   if (resultat.feil) throw new ApiFeil(400, resultat.feil);
   return { ok: true };
 });
@@ -162,7 +175,7 @@ const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; cha
 function serverStatisk(req, res, sti) {
   if (sti === '/') sti = '/index.html';
   const full = path.normalize(path.join(APP_DIR, sti));
-  if (!full.startsWith(APP_DIR) || !fs.existsSync(full) || fs.statSync(full).isDirectory()) {
+  if (!full.startsWith(APP_DIR + path.sep) || !fs.existsSync(full) || fs.statSync(full).isDirectory()) {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
     res.end('Ikke funnet');
     return;
@@ -211,14 +224,18 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === 'GET' && sti === '/api/hendelser') return sseHandler(req, res, ctx);
-    if (req.method === 'POST' && ['/api/skriv', '/api/prosjekter/ukesrapport'].includes(sti)
-        && forMange('skriv:' + (ctx?.brukerId || 'x'), 30, 10 * 60_000)) {
-      throw new ApiFeil(429, 'Mange utkast på kort tid — vent et par minutter');
-    }
 
     const rute = ruter.finn(req.method, sti);
     if (!rute) throw new ApiFeil(404, 'Ukjent API-rute');
-    const body = ['POST', 'PUT', 'PATCH'].includes(req.method) ? await lesJson(req) : {};
+    // AI-rutene merker seg selv ({ ai: true }) — ingen sti-liste å glemme her.
+    if (rute.opts.ai && forMange('skriv:' + (ctx?.brukerId || 'x'), 30, 10 * 60_000)) {
+      throw new ApiFeil(429, 'Mange utkast på kort tid — vent et par minutter');
+    }
+    // Alle :id-parametre er UUID-er — en ugyldig verdi skal gi 400, ikke en
+    // Postgres-castfeil og 500 i hver modul.
+    if (rute.params.id && !UUID_RE.test(rute.params.id)) throw new ApiFeil(400, 'Ugyldig id');
+    const body = ['POST', 'PUT', 'PATCH'].includes(req.method)
+      ? await lesJson(req, rute.opts.maksKropp) : {};
     const resultat = await rute.handler({ req, res, ctx, body, params: rute.params, sok: url.searchParams });
 
     if (resultat && resultat._csv !== undefined) {
@@ -239,6 +256,17 @@ const server = http.createServer(async (req, res) => {
       ...(feil.data || {}) });
   }
 });
+
+// Utløpte sesjoner og nullstillingskoder filtreres allerede bort ved oppslag —
+// her slettes radene så tabellene ikke vokser evig. Ved oppstart + hvert døgn.
+async function ryddUtlopt() {
+  try {
+    await authPool.query('DELETE FROM sesjoner WHERE utloper < now()');
+    await authPool.query('DELETE FROM nullstillinger WHERE utloper < now()');
+  } catch (feil) { console.error('opprydding:', feil.message); }
+}
+ryddUtlopt();
+setInterval(ryddUtlopt, 24 * 3600_000).unref();
 
 server.listen(config.port, () => {
   console.log(`Plattformkjernen kjører på :${config.port}`);

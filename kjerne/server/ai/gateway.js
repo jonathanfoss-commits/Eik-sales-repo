@@ -64,11 +64,20 @@ export function validerEvne(navn, evne) {
 // Bruker SECURITY DEFINER-funksjonen ai_kost_denne_mnd(): radene i ai_logg er
 // SENSITIVT (kun admin), men summen for egen org må sperren kunne lese uansett
 // hvem som spør (funnet av integrasjonstesten — se migrasjon 003).
-// Kjent begrensning (dokumentert): to samtidige kall kan begge passere like
-// under taket; måneden regnes i servertid.
+// Budsjettet er PER TENANT: konfig-nøkkelen aiMndBudsjettOre i organisasjoner
+// vinner (planene selger ulike kvoter), miljøvariabelen er reserven for
+// tenants uten egen verdi. Kjent begrensning (dokumentert): to samtidige kall
+// kan begge passere like under taket; måneden regnes i servertid.
 export async function sjekkKvote(client) {
-  const brukt = await client.query('SELECT ai_kost_denne_mnd() AS sum');
-  if (Number(brukt.rows[0].sum) >= config.aiMndBudsjettOre) {
+  const brukt = await client.query(`
+    SELECT ai_kost_denne_mnd() AS sum,
+           (SELECT konfig->>'aiMndBudsjettOre' FROM organisasjoner
+             WHERE id = gjeldende_org()) AS eget`);
+  // Number() i JS, ikke ::numeric i SQL — en feilskrevet konfigverdi skal gi
+  // reserven, ikke en castfeil som velter hele AI-kjeden.
+  const eget = Number(brukt.rows[0].eget);
+  const budsjett = Number.isFinite(eget) && eget > 0 ? eget : config.aiMndBudsjettOre;
+  if (Number(brukt.rows[0].sum) >= budsjett) {
     throw new ApiFeil(429,
       'Månedens AI-budsjett er brukt opp. Ta kontakt med administrator for påfyll.');
   }

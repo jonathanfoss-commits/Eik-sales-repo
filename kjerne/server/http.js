@@ -17,12 +17,14 @@ export function lesCookies(req) {
   const ut = {};
   for (const del of (req.headers.cookie || '').split(';')) {
     const i = del.indexOf('=');
-    if (i > 0) ut[del.slice(0, i).trim()] = decodeURIComponent(del.slice(i + 1).trim());
+    if (i <= 0) continue;
+    // en ødelagt %-sekvens fra klienten skal ikke gi 500 på alt — verdien droppes
+    try { ut[del.slice(0, i).trim()] = decodeURIComponent(del.slice(i + 1).trim()); } catch {}
   }
   return ut;
 }
 
-export function lesJson(req, maksBytes = 15 * 1024 * 1024) {
+export function lesJson(req, maksBytes = 1024 * 1024) {
   return new Promise((resolve, reject) => {
     let lengde = 0;
     let overskredet = false;
@@ -46,12 +48,14 @@ export function lesJson(req, maksBytes = 15 * 1024 * 1024) {
   });
 }
 
-// Rute-tabell: [metode, mønster med :param, handler(req, res, ctx)]
+// Rute-tabell: [metode, mønster med :param, handler(req, res, ctx)].
+// opts: { ai: true } gir ruten AI-rate-grensen (serveren leser flagget —
+// ingen håndvedlikeholdt sti-liste), { maksKropp } overstyrer JSON-grensen.
 export class Ruter {
   constructor() { this.ruter = []; }
-  add(metode, monster, handler) {
+  add(metode, monster, handler, opts = {}) {
     const deler = monster.split('/').filter(Boolean);
-    this.ruter.push({ metode, deler, handler });
+    this.ruter.push({ metode, deler, handler, opts });
   }
   finn(metode, sti) {
     const stiDeler = sti.split('/').filter(Boolean).map(decodeURIComponent);
@@ -64,7 +68,7 @@ export class Ruter {
         if (d.startsWith(':')) params[d.slice(1)] = stiDeler[i];
         else if (d !== stiDeler[i]) { treff = false; break; }
       }
-      if (treff) return { handler: rute.handler, params };
+      if (treff) return { handler: rute.handler, params, opts: rute.opts };
     }
     return null;
   }

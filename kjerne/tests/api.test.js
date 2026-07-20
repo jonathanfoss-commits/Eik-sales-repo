@@ -205,7 +205,7 @@ test('godkjenning er autentisert audit-rad — én per bruker per versjon', asyn
   const en = await api('admin', 'POST', '/api/godkjenninger', { versjon: 'api-v1', stemme: 'godkjent' });
   assert.equal(en.status, 200);
   const ansatt = await api('ansatt', 'POST', '/api/godkjenninger', { versjon: 'api-v1', stemme: 'godkjent' });
-  assert.equal(ansatt.status, 500, 'ansatte har ikke stemmerett (RLS avviser)');
+  assert.equal(ansatt.status, 403, 'ansatte har ikke stemmerett (ryddig 403; RLS tetter uansett)');
 });
 
 test('uten sesjon: 401 på alt lukket', async () => {
@@ -414,6 +414,61 @@ test('passordflyten: bytte, ledelse-kode og nullstilling [JONATHAN: e-post]', as
   const omigjen = await api(null, 'POST', '/api/nullstill',
     { kode: kode.data.kode, passord: 'enda-et-passord-1' });
   assert.equal(omigjen.status, 400);
+});
+
+// NB: GDPR-testen over sletter api-ansatt — testene under bruker admin eller
+// oppretter egne brukere (ryddes av after() på api-%@test.local-mønsteret).
+test('API-gjennomgang: ugyldig id i sti gir 400, ikke Postgres-castfeil og 500', async () => {
+  if (!tilgjengelig) return;
+  const res = await api('admin', 'GET', '/api/dagbok/ikke-en-uuid');
+  assert.equal(res.status, 400);
+});
+
+test('API-gjennomgang: ødelagt cookie gir 401, ikke 500', async () => {
+  if (!tilgjengelig) return;
+  const res = await fetch(URL_ROT + '/api/meg', { headers: { Cookie: 'plattform_sesjon=%E0' } });
+  assert.equal(res.status, 401, 'verdien droppes — forespørselen behandles som uinnlogget');
+});
+
+test('API-gjennomgang: passordbytte logger ut alle andre sesjoner', async () => {
+  if (!tilgjengelig) return;
+  const { hashPassord } = await import('../server/auth.js');
+  await eier.query(
+    `INSERT INTO brukere (org_id, navn, epost, rolle, passord_hash) VALUES ($1,$2,$3,$4,$5)
+     ON CONFLICT (epost) DO UPDATE SET passord_hash = EXCLUDED.passord_hash, aktiv = true`,
+    [orgA, 'Test Vakt', 'api-vakt@test.local', 'ansatt', await hashPassord(PASSORD)]);
+  const inn = async () => {
+    const res = await fetch(URL_ROT + '/api/login', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ epost: 'api-vakt@test.local', passord: PASSORD }) });
+    return res.headers.get('set-cookie').split(';')[0];
+  };
+  const a = await inn(), b = await inn();
+  const bytte = await fetch(URL_ROT + '/api/passord', { method: 'POST',
+    headers: { 'Content-Type': 'application/json', Cookie: a },
+    body: JSON.stringify({ gammelt: PASSORD, nytt: 'byttet-passord-123' }) });
+  assert.equal(bytte.status, 200);
+  assert.equal((await fetch(URL_ROT + '/api/meg', { headers: { Cookie: b } })).status, 401,
+    'den andre sesjonen ryker — «noen andre har passordet» dekkes av byttet');
+  assert.equal((await fetch(URL_ROT + '/api/meg', { headers: { Cookie: a } })).status, 200,
+    'egen sesjon består');
+});
+
+test('API-gjennomgang: AI-kvoten kan settes per tenant i konfigen', async () => {
+  if (!tilgjengelig) return;
+  // suiten har alt logget >1 øre AI-kost for orgA — en tenant-kvote på 1 øre
+  // sperrer. try/finally: konfigen skal aldri bli stående ved testfeil.
+  try {
+    await eier.query(
+      `UPDATE organisasjoner SET konfig = konfig || '{"aiMndBudsjettOre": 1}' WHERE id = $1`, [orgA]);
+    const sperret = await api('admin', 'POST', '/api/skriv', { evne: 'purring', tekst: 'kvotetest' });
+    assert.equal(sperret.status, 429, 'tenant-kvoten i konfigen vinner over miljøvariabelen');
+  } finally {
+    await eier.query(
+      `UPDATE organisasjoner SET konfig = konfig - 'aiMndBudsjettOre' WHERE id = $1`, [orgA]);
+  }
+  const aapen = await api('admin', 'POST', '/api/skriv', { evne: 'purring', tekst: 'kvotetest to' });
+  assert.equal(aapen.status, 200, 'uten tenant-verdi gjelder miljøvariabelen (reserven)');
 });
 
 // SIST med vilje: demperen sperrer IP-en for videre innlogginger i testen.

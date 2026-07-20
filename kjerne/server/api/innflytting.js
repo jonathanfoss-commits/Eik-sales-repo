@@ -11,6 +11,7 @@ const noekkel = (...deler) =>
   'innfl-' + crypto.createHash('sha256').update(deler.join('|')).digest('hex').slice(0, 24);
 
 export function registrer(ruter) {
+  // hele piloteksporten kan være stor — kun denne ruten trenger mer enn 1 MB kropp
   ruter.add('POST', '/api/innflytting', ({ ctx, body }) => medOrg(ctx, async (c) => {
     const data = body.data;
     if (!data || typeof data !== 'object') throw new ApiFeil(400, 'Lim inn eksporten fra den gamle appen');
@@ -41,5 +42,5 @@ export function registrer(ruter) {
     await c.query(`INSERT INTO pilotlogg (bruker_id, hendelse) VALUES ($1, 'innflytting-utfort')`,
       [ctx.brukerId]);
     return { kvittering };
-  }));
+  }), { maksKropp: 15 * 1024 * 1024 });
 }

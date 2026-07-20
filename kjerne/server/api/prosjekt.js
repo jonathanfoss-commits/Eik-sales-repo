@@ -247,5 +247,5 @@ timeføringer eller interne økonomidata.</div>
       modell: resultat.modell, usage: resultat.usage, kostOre: resultat.kostOre,
     }));
     return { tekst: resultat.tekst, variant };
-  });
+  }, { ai: true });
 }
