@@ -1,0 +1,22 @@
+{
+  "name": "livsarkivet",
+  "version": "0.1.0",
+  "description": "Livsarkivet — digitalt beredskapsarkiv med kontrollert frigivelse. Del av Etterpå.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node server/index.js",
+    "migrate": "node server/migrate.js",
+    "test": "node --test tests/*.test.js",
+    "e2e": "node tests/e2e.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "pg": "^8.22.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  }
+}
