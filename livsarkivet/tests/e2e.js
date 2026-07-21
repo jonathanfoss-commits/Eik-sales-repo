@@ -67,8 +67,9 @@ async function nySide(navn) {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 },
     isMobile: true, hasTouch: true });
   const side = await ctx.newPage();
+  side._svar = []; // kø av prompt-svar (sikkerhetsfraser m.m.)
   side.on('pageerror', (e) => jsFeil.push(`${navn}: ${e.message}`));
-  side.on('dialog', (d) => d.accept());
+  side.on('dialog', (d) => d.type() === 'prompt' ? d.accept(side._svar.shift() ?? '') : d.accept());
   await side.goto(BASE);
   return side;
 }
@@ -110,11 +111,24 @@ try {
   }
   sjekk(await eva.isVisible('h3:has-text("Testament")'), 'elementene ligger i hvelvet');
 
-  // sensitiv er sperret i UI-et
+  // sensitivt element: krypteres i NETTLESEREN (frase → gjenopprettingskode →
+  // lagring), og serveren ser aldri klarteksten
+  eva._svar.push('en veldig lang testfrase 123'); // ny sikkerhetsfrase
   await eva.click('button:has-text("+ Legg til element")');
-  const sensitivSperret = await eva.$eval('select:nth-of-type(2) option[value=""], select option:has-text("Sensitiv")',
-    (o) => o.disabled).catch(() => null);
-  sjekk(sensitivSperret !== false, 'sensitiv-nivået er grået ut («kommer snart»)');
+  await eva.locator('select').nth(0).selectOption('tilgangsinfo');
+  await eva.locator('select').nth(1).selectOption('sensitiv');
+  await eva.fill('input[placeholder="Tittel"]', 'Safekode');
+  await eva.fill('textarea', 'Koden er 7788');
+  await eva.click('button:has-text("Lagre")');
+  await eva.waitForSelector('h3:has-text("Safekode")');
+  const lagret = await eier.query(
+    `SELECT innhold, kryptert FROM hvelv_elementer WHERE tittel = 'Safekode'`);
+  sjekk(lagret.rows[0].kryptert && !lagret.rows[0].innhold.includes('7788'),
+    'sensitivt innhold lagres kun som chiffertekst');
+  await eva.locator('.kort', { hasText: 'Safekode' }).locator('button:has-text("Endre")').click();
+  await eva.click('button:has-text("Lås opp")'); // nøkkelen er alt i minnet
+  await eva.waitForFunction(() => document.querySelector('textarea')?.value.includes('7788'));
+  sjekk(true, 'eieren låser opp sensitivt innhold i nettleseren');
   await eva.click('button:has-text("Avbryt")');
 
   // kontakter: Kari og Per, begge betrodde

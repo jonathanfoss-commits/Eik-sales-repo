@@ -1,6 +1,8 @@
 // Mottakermatrisen: rutenett element × kontakt — trykk for å gi/ta tilgang.
 import { kall } from '../api.js';
-import { el, tom } from '../dom.js';
+import { el, tom, feilboks } from '../dom.js';
+import { hentHvelvnokkel } from '../frase.js';
+import { pakkTilMottaker } from '../krypto.js';
 
 export async function vis(rot) {
   tom(rot);
@@ -24,6 +26,8 @@ export async function vis(rot) {
   const kart = new Map(); // `${elementId}|${kontaktId}` → matriserad
   for (const r of rader) kart.set(`${r.element_id}|${r.kontakt_id}`, r);
 
+  const feilRom = el('div', {});
+  rot.append(feilRom);
   const tabell = el('table', { class: 'matrise-tabell' });
   tabell.append(el('tr', {}, el('th', {}, 'Element'),
     ...folk.map((k) => el('th', {}, k.navn))));
@@ -40,8 +44,22 @@ export async function vis(rot) {
           await kall('DELETE', `/api/matrise/${eksisterende.id}`);
           kart.delete(`${e.id}|${k.id}`);
         } else {
-          const svar = await kall('POST', '/api/matrise', { elementId: e.id, kontaktId: k.id });
-          if (svar.ok && svar.data.rad) kart.set(`${e.id}|${k.id}`, svar.data.rad);
+          const kropp = { elementId: e.id, kontaktId: k.id };
+          // sensitivt element: pakk elementnøkkelen til mottakerens offentlige
+          // nøkkel her i appen — serveren kan ikke lage deponiet
+          if (e.nivaa === 'sensitiv') {
+            const offentlig = await kall('GET', `/api/krypto/offentlig/${k.id}`);
+            if (!offentlig.ok) {
+              feilRom.replaceChildren(feilboks(`${k.navn} må koble seg til og sette sikkerhetsfrase før sensitivt innhold kan deles.`));
+              return;
+            }
+            const hn = await hentHvelvnokkel();
+            if (!hn) return;
+            kropp.nokkelDeponi = await pakkTilMottaker(hn, e.nokkel_ref, offentlig.data.offentlig);
+          }
+          const svar = await kall('POST', '/api/matrise', kropp);
+          if (!svar.ok) { feilRom.replaceChildren(feilboks(svar.data.feil || 'Kunne ikke lagre')); return; }
+          if (svar.data.rad) kart.set(`${e.id}|${k.id}`, svar.data.rad);
         }
         oppdater();
       });

@@ -167,9 +167,10 @@ test('kjede 0b: idempotens, optimistisk lås og sensitiv-sperre', { skip: hopp()
     { tittel: 'Ny tittel', versjon: 99 });
   assert.equal(stale.status, 409);
 
+  // sensitivt i klartekst avvises — serveren tar kun imot kryptert (ADR-001)
   const sens = await api(eva, 'POST', '/api/elementer',
-    { kategori: 'tilgangsinfo', nivaa: 'sensitiv', tittel: 'Passord' });
-  assert.equal(sens.status, 501);
+    { kategori: 'tilgangsinfo', nivaa: 'sensitiv', tittel: 'Passord', innhold: 'hemmelig' });
+  assert.equal(sens.status, 400);
 });
 
 test('kjede 0c: fremmed bruker når ikke eierens data over API-et', { skip: hopp() }, async () => {
@@ -362,6 +363,65 @@ test('negativ 3: eier blokkerer i karenstid — hvelvet forblir lukket', { skip:
     `SELECT count(*) AS n FROM varslinger WHERE hendelse_id = $1 AND type = 'frigivelse_blokkert'`,
     [hid]);
   assert.equal(Number(varsler.rows[0].n), 2); // eier + Siri
+});
+
+test('zero-knowledge: sensitivt element gjennom HELE kjeden — serveren ser aldri klartekst', { skip: hopp() }, async () => {
+  const krypto = await import('../app/js/krypto.js');
+  const KLARTEKST = 'Koden til safen er 9911. Nettbank-BankID i skuffen.';
+
+  // Siri (mottaker) setter sitt nøkkelpar; Odd (eier) sine hvelvnøkler
+  const { tilServer: siriNokkel } = await krypto.opprettNokkelpar('siris egen frase her');
+  assert.equal((await api(siri, 'PUT', '/api/krypto/min-nokkel', siriNokkel)).status, 200);
+  const { tilServer: oddNokler } = await krypto.opprettHvelvnokler('odds sikkerhetsfrase');
+  assert.equal((await api(odd, 'PUT', '/api/krypto/hvelvnokler', oddNokler)).status, 200);
+
+  // eieren krypterer i «appen» og sender kun chiffertekst
+  const hn = await krypto.laasOppHvelvnokkel('odds sikkerhetsfrase',
+    (await api(odd, 'GET', '/api/krypto/hvelvnokler')).data.nokler);
+  const kryptert = await krypto.krypterElement(hn, KLARTEKST);
+  const element = await api(odd, 'POST', '/api/elementer',
+    { kategori: 'tilgangsinfo', nivaa: 'sensitiv', tittel: 'Safe og BankID',
+      innhold: kryptert.innhold, kryptert: true, nokkelRef: kryptert.nokkelRef });
+  assert.equal(element.status, 200, JSON.stringify(element.data));
+
+  // matrise-mapping krever deponi — uten avvises den
+  const kontaktSvar = await api(odd, 'GET', '/api/kontakter');
+  const siriKontakt = kontaktSvar.data.kontakter.find((k) => k.navn === 'Siri');
+  const utenDeponi = await api(odd, 'POST', '/api/matrise',
+    { elementId: element.data.element.id, kontaktId: siriKontakt.id });
+  assert.equal(utenDeponi.status, 400);
+  const offentlig = await api(odd, 'GET', `/api/krypto/offentlig/${siriKontakt.id}`);
+  const deponi = await krypto.pakkTilMottaker(hn, kryptert.nokkelRef, offentlig.data.offentlig);
+  const medDeponi = await api(odd, 'POST', '/api/matrise',
+    { elementId: element.data.element.id, kontaktId: siriKontakt.id, nokkelDeponi: deponi });
+  assert.equal(medDeponi.status, 200);
+
+  // NEGATIVTEST mot databasen: klarteksten finnes INGEN steder
+  for (const tabell of ['hvelv_elementer', 'element_nokkeldeponi', 'hvelv_kryptonokler', 'bruker_nokler', 'revisjon']) {
+    const treff = await eier.query(
+      `SELECT count(*) AS n FROM ${tabell} WHERE ${tabell}::text ILIKE '%safen%' OR ${tabell}::text ILIKE '%9911%'`);
+    assert.equal(Number(treff.rows[0].n), 0, `klartekst lekket til ${tabell}`);
+  }
+
+  // hele frigivelsesløpet — og mottakeren dekrypterer med SIN frase
+  const hid = await meldMedAttest(siri, oddHvelvId);
+  const koe = await api(admin1, 'GET', '/api/admin/koe');
+  const sak = koe.data.saker.find((s) => s.hendelse_id === hid);
+  await api(admin1, 'POST', `/api/admin/frigivelser/${sak.id}/godkjenn`);
+  await api(admin2, 'POST', `/api/admin/frigivelser/${sak.id}/godkjenn`);
+  await new Promise((r) => setTimeout(r, 2300));
+
+  const syn = await api(siri, 'GET', '/api/etterlatt');
+  const sensitivt = syn.data.elementer.find((e) => e.tittel === 'Safe og BankID');
+  assert.ok(sensitivt, 'sensitivt element frigitt (kryptert)');
+  assert.equal(sensitivt.kryptert, true);
+  assert.ok(!JSON.stringify(syn.data).includes('9911'), 'listevisningen lekker ikke klartekst');
+
+  const detalj = await api(siri, 'GET', `/api/etterlatt/elementer/${sensitivt.id}`);
+  assert.ok(detalj.data.element.nokkel_deponi, 'deponiet følger med etter frigivelse');
+  const laastOpp = await krypto.aapneSomMottaker('siris egen frase her',
+    siriNokkel, detalj.data.element.nokkel_deponi, detalj.data.element.innhold);
+  assert.equal(laastOpp, KLARTEKST, 'mottakeren åpner med sin egen frase');
 });
 
 test('passordnullstilling: kode setter nytt passord og dreper gamle sesjoner', { skip: hopp() }, async () => {

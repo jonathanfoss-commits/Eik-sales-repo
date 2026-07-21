@@ -1,6 +1,7 @@
 // Etterlattevisningen: rolig, praktisk først. Ingen dashbord-støy.
 import { kall } from '../api.js';
 import { el, tom, KATEGORI_NAVN } from '../dom.js';
+import { aapneSomMottaker } from '../krypto.js';
 
 export async function vis(rot) {
   tom(rot);
@@ -28,7 +29,20 @@ export async function vis(rot) {
         el('button', { class: 'liten sekundaer', onclick: async (hendelse) => {
           if (detalj.hidden) {
             const en = await kall('GET', `/api/etterlatt/elementer/${e.id}`);
-            detalj.querySelector('p').textContent = en.data.element?.innhold || '';
+            let tekst = en.data.element?.innhold || '';
+            // sensitivt: dekrypter her, med mottakerens egen frase
+            if (en.data.element?.kryptert) {
+              const min = await kall('GET', '/api/krypto/min-nokkel');
+              const frase = min.data.finnes ? prompt('Sikkerhetsfrasen din:') : null;
+              if (!frase) { tekst = 'Krever sikkerhetsfrasen din for å åpnes.'; }
+              else {
+                try {
+                  tekst = await aapneSomMottaker(frase, min.data.nokkel,
+                    en.data.element.nokkel_deponi, en.data.element.innhold);
+                } catch { tekst = 'Kunne ikke låse opp — feil frase?'; }
+              }
+            }
+            detalj.querySelector('p').textContent = tekst;
             detalj.hidden = false;
             hendelse.target.textContent = 'Lukk';
           } else {

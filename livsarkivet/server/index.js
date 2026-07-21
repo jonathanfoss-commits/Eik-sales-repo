@@ -17,10 +17,11 @@ import * as hendelse from './api/hendelse.js';
 import * as verifisering from './api/verifisering.js';
 import * as etterlatt from './api/etterlatt.js';
 import * as abonnement from './api/abonnement.js';
+import * as krypto from './api/krypto.js';
 import { feiKarenstid } from './feier.js';
 
 const ruter = new Ruter();
-for (const modul of [hvelv, kontakter, matrise, hendelse, verifisering, etterlatt, abonnement]) {
+for (const modul of [hvelv, kontakter, matrise, hendelse, verifisering, etterlatt, abonnement, krypto]) {
   modul.registrer(ruter);
 }
 

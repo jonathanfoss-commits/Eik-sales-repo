@@ -1,6 +1,8 @@
 // Eierens hvelv: elementer per kategori, opprett/endre/slett.
 import { kall } from '../api.js';
 import { el, tom, feilboks, KATEGORI_NAVN } from '../dom.js';
+import { hentHvelvnokkel, gjenopprettMedKode, harMinNokkel, sikreMinNokkel } from '../frase.js';
+import { krypterElement, dekrypterElement } from '../krypto.js';
 
 export async function vis(rot) {
   tom(rot);
@@ -23,6 +25,17 @@ export async function vis(rot) {
   } else if (abo?.status === 'proveperiode') {
     rot.append(el('p', { class: 'meta' },
       `Prøveperiode til ${new Date(abo.proveperiodeSlutt).toLocaleDateString('nb-NO')}.`));
+  }
+
+  // nøkkelkort: uten eget nøkkelpar kan ingen dele sensitivt innhold med deg
+  if (!(await harMinNokkel())) {
+    rot.append(el('div', { class: 'kort' },
+      el('h3', {}, 'Sett sikkerhetsfrase'),
+      el('p', { class: 'meta' },
+        'Trengs for at andre skal kunne dele sensitivt innhold med deg. Frasen forlater aldri enheten din.'),
+      el('button', { class: 'liten', onclick: async () => {
+        if (await sikreMinNokkel()) vis(rot);
+      } }, 'Sett frase nå')));
   }
 
   const svar = await kall('GET', '/api/hvelv');
@@ -61,13 +74,24 @@ export async function vis(rot) {
       ...Object.entries(KATEGORI_NAVN).map(([verdi, navn]) =>
         el('option', { value: verdi, selected: e.kategori === verdi }, navn)));
     const nivaa = el('select', {},
-      el('option', { value: 'privat', selected: e.nivaa !== 'delt' }, 'Privat'),
+      el('option', { value: 'privat', selected: !['delt', 'sensitiv'].includes(e.nivaa) }, 'Privat'),
       el('option', { value: 'delt', selected: e.nivaa === 'delt' }, 'Delt'),
-      el('option', { value: 'sensitiv', disabled: true }, 'Sensitiv (kommer snart — krypteres)'));
+      el('option', { value: 'sensitiv', selected: e.nivaa === 'sensitiv' },
+        'Sensitiv (krypteres — bare du og valgte mottakere kan åpne)'));
     const tittel = el('input', { type: 'text', placeholder: 'Tittel', value: e.tittel || '' });
     const innholdFelt = el('textarea', { placeholder: 'Det de trenger å vite …' });
-    innholdFelt.value = e.innhold || '';
+    innholdFelt.value = e.kryptert ? '' : (e.innhold || '');
     const feilRom = el('div', {});
+    if (e.kryptert) {
+      innholdFelt.placeholder = 'Kryptert — trykk «Lås opp» for å se innholdet';
+      feilRom.append(el('button', { class: 'liten sekundaer', onclick: async () => {
+        const hn = await hentHvelvnokkel();
+        if (!hn) return;
+        try {
+          innholdFelt.value = await dekrypterElement(hn, e.innhold, e.nokkel_ref);
+        } catch { feilRom.append(feilboks('Kunne ikke låse opp innholdet')); }
+      } }, 'Lås opp'));
+    }
 
     skjemaBoks.append(el('div', { class: 'kort' },
       el('h3', {}, e.id ? 'Endre element' : 'Nytt element'),
@@ -78,6 +102,15 @@ export async function vis(rot) {
       el('button', { onclick: async () => {
         const kropp = { kategori: kategori.value, nivaa: nivaa.value,
           tittel: tittel.value, innhold: innholdFelt.value };
+        // sensitivt krypteres HER — serveren ser aldri klarteksten
+        if (nivaa.value === 'sensitiv') {
+          const hn = await hentHvelvnokkel();
+          if (!hn) return;
+          const kryptert = await krypterElement(hn, innholdFelt.value);
+          kropp.innhold = kryptert.innhold;
+          kropp.nokkelRef = kryptert.nokkelRef;
+          kropp.kryptert = true;
+        }
         const svar = e.id
           ? await kall('PUT', `/api/elementer/${e.id}`, { ...kropp, versjon: e.versjon })
           : await kall('POST', '/api/elementer', kropp);
@@ -102,4 +135,7 @@ export async function vis(rot) {
 
   tegnListe();
   tegnNyKnapp();
+
+  rot.append(el('button', { class: 'lenkeknapp', onclick: gjenopprettMedKode },
+    'Glemt sikkerhetsfrasen? Bruk gjenopprettingskoden'));
 }

@@ -14,7 +14,7 @@ export function registrer(ruter) {
     await feiKarenstid(); // lat feiing: utløpt karenstid blir synlig ved første besøk
     return medBruker(ctx, async (c) => {
       const elementer = (await c.query(
-        `SELECT e.id, e.kategori, e.nivaa, e.tittel, e.innhold, e.opprettet,
+        `SELECT e.id, e.kategori, e.nivaa, e.tittel, e.innhold, e.kryptert, e.opprettet,
                 b.navn AS eier_navn
            FROM hvelv_elementer e
            JOIN hvelv h ON h.id = e.hvelv_id
@@ -30,7 +30,7 @@ export function registrer(ruter) {
     let element;
     try {
       element = (await c.query(
-        `SELECT e.id, e.hvelv_id, e.kategori, e.nivaa, e.tittel, e.innhold, e.opprettet,
+        `SELECT e.id, e.hvelv_id, e.kategori, e.nivaa, e.tittel, e.innhold, e.kryptert, e.opprettet,
                 b.navn AS eier_navn
            FROM hvelv_elementer e
            JOIN hvelv h ON h.id = e.hvelv_id
@@ -41,6 +41,12 @@ export function registrer(ruter) {
       throw feil;
     }
     if (!element) throw new ApiFeil(404, 'Fant ikke elementet');
+    // sensitivt: nøkkeldeponiet mitt følger med — porten (frigitt + min
+    // matriserad) ligger inne i deponi_for_meg
+    if (element.kryptert) {
+      element.nokkel_deponi = (await c.query(
+        'SELECT deponi_for_meg($1) AS pakket', [element.id])).rows[0]?.pakket || null;
+    }
     // lesing av frigitt innhold er en revisjonshendelse
     await loggRevisjon(c, ctx, element.hvelv_id, 'etterlatt_lest', { element_id: element.id });
     delete element.hvelv_id;

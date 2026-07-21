@@ -153,9 +153,10 @@ test('frigivelsesflyt: oppsett (hendelse meldes GJENNOM policyene)', { skip: hop
   // fikstur via eier: sensitivt element (API-et sperrer, RLS må likevel holde)
   // + et umappet element
   elementSensitiv = (await eier.query(
-    `INSERT INTO hvelv_elementer (hvelv_id, kategori, nivaa, tittel, innhold)
-     VALUES ($1, 'tilgangsinfo', 'sensitiv', 'Hovedpassord', 'zx9!') RETURNING id`,
-    [hvelvA])).rows[0].id;
+    `INSERT INTO hvelv_elementer (hvelv_id, kategori, nivaa, tittel, innhold, kryptert, nokkel_ref)
+     VALUES ($1, 'tilgangsinfo', 'sensitiv', 'Hovedpassord',
+             '{"iv":"x","ct":"chiffertekst"}', true, '{"iv":"y","ct":"pakketnokkel"}')
+     RETURNING id`, [hvelvA])).rows[0].id;
   elementUmappet = (await eier.query(
     `INSERT INTO hvelv_elementer (hvelv_id, kategori, tittel, innhold)
      VALUES ($1, 'juridisk', 'Umappet', 'Ikke til Kari') RETURNING id`,
@@ -217,19 +218,21 @@ test('i karenstid: eier får KUN sette blokkert — frigitt avvises', { skip: ho
   assert.equal(blokkert.rowCount, 1);
 });
 
-test('etter frigitt: mottakeren ser NØYAKTIG matrisens ikke-sensitive elementer', { skip: hopp() }, async () => {
+test('etter frigitt: mottakeren ser NØYAKTIG matrisens elementer — sensitivt kun som chiffertekst', { skip: hopp() }, async () => {
   await eier.query(`UPDATE frigivelser SET status = 'frigitt' WHERE id = $1`, [frigivelseId]);
   const res = await medBruker(som(bjornId), (c) =>
-    c.query('SELECT id, tittel FROM hvelv_elementer WHERE hvelv_id = $1', [hvelvA]));
-  assert.deepEqual(res.rows.map((r) => r.id), [elementA],
-    'kun det mappede, ikke-sensitive elementet');
-  // sensitivt element er mappet i matrisen — men porten holder det tilbake
-  const sensitiv = await medBruker(som(bjornId), (c) =>
-    c.query('SELECT 1 FROM hvelv_elementer WHERE id = $1', [elementSensitiv]));
-  assert.equal(sensitiv.rows.length, 0);
+    c.query('SELECT id, kryptert, innhold FROM hvelv_elementer WHERE hvelv_id = $1 ORDER BY opprettet', [hvelvA]));
+  assert.deepEqual(res.rows.map((r) => r.id).sort(), [elementA, elementSensitiv].sort(),
+    'de to mappede elementene — og bare de');
+  // det sensitive elementet frigis KRYPTERT (nøkkelen går kun via deponiet)
+  const sensitiv = res.rows.find((r) => r.id === elementSensitiv);
+  assert.equal(sensitiv.kryptert, true);
+  assert.ok(sensitiv.innhold.includes('chiffertekst'));
   const umappet = await medBruker(som(bjornId), (c) =>
     c.query('SELECT 1 FROM hvelv_elementer WHERE id = $1', [elementUmappet]));
   assert.equal(umappet.rows.length, 0);
+  // uten frigitt sak: deponi-tabellen gir mottakeren null rader (egen negativ
+  // dekkes strukturelt av policy-uttrykket element_frigitt_for_meg)
 });
 
 test('admin ser fortsatt null hvelvinnhold — selv etter frigivelse', { skip: hopp() }, async () => {

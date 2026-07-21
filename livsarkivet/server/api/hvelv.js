@@ -12,7 +12,7 @@ export async function mittHvelv(c, ctx) {
     'INSERT INTO hvelv (eier_id) VALUES ($1) RETURNING id, versjon', [ctx.brukerId])).rows[0];
 }
 
-const ELEMENT_FELTER = 'id, kategori, nivaa, tittel, innhold, kryptert, versjon, opprettet, endret';
+const ELEMENT_FELTER = 'id, kategori, nivaa, tittel, innhold, kryptert, nokkel_ref, versjon, opprettet, endret';
 
 export function registrer(ruter) {
   ruter.add('GET', '/api/hvelv', ({ ctx }) => medBruker(ctx, async (c) => {
@@ -24,19 +24,25 @@ export function registrer(ruter) {
   }));
 
   ruter.add('POST', '/api/elementer', ({ ctx, body }) => medBruker(ctx, async (c) => {
-    const { kategori, nivaa = 'privat', tittel, innhold = '', klientId = null } = body;
+    const { kategori, nivaa = 'privat', tittel, innhold = '', klientId = null,
+      kryptert = false, nokkelRef = null } = body;
     if (!tittel || !kategori) throw new ApiFeil(400, 'Kategori og tittel må fylles ut');
-    if (nivaa === 'sensitiv') throw new ApiFeil(501, 'Sensitiv-nivået åpner når krypteringen er på plass');
+    // Zero-knowledge (ADR-001): sensitivt innhold KOMMER kryptert fra klienten —
+    // serveren tar aldri imot klartekst på dette nivået (CHECK i basen i tillegg).
+    if (nivaa === 'sensitiv' && (!kryptert || !nokkelRef)) {
+      throw new ApiFeil(400, 'Sensitivt innhold må krypteres i appen før innsending');
+    }
     await krevAktivtAbonnement(c, ctx);
     const hvelv = await mittHvelv(c, ctx);
     let rad;
     try {
       rad = (await c.query(
-        `INSERT INTO hvelv_elementer (hvelv_id, kategori, nivaa, tittel, innhold, klient_id)
-         VALUES ($1, $2, $3, $4, $5, $6)
+        `INSERT INTO hvelv_elementer (hvelv_id, kategori, nivaa, tittel, innhold, klient_id, kryptert, nokkel_ref)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          ON CONFLICT (hvelv_id, klient_id) WHERE klient_id IS NOT NULL DO NOTHING
          RETURNING ${ELEMENT_FELTER}`,
-        [hvelv.id, kategori, nivaa, String(tittel).trim(), String(innhold), klientId])).rows[0];
+        [hvelv.id, kategori, nivaa, String(tittel).trim(), String(innhold), klientId,
+          Boolean(kryptert), nokkelRef])).rows[0];
     } catch (feil) {
       if (feil.code === '23514') throw new ApiFeil(400, 'Ugyldig kategori eller nivå');
       throw feil;
@@ -52,8 +58,10 @@ export function registrer(ruter) {
   }));
 
   ruter.add('PUT', '/api/elementer/:id', ({ ctx, body, params }) => medBruker(ctx, async (c) => {
-    const { tittel, innhold, kategori, nivaa, versjon } = body;
-    if (nivaa === 'sensitiv') throw new ApiFeil(501, 'Sensitiv-nivået åpner når krypteringen er på plass');
+    const { tittel, innhold, kategori, nivaa, versjon, kryptert, nokkelRef } = body;
+    if (nivaa === 'sensitiv' && (!kryptert || !nokkelRef)) {
+      throw new ApiFeil(400, 'Sensitivt innhold må krypteres i appen før innsending');
+    }
     await krevAktivtAbonnement(c, ctx);
     let oppdatert;
     try {
@@ -61,10 +69,12 @@ export function registrer(ruter) {
         `UPDATE hvelv_elementer
             SET tittel = COALESCE($3, tittel), innhold = COALESCE($4, innhold),
                 kategori = COALESCE($5, kategori), nivaa = COALESCE($6, nivaa),
+                kryptert = COALESCE($7, kryptert), nokkel_ref = COALESCE($8, nokkel_ref),
                 versjon = versjon + 1, endret = now()
           WHERE id = $1 AND versjon = $2
           RETURNING ${ELEMENT_FELTER}, hvelv_id`,
-        [params.id, Number(versjon), tittel, innhold, kategori, nivaa])).rows[0];
+        [params.id, Number(versjon), tittel, innhold, kategori, nivaa,
+          typeof kryptert === 'boolean' ? kryptert : null, nokkelRef])).rows[0];
     } catch (feil) {
       if (feil.code === '23514') throw new ApiFeil(400, 'Ugyldig kategori eller nivå');
       if (feil.code === '22P02') throw new ApiFeil(404, 'Fant ikke elementet');

@@ -1,8 +1,11 @@
 # ADR-001: Kryptomodell for sensitiv-tier
 
-**Status:** Utkast — venter på Jonathans godkjenning. IKKE implementert
-(API-et svarer 501 på `nivaa='sensitiv'`; skjemaet er klart: `kryptert`,
-`nokkel_ref` på `hvelv_elementer`).
+**Status:** Godkjent av Jonathan 21.7.2026 — implementert (alternativ A +
+gjenoppretting 1): migrasjon `007_krypto.sql`, kryptomodul `app/js/krypto.js`
+(WebCrypto, samme kode i nettleser og Node-test), nøkkeldeponi til mottakere
+via ECDH P-256 med engangs-nøkkelpar. Nivå 3-testene (server kan ikke
+dekryptere; gjenoppretting ende-til-ende med simulert tap av frase) ligger i
+`tests/krypto.test.js` og `tests/api.test.js`.
 
 ## Kontekst
 Ufravikelig prinsipp 3: zero-knowledge på sensitiv-tier (tilgangsinfo, passord,
@@ -52,4 +55,4 @@ Testkravene (nivå 3 i /goal) implementeres i samme PR: negativtest som beviser
 at service-tilkoblingen ikke kan dekryptere, og ende-til-ende-test av
 gjenoppretting med simulert tap av hovednøkkel.
 
-**Ingen kode skrives før Jonathan har godkjent denne ADR-en.**
+Shamir 2-av-3 står som fase 2-oppgradering.

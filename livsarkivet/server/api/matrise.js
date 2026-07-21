@@ -14,10 +14,23 @@ export function registrer(ruter) {
   }));
 
   ruter.add('POST', '/api/matrise', ({ ctx, body }) => medBruker(ctx, async (c) => {
-    const { elementId, kontaktId, hendelseType = 'dodsfall' } = body;
+    const { elementId, kontaktId, hendelseType = 'dodsfall', nokkelDeponi = null } = body;
     if (!elementId || !kontaktId) throw new ApiFeil(400, 'Element og kontakt må velges');
     await krevAktivtAbonnement(c, ctx);
     const hvelv = await mittHvelv(c, ctx);
+    // Sensitivt element: elementnøkkelen må følge med, pakket til mottakerens
+    // offentlige nøkkel i appen — serveren kan ikke lage deponiet selv.
+    let element;
+    try {
+      element = (await c.query(
+        'SELECT nivaa FROM hvelv_elementer WHERE id = $1', [elementId])).rows[0];
+    } catch (feil) {
+      if (feil.code === '22P02') throw new ApiFeil(400, 'Element og kontakt må høre til ditt hvelv');
+      throw feil;
+    }
+    if (element?.nivaa === 'sensitiv' && !nokkelDeponi) {
+      throw new ApiFeil(400, 'Sensitivt element krever nøkkeldeponi — kontakten må ha satt sikkerhetsfrase');
+    }
     let rad;
     try {
       rad = (await c.query(
@@ -35,6 +48,12 @@ export function registrer(ruter) {
       throw feil;
     }
     if (!rad) return { ok: true, gjenbruk: true }; // alt registrert — idempotent
+    if (nokkelDeponi) {
+      await c.query(
+        `INSERT INTO element_nokkeldeponi (matrise_id, pakket) VALUES ($1, $2)
+         ON CONFLICT (matrise_id) DO UPDATE SET pakket = EXCLUDED.pakket`,
+        [rad.id, String(nokkelDeponi)]);
+    }
     await loggRevisjon(c, ctx, hvelv.id, 'matrise_lagt_til',
       { element_id: rad.element_id, kontakt_id: rad.kontakt_id, hendelse_type: rad.hendelse_type });
     return { rad };
