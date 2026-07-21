@@ -6,6 +6,7 @@ import { loggRevisjon } from '../revisjon.js';
 import { utfoerOvergang, fireOyneOk } from '../frigivelse.js';
 import { varsleAlle } from '../varsling.js';
 import { feiKarenstid } from '../feier.js';
+import { vurderTekst } from '../agenter/kvalitet.js';
 import { config } from '../config.js';
 import { naa } from '../klokke.js';
 
@@ -46,8 +47,13 @@ export function registrer(ruter) {
         `SELECT id, hendelse_id, filnavn, mime, storrelse, status, avvist_grunn, opprettet
            FROM attester WHERE hendelse_id = ANY($1)`,
         [saker.map((s) => s.hendelse_id)])).rows;
+      const vurderinger = (await c.query(
+        `SELECT frigivelse_id, agent, vurdering, opprettet
+           FROM agent_vurderinger WHERE frigivelse_id = ANY($1) ORDER BY opprettet`,
+        [saker.map((s) => s.id)])).rows;
       for (const sak of saker) {
         sak.attester = attester.filter((a) => a.hendelse_id === sak.hendelse_id);
+        sak.agent_vurderinger = vurderinger.filter((v) => v.frigivelse_id === sak.id);
         sak.fire_oyne_venter = sak.status === 'godkjent_1';
       }
       return { saker };
@@ -131,6 +137,18 @@ export function registrer(ruter) {
   ruter.add('POST', '/api/admin/frigivelser/:id/avvis', async ({ ctx, body, params }) => {
     const grunn = String(body.grunn || '').trim();
     if (!grunn) throw new ApiFeil(400, 'Avvisning krever en grunn');
+    // Kvalitetsagenten leser grunnen (den når en pårørende) — rådgivende port:
+    // saksbehandleren kan omformulere eller bevisst overstyre. AI nede → rett
+    // igjennom; mennesket har alltid siste ord.
+    krevAdmin(ctx);
+    if (!body.overstyrKvalitet) {
+      const kvalitet = await vurderTekst(grunn);
+      if (!kvalitet.ok) {
+        const feil = new ApiFeil(409, 'Kvalitetsagenten mener formuleringen kan såre — se forslaget, eller overstyr bevisst');
+        feil.data = { forslag: kvalitet.forslag, kanOverstyres: true };
+        throw feil;
+      }
+    }
     const f = await medBruker(ctx, async (c) => {
       krevAdmin(ctx);
       const sak = await hentSak(c, params.id);

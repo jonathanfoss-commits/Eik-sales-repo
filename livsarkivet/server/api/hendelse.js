@@ -5,6 +5,7 @@ import { medBruker } from '../db.js';
 import { loggRevisjon } from '../revisjon.js';
 import { utfoerOvergang, klarForVerifisering } from '../frigivelse.js';
 import { varsleAlle } from '../varsling.js';
+import { vurderSak } from '../agenter/orkestrator.js';
 import { mittHvelv } from './hvelv.js';
 
 export const AAPNE_STATUSER = ['meldt', 'attest_lastet_opp', 'under_verifisering', 'godkjent_1', 'karenstid'];
@@ -29,9 +30,11 @@ async function hentFrigivelse(c, hendelseId) {
 }
 
 // Autoframdrift (system): attest + to-kilde-regelen avgjør om saken går til
-// verifisering. Kjøres i egen transaksjon etter bekreft/attest.
+// verifisering. Kjøres i egen transaksjon etter bekreft/attest. Når saken går
+// til verifisering, kjøres agentene (Vakt + Frigivelse) og legger sine RÅD i
+// saksbehandlerkøen — de rører aldri tilstanden.
 export async function forsokAutoFramdrift(hendelseId) {
-  await medBruker({ rolle: 'system' }, async (c) => {
+  const frigivelseId = await medBruker({ rolle: 'system' }, async (c) => {
     const f = (await c.query(
       'SELECT * FROM frigivelser WHERE hendelse_id = $1', [hendelseId])).rows[0];
     if (!f || f.status !== 'attest_lastet_opp') return;
@@ -49,8 +52,11 @@ export async function forsokAutoFramdrift(hendelseId) {
       [hendelseId, hendelse.meldt_av_kontakt_id])).rows.length > 0;
     if (klarForVerifisering({ harAttest, antallBetrodde, harUavhengigBekreftelse })) {
       await utfoerOvergang(c, { rolle: 'system' }, f, 'under_verifisering', 'system');
+      return f.id;
     }
+    return null;
   });
+  if (frigivelseId) await vurderSak(frigivelseId);
 }
 
 export function registrer(ruter) {
