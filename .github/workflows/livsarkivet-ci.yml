@@ -1,0 +1,81 @@
+# CI for Livsarkivet — hele testregimet på hver push/PR som rører livsarkivet/:
+# unit (tilstandsmaskinen 100 %), RLS-suiten og API-kjeden mot ekte Postgres,
+# og E2E i Chromium (hele frigivelsesløpet med negativløp). Ingen leveranse
+# kan lande med røde tester.
+#
+# Samme branch protection-mønster som kjerne-ci: «endringer»-jobben lar
+# «tester» hoppe grønt over PR-er som ikke rører Livsarkivet.
+name: livsarkivet-ci
+
+on:
+  push:
+    branches: [main]
+    paths: ['livsarkivet/**', '.github/workflows/livsarkivet-ci.yml']
+  pull_request:
+
+jobs:
+  endringer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      livsarkivet: ${{ steps.diff.outputs.livsarkivet }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: diff
+        name: Rører endringen Livsarkivet?
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "livsarkivet=ja" >> "$GITHUB_OUTPUT"
+          elif git diff --name-only HEAD^1 HEAD | grep -qE '^(livsarkivet/|\.github/workflows/livsarkivet-ci\.yml)'; then
+            echo "livsarkivet=ja" >> "$GITHUB_OUTPUT"
+          else
+            echo "livsarkivet=nei" >> "$GITHUB_OUTPUT"
+          fi
+
+  tester:
+    needs: endringer
+    if: needs.endringer.outputs.livsarkivet == 'ja'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: livsarkiv_eier
+          POSTGRES_PASSWORD: ci-lokal
+          POSTGRES_DB: livsarkiv
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U livsarkiv_eier -d livsarkiv"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      MIGRATE_DATABASE_URL: postgres://livsarkiv_eier:ci-lokal@localhost:5432/livsarkiv
+      DATABASE_URL: postgres://livsarkiv_app:ci-app@localhost:5432/livsarkiv
+      DATABASE_URL_AUTH: postgres://livsarkiv_auth:ci-auth@localhost:5432/livsarkiv
+      LIVSARKIV_APP_PASSORD: ci-app
+      LIVSARKIV_AUTH_PASSORD: ci-auth
+    defaults:
+      run:
+        working-directory: livsarkivet
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: livsarkivet/package-lock.json
+      - run: npm ci
+      - name: Migrasjoner
+        run: node server/migrate.js
+      - name: Servertester (tilstandsmaskin, RLS-suite, API-kjeden)
+        run: npm test
+      - name: Chromium for e2e
+        run: npx playwright install --with-deps chromium
+      - name: E2E-bevis (hele frigivelsesløpet + negativløp)
+        run: node tests/e2e.js
+      - name: Hemmelighetsskann
+        run: |
+          ! grep -rniE "sk-ant-[a-zA-Z0-9]|nfp_[a-zA-Z0-9]{20}" --include="*.js" --include="*.sql" --include="*.yaml" . \
+            || (echo "Mulig hemmelighet i koden!" && exit 1)

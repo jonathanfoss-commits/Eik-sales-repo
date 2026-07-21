@@ -1,0 +1,104 @@
+/* Livsarkivet — rolig, verdig, én tommel. Mørk skifer med salviegrønn aksent. */
+:root {
+  --bakgrunn: #0E1B25;
+  --flate: #16283A;
+  --flate-hev: #1D3348;
+  --kant: #27405A;
+  --tekst: #EDF2F0;
+  --tekst-demp: #9FB3AD;
+  --aksent: #7FB7A3;
+  --aksent-mork: #4E8271;
+  --fare: #D9777B;
+  --advarsel: #D9B36B;
+  --radius: 14px;
+}
+* { box-sizing: border-box; margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bakgrunn);
+  color: var(--tekst);
+  font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  min-height: 100dvh;
+  padding-bottom: calc(76px + env(safe-area-inset-bottom));
+}
+.mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--tekst-demp); }
+
+#topp { display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 16px; border-bottom: 1px solid var(--kant); }
+.merke { display: flex; gap: 10px; align-items: center; }
+.merke div { display: flex; flex-direction: column; line-height: 1.2; }
+
+#innhold { padding: 16px; max-width: 640px; margin: 0 auto; }
+
+h1 { font-size: 22px; margin: 4px 0 2px; }
+h2 { font-size: 17px; margin: 18px 0 8px; }
+.undertekst { color: var(--tekst-demp); font-size: 14px; margin-bottom: 14px; }
+
+.kort { background: var(--flate); border: 1px solid var(--kant);
+  border-radius: var(--radius); padding: 14px; margin: 10px 0; }
+.kort h3 { font-size: 16px; margin-bottom: 2px; }
+.kort .meta { color: var(--tekst-demp); font-size: 13px; }
+.rad { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+
+button, .knapp {
+  display: inline-block; border: 0; border-radius: 12px; cursor: pointer;
+  font: 600 16px/1 inherit; padding: 14px 18px; min-height: 48px;
+  background: var(--aksent); color: #0B1720; width: 100%; margin-top: 8px;
+}
+button.sekundaer { background: var(--flate-hev); color: var(--tekst);
+  border: 1px solid var(--kant); }
+button.fare { background: var(--fare); color: #2A0F11; }
+button.liten { width: auto; padding: 10px 14px; min-height: 40px; font-size: 14px; margin: 0; }
+button:disabled { opacity: .45; cursor: default; }
+.lenkeknapp { background: none; border: 0; color: var(--aksent); font: inherit;
+  cursor: pointer; padding: 6px; width: auto; min-height: 0; margin: 0; }
+
+input, select, textarea {
+  width: 100%; background: var(--bakgrunn); color: var(--tekst);
+  border: 1px solid var(--kant); border-radius: 10px; padding: 13px 12px;
+  font: inherit; margin: 6px 0 12px;
+}
+textarea { min-height: 110px; resize: vertical; }
+label { font-size: 14px; color: var(--tekst-demp); }
+.sjekk { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+.sjekk input { width: 22px; height: 22px; margin: 0; }
+.sjekk label { color: var(--tekst); }
+
+.melding-feil { background: #3A2226; border: 1px solid var(--fare);
+  border-radius: 10px; padding: 12px; margin: 10px 0; color: #F1C3C5; }
+.melding-ok { background: #1D3A30; border: 1px solid var(--aksent-mork);
+  border-radius: 10px; padding: 12px; margin: 10px 0; }
+.merkelapp { display: inline-block; border-radius: 999px; padding: 3px 10px;
+  font-size: 12px; font-weight: 600; background: var(--flate-hev);
+  border: 1px solid var(--kant); color: var(--tekst-demp); }
+.merkelapp.aktiv { background: #2C4636; border-color: var(--aksent-mork); color: var(--aksent); }
+.merkelapp.varsel { background: #453A22; border-color: var(--advarsel); color: var(--advarsel); }
+.merkelapp.stoppet { background: #3A2226; border-color: var(--fare); color: var(--fare); }
+
+.nedtelling { font-variant-numeric: tabular-nums; font-size: 34px; font-weight: 700;
+  text-align: center; margin: 8px 0; }
+
+#faner { position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex; background: var(--flate); border-top: 1px solid var(--kant);
+  padding-bottom: env(safe-area-inset-bottom); }
+#faner button { flex: 1; background: none; color: var(--tekst-demp);
+  border-radius: 0; margin: 0; padding: 12px 4px; font-size: 12px; font-weight: 600;
+  display: flex; flex-direction: column; gap: 3px; align-items: center; min-height: 60px; }
+#faner button .ikon { font-size: 20px; line-height: 1; }
+#faner button.valgt { color: var(--aksent); }
+
+.matrise-tabell { width: 100%; border-collapse: collapse; font-size: 14px; }
+.matrise-tabell th, .matrise-tabell td { border: 1px solid var(--kant);
+  padding: 8px 6px; text-align: center; }
+.matrise-tabell th { color: var(--tekst-demp); font-weight: 600; font-size: 12px; }
+.matrise-tabell td:first-child, .matrise-tabell th:first-child { text-align: left; }
+.matrise-celle { cursor: pointer; user-select: none; font-size: 18px; }
+
+/* Etterlattemodus: lunere, lysere, stillere */
+body.etterlatt-modus { background: #F4F1EA; color: #33413C; }
+body.etterlatt-modus #topp { border-color: #DDD6C8; }
+body.etterlatt-modus .mono { color: #8A9088; }
+body.etterlatt-modus .kort { background: #FCFAF5; border-color: #E3DCCD; }
+body.etterlatt-modus .kort .meta, body.etterlatt-modus .undertekst { color: #77817B; }
+body.etterlatt-modus #faner { background: #FCFAF5; border-color: #E3DCCD; }
