@@ -28,6 +28,30 @@ export async function visKoe(rot) {
         ? el('p', { class: 'meta' }, '⚠ Godkjent én gang — krever en ANNEN saksbehandler.') : null,
       feilRom);
 
+    // agentenes RÅD — beslutningen er alltid saksbehandlerens
+    for (const v of sak.agent_vurderinger || []) {
+      if (v.agent === 'vakt') {
+        kort.append(el('div', {},
+          el('span', { class: 'mono' }, 'Vaktagenten: '),
+          v.vurdering.flagg?.length
+            ? v.vurdering.flagg.map((f) => el('span', { class: 'merkelapp varsel' }, f.replaceAll('_', ' ')))
+            : el('span', { class: 'merkelapp aktiv' }, 'ingen anomalier')));
+      } else if (v.agent === 'frigivelse') {
+        const d = v.vurdering;
+        kort.append(el('div', {},
+          el('span', { class: 'mono' }, 'Attest-sjekk (AI-råd): '),
+          d.utilgjengelig
+            ? el('span', { class: 'merkelapp' }, 'AI utilgjengelig — vurder manuelt')
+            : el('span', {},
+              el('span', { class: `merkelapp ${d.ser_ut_som_attest ? 'aktiv' : 'stoppet'}` },
+                d.ser_ut_som_attest ? 'ligner attest' : 'ligner IKKE attest'), ' ',
+              el('span', { class: `merkelapp ${d.navn_treff ? 'aktiv' : 'varsel'}` },
+                d.navn_treff ? 'navn stemmer' : 'navn ikke funnet'),
+              d.avvik?.length ? el('div', { class: 'meta' }, `Avvik: ${d.avvik.join('; ')}`) : null,
+              d.kommentar ? el('div', { class: 'meta' }, d.kommentar) : null)));
+      }
+    }
+
     for (const a of sak.attester) {
       kort.append(el('div', { class: 'rad' },
         el('span', { class: 'meta' }, `${a.filnavn} (${Math.round(a.storrelse / 1024)} kB) — ${a.status}`),
@@ -43,9 +67,25 @@ export async function visKoe(rot) {
           visKoe(rot);
         } }, sak.status === 'godkjent_1' ? 'Godkjenn (andre signatur)' : 'Godkjenn attesten'),
         grunn,
-        el('button', { class: 'fare', onclick: async () => {
-          const a = await kall('POST', `/api/admin/frigivelser/${sak.id}/avvis`, { grunn: grunn.value });
-          if (!a.ok) { tom(feilRom); feilRom.append(feilboks(a.data.feil || 'Avvisning feilet')); return; }
+        el('button', { class: 'fare', onclick: async (hendelse) => {
+          const overstyr = hendelse.target.dataset.overstyr === '1';
+          const a = await kall('POST', `/api/admin/frigivelser/${sak.id}/avvis`,
+            { grunn: grunn.value, overstyrKvalitet: overstyr });
+          if (!a.ok) {
+            tom(feilRom);
+            feilRom.append(feilboks(a.data.feil || 'Avvisning feilet'));
+            // Kvalitetsagenten foreslo en varsommere formulering — mennesket velger
+            if (a.data.kanOverstyres) {
+              if (a.data.forslag) {
+                feilRom.append(el('button', { class: 'liten sekundaer', onclick: () => {
+                  grunn.value = a.data.forslag;
+                } }, 'Bruk forslaget'));
+              }
+              hendelse.target.dataset.overstyr = '1';
+              hendelse.target.textContent = 'Avvis likevel (overstyr)';
+            }
+            return;
+          }
           visKoe(rot);
         } }, 'Avvis'));
     }

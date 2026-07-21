@@ -134,6 +134,48 @@ export function lagInvitasjonskode() {
 }
 export const hashInvitasjonskode = (kode) => sha256(String(kode || '').trim().toLowerCase());
 
+// ── Passordnullstilling: e-postbasert engangskode (kjerne-mønster) ──
+export async function finnBrukerPaaEpost(epost) {
+  const res = await authPool.query(
+    'SELECT id, navn FROM brukere WHERE lower(epost) = lower($1) AND aktiv',
+    [String(epost || '').trim()]);
+  return res.rows[0] || null;
+}
+
+export async function lagNullstilling(brukerId, levetidTimer = 2) {
+  const kode = lagInvitasjonskode();
+  await authPool.query(
+    `INSERT INTO nullstillinger (bruker_id, kode_hash, utloper)
+     VALUES ($1, $2, now() + ($3 || ' hours')::interval)`,
+    [brukerId, hashInvitasjonskode(kode), String(levetidTimer)]);
+  return kode;
+}
+
+export async function fullforNullstilling(kode, nyttPassord) {
+  if (String(nyttPassord || '').length < 10) return { feil: 'Passordet må ha minst 10 tegn' };
+  const klient = await authPool.connect();
+  try {
+    await klient.query('BEGIN');
+    const rad = (await klient.query(
+      `SELECT id, bruker_id FROM nullstillinger
+        WHERE kode_hash = $1 AND brukt_tid IS NULL AND utloper > now() FOR UPDATE`,
+      [hashInvitasjonskode(kode)])).rows[0];
+    if (!rad) { await klient.query('ROLLBACK'); return { feil: 'Ugyldig eller utløpt kode' }; }
+    await klient.query('UPDATE brukere SET passord_hash = $2 WHERE id = $1',
+      [rad.bruker_id, await hashPassord(String(nyttPassord))]);
+    await klient.query('UPDATE nullstillinger SET brukt_tid = now() WHERE id = $1', [rad.id]);
+    // alle gamle sesjoner ryker — den som nullstiller, eier kontoen alene
+    await klient.query('DELETE FROM sesjoner WHERE bruker_id = $1', [rad.bruker_id]);
+    await klient.query('COMMIT');
+    return { ok: true };
+  } catch (feil) {
+    await klient.query('ROLLBACK').catch(() => {});
+    throw feil;
+  } finally {
+    klient.release();
+  }
+}
+
 // To veier: er brukeren alt innlogget, kobles den innloggede kontoen til
 // kontaktraden. Ellers opprettes ny konto med navn/passord fra skjemaet.
 export async function innlosInvitasjon({ kode, navn, passord, innloggetBrukerId }) {

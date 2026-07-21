@@ -6,7 +6,9 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { config } from './config.js';
 import { Ruter, ApiFeil, svarJson, lesJson, lesCookies } from './http.js';
-import { loggInn, loggUt, finnSesjon, registrerSelv, innlosInvitasjon } from './auth.js';
+import { loggInn, loggUt, finnSesjon, registrerSelv, innlosInvitasjon,
+  finnBrukerPaaEpost, lagNullstilling, fullforNullstilling } from './auth.js';
+import { sendEpost, epostTilgjengelig } from './epost.js';
 import { medBruker, authPool } from './db.js';
 import * as hvelv from './api/hvelv.js';
 import * as kontakter from './api/kontakter.js';
@@ -14,10 +16,11 @@ import * as matrise from './api/matrise.js';
 import * as hendelse from './api/hendelse.js';
 import * as verifisering from './api/verifisering.js';
 import * as etterlatt from './api/etterlatt.js';
+import * as abonnement from './api/abonnement.js';
 import { feiKarenstid } from './feier.js';
 
 const ruter = new Ruter();
-for (const modul of [hvelv, kontakter, matrise, hendelse, verifisering, etterlatt]) {
+for (const modul of [hvelv, kontakter, matrise, hendelse, verifisering, etterlatt, abonnement]) {
   modul.registrer(ruter);
 }
 
@@ -47,7 +50,9 @@ function klientIp(req) {
 
 // ── Åpne ruter (uten sesjon) ──
 const AAPNE = new Set(['POST /api/auth/logg-inn', 'POST /api/auth/registrer',
-  'POST /api/auth/innlos-invitasjon', 'GET /api/helse']);
+  'POST /api/auth/innlos-invitasjon', 'GET /api/helse',
+  'POST /api/auth/glemt', 'POST /api/auth/nullstill',
+  'POST /api/stripe/webhook']); // signaturverifisert i ruten
 
 ruter.add('GET', '/api/helse', async () => ({ ok: true }));
 
@@ -117,11 +122,51 @@ ruter.add('GET', '/api/meg', ({ ctx }) => medBruker(ctx, async (c) => {
   return { bruker: { id: ctx.brukerId, navn: ctx.navn, rolle: ctx.rolle }, betroddI };
 }));
 
+// Glemt passord: svarer alltid likt (røper aldri om e-posten finnes).
+ruter.add('POST', '/api/auth/glemt', async ({ req, body }) => {
+  if (forMange('glemt:' + klientIp(req), 10, 60 * 60_000)) throw new ApiFeil(429, 'For mange forsøk');
+  if (!epostTilgjengelig()) {
+    return { ok: true, melding: 'E-postutsending er ikke satt opp ennå — kontakt oss, så hjelper vi deg inn.' };
+  }
+  const bruker = await finnBrukerPaaEpost(body.epost);
+  if (bruker) {
+    const kode = await lagNullstilling(bruker.id);
+    await sendEpost({
+      til: String(body.epost).trim(),
+      emne: 'Nullstill passordet ditt i Livsarkivet',
+      tekst: `Hei ${bruker.navn}!\n\nNoen (forhåpentligvis du) ba om å nullstille passordet.\n` +
+        `Kode: ${kode}\n\nÅpne Livsarkivet → «Glemt passord?» → skriv inn koden.\n` +
+        `Koden varer i 2 timer. Var ikke dette deg, kan du se bort fra denne e-posten.`,
+    });
+  }
+  return { ok: true, melding: 'Hvis e-posten finnes hos oss, er det sendt en kode dit nå.' };
+});
+
+ruter.add('POST', '/api/auth/nullstill', async ({ req, body }) => {
+  if (forMange('nullstill:' + klientIp(req), 10, 60 * 60_000)) throw new ApiFeil(429, 'For mange forsøk');
+  const resultat = await fullforNullstilling(body.kode, body.passord);
+  if (resultat.feil) throw new ApiFeil(400, resultat.feil);
+  return { ok: true };
+});
+
 ruter.add('POST', '/api/auth/logg-ut', async ({ req, res }) => {
   await loggUt(lesCookies(req).livsarkiv_sesjon);
   res.setHeader('Set-Cookie', 'livsarkiv_sesjon=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');
   return { ok: true };
 });
+
+function lesRaa(req, maksBytes = 1024 * 1024) {
+  return new Promise((resolve, reject) => {
+    let biter = [], lengde = 0;
+    req.on('data', (bit) => {
+      lengde += bit.length;
+      if (lengde > maksBytes) { reject(new ApiFeil(413, 'For stor forespørsel')); req.destroy(); }
+      else biter.push(bit);
+    });
+    req.on('end', () => resolve(Buffer.concat(biter).toString('utf8')));
+    req.on('error', reject);
+  });
+}
 
 // ── Statiske filer ──
 const APP_DIR = path.join(config.rot, 'app');
@@ -182,7 +227,10 @@ const server = http.createServer(async (req, res) => {
 
     const rute = ruter.finn(req.method, sti);
     if (!rute) throw new ApiFeil(404, 'Ukjent API-rute');
-    const body = ['POST', 'PUT', 'PATCH'].includes(req.method) ? await lesJson(req) : {};
+    // Stripe-webhooken signeres over RÅKROPPEN — den må leses uparsset.
+    const body = sti === '/api/stripe/webhook'
+      ? { _raa: await lesRaa(req) }
+      : ['POST', 'PUT', 'PATCH'].includes(req.method) ? await lesJson(req) : {};
     const resultat = await rute.handler({ req, res, ctx, body, params: rute.params, sok: url.searchParams });
     if (resultat && resultat._fil !== undefined) {
       // hele filer (attestvisning for admin) — alltid nedlasting, aldri kjøring

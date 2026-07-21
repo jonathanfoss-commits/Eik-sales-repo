@@ -37,9 +37,27 @@ Saksbehandler opprettes av drift: `node server/verktoy/ny-admin.js "Navn" epost`
 (skriver engangspassord + TOTP-hemmelighet én gang).
 Selvregistrering for eiere er bak `REGISTRERING_AAPEN=1` til DPIA/vilkår er klare.
 
+## Agenter (råd — aldri vedtak)
+Orkestratoren kjører agentene når en sak når verifisering, og rådene vises i
+saksbehandlerkøen: **Vakt** (regelbasert misbruksvern: fersk kontakt, ferske
+mottakerendringer, tidligere stoppede saker, påfallende rask attest),
+**Frigivelse** (AI-assistert attestkontroll — anbefalingen er hardkodet til
+menneskelig vurdering uansett modellsvar) og **Kvalitet** (sorgsensitiv QA på
+avvisningsgrunner, med bevisst overstyring). All modellbruk går gjennom
+`server/ai/gateway.js`: månedsbudsjett, kostlogg uten innhold
+(`agent_logg`), promptinjeksjonsvern (<dokument>-innramming), og rent
+«utilgjengelig»-svar uten API-nøkkel — ingen agent står på kritisk sti.
+
+## Abonnement (Stripe, test-mode)
+30 dagers prøveperiode, deretter Stripe Checkout (`STRIPE_SECRET`,
+`STRIPE_PRIS_ID`, `STRIPE_WEBHOOK_HEMMELIGHET`; uten oppsett svarer API-et 503).
+**Etisk gating:** utløpt tilgang stenger KUN eierens redigering — lesing,
+frigivelsesløpet, eierens nødbrems og etterlattevisningen er aldri portet.
+
 ## Tester
 ```
-npm test        # unit (tilstandsmaskin 100 %), RLS-suiten, API-kjeden
+npm test        # unit (tilstandsmaskin 100 %), RLS-suiten, API-kjeden,
+                # agentene (golden + red-team), abonnement (Stripe-mock)
 npm run e2e     # Playwright: hele frigivelsesløpet i UI + negativløp
 ```
 Testene krever Postgres (hopper ellers pent over). Karenstiden manipuleres i
@@ -47,10 +65,10 @@ test via `KARENSTID_SEKUNDER`. CI: `.github/workflows/livsarkivet-ci.yml`
 kjører alt mot postgres:16-service + Chromium; skjermbilder som testbevis
 legges i `testbevis/` av e2e-kjøringen.
 
-## Bevisste avgrensninger i denne leveransen
-Stripe, AI-agenter, dead man's switch, Folkeregisteret-integrasjon, SMS,
-etterlattemodus-sjekkliste og krypto-implementering kommer i egne PR-er
-(se /goal-fasene). Passordnullstilling er heller ikke med ennå.
+## Bevisste avgrensninger (fase 2/3 i /goal)
+Dead man's switch, Folkeregisteret-integrasjon, SMS-kanal,
+etterlattemodus-sjekkliste, Siste hilsen og krypto-implementering
+(venter på godkjent ADR-001).
 
 Huskeregler: datanivå (delt/privat/sensitiv) besluttes FØR elementet lages.
 Varsler og logg bærer aldri innhold. CSP-en mykes aldri opp for bekvemmelighet.

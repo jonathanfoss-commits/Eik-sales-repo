@@ -12,7 +12,7 @@ process.env.MIGRATE_DATABASE_URL ||= 'postgres://livsarkiv_eier:livsarkiv@localh
 process.env.LIVSARKIV_APP_PASSORD ||= 'app';
 process.env.LIVSARKIV_AUTH_PASSORD ||= 'auth';
 
-const { hashPassord, nyTotpHemmelighet, totpKode } = await import('../server/auth.js');
+const { hashPassord, nyTotpHemmelighet, totpKode, lagNullstilling } = await import('../server/auth.js');
 const { lukkPools } = await import('../server/db.js');
 
 const PORT = 3401;
@@ -362,6 +362,30 @@ test('negativ 3: eier blokkerer i karenstid — hvelvet forblir lukket', { skip:
     `SELECT count(*) AS n FROM varslinger WHERE hendelse_id = $1 AND type = 'frigivelse_blokkert'`,
     [hid]);
   assert.equal(Number(varsler.rows[0].n), 2); // eier + Siri
+});
+
+test('passordnullstilling: kode setter nytt passord og dreper gamle sesjoner', { skip: hopp() }, async () => {
+  const evaId = (await eier.query(
+    `SELECT id FROM brukere WHERE epost = 'api-eva@test.no'`)).rows[0].id;
+  const kode = await lagNullstilling(evaId);
+
+  const feilKode = await api(nyJar(), 'POST', '/api/auth/nullstill',
+    { kode: 'feilkode123', passord: 'nyttpassord123' });
+  assert.equal(feilKode.status, 400);
+
+  const ok = await api(nyJar(), 'POST', '/api/auth/nullstill',
+    { kode, passord: 'nyttpassord123' });
+  assert.equal(ok.status, 200);
+
+  // gammel sesjon er død, gammelt passord virker ikke, nytt virker
+  const gammelSesjon = await api(eva, 'GET', '/api/meg');
+  assert.equal(gammelSesjon.status, 401);
+  const gammeltPassord = await api(nyJar(), 'POST', '/api/auth/logg-inn',
+    { epost: 'api-eva@test.no', passord: 'passord1234' });
+  assert.equal(gammeltPassord.status, 401);
+  const nytt = await api(eva, 'POST', '/api/auth/logg-inn',
+    { epost: 'api-eva@test.no', passord: 'nyttpassord123' });
+  assert.equal(nytt.status, 200);
 });
 
 test('revisjon: hver overgang i hovedkjeden er logget', { skip: hopp() }, async () => {

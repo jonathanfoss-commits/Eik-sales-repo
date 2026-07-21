@@ -47,7 +47,8 @@ function visInnlogging(visning = 'inn', feil = '') {
         start();
       } }, 'Logg inn'),
       el('button', { class: 'sekundaer', onclick: () => visInnlogging('kode') }, 'Har du fått en kode?'),
-      el('button', { class: 'sekundaer', onclick: () => visInnlogging('ny') }, 'Opprett ditt livsarkiv'));
+      el('button', { class: 'sekundaer', onclick: () => visInnlogging('ny') }, 'Opprett ditt livsarkiv'),
+      el('button', { class: 'lenkeknapp', onclick: () => visInnlogging('glemt') }, 'Glemt passord?'));
   } else if (visning === 'ny') {
     const navn = el('input', { type: 'text', placeholder: 'Fullt navn', autocomplete: 'name' });
     const epost = el('input', { type: 'email', placeholder: 'E-post', autocomplete: 'username' });
@@ -60,6 +61,25 @@ function visInnlogging(visning = 'inn', feil = '') {
         await kall('POST', '/api/auth/logg-inn', { epost: epost.value, passord: passord.value });
         start();
       } }, 'Opprett arkiv'),
+      el('button', { class: 'sekundaer', onclick: () => visInnlogging('inn') }, 'Tilbake'));
+  } else if (visning === 'glemt') {
+    const epost = el('input', { type: 'email', placeholder: 'E-post', autocomplete: 'username' });
+    const kode = el('input', { type: 'text', placeholder: 'Kode fra e-posten' });
+    const passord = el('input', { type: 'password', placeholder: 'Nytt passord (minst 10 tegn)', autocomplete: 'new-password' });
+    const meldingRom = el('div', {});
+    skjema.append(
+      el('p', { class: 'undertekst' }, 'Vi sender en engangskode til e-posten din.'),
+      meldingRom, epost,
+      el('button', { class: 'sekundaer', onclick: async () => {
+        const svar = await kall('POST', '/api/auth/glemt', { epost: epost.value });
+        meldingRom.replaceChildren(el('div', { class: 'melding-ok' }, svar.data.melding || 'Sjekk e-posten.'));
+      } }, 'Send kode'),
+      kode, passord,
+      el('button', { onclick: async () => {
+        const svar = await kall('POST', '/api/auth/nullstill', { kode: kode.value, passord: passord.value });
+        if (!svar.ok) return visInnlogging('glemt', svar.data.feil || 'Nullstilling feilet');
+        visInnlogging('inn');
+      } }, 'Sett nytt passord'),
       el('button', { class: 'sekundaer', onclick: () => visInnlogging('inn') }, 'Tilbake'));
   } else { // invitasjonskode
     const kode = el('input', { type: 'text', placeholder: 'Invitasjonskode' });

@@ -8,6 +8,23 @@ export async function vis(rot) {
     el('p', { class: 'undertekst' },
       'Det dine nærmeste vil trenge. Ingenting deles før en verifisert hendelse og karenstid.'));
 
+  // abonnementsstatus — redigering portes, aldri frigivelse eller lesing
+  const abo = (await kall('GET', '/api/abonnement')).data.abonnement;
+  if (abo && !abo.aktivNaa) {
+    const boks = el('div', { class: 'melding-feil' },
+      el('p', {}, 'Prøveperioden er over. Alt du har lagt inn er trygt, og frigivelsen til dine nærmeste påvirkes aldri — men for å gjøre endringer må abonnementet aktiveres.'));
+    if (abo.stripeKlar) {
+      boks.append(el('button', { onclick: async () => {
+        const svar = await kall('POST', '/api/abonnement/checkout');
+        if (svar.ok && svar.data.url) location.href = svar.data.url;
+      } }, 'Aktiver abonnement'));
+    }
+    rot.append(boks);
+  } else if (abo?.status === 'proveperiode') {
+    rot.append(el('p', { class: 'meta' },
+      `Prøveperiode til ${new Date(abo.proveperiodeSlutt).toLocaleDateString('nb-NO')}.`));
+  }
+
   const svar = await kall('GET', '/api/hvelv');
   const elementer = svar.data.elementer || [];
   const liste = el('div', {});

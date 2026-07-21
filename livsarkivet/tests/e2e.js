@@ -30,9 +30,11 @@ function sjekk(betingelse, navn) {
 // ── Database-fikstur ──
 const eier = new pg.Client({ connectionString: process.env.MIGRATE_DATABASE_URL });
 await eier.connect();
+// rydd ALLE testfiksturer (også fra andre suiter) — admin-køen er global, og
+// etterlatte saker i under_verifisering ville forurenset klikkene her
 await eier.query(`DELETE FROM hvelv WHERE eier_id IN
-  (SELECT id FROM brukere WHERE epost LIKE 'e2e-%@test.no')`);
-await eier.query(`DELETE FROM brukere WHERE epost LIKE 'e2e-%@test.no'`);
+  (SELECT id FROM brukere WHERE epost LIKE '%@test.no')`);
+await eier.query(`DELETE FROM brukere WHERE epost LIKE '%@test.no'`);
 const totpHemmeligheter = new Map();
 for (const [navn, epost] of [['Astrid Admin', 'e2e-admin1@test.no'], ['Arne Admin', 'e2e-admin2@test.no']]) {
   const totp = nyTotpHemmelighet();
@@ -183,23 +185,26 @@ try {
 
   // ── 5. Fire øyne hos saksbehandlerne ──
   console.log('4. Fire-øyne-godkjenning');
+  // alle klikk skopes til riktig sakskort — køen er global
+  const kariSak = (side) => side.locator('.kort', { hasText: 'meldt av Kari' }).first();
+
   const admin1 = await nySide('admin1');
   await loggInnAdmin(admin1, 'e2e-admin1@test.no');
   await admin1.waitForSelector('h1:has-text("Verifiseringskø")');
   sjekk(await admin1.isVisible('.kort:has-text("meldt av Kari")'), 'saken står i køen med melder-metadata');
-  await admin1.click('button:has-text("Godkjenn attesten")');
-  await admin1.waitForSelector('button:has-text("Godkjenn (andre signatur)")');
+  await kariSak(admin1).locator('button:has-text("Godkjenn attesten")').click();
+  await kariSak(admin1).locator('button:has-text("Godkjenn (andre signatur)")').waitFor();
 
   // samme admin prøver igjen → stoppes
-  await admin1.click('button:has-text("Godkjenn (andre signatur)")');
-  await admin1.waitForSelector('.melding-feil');
-  sjekk((await admin1.textContent('.melding-feil')).includes('annen saksbehandler'),
+  await kariSak(admin1).locator('button:has-text("Godkjenn (andre signatur)")').click();
+  await kariSak(admin1).locator('.melding-feil').waitFor();
+  sjekk((await kariSak(admin1).locator('.melding-feil').textContent()).includes('annen saksbehandler'),
     'fire øyne: samme admin stoppes med synlig feilmelding');
 
   const admin2 = await nySide('admin2');
   await loggInnAdmin(admin2, 'e2e-admin2@test.no');
-  await admin2.click('button:has-text("Godkjenn (andre signatur)")');
-  await admin2.waitForSelector('.merkelapp:has-text("Karenstid")');
+  await kariSak(admin2).locator('button:has-text("Godkjenn (andre signatur)")').click();
+  await kariSak(admin2).locator('.merkelapp:has-text("Karenstid")').waitFor();
   sjekk(true, 'annen admin ga andre signatur — karenstiden løper');
 
   // ── 6. Eva ser nedtellingen (og lar den løpe) ──
@@ -243,9 +248,9 @@ try {
   await per.waitForSelector('.melding-ok');
 
   await admin1.click('#faner button:has-text("Kø")');
-  await admin1.waitForSelector('button:has-text("Godkjenn attesten")');
-  await admin1.fill('input[placeholder="Grunn ved avvisning"]', 'Dokumentet er uleselig');
-  await admin1.click('button:has-text("Avvis")');
+  await kariSak(admin1).locator('button:has-text("Godkjenn attesten")').waitFor();
+  await kariSak(admin1).locator('input[placeholder="Grunn ved avvisning"]').fill('Dokumentet er uleselig');
+  await kariSak(admin1).locator('button:has-text("Avvis")').click();
   await admin1.waitForSelector('p.meta:has-text("Køen er tom."), .kort:has-text("Karenstid")', { state: 'attached' }).catch(() => {});
   await kari.click('#faner button:has-text("Meld")');
   await kari.waitForSelector('.merkelapp:has-text("Avvist")');
@@ -265,12 +270,12 @@ try {
   await per.waitForSelector('.melding-ok');
 
   await admin1.click('#faner button:has-text("Kø")');
-  await admin1.waitForSelector('button:has-text("Godkjenn attesten")');
-  await admin1.click('button:has-text("Godkjenn attesten")');
+  await kariSak(admin1).locator('button:has-text("Godkjenn attesten")').waitFor();
+  await kariSak(admin1).locator('button:has-text("Godkjenn attesten")').click();
   await admin2.click('#faner button:has-text("Kø")');
-  await admin2.waitForSelector('button:has-text("Godkjenn (andre signatur)")');
-  await admin2.click('button:has-text("Godkjenn (andre signatur)")');
-  await admin2.waitForSelector('.merkelapp:has-text("Karenstid")');
+  await kariSak(admin2).locator('button:has-text("Godkjenn (andre signatur)")').waitFor();
+  await kariSak(admin2).locator('button:has-text("Godkjenn (andre signatur)")').click();
+  await kariSak(admin2).locator('.merkelapp:has-text("Karenstid")').waitFor();
 
   await eva.click('#faner button:has-text("Status")');
   await eva.waitForSelector('button:has-text("STOPP FRIGIVELSEN")');
