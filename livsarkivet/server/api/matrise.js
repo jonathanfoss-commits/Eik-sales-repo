@@ -2,6 +2,7 @@
 import { ApiFeil } from '../http.js';
 import { medBruker } from '../db.js';
 import { loggRevisjon } from '../revisjon.js';
+import { krevAktivtAbonnement } from './abonnement.js';
 import { mittHvelv } from './hvelv.js';
 
 export function registrer(ruter) {
@@ -15,6 +16,7 @@ export function registrer(ruter) {
   ruter.add('POST', '/api/matrise', ({ ctx, body }) => medBruker(ctx, async (c) => {
     const { elementId, kontaktId, hendelseType = 'dodsfall' } = body;
     if (!elementId || !kontaktId) throw new ApiFeil(400, 'Element og kontakt må velges');
+    await krevAktivtAbonnement(c, ctx);
     const hvelv = await mittHvelv(c, ctx);
     let rad;
     try {
@@ -39,6 +41,7 @@ export function registrer(ruter) {
   }));
 
   ruter.add('DELETE', '/api/matrise/:id', ({ ctx, params }) => medBruker(ctx, async (c) => {
+    await krevAktivtAbonnement(c, ctx);
     const hvelv = await mittHvelv(c, ctx);
     let slettet;
     try {

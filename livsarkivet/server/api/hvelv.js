@@ -2,6 +2,7 @@
 import { ApiFeil } from '../http.js';
 import { medBruker } from '../db.js';
 import { loggRevisjon } from '../revisjon.js';
+import { krevAktivtAbonnement } from './abonnement.js';
 
 // Hvelvet opprettes lat ved første bruk — auth-laget rører aldri domenetabellene.
 export async function mittHvelv(c, ctx) {
@@ -26,6 +27,7 @@ export function registrer(ruter) {
     const { kategori, nivaa = 'privat', tittel, innhold = '', klientId = null } = body;
     if (!tittel || !kategori) throw new ApiFeil(400, 'Kategori og tittel må fylles ut');
     if (nivaa === 'sensitiv') throw new ApiFeil(501, 'Sensitiv-nivået åpner når krypteringen er på plass');
+    await krevAktivtAbonnement(c, ctx);
     const hvelv = await mittHvelv(c, ctx);
     let rad;
     try {
@@ -52,6 +54,7 @@ export function registrer(ruter) {
   ruter.add('PUT', '/api/elementer/:id', ({ ctx, body, params }) => medBruker(ctx, async (c) => {
     const { tittel, innhold, kategori, nivaa, versjon } = body;
     if (nivaa === 'sensitiv') throw new ApiFeil(501, 'Sensitiv-nivået åpner når krypteringen er på plass');
+    await krevAktivtAbonnement(c, ctx);
     let oppdatert;
     try {
       oppdatert = (await c.query(
@@ -81,6 +84,7 @@ export function registrer(ruter) {
   }));
 
   ruter.add('DELETE', '/api/elementer/:id', ({ ctx, params }) => medBruker(ctx, async (c) => {
+    await krevAktivtAbonnement(c, ctx);
     let slettet;
     try {
       slettet = (await c.query(

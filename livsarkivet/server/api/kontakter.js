@@ -2,6 +2,7 @@
 import { ApiFeil } from '../http.js';
 import { medBruker } from '../db.js';
 import { loggRevisjon } from '../revisjon.js';
+import { krevAktivtAbonnement } from './abonnement.js';
 import { lagInvitasjonskode, hashInvitasjonskode } from '../auth.js';
 import { sendEpost } from '../epost.js';
 import { mittHvelv } from './hvelv.js';
@@ -19,6 +20,7 @@ export function registrer(ruter) {
   ruter.add('POST', '/api/kontakter', ({ ctx, body }) => medBruker(ctx, async (c) => {
     const { navn, epost, telefon = null, relasjon = null, erBetrodd = false } = body;
     if (!navn || !epost) throw new ApiFeil(400, 'Navn og e-post må fylles ut');
+    await krevAktivtAbonnement(c, ctx);
     const hvelv = await mittHvelv(c, ctx);
     let rad;
     try {
@@ -38,6 +40,7 @@ export function registrer(ruter) {
 
   ruter.add('PUT', '/api/kontakter/:id', ({ ctx, body, params }) => medBruker(ctx, async (c) => {
     const { navn, epost, telefon, relasjon, erBetrodd, versjon } = body;
+    await krevAktivtAbonnement(c, ctx);
     let rad;
     try {
       rad = (await c.query(
@@ -67,6 +70,7 @@ export function registrer(ruter) {
   }));
 
   ruter.add('DELETE', '/api/kontakter/:id', ({ ctx, params }) => medBruker(ctx, async (c) => {
+    await krevAktivtAbonnement(c, ctx);
     let slettet;
     try {
       slettet = (await c.query(
@@ -83,6 +87,7 @@ export function registrer(ruter) {
   // Invitasjon: koden vises ÉN gang (og sendes best-effort på e-post) — kun
   // hashen lagres. Kontakten bruker den til å koble seg til hvelvet.
   ruter.add('POST', '/api/kontakter/:id/invitasjon', ({ ctx, params }) => medBruker(ctx, async (c) => {
+    await krevAktivtAbonnement(c, ctx);
     let kontakt;
     try {
       kontakt = (await c.query(
