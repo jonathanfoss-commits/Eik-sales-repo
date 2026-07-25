@@ -267,8 +267,13 @@ try {
   // Vent på det Kari FAKTISK ser, ikke på klokka. Sidelastingen trigger den late
   // feiingen (bakgrunnsfeieren er av i testmodus), så dette venter på hele
   // kjeden: karenstid utløpt → feiing → frigivelse → fane synlig.
+  // Merk: appen må ha REKKET å tegne før vi ser etter fanen. Uten ventingen på
+  // #faner målte løkken alltid rett etter en reload — altså på det ene
+  // tidspunktet der fanen garantert ikke finnes ennå.
   await ventTil(async () => {
     await kari.reload();
+    try { await kari.waitForSelector('#faner:not([hidden])', { timeout: 5000 }); }
+    catch { return false; }
     return kari.isVisible('#faner button:has-text("Til deg")');
   }, 'at Kari får «Til deg»-fanen etter at karenstiden er ute');
   await kari.click('#faner button:has-text("Til deg")');
@@ -345,7 +350,10 @@ try {
       WHERE b.epost = 'e2e-eva@test.no' AND f.status = 'blokkert'
         AND f.karenstid_slutt <= now()`)).rows.length > 0,
     'at den blokkerte sakens karenstid er utløpt');
-  await kari.reload();   // trigger en feiing ETTER utløpet — den skal ikke frigi
+  // trigger en feiing ETTER utløpet — den skal ikke frigi. Vent på at siden er
+  // ferdig lastet, ellers har feiingen kanskje ikke rukket å kjøre i det hele tatt.
+  await kari.reload();
+  await kari.waitForSelector('#faner:not([hidden])');
   await eva.click('#faner button:has-text("Status")');
   await eva.waitForSelector('.merkelapp:has-text("Stoppet av eier")');
   // nyeste sak (øverst — kun første kjede-sak skal stå som Frigitt lenger ned)

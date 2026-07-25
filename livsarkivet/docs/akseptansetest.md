@@ -5,7 +5,16 @@ Testregimets nivå 1–6 kjører automatisk i CI. Nivå 7 er menneskesjekken:
 Denne listen skal gjennomføres før hver fase-leveranse. Sett dato og signatur
 nederst.
 
-## Forberedelser
+## Raskeste vei: testmiljøet
+**https://livsarkivet-test.onrender.com** er oppe med demodata og ett-trykks
+innlogging — `/api/demo/inn?som=kari` (eier), `?som=bjorn` (betrodd kontakt),
+`?som=mona` (mottaker med frigitt arkiv), `?som=astrid` og `?som=arne`
+(de to saksbehandlerne). Da slipper du oppsettet under. To forbehold: karenstiden
+der er 48 timer, så punktene som krever at den løper ut må kjøres lokalt med
+`KARENSTID_SEKUNDER=120`, og e-postvarsler går ikke ut før avsenderen er satt opp
+(de ligger i kø i basen).
+
+## Forberedelser (lokalt — trengs for karenstid og varsler)
 ```
 docker compose up -d
 cp .env.example .env        # sett REGISTRERING_AAPEN=1, KARENSTID_SEKUNDER=120
