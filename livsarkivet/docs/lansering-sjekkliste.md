@@ -84,7 +84,9 @@ produksjonsmodus — men sjekk det manuelt også:
 - [ ] `DEMO_INNLOGGING` — fjern helt (ett-trykks innlogging til demokontoer).
       Da forsvinner også «Testmiljø»-banneret, som er den synlige kvitteringen
       på at flagget er av.
-- [ ] `REGISTRERING_AAPEN=0` — inviter de første manuelt
+- [ ] `REGISTRERING_AAPEN=0` — inviter de første manuelt. Da forsvinner
+      «Opprett ditt livsarkiv» fra innloggingen, mens invitasjonskoden virker
+      som før.
 - [ ] `KARENSTID_SEKUNDER=172800` — 48 timer, som lovet i vilkårene
 - [ ] Slett demokontoene: alle på `@demo.livsarkivet.no`
 

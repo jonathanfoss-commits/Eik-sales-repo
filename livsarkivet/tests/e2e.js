@@ -120,6 +120,9 @@ try {
   // innloggingsskjermen skal være ren: hidden må faktisk skjule
   sjekk(!(await eva.isVisible('#logg-ut')) && !(await eva.isVisible('#faner')),
     '«Logg ut» og fanelinjen er skjult før innlogging');
+  // med åpen registrering MÅ knappen finnes — den skjules bare når flagget er av
+  sjekk(await eva.isVisible('button:has-text("Opprett ditt livsarkiv")'),
+    'registreringsknappen vises når selvregistrering er åpen');
   await eva.click('button:has-text("Opprett ditt livsarkiv")');
   await eva.fill('input[placeholder="Fullt navn"]', 'Eva E2E');
   await eva.fill('input[placeholder="E-post"]', 'e2e-eva@test.no');

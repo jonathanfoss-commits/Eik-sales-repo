@@ -13,7 +13,7 @@ const innhold = document.getElementById('innhold');
 const faner = document.getElementById('faner');
 const loggUtKnapp = document.getElementById('logg-ut');
 
-const tilstand = { meg: null, harEtterlatt: false, fane: null };
+const tilstand = { meg: null, harEtterlatt: false, fane: null, miljo: {} };
 
 loggUtKnapp.addEventListener('click', async () => {
   await kall('POST', '/api/auth/logg-ut');
@@ -47,7 +47,10 @@ function visInnlogging(visning = 'inn', feil = '') {
         start();
       } }, 'Logg inn'),
       el('button', { class: 'sekundaer', onclick: () => visInnlogging('kode') }, 'Har du fått en kode?'),
-      el('button', { class: 'sekundaer', onclick: () => visInnlogging('ny') }, 'Opprett ditt livsarkiv'),
+      // vises bare når selvregistrering er åpen — ellers er den en blindvei
+      tilstand.miljo.registrering
+        ? el('button', { class: 'sekundaer', onclick: () => visInnlogging('ny') }, 'Opprett ditt livsarkiv')
+        : null,
       el('button', { class: 'lenkeknapp', onclick: () => visInnlogging('glemt') }, 'Glemt passord?'));
   } else if (visning === 'ny') {
     const navn = el('input', { type: 'text', placeholder: 'Fullt navn', autocomplete: 'name' });
@@ -134,10 +137,10 @@ function byttFane(id, vis) {
   vis(innhold, tilstand);
 }
 
-// ── Demomiljø: si det, tydelig, før noen legger inn noe ──
-async function visMiljo() {
-  const svar = await kall('GET', '/api/miljo');
-  if (!svar.data?.demo) return;
+// ── Miljøet: demoadvarsel og om selvregistrering er åpen ──
+async function hentMiljo() {
+  tilstand.miljo = (await kall('GET', '/api/miljo')).data || {};
+  if (!tilstand.miljo.demo) return;
   document.getElementById('topp').before(el('div', { class: 'miljobanner' },
     el('strong', {}, 'Testmiljø'),
     ' — alle som har lenken kan logge inn som demokontoene. '
@@ -163,5 +166,5 @@ async function start() {
   byttFane(valgt[0], valgt[3]);
 }
 
-visMiljo();
+await hentMiljo();
 start();

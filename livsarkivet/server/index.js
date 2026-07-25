@@ -71,7 +71,13 @@ ruter.add('GET', '/api/helse', async () => ({ ok: true }));
 // Et demomiljø må SI at det er et demomiljø. Står demoinnloggingen på, kommer
 // hvem som helst med lenken inn — da skal ingen legge inn ekte opplysninger,
 // og advarselen må stå der før innloggingsskjemaet, ikke i en README.
-ruter.add('GET', '/api/miljo', async () => ({ demo: config.demoInnlogging }));
+// «registrering» styrer om «Opprett ditt livsarkiv» vises i det hele tatt. I
+// produksjon står flagget av, og da er knappen en blindvei: brukeren fyller ut
+// skjemaet og får «Registrering er ikke åpnet ennå» etterpå.
+ruter.add('GET', '/api/miljo', async () => ({
+  demo: config.demoInnlogging,
+  registrering: config.registreringAapen,
+}));
 
 function settSesjonsCookie(res, token) {
   const sikker = process.env.NODE_ENV === 'production' ? '; Secure' : '';

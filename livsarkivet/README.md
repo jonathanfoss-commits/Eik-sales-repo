@@ -53,6 +53,8 @@ npm start                     # http://localhost:3400
 Saksbehandler opprettes av drift: `node server/verktoy/ny-admin.js "Navn" epost`
 (skriver engangspassord + TOTP-hemmelighet én gang).
 Selvregistrering for eiere er bak `REGISTRERING_AAPEN=1` til DPIA/vilkår er klare.
+Med flagget av skjules «Opprett ditt livsarkiv» helt — knappen skal ikke føre til
+et skjema som avvises etterpå. Inviterte kontakter kommer inn på koden sin uansett.
 
 **Vil du bare se produktet?** Med serveren i gang:
 ```
