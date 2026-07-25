@@ -74,11 +74,17 @@ etterlatte er levende personer med fulle rettigheter**. Vurderingen vår:
 | R8 | Betalingsdata | Middels | All kortbehandling hos Stripe; vi lagrer kun kunde-/abonnements-id | Lav |
 
 ## 7. De registrertes rettigheter
-- **Innsyn/portabilitet:** eier ser alt eget innhold; eksportfunksjon må bygges
-  (*åpent punkt før lansering*).
-- **Sletting:** eier kan slette elementer og kontakter. Full kontosletting med
-  kaskade må bygges og testes (jf. kjerne-plattformens `slett_brukerdata()`).
-  *Åpent punkt.*
+- **Innsyn/portabilitet (art. 15 og 20):** `GET /api/eksport` gir alt eieren
+  har lagt inn som JSON — inkludert de frasepakkede krypteringsnøklene, slik at
+  eksporten er brukbar utenfor tjenesten. Testet i `tests/konto.test.js`:
+  sensitivt innhold dekrypteres fra eksporten alene med eierens egen frase.
+- **Sletting (art. 17):** `POST /api/konto/slett` krever passordet på nytt og
+  fjerner konto, hvelv, elementer, kontakter, matrise, hendelser, frigivelser,
+  varslinger, krypteringsnøkler og abonnement i én transaksjon. Kontakter i
+  ANDRES hvelv beholdes, men løsnes fra den slettede kontoen.
+  **Revisjonssporet overlever** (uten innhold, kun hendelsestype og id) fordi
+  det er bevismateriale for at frigivelser var korrekte — *avveiningen mot
+  art. 17 bør bekreftes av jurist, se `jurist-brief.md` punkt 12.*
 - **Innsigelse/begrensning:** eier kan blokkere en frigivelse i karenstiden og
   tilbakekalle mottakertilgang ved å endre matrisen.
 - **Revisjonslogg** gir de registrerte etterprøvbarhet — den er bevisst
@@ -90,7 +96,8 @@ etterlatte er levende personer med fulle rettigheter**. Vurderingen vår:
 3. Vurdering av tredjelandsoverføring for AI-behandling av dødsattest
    (Anthropic) — alternativt kjøre attestkontroll uten AI i EØS-modus.
 4. Oppbevaringstider: frigitt arkiv, revisjonslogg, attester, varslinger.
-5. RTO/RPO og plan for dataoverlevelse ved selskapsopphør.
-6. Eksport- og kontoslettingsfunksjon.
-7. Ekstern pen-test før produksjon.
-8. Rutine for henvendelser fra tredjepersoner omtalt i hvelvinnhold.
+5. RTO/RPO og plan for dataoverlevelse ved selskapsopphør
+   (*forslag: RPO 24 t, RTO 4 t — se `lansering-sjekkliste.md`*).
+6. Ekstern pen-test før produksjon.
+7. Rutine for henvendelser fra tredjepersoner omtalt i hvelvinnhold.
+8. Oppbevaringstid for revisjonsloggen som overlever kontosletting.

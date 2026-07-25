@@ -44,4 +44,10 @@ export const config = {
   registreringAapen: process.env.REGISTRERING_AAPEN === '1',
   // Testmodus skrur av bakgrunnsfeieren (testene styrer tiden selv).
   testmodus: process.env.LIVSARKIV_TESTMODUS === '1',
+  // Innloggingsforsøk per klient-IP per kvarter. Bak mobil-CGNAT deler mange
+  // abonnenter én IP, og etterlatte som logger inn samtidig etter et dødsfall
+  // ville truffet et lavt tak. Kontoen er uansett vernet av taket per e-post
+  // (10), som er det som stopper gjetting mot en konkret bruker.
+  // Sett LOGIN_PER_IP_KVARTER=30 for å gå tilbake til det strammere taket.
+  loginPerIpKvarter: Number(process.env.LOGIN_PER_IP_KVARTER || 100),
 };

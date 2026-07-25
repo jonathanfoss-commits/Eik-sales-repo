@@ -138,4 +138,24 @@ export async function vis(rot) {
 
   rot.append(el('button', { class: 'lenkeknapp', onclick: gjenopprettMedKode },
     'Glemt sikkerhetsfrasen? Bruk gjenopprettingskoden'));
+
+  // Dine data: portabilitet og sletterett
+  rot.append(el('div', { class: 'kort' },
+    el('h3', {}, 'Dine data'),
+    el('p', { class: 'meta' },
+      'Du kan ta med deg alt når som helst. Eksporten inneholder også de '
+      + 'frasepakkede nøklene, så du kan åpne sensitivt innhold utenfor tjenesten.'),
+    el('a', { class: 'knapp', href: '/api/eksport', download: 'livsarkivet-eksport.json' },
+      'Last ned alt'),
+    el('button', { class: 'fare', onclick: async () => {
+      if (!confirm('Slette kontoen og HELE arkivet? Dette kan ikke angres, og '
+        + 'dine nærmeste får da ingenting.')) return;
+      const passord = prompt('Skriv passordet ditt for å bekrefte slettingen:');
+      if (!passord) return;
+      const svar = await kall('POST', '/api/konto/slett', { passord });
+      if (!svar.ok) { alert(svar.data.feil || 'Sletting feilet'); return; }
+      alert('Kontoen og arkivet er slettet.');
+      location.hash = '';
+      location.reload();
+    } }, 'Slett kontoen min')));
 }

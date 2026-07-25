@@ -80,10 +80,19 @@ transporten utsetter bare utsendingen. Karenstid-feieren bruker
 `FOR UPDATE SKIP LOCKED`, så samtidige feiinger aldri frigir samme sak to
 ganger, og en karenstid som utløp under nedetid plukkes opp ved neste feiing.
 
-## Personvern og vilkår (utkast)
-`docs/dpia-utkast.md` og `docs/vilkar-utkast.md` — begge er UTKAST fra
-utviklingsteamet som venter på Jonathans gjennomgang og juridisk
-kvalitetssikring før lansering. Åpne punkter er listet i hvert dokument.
+## Dine data (GDPR art. 15, 17, 20)
+`GET /api/eksport` gir eieren alt som JSON — inkludert de frasepakkede
+krypteringsnøklene, så eksporten kan dekrypteres utenfor tjenesten.
+`POST /api/konto/slett` krever passordet på nytt og fjerner konto og hvelv med
+alt innhold; kontakter i andres hvelv beholdes men løsnes, og revisjonssporet
+(uten innhold) overlever som bevis for at frigivelser var korrekte.
+
+## Personvern, vilkår og lansering
+- `docs/dpia-utkast.md`, `docs/vilkar-utkast.md` — UTKAST fra utviklingsteamet,
+  venter på Jonathans gjennomgang og juridisk kvalitetssikring.
+- `docs/jurist-brief.md` — ferdig brief med de tolv spørsmålene til jurist.
+- `docs/lansering-sjekkliste.md` — alt som må gjøres utenfor koden.
+- `render.yaml` — Render Blueprint (EU/Frankfurt), migrasjoner ved deploy.
 
 ## Bevisste avgrensninger (fase 2/3 i /goal)
 Dead man's switch, Folkeregisteret-integrasjon, SMS-kanal,

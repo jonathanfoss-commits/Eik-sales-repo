@@ -18,11 +18,13 @@ import * as verifisering from './api/verifisering.js';
 import * as etterlatt from './api/etterlatt.js';
 import * as abonnement from './api/abonnement.js';
 import * as krypto from './api/krypto.js';
+import * as konto from './api/konto.js';
 import { feiKarenstid } from './feier.js';
 import { sendUtestaaende } from './varsling.js';
 
 const ruter = new Ruter();
-for (const modul of [hvelv, kontakter, matrise, hendelse, verifisering, etterlatt, abonnement, krypto]) {
+for (const modul of [hvelv, kontakter, matrise, hendelse, verifisering, etterlatt,
+  abonnement, krypto, konto]) {
   modul.registrer(ruter);
 }
 
@@ -74,7 +76,7 @@ ruter.add('POST', '/api/auth/logg-inn', async ({ req, body, res }) => {
   // dobbel nøkkel: per klient-IP OG per e-post — verner kontoen selv når
   // mange deler IP, uten at én angriper kan låse ute alle
   const epostNokkel = String(body.epost || '').trim().toLowerCase();
-  if (forMange('login:' + klientIp(req), 30, 15 * 60_000)
+  if (forMange('login:' + klientIp(req), config.loginPerIpKvarter, 15 * 60_000)
       || forMange('login-epost:' + epostNokkel, 10, 15 * 60_000)) {
     throw new ApiFeil(429, 'For mange forsøk — vent et kvarter');
   }
@@ -241,9 +243,10 @@ const server = http.createServer(async (req, res) => {
       : ['POST', 'PUT', 'PATCH'].includes(req.method) ? await lesJson(req) : {};
     const resultat = await rute.handler({ req, res, ctx, body, params: rute.params, sok: url.searchParams });
     if (resultat && resultat._fil !== undefined) {
-      // hele filer (attestvisning for admin) — alltid nedlasting, aldri kjøring
+      // hele filer (attestvisning for admin, dataeksport) — aldri kjøring
+      const plassering = resultat._fil.nedlasting ? 'attachment' : 'inline';
       res.writeHead(200, { 'Content-Type': resultat._fil.mime || 'application/octet-stream',
-        'Content-Disposition': `inline; filename="${(resultat._fil.filnavn || 'fil').replace(/["\\]/g, '')}"`,
+        'Content-Disposition': `${plassering}; filename="${(resultat._fil.filnavn || 'fil').replace(/["\\]/g, '')}"`,
         'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
       res.end(resultat._fil.innhold);
     } else {
