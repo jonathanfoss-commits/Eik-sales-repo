@@ -117,6 +117,9 @@ try {
   // ── 1. Eva oppretter arkivet sitt ──
   console.log('1. Eier bygger hvelv, kontakter og matrise');
   const eva = await nySide('eva');
+  // innloggingsskjermen skal være ren: hidden må faktisk skjule
+  sjekk(!(await eva.isVisible('#logg-ut')) && !(await eva.isVisible('#faner')),
+    '«Logg ut» og fanelinjen er skjult før innlogging');
   await eva.click('button:has-text("Opprett ditt livsarkiv")');
   await eva.fill('input[placeholder="Fullt navn"]', 'Eva E2E');
   await eva.fill('input[placeholder="E-post"]', 'e2e-eva@test.no');
