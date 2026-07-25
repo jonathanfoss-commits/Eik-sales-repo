@@ -54,16 +54,36 @@ avvisningsgrunner, med bevisst overstyring). All modellbruk går gjennom
 **Etisk gating:** utløpt tilgang stenger KUN eierens redigering — lesing,
 frigivelsesløpet, eierens nødbrems og etterlattevisningen er aldri portet.
 
-## Tester
+## Tester — alle syv nivåene fra /goal
 ```
-npm test        # unit (tilstandsmaskin 100 %), RLS-suiten, API-kjeden,
-                # agentene (golden + red-team), abonnement (Stripe-mock)
-npm run e2e     # Playwright: hele frigivelsesløpet i UI + negativløp
+npm test        # nivå 1 tilstandsmaskin (100 %), nivå 2 RLS + migrasjon,
+                # nivå 3 krypto (zero-knowledge), nivå 5 agenter (golden +
+                # red-team), nivå 6 drift (backup-gjenoppretting, feilinjeksjon),
+                # pluss API-kjeden og abonnement mot Stripe-mock
+npm run e2e     # nivå 4: Playwright, hele frigivelsesløpet i UI + negativløp
+npm run lasttest # nivå 6: innlogging og frigivelsesflytens lesninger under last
 ```
+Nivå 7 er den manuelle akseptansetesten — sjekkliste i `docs/akseptansetest.md`
+(inkl. etterlattemodus testet av person uten forkunnskap).
+
 Testene krever Postgres (hopper ellers pent over). Karenstiden manipuleres i
 test via `KARENSTID_SEKUNDER`. CI: `.github/workflows/livsarkivet-ci.yml`
 kjører alt mot postgres:16-service + Chromium; skjermbilder som testbevis
 legges i `testbevis/` av e2e-kjøringen.
+
+## Holdbarhet i frigivelsesløpet
+Tilstandsendring, revisjonsrad og varslingskø skjer i ÉN transaksjon
+(`ko_varsler()`): rulles noe tilbake, forsvinner alt — det finnes aldri en
+frigivelse ingen ble varslet om. E-postutsending er en separat, gjentakbar
+passering over `varslinger` med `sendt_tid IS NULL`, så nedetid i e-post-
+transporten utsetter bare utsendingen. Karenstid-feieren bruker
+`FOR UPDATE SKIP LOCKED`, så samtidige feiinger aldri frigir samme sak to
+ganger, og en karenstid som utløp under nedetid plukkes opp ved neste feiing.
+
+## Personvern og vilkår (utkast)
+`docs/dpia-utkast.md` og `docs/vilkar-utkast.md` — begge er UTKAST fra
+utviklingsteamet som venter på Jonathans gjennomgang og juridisk
+kvalitetssikring før lansering. Åpne punkter er listet i hvert dokument.
 
 ## Bevisste avgrensninger (fase 2/3 i /goal)
 Dead man's switch, Folkeregisteret-integrasjon, SMS-kanal,

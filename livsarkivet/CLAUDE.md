@@ -7,9 +7,11 @@ og arbeidsformen (les først, planlegg, små leveranser, norsk bokmål) gjelder.
 
 ## Kommandoer
 - `npm run migrate` — forward-only SQL-migrasjoner (kjøres som `livsarkiv_eier`)
-- `npm test` — unit + RLS + API (krever Postgres, hopper ellers over)
-- `npm run e2e` — Playwright 390×844, hele frigivelsesløpet, null JS-feil
+- `npm test` — nivå 1–3, 5 og 6 (krever Postgres, hopper ellers over)
+- `npm run e2e` — nivå 4: Playwright 390×844, null JS-feil
+- `npm run lasttest` — nivå 6: innlogging + frigivelsesflytens lesninger
 - `node server/verktoy/ny-admin.js "Navn" epost` — ny saksbehandler (TOTP)
+- Nivå 7 (manuell akseptansetest): `docs/akseptansetest.md`
 
 ## Ufravikelig
 1. Ingen frigivelse uten verifisert hendelse + karenstid. Aldri AI alene.
@@ -22,6 +24,11 @@ og arbeidsformen (les først, planlegg, små leveranser, norsk bokmål) gjelder.
 6. Ny tabell = ENABLE RLS (aldri FORCE) + eksplisitte grants + RLS-test i
    samme PR. Husk: en UPDATE med WHERE på kolonner krever også SELECT-policy.
 7. Beslutninger som binder juss, sikkerhet eller penger: spør Jonathan.
+8. Varsling skjer ALLTID i samme transaksjon som tilstandsendringen
+   (`koVarsler`, aldri etter commit) — ellers kan en frigivelse skje uten at
+   noen ble varslet. E-postutsending er den gjentakbare delen.
+9. Testfilene kjører parallelt: aldri assert på globale radtall — skop
+   assertions til testens egne fiksturer.
 
 ## Arkitektur (kort)
 Node uten rammeverk + Postgres m. person-skopet RLS. To DB-roller
