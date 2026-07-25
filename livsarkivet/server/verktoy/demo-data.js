@@ -19,7 +19,9 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const PASSORD = 'demopassord123';
-const BASE = `http://127.0.0.1:${config.port}`;
+// Lokalt som standard. Skal du fylle en tjeneste i skyen, sett DEMO_BASE_URL
+// til dens URL og MIGRATE_DATABASE_URL til dens EKSTERNE tilkoblingsstreng.
+const BASE = (process.env.DEMO_BASE_URL || `http://127.0.0.1:${config.port}`).replace(/\/$/, '');
 
 // Serveren må kjøre — demo-dataen legges inn gjennom det EKTE API-et, slik at
 // alt går gjennom de samme reglene og policyene som en vanlig bruker møter.
@@ -28,7 +30,7 @@ try {
   if (!helse.ok) throw new Error('helsesjekk feilet');
 } catch {
   console.error(`Fant ingen server på ${BASE}. Start den først med «npm start»`
-    + ' (og husk REGISTRERING_AAPEN=1 i .env).');
+    + ' (og husk REGISTRERING_AAPEN=1 i .env), eller sett DEMO_BASE_URL.');
   process.exit(1);
 }
 

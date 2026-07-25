@@ -29,8 +29,11 @@ services:
     # --omit=dev: serveren trenger bare pg. Playwright er en testavhengighet og
     # skal ikke lastes ned i produksjonsbygget.
     buildCommand: npm ci --omit=dev
-    preDeployCommand: node server/migrate.js
-    startCommand: node server/index.js
+    # Migrasjonene kjøres i startkommandoen (ikke som preDeployCommand, som
+    # Renders API ikke tok imot). Trygt: migrate.js tar en advisory lock, så
+    # samtidige oppstarter serialiserer i stedet for å kollidere, og hver
+    # migrasjon kjøres bare én gang.
+    startCommand: node server/migrate.js && node server/index.js
     healthCheckPath: /api/helse
     autoDeploy: true
     envVars:
