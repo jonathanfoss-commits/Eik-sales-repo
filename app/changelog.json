@@ -1,5 +1,10 @@
 [
   {
+    "dato": "2026-07-21",
+    "tekst": "Sentralkoden sjekkes nå mot serveren i stedet for å ligge som avtrykk i sidene — koden kan byttes uten app-oppdatering, og står ikke lenger i noen fil.",
+    "av": "Panelet"
+  },
+  {
     "dato": "2026-07-20",
     "tekst": "Ny i verktøykassa: «Lov- og regelsjekk» — spør rett fram hva regelverket sier, få svar med forskrift og paragraf, og alltid påminnelse om å bekrefte med kommunen eller Arbeidstilsynet.",
     "av": "Panelet"

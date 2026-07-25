@@ -2,6 +2,16 @@
 
 <!-- Kveldsteamet fører inn: dato, hva som ble vurdert, hva som ble gjort, testresultat -->
 
+- [2026-07-21] **Kveldskjøring (behovsstyrt panel, første):** innspill hentet direkte fra
+  Netlify Forms (ingen nye — begge kjente er bygget). Kandidat = ⚠ HASTER fra
+  prioriteringen: sentralkode-rotasjon uten kode i repo. To eksperter hørt (behovsstyrt):
+  Personvernvakt JA (rotér straks etter utrulling, kun kode i header, 503 uten detaljer),
+  Frontend ENDRE (lås opp kun på 200, «feil kode» kun på 401, resten serverfeil; sett
+  PILOT_API_KODE på begge sitene FØR deploy; oppdater plattform-notatet). Bygget i
+  v0.18.1: server-verifisert opplåsing i admin/lab, PBKDF2 slettet, hardkodet kode
+  fjernet fra innspill.js, PILOT_API_KODE satt på begge sitene (dagens kode — rotasjon
+  er Jonathans steg 4). QA grønn i begge viewporter.
+
 - [2026-07-20] **Kveldskjøring:** kandidat = «Lover & regler på byggeplassen» (brukerinnspill
   fra pilotloggen 17. juli, uten navn — prioritert av lunsjtriagen). Seks eksperter hørt:
   Kontraktsjurist JA (krav: kunnskapsdato-forbehold med henvisning til Lovdata/DiBK, aldri

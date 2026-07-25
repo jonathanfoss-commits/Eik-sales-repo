@@ -3,6 +3,25 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
+## v0.18.1 — 21. juli 2026 (sentralkoden ut av alle filer — ⚠ HASTER fra Musk-reviewen)
+
+**Hvorfor:** sentralkoden var eksponert offentlig via GitHub Pages (klartekst i
+`innspill.js`, PBKDF2-avtrykk i admin/lab) og må anses brent.
+
+**Hva:** Kommandosentralen og Prøverommet prøver nå koden mot innspill-funksjonen
+(lås opp kun på 200, «feil kode» kun på 401, alt annet meldes som serverfeil — aldri
+falsk «feil kode»). PBKDF2-maskineriet er slettet. Serverfunksjonen godtar kun
+miljøvariabelen PILOT_API_KODE (mangler den: 503 uten detaljer). Variabelen er alt
+satt til dagens kode på BEGGE sitene, så ingenting knekker ved deploy.
+**Rotasjon etter merge (Jonathans steg 4):** bytt PILOT_API_KODE i Netlify på begge
+sitene til en ny selvvalgt kode → SMS til Ole Fabian → gammel kode er død.
+
+**Panelets vedtak:** Personvernvakt JA (krav: rotér straks etter utrulling; kun koden i
+header; 503 uten detaljer — alle innfridd), Frontend ENDRE (statuskode-disiplin —
+innarbeidet). **QA:** Playwright 390×844 + 1440×900 på admin/lab/index: låst ved start,
+feil kode avvist, riktig kode låser opp, null pageerror. Versjonstriaden 0.18.1 med
+cache «laerling-0.18.1» (én kilde).
+
 ## Musk-tiltak — 20. juli 2026 (infrastruktur, bestilt av Jonathan: «alt du kan gjøre auto»)
 
 **Hva:** (1) `.github/workflows/pages.yml` slettet — den publiserte HELE repoet (pilotdata,
