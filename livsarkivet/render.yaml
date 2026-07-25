@@ -1,0 +1,77 @@
+# Render Blueprint for Livsarkivet — EU/Frankfurt.
+#
+# Slik bruker du den: render.com → New → Blueprint → velg dette repoet og
+# grenen. Render leser denne filen, oppretter databasen og tjenesten, og spør
+# bare om de hemmelighetene som står med `sync: false` (de skal ALDRI i repo).
+#
+# Med hensikt ÉN tjeneste og ÉN database til å begynne med: dette er miljøet du
+# gjør akseptansetesten i, på telefon, med en ekte URL. Legg til en
+# produksjonstjeneste (egen database, `autoDeploy: false`) når du har betalende
+# kunder — testdata skal aldri i produksjonsbasen.
+#
+# Kostnad slik den står: én basic-256mb-database + én starter-tjeneste.
+# Migrasjonene kjøres i preDeployCommand, altså FØR ny kode tar over — slik at
+# en halvferdig migrasjon aldri møter ny kode.
+
+databases:
+  - name: livsarkivet-test-db
+    plan: basic-256mb        # «free» slettes etter 30 dager — ikke bruk den her
+    region: frankfurt        # EU/EØS-kravet i DPIA-en
+    postgresMajorVersion: "16"
+
+services:
+  - type: web
+    name: livsarkivet-test
+    runtime: node
+    region: frankfurt
+    plan: starter
+    rootDir: livsarkivet
+    buildCommand: npm ci
+    preDeployCommand: node server/migrate.js
+    startCommand: node server/index.js
+    healthCheckPath: /api/helse
+    autoDeploy: true
+    envVars:
+      - key: MIGRATE_DATABASE_URL
+        fromDatabase: { name: livsarkivet-test-db, property: connectionString }
+      # app-rollenes passord: Render lager dem, migrate.js setter dem i basen,
+      # og tilkoblingsstrengene utledes fra dem
+      - key: LIVSARKIV_APP_PASSORD
+        generateValue: true
+      - key: LIVSARKIV_AUTH_PASSORD
+        generateValue: true
+      - key: NODE_ENV
+        value: production          # slår på Secure-cookie og HSTS
+      - key: APP_URL
+        fromService: { name: livsarkivet-test, type: web, property: host }
+      # Selvregistrering: PÅ i testmiljøet så du kan opprette konto selv.
+      # I produksjon skal denne stå på 0 til DPIA og vilkår er godkjent.
+      - key: REGISTRERING_AAPEN
+        value: "1"
+      - key: KARENSTID_SEKUNDER
+        value: "172800"            # 48 timer [JONATHAN]
+      - key: LOGIN_PER_IP_KVARTER
+        value: "100"
+      # ── Hemmeligheter du fyller inn i Render (aldri i repo) ──
+      # E-post: uten disse blir varslene liggende i kø i databasen og sendes
+      # så snart transporten er satt opp. Ingenting går tapt.
+      - key: EPOST_API_URL
+        sync: false
+      - key: EPOST_API_NOKKEL
+        sync: false
+      - key: EPOST_FRA
+        sync: false
+      # Stripe (test-mode først). Uten disse svarer betalings-API-et 503,
+      # og prøveperioden løper som normalt.
+      - key: STRIPE_SECRET
+        sync: false
+      - key: STRIPE_PRIS_ID
+        sync: false
+      - key: STRIPE_WEBHOOK_HEMMELIGHET
+        sync: false
+      # AI-attestkontroll. Lar du denne stå tom, kjører tjenesten i EØS-modus:
+      # saksbehandleren vurderer attesten alene, og ingenting sendes ut av EØS.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: AI_MND_BUDSJETT_ORE
+        value: "50000"             # 500 kr/mnd
