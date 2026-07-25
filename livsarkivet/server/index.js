@@ -62,6 +62,7 @@ function klientIp(req) {
 const AAPNE = new Set(['POST /api/auth/logg-inn', 'POST /api/auth/registrer',
   'POST /api/auth/innlos-invitasjon', 'GET /api/helse',
   'POST /api/auth/glemt', 'POST /api/auth/nullstill',
+  'GET /api/demo/inn',           // egen vaktpost i ruten (kun demomiljø)
   'POST /api/stripe/webhook']); // signaturverifisert i ruten
 
 ruter.add('GET', '/api/helse', async () => ({ ok: true }));
@@ -122,6 +123,24 @@ async function loggInnMedId(bruker) {
     [crypto.createHash('sha256').update(token).digest('hex'), bruker.id, utloper]);
   return token;
 }
+
+// Ett-trykks innlogging for demoing (DEMO_INNLOGGING=1). Ingen «av med
+// innlogging»-modus finnes, og skal ikke finnes: hele appen er definert av hvem
+// du er, og RLS gir null rader uten bruker. Dette lager en EKTE sesjon for en
+// demokonto, slik at alt du ser er produktets virkelige oppførsel.
+// Strukturell grense: bare @demo.livsarkivet.no kan nås — aldri en ekte konto.
+ruter.add('GET', '/api/demo/inn', async ({ sok, res }) => {
+  if (!config.demoInnlogging) throw new ApiFeil(404, 'Ukjent API-rute');
+  const kort = String(sok.get('som') || '').trim().toLowerCase();
+  if (!/^[a-z0-9._-]{1,40}$/.test(kort)) throw new ApiFeil(400, 'Ugyldig kontonavn');
+  const epost = `${kort}@demo.livsarkivet.no`;
+  const bruker = (await authPool.query(
+    'SELECT id, navn FROM brukere WHERE epost = $1 AND aktiv', [epost])).rows[0];
+  if (!bruker) throw new ApiFeil(404, `Fant ingen demokonto «${kort}»`);
+  console.log(JSON.stringify({ hendelse: 'demo_innlogging', konto: epost }));
+  settSesjonsCookie(res, await loggInnMedId(bruker));
+  return { _omdirigering: '/' };
+});
 
 // /api/meg: hvem er jeg, og hvilke hvelv er jeg betrodd kontakt i?
 ruter.add('GET', '/api/meg', ({ ctx }) => medBruker(ctx, async (c) => {
@@ -242,7 +261,10 @@ const server = http.createServer(async (req, res) => {
       ? { _raa: await lesRaa(req) }
       : ['POST', 'PUT', 'PATCH'].includes(req.method) ? await lesJson(req) : {};
     const resultat = await rute.handler({ req, res, ctx, body, params: rute.params, sok: url.searchParams });
-    if (resultat && resultat._fil !== undefined) {
+    if (resultat && resultat._omdirigering !== undefined) {
+      res.writeHead(302, { Location: resultat._omdirigering, 'Cache-Control': 'no-store' });
+      res.end();
+    } else if (resultat && resultat._fil !== undefined) {
       // hele filer (attestvisning for admin, dataeksport) — aldri kjøring
       const plassering = resultat._fil.nedlasting ? 'attachment' : 'inline';
       res.writeHead(200, { 'Content-Type': resultat._fil.mime || 'application/octet-stream',

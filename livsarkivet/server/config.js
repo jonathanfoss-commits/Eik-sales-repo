@@ -50,4 +50,7 @@ export const config = {
   // (10), som er det som stopper gjetting mot en konkret bruker.
   // Sett LOGIN_PER_IP_KVARTER=30 for å gå tilbake til det strammere taket.
   loginPerIpKvarter: Number(process.env.LOGIN_PER_IP_KVARTER || 100),
+  // Ett-trykks innlogging i demomiljø (DEMO_INNLOGGING=1). Kan KUN logge inn
+  // kontoer på @demo.livsarkivet.no — aldri en ekte konto, uansett miljø.
+  demoInnlogging: process.env.DEMO_INNLOGGING === '1',
 };
