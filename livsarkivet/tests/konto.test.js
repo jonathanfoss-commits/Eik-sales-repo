@@ -18,7 +18,9 @@ const krypto = await import('../app/js/krypto.js');
 const PORT = 3406;
 const BASE = `http://127.0.0.1:${PORT}`;
 const ROT = path.resolve(import.meta.dirname, '..');
-const SENSITIVT = 'Safekode 4455, bankboks DNB';
+// bokstaver utenfor heksadesimal, så skanningen ikke treffer UUID-er/tidsstempler
+const SENSITIVT = 'Safekode zulu-plog-vinsj, bankboks DNB';
+const SOEKEORD = 'zulu-plog-vinsj';
 
 let eier, server;
 let tilgjengelig = true;
@@ -122,7 +124,7 @@ test('eksport: komplett, og sensitivt innhold kan dekrypteres utenfor tjenesten'
   assert.ok(dump.kryptonokler?.hvelvnokkel_pakket, 'frasepakket hvelvnøkkel er med');
   const fraEksport = dump.elementer.find((e) => e.id === sensitivtId);
   assert.equal(fraEksport.kryptert, true);
-  assert.ok(!JSON.stringify(dump).includes('4455'), 'eksporten bærer ikke klartekst');
+  assert.ok(!JSON.stringify(dump).includes(SOEKEORD), 'eksporten bærer ikke klartekst');
   const hnFraEksport = await krypto.laasOppHvelvnokkel('idas sikkerhetsfrase', dump.kryptonokler);
   assert.equal(
     await krypto.dekrypterElement(hnFraEksport, fraEksport.innhold, fraEksport.nokkel_ref),

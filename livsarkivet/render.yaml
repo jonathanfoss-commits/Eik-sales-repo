@@ -26,7 +26,9 @@ services:
     region: frankfurt
     plan: starter
     rootDir: livsarkivet
-    buildCommand: npm ci
+    # --omit=dev: serveren trenger bare pg. Playwright er en testavhengighet og
+    # skal ikke lastes ned i produksjonsbygget.
+    buildCommand: npm ci --omit=dev
     preDeployCommand: node server/migrate.js
     startCommand: node server/index.js
     healthCheckPath: /api/helse
@@ -42,8 +44,8 @@ services:
         generateValue: true
       - key: NODE_ENV
         value: production          # slår på Secure-cookie og HSTS
-      - key: APP_URL
-        fromService: { name: livsarkivet-test, type: web, property: host }
+      # APP_URL settes ikke her: Render eksponerer RENDER_EXTERNAL_URL med
+      # skjema, og koden bruker den når APP_URL mangler.
       # Selvregistrering: PÅ i testmiljøet så du kan opprette konto selv.
       # I produksjon skal denne stå på 0 til DPIA og vilkår er godkjent.
       - key: REGISTRERING_AAPEN

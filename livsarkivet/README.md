@@ -37,6 +37,16 @@ Saksbehandler opprettes av drift: `node server/verktoy/ny-admin.js "Navn" epost`
 (skriver engangspassord + TOTP-hemmelighet én gang).
 Selvregistrering for eiere er bak `REGISTRERING_AAPEN=1` til DPIA/vilkår er klare.
 
+**Vil du bare se produktet?** Med serveren i gang:
+```
+node server/verktoy/demo-data.js
+```
+Fyller basen med fire hvelv i ulike stadier — ett med karenstid som løper (så du
+ser nedtellingen og stopp-knappen), ett til verifisering (så saksbehandlerkøen
+har noe å vise), ett frigitt (så etterlattevisningen har innhold) og ett urørt
+(så «Meld dødsfall» kan prøves). Alle innlogginger skrives ut. Nekter å kjøre
+mot produksjon. Skjermbilder av alle flatene ligger i `testbevis/visning/`.
+
 ## Agenter (råd — aldri vedtak)
 Orkestratoren kjører agentene når en sak når verifisering, og rådene vises i
 saksbehandlerkøen: **Vakt** (regelbasert misbruksvern: fersk kontakt, ferske

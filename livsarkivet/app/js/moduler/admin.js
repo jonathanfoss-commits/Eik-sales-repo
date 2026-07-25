@@ -1,6 +1,6 @@
 // Saksbehandling: verifiseringskø med fire-øyne-godkjenning, og revisjonslogg.
 import { kall } from '../api.js';
-import { el, tom, feilboks, STATUS_NAVN } from '../dom.js';
+import { el, tom, feilboks, STATUS_NAVN, VAKT_FLAGG_NAVN, filstorrelse } from '../dom.js';
 
 export async function visKoe(rot) {
   tom(rot);
@@ -34,7 +34,8 @@ export async function visKoe(rot) {
         kort.append(el('div', {},
           el('span', { class: 'mono' }, 'Vaktagenten: '),
           v.vurdering.flagg?.length
-            ? v.vurdering.flagg.map((f) => el('span', { class: 'merkelapp varsel' }, f.replaceAll('_', ' ')))
+            ? v.vurdering.flagg.map((f) => el('span', { class: 'merkelapp varsel' },
+              VAKT_FLAGG_NAVN[f] || f.replaceAll('_', ' ')))
             : el('span', { class: 'merkelapp aktiv' }, 'ingen anomalier')));
       } else if (v.agent === 'frigivelse') {
         const d = v.vurdering;
@@ -54,7 +55,7 @@ export async function visKoe(rot) {
 
     for (const a of sak.attester) {
       kort.append(el('div', { class: 'rad' },
-        el('span', { class: 'meta' }, `${a.filnavn} (${Math.round(a.storrelse / 1024)} kB) — ${a.status}`),
+        el('span', { class: 'meta' }, `${a.filnavn} (${filstorrelse(a.storrelse)}) — ${a.status}`),
         el('a', { href: `/api/admin/attester/${a.id}/fil`, target: '_blank', class: 'lenkeknapp' }, 'Åpne')));
     }
 
