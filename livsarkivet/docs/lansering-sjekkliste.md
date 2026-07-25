@@ -77,7 +77,15 @@ stoppe en feilaktig frigivelse. Køen i databasen tar vare på alt i mellomtiden
       (den er nå bygget), så testeren ser hele flaten.
 - [ ] Gå gjennom funnene og lukk dem før første ekte kunde.
 
-## 9. Første kunde
+## 9. Skru av testflaggene FØR ekte brukere
+Serveren roper i loggen ved oppstart hvis noe av dette står på i
+produksjonsmodus — men sjekk det manuelt også:
+- [ ] `DEMO_INNLOGGING` — fjern helt (ett-trykks innlogging til demokontoer)
+- [ ] `REGISTRERING_AAPEN=0` — inviter de første manuelt
+- [ ] `KARENSTID_SEKUNDER=172800` — 48 timer, som lovet i vilkårene
+- [ ] Slett demokontoene: alle på `@demo.livsarkivet.no`
+
+## 10. Første kunde
 - [ ] Sett `REGISTRERING_AAPEN=0` i produksjon og inviter de første manuelt,
       slik at du følger dem tett.
 - [ ] Kjør akseptansetesten på nytt i produksjonsmiljøet.

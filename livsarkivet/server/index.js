@@ -7,7 +7,7 @@ import crypto from 'node:crypto';
 import { config } from './config.js';
 import { Ruter, ApiFeil, svarJson, lesJson, lesCookies } from './http.js';
 import { loggInn, loggUt, finnSesjon, registrerSelv, innlosInvitasjon,
-  finnBrukerPaaEpost, lagNullstilling, fullforNullstilling } from './auth.js';
+  finnBrukerPaaEpost, lagNullstilling, fullforNullstilling, byttPassord } from './auth.js';
 import { sendEpost, epostTilgjengelig } from './epost.js';
 import { medBruker, authPool } from './db.js';
 import * as hvelv from './api/hvelv.js';
@@ -83,6 +83,10 @@ ruter.add('POST', '/api/auth/logg-inn', async ({ req, body, res }) => {
   }
   const resultat = await loggInn(body.epost, body.passord, body.totp);
   if (!resultat) throw new ApiFeil(401, 'Feil e-post eller passord');
+  if (resultat.manglerTotpOppsett) {
+    throw new ApiFeil(403, 'Saksbehandlerkontoen mangler tofaktor og kan ikke brukes. '
+      + 'Drift må opprette den på nytt med server/verktoy/ny-admin.js.');
+  }
   if (resultat.trengerTotp) return { trengerTotp: true };
   settSesjonsCookie(res, resultat.token);
   return { bruker: resultat.bruker };
@@ -178,6 +182,14 @@ ruter.add('POST', '/api/auth/nullstill', async ({ req, body }) => {
   return { ok: true };
 });
 
+ruter.add('POST', '/api/auth/passord', async ({ req, ctx, body }) => {
+  if (forMange('passord:' + ctx.brukerId, 10, 60 * 60_000)) throw new ApiFeil(429, 'For mange forsøk');
+  const resultat = await byttPassord(ctx.brukerId, body.gammelt, body.nytt,
+    lesCookies(req).livsarkiv_sesjon);
+  if (resultat.feil) throw new ApiFeil(400, resultat.feil);
+  return { ok: true };
+});
+
 ruter.add('POST', '/api/auth/logg-ut', async ({ req, res }) => {
   await loggUt(lesCookies(req).livsarkiv_sesjon);
   res.setHeader('Set-Cookie', 'livsarkiv_sesjon=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');
@@ -254,6 +266,18 @@ const server = http.createServer(async (req, res) => {
       res._rolle = ctx.rolle;
     }
 
+    // Dyre flater dempes per bruker: attestopplasting tar inntil 10 MB, og
+    // eksporten dumper hele hvelvet. Uten demping kunne én konto belaste
+    // basen fritt.
+    if (ctx && req.method === 'POST' && /^\/api\/hendelser\/[^/]+\/attest$/.test(sti)
+        && forMange('attest:' + ctx.brukerId, 20, 60 * 60_000)) {
+      throw new ApiFeil(429, 'For mange attestopplastinger — vent litt');
+    }
+    if (ctx && req.method === 'GET' && sti === '/api/eksport'
+        && forMange('eksport:' + ctx.brukerId, 10, 60 * 60_000)) {
+      throw new ApiFeil(429, 'For mange eksporter — vent litt');
+    }
+
     const rute = ruter.finn(req.method, sti);
     if (!rute) throw new ApiFeil(404, 'Ukjent API-rute');
     // Stripe-webhooken signeres over RÅKROPPEN — den må leses uparsset.
@@ -265,11 +289,21 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(302, { Location: resultat._omdirigering, 'Cache-Control': 'no-store' });
       res.end();
     } else if (resultat && resultat._fil !== undefined) {
-      // hele filer (attestvisning for admin, dataeksport) — aldri kjøring
-      const plassering = resultat._fil.nedlasting ? 'attachment' : 'inline';
-      res.writeHead(200, { 'Content-Type': resultat._fil.mime || 'application/octet-stream',
-        'Content-Disposition': `${plassering}; filename="${(resultat._fil.filnavn || 'fil').replace(/["\\]/g, '')}"`,
-        'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
+      // Opplastede filer serveres bare INLINE når typen er trygg å vise (PDF og
+      // bilder). Alt annet lastes ned. I tillegg får svaret sin egen, strengeste
+      // CSP med sandbox, så en fil aldri kan oppføre seg som en side på vårt
+      // domene — attesten kommer fra en betrodd kontakt, ikke fra oss.
+      const TRYGGE_INLINE = ['application/pdf', 'image/jpeg', 'image/png', 'image/heic'];
+      const mime = resultat._fil.mime || 'application/octet-stream';
+      const plassering = (!resultat._fil.nedlasting && TRYGGE_INLINE.includes(mime))
+        ? 'inline' : 'attachment';
+      // filnavn: strip stier og anførselstegn før det havner i headeren
+      const filnavn = String(resultat._fil.filnavn || 'fil')
+        .replace(/[\\/]/g, '_').replace(/["\r\n]/g, '').slice(0, 100);
+      res.writeHead(200, { 'Content-Type': mime,
+        'Content-Disposition': `${plassering}; filename="${filnavn}"`,
+        'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff',
+        'Content-Security-Policy': "sandbox; default-src 'none'" });
       res.end(resultat._fil.innhold);
     } else {
       svarJson(res, 200, resultat ?? { ok: true });
@@ -282,6 +316,22 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+// Farlige kombinasjoner skal ikke kunne gli umerket ut i produksjon. Vi stopper
+// ikke oppstarten (testmiljøet kjører med NODE_ENV=production med vilje), men
+// roper høyt i loggen så det blir synlig ved gjennomgang.
+function advarOmRisikoFlagg() {
+  if (process.env.NODE_ENV !== 'production') return;
+  const funn = [];
+  if (config.demoInnlogging) funn.push('DEMO_INNLOGGING=1 — hvem som helst med lenken kommer inn som en demokonto');
+  if (config.registreringAapen) funn.push('REGISTRERING_AAPEN=1 — hvem som helst kan opprette konto');
+  if (config.karenstidSekunder < 48 * 3600) funn.push(`KARENSTID_SEKUNDER=${config.karenstidSekunder} — kortere enn de 48 timene som er lovet i vilkårene`);
+  if (!funn.length) return;
+  console.warn('\n⚠ ADVARSEL — flagg som ikke hører i et produksjonsmiljø med ekte brukere:');
+  for (const f of funn) console.warn('  · ' + f);
+  console.warn('  Er dette et testmiljø, er alt i orden. Er det ikke, skru dem av nå.\n');
+}
+
 server.listen(config.port, () => {
   console.log(`Livsarkivet kjører på :${config.port}`);
+  advarOmRisikoFlagg();
 });

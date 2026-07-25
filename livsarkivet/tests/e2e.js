@@ -63,10 +63,12 @@ const executablePath = ['/opt/pw-browsers/chromium', process.env.CHROMIUM_STI]
 const browser = await chromium.launch(executablePath ? { executablePath } : {});
 const jsFeil = [];
 
+const aapneSider = [];
 async function nySide(navn) {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 },
     isMobile: true, hasTouch: true });
   const side = await ctx.newPage();
+  aapneSider.push([navn, side]);
   side._svar = []; // kø av prompt-svar (sikkerhetsfraser m.m.)
   side.on('pageerror', (e) => jsFeil.push(`${navn}: ${e.message}`));
   side.on('dialog', (d) => d.type() === 'prompt' ? d.accept(side._svar.shift() ?? '') : d.accept());
@@ -75,6 +77,31 @@ async function nySide(navn) {
 }
 
 const vent = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Venter på en TILSTAND, ikke på klokka. Faste sleep-er rundt karenstiden gjorde
+// testen ustabil: under last (rett etter full testsuite) rakk ikke feieren og
+// sidelastingen innenfor sekundene vi ga den, og frigivelsestesten — den
+// viktigste vi har — feilet uten at noe var galt med produktet.
+async function ventTil(betingelse, hva, maksMs = 30000) {
+  const frist = Date.now() + maksMs;
+  for (;;) {
+    if (await betingelse()) return;
+    if (Date.now() > frist) throw new Error(`Ventet forgjeves på: ${hva}`);
+    await vent(250);
+  }
+}
+
+// Feilsøkingshjelp: ved en feilet sjekk lagres skjermbilde og synlig tekst, så
+// en fremtidig rød runde kan forklares i stedet for å gjettes på.
+async function bevisVedFeil(side, navn) {
+  try {
+    const fil = path.join(ROT, 'testbevis', `feil-${navn.replace(/[^a-z0-9]+/gi, '-').slice(0, 40)}.png`);
+    fs.mkdirSync(path.dirname(fil), { recursive: true });
+    await side.screenshot({ path: fil, fullPage: true });
+    const tekst = (await side.locator('#innhold').innerText().catch(() => '')).slice(0, 400);
+    console.error(`    skjermbilde: ${fil}\n    synlig tekst: ${tekst.replace(/\n/g, ' | ')}`);
+  } catch { /* feilsøking skal aldri velte testen */ }
+}
 
 async function loggInnAdmin(side, epost) {
   await side.fill('input[placeholder="E-post"]', epost);
@@ -231,9 +258,13 @@ try {
 
   // ── 7. Karenstiden løper ut → Kari ser «Til deg» ──
   console.log('5. Frigivelse og etterlattevisning');
-  await vent((KARENSTID_S + 1) * 1000);
-  await kari.reload();
-  await kari.waitForSelector('#faner button:has-text("Til deg")');
+  // Vent på det Kari FAKTISK ser, ikke på klokka. Sidelastingen trigger den late
+  // feiingen (bakgrunnsfeieren er av i testmodus), så dette venter på hele
+  // kjeden: karenstid utløpt → feiing → frigivelse → fane synlig.
+  await ventTil(async () => {
+    await kari.reload();
+    return kari.isVisible('#faner button:has-text("Til deg")');
+  }, 'at Kari får «Til deg»-fanen etter at karenstiden er ute');
   await kari.click('#faner button:has-text("Til deg")');
   await kari.waitForSelector('h3:has-text("Testament")');
   sjekk(!(await kari.isVisible('h3:has-text("Strømavtale")')),
@@ -299,7 +330,16 @@ try {
   await eva.waitForSelector('.merkelapp:has-text("Stoppet av eier")');
   sjekk(true, 'eieren stoppet frigivelsen fra appen');
 
-  await vent((KARENSTID_S + 1) * 1000); // selv etter «utløpet» …
+  // Her venter vi på at karenstidens SLUTT er passert (poll, ikke fast sleep) og
+  // at en feiing faktisk har kjørt — først da beviser det noe at saken fortsatt
+  // står som stoppet.
+  await ventTil(async () => (await eier.query(
+    `SELECT 1 FROM frigivelser f
+       JOIN hvelv h ON h.id = f.hvelv_id JOIN brukere b ON b.id = h.eier_id
+      WHERE b.epost = 'e2e-eva@test.no' AND f.status = 'blokkert'
+        AND f.karenstid_slutt <= now()`)).rows.length > 0,
+    'at den blokkerte sakens karenstid er utløpt');
+  await kari.reload();   // trigger en feiing ETTER utløpet — den skal ikke frigi
   await eva.click('#faner button:has-text("Status")');
   await eva.waitForSelector('.merkelapp:has-text("Stoppet av eier")');
   // nyeste sak (øverst — kun første kjede-sak skal stå som Frigitt lenger ned)
@@ -330,6 +370,12 @@ try {
   feil++;
   console.error('E2E krasjet:', e);
 } finally {
+  // Feilet noe, lagres bevis fra alle åpne sider FØR nettleseren lukkes — en
+  // rød runde skal kunne forklares, ikke gjettes på.
+  if (feil) {
+    console.error('\nLagrer feilbevis:');
+    for (const [navn, side] of aapneSider) await bevisVedFeil(side, navn);
+  }
   await browser.close().catch(() => {});
   server.kill();
   await eier.end().catch(() => {});

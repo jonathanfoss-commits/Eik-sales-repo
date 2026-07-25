@@ -10,6 +10,10 @@ import { mittHvelv } from './hvelv.js';
 
 export const AAPNE_STATUSER = ['meldt', 'attest_lastet_opp', 'under_verifisering', 'godkjent_1', 'karenstid'];
 const MAKS_ATTEST_BYTES = 10 * 1024 * 1024;
+// Kun formater en dødsattest faktisk kommer i. Vilkårlig MIME var et hull:
+// attesten serveres til saksbehandleren, og HTML/SVG ville kjørt som en side på
+// vårt domene. Samme liste er en CHECK i databasen (migrasjon 010).
+export const TILLATTE_ATTEST_MIME = ['application/pdf', 'image/jpeg', 'image/png', 'image/heic'];
 
 async function minBetroddKontakt(c, ctx, hvelvId) {
   return (await c.query(
@@ -126,6 +130,9 @@ export function registrer(ruter) {
   ruter.add('POST', '/api/hendelser/:id/attest', async ({ ctx, body, params }) => {
     const { filnavn, mime = 'application/pdf', innholdBase64 } = body;
     if (!filnavn || !innholdBase64) throw new ApiFeil(400, 'Filnavn og innhold må med');
+    if (!TILLATTE_ATTEST_MIME.includes(String(mime))) {
+      throw new ApiFeil(400, 'Attesten må være PDF eller bilde (JPEG, PNG eller HEIC)');
+    }
     const innhold = Buffer.from(String(innholdBase64), 'base64');
     if (!innhold.length) throw new ApiFeil(400, 'Tom fil');
     if (innhold.length > MAKS_ATTEST_BYTES) throw new ApiFeil(413, 'Attesten er for stor (maks 10 MB)');
