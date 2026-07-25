@@ -4,15 +4,16 @@ Alt som kunne bygges og testes, er bygget og testet. Denne listen er kun det
 som krever en konto, en signatur eller en betaling — altså det ingen kan gjøre
 for deg. Rekkefølgen er valgt slik at hvert steg låser opp det neste.
 
-## 1. Sett opp testmiljøet (30 min, ~15 USD/mnd)
-- [ ] render.com → **New → Blueprint** → velg dette repoet og grenen.
-      `livsarkivet/render.yaml` gjør resten: database og tjeneste i Frankfurt,
-      migrasjoner ved deploy, helsesjekk på `/api/helse`.
-- [ ] La hemmelighetene stå tomme i første runde. Tjenesten fungerer uten dem:
-      varslene legger seg i kø, betaling svarer 503, AI-kontrollen hopper over.
-- [ ] Opprett de to saksbehandlerne i Render-konsollens Shell:
-      `node server/verktoy/ny-admin.js "Navn" epost` — to ganger, to personer.
-      Legg TOTP-hemmelighetene i autentiseringsapper med én gang.
+## 1. Testmiljøet ✅ SATT OPP
+Kjører på **https://livsarkivet-test.onrender.com** (Frankfurt, autodeploy fra
+`main`). Database `livsarkivet-test-db`, samme plan som Lærling. Hemmelighetene
+står tomme med vilje: varslene legger seg i kø, betaling svarer 503,
+AI-kontrollen hopper over — ingenting krasjer.
+
+- [ ] **Fyll inn resten av demoen** — én kommando i Render → livsarkivet-test →
+      **Shell**: `node server/verktoy/demo-data.js`
+      Den lager de to saksbehandlerne, en sak i karenstid og et frigitt arkiv,
+      og skriver ut alle innloggingene med engangskoder.
 - [ ] Åpne URL-en på telefonen og kjør `docs/akseptansetest.md`.
 
 ## 2. E-postavsender (1 time)

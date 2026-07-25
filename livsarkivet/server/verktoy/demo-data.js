@@ -8,18 +8,19 @@
 // noe å vise), et frigitt (så etterlattevisningen har innhold), og et urørt
 // (så «Meld dødsfall» kan prøves). Alle innlogginger skrives ut til slutt.
 //
-// Kjører ALDRI mot produksjon: den nekter når NODE_ENV=production.
+// Sperren verner om EKTE DATA, ikke om et miljønavn: verktøyet nekter hvis
+// databasen inneholder én eneste konto som ikke er demo. (Første versjon
+// nektet bare når NODE_ENV=production — men et testmiljø kjører gjerne med
+// NODE_ENV=production for å få Secure-cookie og HSTS, så sperren slo ut på
+// helt legitim bruk uten å si hva man skulle gjøre i stedet.)
 import pg from 'pg';
 import { config } from '../config.js';
 import { hashPassord, nyTotpHemmelighet, totpKode } from '../auth.js';
 
-if (process.env.NODE_ENV === 'production') {
-  console.error('Nekter å legge demo-data i produksjon.');
-  process.exit(1);
-}
-
 const PASSORD = 'demopassord123';
-const BASE = `http://127.0.0.1:${config.port}`;
+// Lokalt som standard. Skal du fylle en tjeneste i skyen, sett DEMO_BASE_URL
+// til dens URL og MIGRATE_DATABASE_URL til dens EKSTERNE tilkoblingsstreng.
+const BASE = (process.env.DEMO_BASE_URL || `http://127.0.0.1:${config.port}`).replace(/\/$/, '');
 
 // Serveren må kjøre — demo-dataen legges inn gjennom det EKTE API-et, slik at
 // alt går gjennom de samme reglene og policyene som en vanlig bruker møter.
@@ -28,13 +29,34 @@ try {
   if (!helse.ok) throw new Error('helsesjekk feilet');
 } catch {
   console.error(`Fant ingen server på ${BASE}. Start den først med «npm start»`
-    + ' (og husk REGISTRERING_AAPEN=1 i .env).');
+    + ' (og husk REGISTRERING_AAPEN=1 i .env), eller sett DEMO_BASE_URL.');
   process.exit(1);
 }
 
 const eier = new pg.Client({
   connectionString: process.env.MIGRATE_DATABASE_URL || config.databaseUrl });
 await eier.connect();
+
+// ── sperren ──
+// Verktøyet sletter og gjenskaper BARE kontoer på @demo.livsarkivet.no; andres
+// data røres aldri. Risikoen er derfor å forurense et system med ekte brukere,
+// ikke å ødelegge noe. Da er riktig sperre å vise hva som finnes og kreve et
+// bevisst valg — ikke å nekte blankt.
+const ekte = (await eier.query(
+  `SELECT navn, epost FROM brukere WHERE epost NOT LIKE '%@demo.livsarkivet.no'
+    ORDER BY opprettet LIMIT 6`)).rows;
+if (ekte.length && !process.argv.includes('--tving')) {
+  console.error(
+    `Stopper: her finnes allerede ${ekte.length > 5 ? 'mer enn 5' : ekte.length} konto(er)`
+    + ' som ikke er demo:\n'
+    + ekte.slice(0, 5).map((b) => `  · ${b.navn} <${b.epost}>`).join('\n')
+    + '\n\nDemo-data hører ikke i et system med ekte brukere. Verktøyet sletter'
+    + ' kun\nkontoer på @demo.livsarkivet.no, så ingenting av det over står i fare.'
+    + '\nEr dette et testmiljø likevel (f.eks. en base som har kjørt testsuiten),'
+    + '\nkjør igjen med --tving.');
+  await eier.end();
+  process.exit(1);
+}
 
 // ── nullstill forrige demo ──
 await eier.query(`DELETE FROM hvelv WHERE eier_id IN
@@ -51,6 +73,16 @@ async function api(j, metode, sti, kropp) {
   if (satt) j.cookie = satt.split(';')[0];
   let data = {};
   try { data = await svar.json(); } catch { /* tomt */ }
+  if (svar.status === 429) {
+    // demoen oppretter åtte kontoer, og registrering er begrenset til 20 per
+    // time per IP — tredje kjøring på rad treffer taket
+    console.error(
+      'Rate-demperen har slått inn: demoen oppretter åtte kontoer, og'
+      + ' registrering\ner begrenset til 20 per time per IP.\n\n'
+      + 'Telleren ligger i minnet, så en omstart av tjenesten nullstiller den'
+      + ' (i Render:\nManual Deploy → Restart service). Ellers: vent en time.');
+    process.exit(1);
+  }
   if (!svar.ok) throw new Error(`${metode} ${sti} → ${svar.status} ${JSON.stringify(data)}`);
   return data;
 }
