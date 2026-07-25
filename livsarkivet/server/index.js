@@ -63,9 +63,15 @@ const AAPNE = new Set(['POST /api/auth/logg-inn', 'POST /api/auth/registrer',
   'POST /api/auth/innlos-invitasjon', 'GET /api/helse',
   'POST /api/auth/glemt', 'POST /api/auth/nullstill',
   'GET /api/demo/inn',           // egen vaktpost i ruten (kun demomiljø)
+  'GET /api/miljo',              // må leses FØR innlogging (demoadvarsel)
   'POST /api/stripe/webhook']); // signaturverifisert i ruten
 
 ruter.add('GET', '/api/helse', async () => ({ ok: true }));
+
+// Et demomiljø må SI at det er et demomiljø. Står demoinnloggingen på, kommer
+// hvem som helst med lenken inn — da skal ingen legge inn ekte opplysninger,
+// og advarselen må stå der før innloggingsskjemaet, ikke i en README.
+ruter.add('GET', '/api/miljo', async () => ({ demo: config.demoInnlogging }));
 
 function settSesjonsCookie(res, token) {
   const sikker = process.env.NODE_ENV === 'production' ? '; Secure' : '';

@@ -18,7 +18,9 @@ Etterpå (etterpaa.no). Dette er MVP-kjerneloopen:
   CHECK. **Rate-demping** på attestopplasting og eksport.
 - **Passordbytte** for innlogget bruker rykker alle andre sesjoner.
 - **Oppstartsvarsel** i produksjonsmodus hvis demoinnlogging, åpen registrering
-  eller for kort karenstid er slått på.
+  eller for kort karenstid er slått på — og med demoinnlogging på viser appen et
+  synlig «Testmiljø»-banner over innloggingen, så ingen legger inn ekte
+  opplysninger i et miljø uten vilkår og e-postvarsler.
 
 ## Ufravikelige prinsipper (håndhevet i kode og tester)
 1. Ingen frigivelse uten verifisert hendelse + karenstid (48 t).

@@ -10,10 +10,11 @@ Kjører på **https://livsarkivet-test.onrender.com** (Frankfurt, autodeploy fra
 står tomme med vilje: varslene legger seg i kø, betaling svarer 503,
 AI-kontrollen hopper over — ingenting krasjer.
 
-- [ ] **Fyll inn resten av demoen** — én kommando i Render → livsarkivet-test →
-      **Shell**: `node server/verktoy/demo-data.js`
-      Den lager de to saksbehandlerne, en sak i karenstid og et frigitt arkiv,
-      og skriver ut alle innloggingene med engangskoder.
+Demodataene er lagt inn (fire hvelv i ulike stadier), og appen viser et synlig
+«Testmiljø»-banner så lenge `DEMO_INNLOGGING=1` står på. Dét er bevisst: hvem som
+helst med lenken kommer inn som en demokonto, og da skal ingen legge inn ekte
+opplysninger her.
+
 - [ ] Åpne URL-en på telefonen og kjør `docs/akseptansetest.md`.
 
 ## 2. E-postavsender (1 time)
@@ -80,7 +81,9 @@ stoppe en feilaktig frigivelse. Køen i databasen tar vare på alt i mellomtiden
 ## 9. Skru av testflaggene FØR ekte brukere
 Serveren roper i loggen ved oppstart hvis noe av dette står på i
 produksjonsmodus — men sjekk det manuelt også:
-- [ ] `DEMO_INNLOGGING` — fjern helt (ett-trykks innlogging til demokontoer)
+- [ ] `DEMO_INNLOGGING` — fjern helt (ett-trykks innlogging til demokontoer).
+      Da forsvinner også «Testmiljø»-banneret, som er den synlige kvitteringen
+      på at flagget er av.
 - [ ] `REGISTRERING_AAPEN=0` — inviter de første manuelt
 - [ ] `KARENSTID_SEKUNDER=172800` — 48 timer, som lovet i vilkårene
 - [ ] Slett demokontoene: alle på `@demo.livsarkivet.no`

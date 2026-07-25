@@ -56,12 +56,20 @@ test.before(async () => {
     env: { ...process.env, PORT: String(PORT), REGISTRERING_AAPEN: '1', LIVSARKIV_TESTMODUS: '1' },
     stdio: ['ignore', 'ignore', 'inherit'],
   });
-  for (let i = 0; i < 100; i++) {
-    try { if ((await fetch(BASE + '/api/helse')).ok) return; } catch { /* venter */ }
+  await ventPaaServer(PORT);
+});
+
+// Testfilene kjører parallelt, så en server kan bruke merkbart lengre tid på å
+// komme opp enn den gjør alene. 10 sekunder var for lite — ventetiden er
+// generøs med vilje: alternativet er en test som feiler av last, ikke av feil.
+async function ventPaaServer(port) {
+  const frist = Date.now() + 30_000;
+  for (;;) {
+    try { if ((await fetch(`http://127.0.0.1:${port}/api/helse`)).ok) return; } catch { /* venter */ }
+    if (Date.now() > frist) throw new Error(`Serveren på port ${port} kom aldri opp`);
     await new Promise((r) => setTimeout(r, 100));
   }
-  throw new Error('Serveren kom aldri opp');
-});
+}
 
 test.after(async () => {
   server?.kill();
@@ -140,6 +148,26 @@ test('saksbehandler uten tofaktor blir nektet — ikke sluppet inn', { skip: hop
     { epost: 'herd-slurv@test.no', passord: 'passord1234' });
   assert.equal(svar.status, 403);
   assert.match(svar.data.feil, /tofaktor/i);
+});
+
+// ── FUNN 5: demomiljøet sa ikke at det var et demomiljø ──
+test('/api/miljo melder demomodus uten innlogging', { skip: hopp() }, async () => {
+  // uten flagget: ingen advarsel
+  assert.deepEqual((await api(null, 'GET', '/api/miljo')).data, { demo: false });
+
+  // med flagget: advarselen må komme, og den må kunne leses FØR innlogging
+  const port = PORT + 1;
+  const demo = spawn('node', ['server/index.js'], { cwd: ROT,
+    env: { ...process.env, PORT: String(port), DEMO_INNLOGGING: '1', LIVSARKIV_TESTMODUS: '1' },
+    stdio: ['ignore', 'ignore', 'inherit'] });
+  try {
+    await ventPaaServer(port);
+    const svar = await fetch(`http://127.0.0.1:${port}/api/miljo`);
+    assert.equal(svar.status, 200, 'ruten må være åpen — banneret vises før innlogging');
+    assert.deepEqual(await svar.json(), { demo: true });
+  } finally {
+    demo.kill();
+  }
 });
 
 // ── FUNN 3: lengdegrenser på hvelvinnhold ──

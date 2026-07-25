@@ -134,6 +134,16 @@ function byttFane(id, vis) {
   vis(innhold, tilstand);
 }
 
+// ── Demomiljø: si det, tydelig, før noen legger inn noe ──
+async function visMiljo() {
+  const svar = await kall('GET', '/api/miljo');
+  if (!svar.data?.demo) return;
+  document.getElementById('topp').before(el('div', { class: 'miljobanner' },
+    el('strong', {}, 'Testmiljø'),
+    ' — alle som har lenken kan logge inn som demokontoene. '
+    + 'Legg aldri inn ekte opplysninger her.'));
+}
+
 // ── Oppstart ──
 async function start() {
   const meg = await kall('GET', '/api/meg');
@@ -153,4 +163,5 @@ async function start() {
   byttFane(valgt[0], valgt[3]);
 }
 
+visMiljo();
 start();
