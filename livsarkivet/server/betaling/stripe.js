@@ -6,7 +6,13 @@ const BASE = () => process.env.STRIPE_BASE_URL || 'https://api.stripe.com';
 const HEMMELIG = () => process.env.STRIPE_SECRET || '';
 const PRIS_ID = () => process.env.STRIPE_PRIS_ID || '';
 const WEBHOOK_HEMMELIGHET = () => process.env.STRIPE_WEBHOOK_HEMMELIGHET || '';
-const APP_URL = () => process.env.APP_URL || 'http://localhost:3400';
+// Stripe krever ABSOLUTTE URL-er. Render setter RENDER_EXTERNAL_URL med skjema;
+// settes APP_URL manuelt uten skjema, legger vi https:// på (ellers avviser
+// Stripe checkout-økten med en uforståelig feil).
+const APP_URL = () => {
+  const raa = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3400';
+  return /^https?:\/\//.test(raa) ? raa.replace(/\/$/, '') : `https://${raa.replace(/\/$/, '')}`;
+};
 
 export function stripeTilgjengelig() {
   return Boolean(HEMMELIG() && PRIS_ID());

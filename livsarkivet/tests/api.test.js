@@ -367,7 +367,11 @@ test('negativ 3: eier blokkerer i karenstid — hvelvet forblir lukket', { skip:
 
 test('zero-knowledge: sensitivt element gjennom HELE kjeden — serveren ser aldri klartekst', { skip: hopp() }, async () => {
   const krypto = await import('../app/js/krypto.js');
-  const KLARTEKST = 'Koden til safen er 9911. Nettbank-BankID i skuffen.';
+  // Søkeordene under MÅ inneholde bokstaver utenfor heksadesimal (g-z), ellers
+  // treffer skanningen tilfeldig i UUID-er og tidsstempler — «9911» traff
+  // engang mikrosekundene i en revisjonsrad og ga falsk lekkasjealarm.
+  const KLARTEKST = 'Koden til safen er zulu-vinsj-plog. Nettbank-BankID i skuffen.';
+  const SOEKEORD = ['safen', 'zulu-vinsj-plog'];
 
   // Siri (mottaker) setter sitt nøkkelpar; Odd (eier) sine hvelvnøkler
   const { tilServer: siriNokkel } = await krypto.opprettNokkelpar('siris egen frase her');
@@ -398,9 +402,11 @@ test('zero-knowledge: sensitivt element gjennom HELE kjeden — serveren ser ald
 
   // NEGATIVTEST mot databasen: klarteksten finnes INGEN steder
   for (const tabell of ['hvelv_elementer', 'element_nokkeldeponi', 'hvelv_kryptonokler', 'bruker_nokler', 'revisjon']) {
-    const treff = await eier.query(
-      `SELECT count(*) AS n FROM ${tabell} WHERE ${tabell}::text ILIKE '%safen%' OR ${tabell}::text ILIKE '%9911%'`);
-    assert.equal(Number(treff.rows[0].n), 0, `klartekst lekket til ${tabell}`);
+    for (const ord of SOEKEORD) {
+      const treff = await eier.query(
+        `SELECT count(*) AS n FROM ${tabell} WHERE ${tabell}::text ILIKE $1`, [`%${ord}%`]);
+      assert.equal(Number(treff.rows[0].n), 0, `klartekst («${ord}») lekket til ${tabell}`);
+    }
   }
 
   // hele frigivelsesløpet — og mottakeren dekrypterer med SIN frase
@@ -415,7 +421,9 @@ test('zero-knowledge: sensitivt element gjennom HELE kjeden — serveren ser ald
   const sensitivt = syn.data.elementer.find((e) => e.tittel === 'Safe og BankID');
   assert.ok(sensitivt, 'sensitivt element frigitt (kryptert)');
   assert.equal(sensitivt.kryptert, true);
-  assert.ok(!JSON.stringify(syn.data).includes('9911'), 'listevisningen lekker ikke klartekst');
+  for (const ord of SOEKEORD) {
+    assert.ok(!JSON.stringify(syn.data).includes(ord), `listevisningen lekker «${ord}»`);
+  }
 
   const detalj = await api(siri, 'GET', `/api/etterlatt/elementer/${sensitivt.id}`);
   assert.ok(detalj.data.element.nokkel_deponi, 'deponiet følger med etter frigivelse');
