@@ -15,7 +15,8 @@ Etterpå (etterpaa.no). Dette er MVP-kjerneloopen:
   innlogging (før slapp den inn på passord alene — og da er fire-øyne-regelen
   verdt lite).
 - **Lengdegrenser** på tittel (200) og innhold (200 000 tegn), både i API og som
-  CHECK. **Rate-demping** på attestopplasting og eksport.
+  CHECK. **Rate-demping** på attestopplasting og eksport. **`X-Robots-Tag:
+  noindex`** på alt — ingen flate her hører hjemme i et søkeresultat.
 - **Passordbytte** for innlogget bruker rykker alle andre sesjoner.
 - **Oppstartsvarsel** i produksjonsmodus hvis demoinnlogging, åpen registrering
   eller for kort karenstid er slått på — og med demoinnlogging på viser appen et

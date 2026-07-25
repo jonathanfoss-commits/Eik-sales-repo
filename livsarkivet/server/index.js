@@ -251,6 +251,9 @@ const server = http.createServer(async (req, res) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Referrer-Policy', 'same-origin');
+  // Ingenting her hører hjemme i et søkeresultat — heller ikke innloggingssiden
+  // til et testmiljø hvis lenke er delt i en e-post.
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   res.setHeader('Content-Security-Policy',
     "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; " +
     "script-src 'self'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'");

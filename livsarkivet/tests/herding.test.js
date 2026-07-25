@@ -151,6 +151,12 @@ test('saksbehandler uten tofaktor blir nektet — ikke sluppet inn', { skip: hop
 });
 
 // ── FUNN 5: demomiljøet sa ikke at det var et demomiljø ──
+test('ingen flate indekseres av søkemotorer', { skip: hopp() }, async () => {
+  for (const sti of ['/', '/api/helse']) {
+    assert.equal((await fetch(BASE + sti)).headers.get('x-robots-tag'), 'noindex, nofollow', sti);
+  }
+});
+
 test('/api/miljo melder demomodus uten innlogging', { skip: hopp() }, async () => {
   // uten flagget: ingen advarsel
   assert.deepEqual((await api(null, 'GET', '/api/miljo')).data, { demo: false });
