@@ -25,6 +25,22 @@ export const KATEGORI_NAVN = {
   praktisk: 'Praktisk', helsedirektiv: 'Helsedirektiv', siste_hilsen: 'Siste hilsen',
 };
 
+// Vaktagentens flagg i lesbar bokmål (kodene i basen er ASCII-trygge)
+export const VAKT_FLAGG_NAVN = {
+  kontakt_nylig_registrert: 'melderen ble kontakt nylig',
+  nylige_mottakerendringer: 'mottakerne ble endret rett før',
+  tidligere_stoppede_saker: 'tidligere stoppede saker',
+  attest_paafallende_rask: 'attesten kom påfallende raskt',
+};
+
+// Filstørrelse: små filer skal ikke vises som «0 kB»
+export function filstorrelse(byte) {
+  const n = Number(byte) || 0;
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${Math.round(n / 1024)} kB`;
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export const STATUS_NAVN = {
   meldt: 'Meldt', attest_lastet_opp: 'Attest mottatt', under_verifisering: 'Til verifisering',
   godkjent_1: 'Én godkjenning', karenstid: 'Karenstid', frigitt: 'Frigitt',
