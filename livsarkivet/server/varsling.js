@@ -1,11 +1,13 @@
-// Varsling ved frigivelsesforsøk (ufravikelig prinsipp: ved ENHVER hendelse i
-// frigivelsesløpet varsles eieren og ALLE registrerte kontakter).
+// Varsling ved ethvert frigivelsesforsøk (ufravikelig prinsipp): eieren OG
+// alle registrerte kontakter varsles.
 //
-// Kjøres i egen system-transaksjon ETTER at hovedtransaksjonen er committet:
-// den som melder ser bare sin egen kontaktrad, men varselet skal nå alle.
-// Radene i varslinger er fasit; e-post er best effort.
+// Holdbarhet (nivå 6): radene legges i kø INNENFOR tilstandsendringens
+// transaksjon via ko_varsler() — enten skjer begge, eller ingen. Utsending er
+// en separat, gjentakbar passering over rader med sendt_tid IS NULL, så en
+// krasj under e-postsending aldri mister et varsel. Radene i varslinger er
+// fasit; e-post er best effort.
 import { medBruker } from './db.js';
-import { sendEpost } from './epost.js';
+import { sendEpost, epostTilgjengelig } from './epost.js';
 
 const TEKSTER = {
   hendelse_meldt: 'Et dødsfall er meldt for et livsarkiv du er tilknyttet. Er dette feil, logg inn og si fra umiddelbart.',
@@ -16,35 +18,33 @@ const TEKSTER = {
   frigivelse_tilbakekalt: 'Meldingen om dødsfall er trukket tilbake av melderen.',
 };
 
-export async function varsleAlle(hvelvId, hendelseId, type) {
-  await medBruker({ rolle: 'system' }, async (c) => {
-    const eier = (await c.query(
-      `SELECT b.id, b.epost FROM hvelv h JOIN brukere b ON b.id = h.eier_id WHERE h.id = $1`,
-      [hvelvId])).rows[0];
-    const kontakter = (await c.query(
-      'SELECT id, epost FROM kontakter WHERE hvelv_id = $1', [hvelvId])).rows;
+// Kalles med kallerens klient, inne i tilstandsendringens transaksjon.
+export async function koVarsler(c, hvelvId, hendelseId, type) {
+  const rad = (await c.query('SELECT ko_varsler($1, $2, $3) AS antall',
+    [hvelvId, hendelseId, type])).rows[0];
+  return Number(rad.antall);
+}
 
-    const mottakere = [
-      ...(eier ? [{ brukerId: eier.id, kontaktId: null, epost: eier.epost }] : []),
-      ...kontakter.map((k) => ({ brukerId: null, kontaktId: k.id, epost: k.epost })),
-    ];
-    for (const m of mottakere) {
-      await c.query(
-        `INSERT INTO varslinger (hvelv_id, hendelse_id, kontakt_id, bruker_id, kanal, type)
-         VALUES ($1, $2, $3, $4, 'epost', $5)`,
-        [hvelvId, hendelseId, m.kontaktId, m.brukerId, type]);
-    }
-    // e-post best effort — utenfor fasiten, aldri innhold utover standardtekst
-    for (const m of mottakere) {
-      const ok = await sendEpost({ til: m.epost, emne: 'Varsel fra Livsarkivet',
-        tekst: TEKSTER[type] || 'Det har skjedd noe i et livsarkiv du er tilknyttet. Logg inn for detaljer.' });
-      if (ok) {
-        await c.query(
-          `UPDATE varslinger SET sendt_tid = now()
-            WHERE hendelse_id = $1 AND type = $2
-              AND kontakt_id IS NOT DISTINCT FROM $3 AND bruker_id IS NOT DISTINCT FROM $4`,
-          [hendelseId, type, m.kontaktId, m.brukerId]);
-      }
-    }
-  });
+// Best-effort utsending av alt som ligger i kø. Trygg å kalle når som helst og
+// så ofte man vil — den plukker bare opp usendte rader.
+export async function sendUtestaaende(maks = 200) {
+  // Er transporten ikke satt opp (eller nede), lar vi køen ligge urørt —
+  // radene er fasit og sendes ved en senere passering.
+  if (!epostTilgjengelig()) return 0;
+  const koe = await medBruker({ rolle: 'system' }, async (c) =>
+    (await c.query('SELECT * FROM usendte_varsler($1)', [maks])).rows);
+  let sendt = 0;
+  for (const varsel of koe) {
+    const ok = await sendEpost({
+      til: varsel.epost,
+      emne: 'Varsel fra Livsarkivet',
+      tekst: TEKSTER[varsel.type]
+        || 'Det har skjedd noe i et livsarkiv du er tilknyttet. Logg inn for detaljer.',
+    });
+    if (!ok) continue;   // blir liggende i kø til neste passering
+    await medBruker({ rolle: 'system' }, (c) => c.query(
+      'UPDATE varslinger SET sendt_tid = now() WHERE id = $1', [varsel.id]));
+    sendt++;
+  }
+  return sendt;
 }

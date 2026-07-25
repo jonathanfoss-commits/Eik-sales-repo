@@ -1,7 +1,9 @@
-# CI for Livsarkivet — hele testregimet på hver push/PR som rører livsarkivet/:
-# unit (tilstandsmaskinen 100 %), RLS-suiten og API-kjeden mot ekte Postgres,
-# og E2E i Chromium (hele frigivelsesløpet med negativløp). Ingen leveranse
-# kan lande med røde tester.
+# CI for Livsarkivet — alle syv testnivåene fra /goal på hver push/PR som rører
+# livsarkivet/: kode (tilstandsmaskinen 100 %), data/tilgang (RLS + migrasjon),
+# krypto (zero-knowledge), frigivelsesflyt (E2E i Chromium), agenter (golden +
+# red-team), drift (backup-gjenoppretting, feilinjeksjon, lasttest). Nivå 7 er
+# Jonathans manuelle akseptansetest — sjekklisten ligger i docs/akseptansetest.md.
+# Ingen leveranse kan lande med røde tester.
 #
 # Samme branch protection-mønster som kjerne-ci: «endringer»-jobben lar
 # «tester» hoppe grønt over PR-er som ikke rører Livsarkivet.
@@ -69,12 +71,14 @@ jobs:
       - run: npm ci
       - name: Migrasjoner
         run: node server/migrate.js
-      - name: Servertester (tilstandsmaskin, RLS-suite, API-kjeden)
+      - name: Nivå 1-3 + 5 (tilstandsmaskin, RLS, krypto, agenter, migrasjon, drift)
         run: npm test
       - name: Chromium for e2e
         run: npx playwright install --with-deps chromium
-      - name: E2E-bevis (hele frigivelsesløpet + negativløp)
+      - name: Nivå 4 — E2E-bevis (hele frigivelsesløpet + negativløp)
         run: node tests/e2e.js
+      - name: Nivå 6 — lasttest (innlogging og frigivelsesflytens lesninger)
+        run: npm run lasttest
       - name: Hemmelighetsskann
         run: |
           ! grep -rniE "sk-ant-[a-zA-Z0-9]|nfp_[a-zA-Z0-9]{20}" --include="*.js" --include="*.sql" --include="*.yaml" . \

@@ -4,7 +4,7 @@ import { ApiFeil } from '../http.js';
 import { medBruker } from '../db.js';
 import { loggRevisjon } from '../revisjon.js';
 import { utfoerOvergang, fireOyneOk } from '../frigivelse.js';
-import { varsleAlle } from '../varsling.js';
+import { koVarsler, sendUtestaaende } from '../varsling.js';
 import { feiKarenstid } from '../feier.js';
 import { vurderTekst } from '../agenter/kvalitet.js';
 import { config } from '../config.js';
@@ -113,7 +113,7 @@ export function registrer(ruter) {
             WHERE hendelse_id = $1 AND status = 'mottatt'`, [f.hendelse_id, ctx.brukerId]);
         const oppdatert = await utfoerOvergang(c, ctx, f, 'godkjent_1', 'admin',
           { godkjent_1_av: ctx.brukerId, godkjent_1_tid: naa() });
-        return { frigivelse: oppdatert, varsle: null };
+        return { frigivelse: oppdatert };
       }
       if (f.status === 'godkjent_1') {
         if (!fireOyneOk(f.godkjent_1_av, ctx.brukerId)) {
@@ -124,13 +124,14 @@ export function registrer(ruter) {
         const oppdatert = await utfoerOvergang(c, ctx, f, 'karenstid', 'admin',
           { godkjent_2_av: ctx.brukerId, godkjent_2_tid: start,
             karenstid_start: start, karenstid_slutt: slutt });
-        return { frigivelse: oppdatert, varsle: 'karenstid_startet' };
+        // eier + alle kontakter varsles i SAMME transaksjon som karenstiden
+        // starter — nettopp dette varselet er eierens sjanse til å stoppe den
+        await koVarsler(c, oppdatert.hvelv_id, oppdatert.hendelse_id, 'karenstid_startet');
+        return { frigivelse: oppdatert };
       }
       throw new ApiFeil(409, `Saken kan ikke godkjennes fra ${f.status}`);
     });
-    if (resultat.varsle) {
-      await varsleAlle(resultat.frigivelse.hvelv_id, resultat.frigivelse.hendelse_id, resultat.varsle);
-    }
+    await sendUtestaaende();
     return { status: resultat.frigivelse.status };
   });
 
@@ -155,9 +156,11 @@ export function registrer(ruter) {
       await c.query(
         `UPDATE attester SET status = 'avvist', vurdert_av = $2, vurdert_tid = now(), avvist_grunn = $3
           WHERE hendelse_id = $1 AND status = 'mottatt'`, [sak.hendelse_id, ctx.brukerId, grunn]);
-      return utfoerOvergang(c, ctx, sak, 'avvist', 'admin', { avvist_grunn: grunn });
+      const oppdatert = await utfoerOvergang(c, ctx, sak, 'avvist', 'admin', { avvist_grunn: grunn });
+      await koVarsler(c, oppdatert.hvelv_id, oppdatert.hendelse_id, 'frigivelse_avvist');
+      return oppdatert;
     });
-    await varsleAlle(f.hvelv_id, f.hendelse_id, 'frigivelse_avvist');
+    await sendUtestaaende();
     return { status: f.status };
   });
 

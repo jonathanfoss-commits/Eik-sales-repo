@@ -4,7 +4,7 @@ import { ApiFeil } from '../http.js';
 import { medBruker } from '../db.js';
 import { loggRevisjon } from '../revisjon.js';
 import { utfoerOvergang, klarForVerifisering } from '../frigivelse.js';
-import { varsleAlle } from '../varsling.js';
+import { koVarsler, sendUtestaaende } from '../varsling.js';
 import { vurderSak } from '../agenter/orkestrator.js';
 import { mittHvelv } from './hvelv.js';
 
@@ -113,9 +113,11 @@ export function registrer(ruter) {
          RETURNING id, status`, [hendelse.id, hvelvId])).rows[0];
       await loggRevisjon(c, ctx, hvelvId, 'hendelse_meldt',
         { hendelse_id: hendelse.id, kilde: 'manuell', kontakt_id: kontakt.id });
+      // samme transaksjon som meldingen: varselet kan ikke gå tapt
+      await koVarsler(c, hvelvId, hendelse.id, 'hendelse_meldt');
       return { hendelseId: hendelse.id, frigivelse };
     });
-    await varsleAlle(hvelvId, resultat.hendelseId, 'hendelse_meldt');
+    await sendUtestaaende();
     return resultat;
   });
 
@@ -174,9 +176,11 @@ export function registrer(ruter) {
         `SELECT 1 FROM hendelser h JOIN kontakter k ON k.id = h.meldt_av_kontakt_id
           WHERE h.id = $1 AND k.bruker_id = $2`, [params.id, ctx.brukerId])).rows[0];
       if (!erMelder) throw new ApiFeil(403, 'Bare melderen kan tilbakekalle');
-      return utfoerOvergang(c, ctx, frigivelse, 'tilbakekalt', 'melder');
+      const oppdatert = await utfoerOvergang(c, ctx, frigivelse, 'tilbakekalt', 'melder');
+      await koVarsler(c, oppdatert.hvelv_id, params.id, 'frigivelse_tilbakekalt');
+      return oppdatert;
     });
-    await varsleAlle(f.hvelv_id, params.id, 'frigivelse_tilbakekalt');
+    await sendUtestaaende();
     return { status: f.status };
   });
 
@@ -184,10 +188,12 @@ export function registrer(ruter) {
   ruter.add('POST', '/api/hendelser/:id/blokker', async ({ ctx, body, params }) => {
     const f = await medBruker(ctx, async (c) => {
       const frigivelse = await hentFrigivelse(c, params.id);
-      return utfoerOvergang(c, ctx, frigivelse, 'blokkert', 'eier',
+      const oppdatert = await utfoerOvergang(c, ctx, frigivelse, 'blokkert', 'eier',
         { blokkert_av: ctx.brukerId, blokkert_grunn: String(body.grunn || 'Eier stoppet frigivelsen') });
+      await koVarsler(c, oppdatert.hvelv_id, params.id, 'frigivelse_blokkert');
+      return oppdatert;
     });
-    await varsleAlle(f.hvelv_id, params.id, 'frigivelse_blokkert');
+    await sendUtestaaende();
     return { status: f.status };
   });
 

@@ -19,16 +19,23 @@ import * as etterlatt from './api/etterlatt.js';
 import * as abonnement from './api/abonnement.js';
 import * as krypto from './api/krypto.js';
 import { feiKarenstid } from './feier.js';
+import { sendUtestaaende } from './varsling.js';
 
 const ruter = new Ruter();
 for (const modul of [hvelv, kontakter, matrise, hendelse, verifisering, etterlatt, abonnement, krypto]) {
   modul.registrer(ruter);
 }
 
-// Karenstid-feieren går også i bakgrunnen, så frigivelse (og varsler) skjer
-// selv om ingen leser status. I testmodus styrer testene tiden selv.
+// Karenstid-feieren går også i bakgrunnen, så frigivelse skjer selv om ingen
+// leser status. Samme passering tømmer varslingskøen — varsler som ikke ble
+// sendt (e-post nede, prosessen døde) blir liggende og sendes her.
+// I testmodus styrer testene tiden selv.
 if (!config.testmodus) {
-  setInterval(() => feiKarenstid().catch((f) => console.error('Feier:', f.message)), 60_000).unref();
+  setInterval(() => {
+    feiKarenstid()
+      .then(() => sendUtestaaende())
+      .catch((f) => console.error('Feier:', f.message));
+  }, 60_000).unref();
 }
 
 // ── Enkel rate-demper (i minnet): innlogging og melding er de utsatte flatene ──

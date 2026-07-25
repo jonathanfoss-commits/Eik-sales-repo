@@ -1,12 +1,14 @@
 // Best-effort e-postutsending via provider-agnostisk JSON-API (Resend-kompatibelt
 // format). Uten oppsett logges kun hendelsestypen — aldri innhold eller mottaker
 // i klartekst utover det driftsloggen trenger.
-const API_URL = process.env.EPOST_API_URL || '';
-const API_NOKKEL = process.env.EPOST_API_NOKKEL || '';
-const FRA = process.env.EPOST_FRA || 'Livsarkivet <varsel@livsarkivet.no>';
+// Leses ved kall (ikke ved import), slik driftstestene kan skru transporten
+// av og på for å bevise at varslingskøen tåler at e-post er nede.
+const API_URL = () => process.env.EPOST_API_URL || '';
+const API_NOKKEL = () => process.env.EPOST_API_NOKKEL || '';
+const FRA = () => process.env.EPOST_FRA || 'Livsarkivet <varsel@livsarkivet.no>';
 
 export function epostTilgjengelig() {
-  return Boolean(API_URL && API_NOKKEL);
+  return Boolean(API_URL() && API_NOKKEL());
 }
 
 export async function sendEpost({ til, emne, tekst }) {
@@ -15,10 +17,10 @@ export async function sendEpost({ til, emne, tekst }) {
     return false;
   }
   try {
-    const svar = await fetch(API_URL, {
+    const svar = await fetch(API_URL(), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${API_NOKKEL}` },
-      body: JSON.stringify({ from: FRA, to: [til], subject: emne, text: tekst }),
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${API_NOKKEL()}` },
+      body: JSON.stringify({ from: FRA(), to: [til], subject: emne, text: tekst }),
     });
     if (!svar.ok) console.error('E-post feilet:', svar.status);
     return svar.ok;
