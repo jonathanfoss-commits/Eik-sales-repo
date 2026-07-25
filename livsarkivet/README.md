@@ -6,6 +6,20 @@ Etterpå (etterpaa.no). Dette er MVP-kjerneloopen:
 
 **hvelv → mottakermatrise → trigger → verifisering → karenstid → frigivelse → etterlattevisning**
 
+## Herding før lansering (funn i egen sikkerhetsgjennomgang)
+- **Attester:** kun PDF/JPEG/PNG/HEIC (CHECK i basen), serveres med
+  `sandbox`-CSP og aldri inline for utrygge typer. Før dette kunne en betrodd
+  kontakt laste opp HTML som kjørte som en side på vårt domene, foran øynene
+  til saksbehandleren som skulle godkjenne en frigivelse.
+- **Saksbehandlere MÅ ha tofaktor:** en admin-konto uten TOTP blir nektet
+  innlogging (før slapp den inn på passord alene — og da er fire-øyne-regelen
+  verdt lite).
+- **Lengdegrenser** på tittel (200) og innhold (200 000 tegn), både i API og som
+  CHECK. **Rate-demping** på attestopplasting og eksport.
+- **Passordbytte** for innlogget bruker rykker alle andre sesjoner.
+- **Oppstartsvarsel** i produksjonsmodus hvis demoinnlogging, åpen registrering
+  eller for kort karenstid er slått på.
+
 ## Ufravikelige prinsipper (håndhevet i kode og tester)
 1. Ingen frigivelse uten verifisert hendelse + karenstid (48 t).
 2. Fire øyne: to ULIKE saksbehandlere må godkjenne (app-sjekk + CHECK i basen).

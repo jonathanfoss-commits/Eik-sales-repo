@@ -139,6 +139,23 @@ export async function vis(rot) {
   rot.append(el('button', { class: 'lenkeknapp', onclick: gjenopprettMedKode },
     'Glemt sikkerhetsfrasen? Bruk gjenopprettingskoden'));
 
+  // Bytt passord
+  const passordFeil = el('div', {});
+  const gammelt = el('input', { type: 'password', placeholder: 'Nåværende passord', autocomplete: 'current-password' });
+  const nytt = el('input', { type: 'password', placeholder: 'Nytt passord (minst 10 tegn)', autocomplete: 'new-password' });
+  rot.append(el('div', { class: 'kort' },
+    el('h3', {}, 'Bytt passord'),
+    el('p', { class: 'meta' }, 'Andre enheter blir logget ut når du bytter.'),
+    passordFeil, gammelt, nytt,
+    el('button', { class: 'sekundaer', onclick: async () => {
+      const svar = await kall('POST', '/api/auth/passord',
+        { gammelt: gammelt.value, nytt: nytt.value });
+      tom(passordFeil);
+      if (!svar.ok) { passordFeil.append(feilboks(svar.data.feil || 'Bytte feilet')); return; }
+      gammelt.value = ''; nytt.value = '';
+      passordFeil.append(el('div', { class: 'melding-ok' }, 'Passordet er byttet.'));
+    } }, 'Lagre nytt passord')));
+
   // Dine data: portabilitet og sletterett
   rot.append(el('div', { class: 'kort' },
     el('h3', {}, 'Dine data'),

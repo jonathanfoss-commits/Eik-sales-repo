@@ -13,6 +13,18 @@ export async function mittHvelv(c, ctx) {
 }
 
 const ELEMENT_FELTER = 'id, kategori, nivaa, tittel, innhold, kryptert, nokkel_ref, versjon, opprettet, endret';
+// Grenser (også CHECK i migrasjon 010): uten dem kunne én bruker fylle basen.
+const MAKS_TITTEL = 200;
+const MAKS_INNHOLD = 200000;
+
+function sjekkLengder(tittel, innhold) {
+  if (tittel !== undefined && tittel !== null && String(tittel).length > MAKS_TITTEL) {
+    throw new ApiFeil(400, `Tittelen kan ha maks ${MAKS_TITTEL} tegn`);
+  }
+  if (innhold !== undefined && innhold !== null && String(innhold).length > MAKS_INNHOLD) {
+    throw new ApiFeil(400, 'Innholdet er for langt — del det i flere elementer');
+  }
+}
 
 export function registrer(ruter) {
   ruter.add('GET', '/api/hvelv', ({ ctx }) => medBruker(ctx, async (c) => {
@@ -27,6 +39,7 @@ export function registrer(ruter) {
     const { kategori, nivaa = 'privat', tittel, innhold = '', klientId = null,
       kryptert = false, nokkelRef = null } = body;
     if (!tittel || !kategori) throw new ApiFeil(400, 'Kategori og tittel må fylles ut');
+    sjekkLengder(tittel, innhold);
     // Zero-knowledge (ADR-001): sensitivt innhold KOMMER kryptert fra klienten —
     // serveren tar aldri imot klartekst på dette nivået (CHECK i basen i tillegg).
     if (nivaa === 'sensitiv' && (!kryptert || !nokkelRef)) {
@@ -59,6 +72,7 @@ export function registrer(ruter) {
 
   ruter.add('PUT', '/api/elementer/:id', ({ ctx, body, params }) => medBruker(ctx, async (c) => {
     const { tittel, innhold, kategori, nivaa, versjon, kryptert, nokkelRef } = body;
+    sjekkLengder(tittel, innhold);
     if (nivaa === 'sensitiv' && (!kryptert || !nokkelRef)) {
       throw new ApiFeil(400, 'Sensitivt innhold må krypteres i appen før innsending');
     }

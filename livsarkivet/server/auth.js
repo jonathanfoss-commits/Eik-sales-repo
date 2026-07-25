@@ -78,7 +78,13 @@ export async function loggInn(epost, passord, totp) {
   // Kjør alltid en hash-sammenlikning så svartiden ikke røper om e-posten finnes.
   const ok = await sjekkPassord(String(passord || ''), bruker?.passord_hash || 'scrypt:00:00');
   if (!bruker || !bruker.aktiv || !ok) return null;
-  // Admin skal alltid ha TOTP satt; har brukeren det, må koden stemme.
+  // Saksbehandlere MÅ ha TOTP. Uten dette kravet ville en admin-konto uten
+  // hemmelighet sluppet inn på passord alene — og da er fire-øyne-regelen verdt
+  // lite, siden begge godkjenningene kan gjøres av den som har ett passord.
+  if (bruker.rolle === 'admin' && !bruker.totp_hemmelighet) {
+    console.error(JSON.stringify({ hendelse: 'admin_uten_totp_avvist', bruker_id: bruker.id }));
+    return { manglerTotpOppsett: true };
+  }
   if (bruker.totp_hemmelighet && !sjekkTotp(bruker.totp_hemmelighet, totp)) {
     return { trengerTotp: true };
   }
@@ -133,6 +139,24 @@ export function lagInvitasjonskode() {
   return Array.from(crypto.randomBytes(12)).map((b) => ALFABET[b % ALFABET.length]).join('');
 }
 export const hashInvitasjonskode = (kode) => sha256(String(kode || '').trim().toLowerCase());
+
+// ── Bytt passord som innlogget. Alle ANDRE sesjoner rykkes, slik at et
+// stjålet passord ikke fortsetter å gi tilgang etter at eieren har byttet. ──
+export async function byttPassord(brukerId, gammelt, nytt, beholdToken) {
+  if (String(nytt || '').length < 10) return { feil: 'Nytt passord må ha minst 10 tegn' };
+  if (String(nytt) === String(gammelt || '')) return { feil: 'Nytt passord må være et annet' };
+  const rad = (await authPool.query(
+    'SELECT passord_hash FROM brukere WHERE id = $1 AND aktiv', [brukerId])).rows[0];
+  if (!rad || !(await sjekkPassord(String(gammelt || ''), rad.passord_hash))) {
+    return { feil: 'Gammelt passord stemmer ikke' };
+  }
+  await authPool.query('UPDATE brukere SET passord_hash = $2 WHERE id = $1',
+    [brukerId, await hashPassord(String(nytt))]);
+  await authPool.query(
+    'DELETE FROM sesjoner WHERE bruker_id = $1 AND token_hash <> $2',
+    [brukerId, sha256(String(beholdToken || ''))]);
+  return { ok: true };
+}
 
 // ── Passordnullstilling: e-postbasert engangskode (kjerne-mønster) ──
 export async function finnBrukerPaaEpost(epost) {
