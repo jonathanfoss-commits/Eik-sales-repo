@@ -1,0 +1,15 @@
+# Lokal utvikling: Postgres 16 med eier-rollen migrasjonene forventer.
+#   docker compose up -d && npm run migrate && npm start
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: livsarkiv_eier
+      POSTGRES_PASSWORD: livsarkiv
+      POSTGRES_DB: livsarkiv
+    ports:
+      - "5432:5432"
+    volumes:
+      - livsarkiv-data:/var/lib/postgresql/data
+volumes:
+  livsarkiv-data:
