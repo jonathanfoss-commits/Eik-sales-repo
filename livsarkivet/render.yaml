@@ -10,8 +10,7 @@
 # kunder — testdata skal aldri i produksjonsbasen.
 #
 # Kostnad slik den står: én basic-256mb-database + én starter-tjeneste.
-# Migrasjonene kjøres i preDeployCommand, altså FØR ny kode tar over — slik at
-# en halvferdig migrasjon aldri møter ny kode.
+# Migrasjonene kjøres i startCommand (se begrunnelsen der).
 
 databases:
   - name: livsarkivet-test-db
