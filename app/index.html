@@ -611,9 +611,25 @@ Mvh Ole Fabian, OP Bygg AS</div>
     <div class="hank"></div>
     <div class="lytter">
       <div class="mik-stor"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg></div>
-      <div class="txt" id="lytt-status">Lytter …</div>
-      <div class="transkript" id="transkript"><span class="peker"></span></div>
-      <button class="knapp" id="lag-utkast" style="width:100%;display:none">Lag utkast av dette</button>
+      <div class="txt" id="lytt-status">Klar til å lytte</div>
+      <div class="transkript" id="transkript" style="display:none"></div>
+      <button class="knapp" id="dikter-start" style="width:100%">🎙 Start diktering</button>
+      <button class="knapp" id="dikter-stopp" style="width:100%;display:none">■ Stopp — teksten er klar</button>
+      <div id="dikter-velg" style="display:none">
+        <p style="font-size:.8rem;color:var(--dis);margin:10px 0 6px;text-align:center">
+          Hva skal Lærling lage av dette?</p>
+        <div class="rad" style="flex-wrap:wrap">
+          <button class="knapp svak" data-dikteroppgave="tilbud">Tilbud</button>
+          <button class="knapp svak" data-dikteroppgave="endringsmelding">Endringsmelding</button>
+          <button class="knapp svak" data-dikteroppgave="purring">Purring</button>
+          <button class="knapp svak" data-dikteroppgave="referat">Referat</button>
+          <button class="knapp svak" data-dikteroppgave="lovregel">Lov og regel</button>
+        </div>
+      </div>
+      <p style="font-size:.72rem;color:var(--dis);margin-top:10px;text-align:center">
+        Talen din gjøres om til tekst av nettleseren din (Apple/Google), ikke av Lærling.
+        Teksten sendes videre kun når du selv trykker «Lag utkast». Diktering trenger dekning —
+        uten dekning: bruk mikrofonen på tastaturet i Skrivemotoren.</p>
     </div>
   </div>
 </div>
@@ -724,6 +740,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
         <button class="knapp" id="pu-kopier">Kopier</button>
         <a class="knapp svak" id="pu-mail" href="#">Åpne i Mail</a>
       </div>
+      <button class="knapp svak" id="pu-kalender" style="display:none;width:100%;margin-top:8px"></button>
     </div>
   </div>
 </div>
@@ -882,7 +899,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
   var PROMPTER = [
     { t:"Befaring → tilbud", s:"Diktér notatene fra befaringen", m:"tilbud",
       p:"Jeg har vært på befaring. Her er notatene mine (diktert, ustrukturert): [dikter alt du husker: adresse, hva som skal gjøres, mål, tilstand, kundens ønsker, mulige problemer]. Lag 1) en oppsummerings-e-post til kunden og 2) et internt tilbudsgrunnlag med omfang, forutsetninger og forbehold." },
-    { t:"Byggemøte → referat", s:"Diktér hovedpunktene etter møtet",
+    { t:"Byggemøte → referat", s:"Diktér hovedpunktene etter møtet", m:"referat",
       p:"Byggemøte [dato] på [prosjekt]. Til stede: [navn/firma]. Notater: [dikter hovedpunktene]. Lag et byggemøtereferat med nummererte aksjonspunkter (ansvarlig + frist), klart til å sendes alle deltakere." },
     { t:"Endringsmelding", s:"Bruk SAMME DAG som endringen oppstår", m:"endringsmelding",
       p:"Det har oppstått en endring på [prosjekt]. Kontraktstype: [NS 8407 / annet / vet ikke]. Hva som er endret: [dikter: hva, hvorfor, konsekvens for pris og tid]. Skriv en formell endringsmelding til byggherren. Ukjent beløp? Varsle at konsekvens følger når det er avklart." },
@@ -899,7 +916,7 @@ Mvh Ole Fabian, OP Bygg AS</div>
   ];
 
   /* ── versjon og kanal (test vs. stabil) ── */
-  var VERSJON = "0.18.1";
+  var VERSJON = "0.19.0";
   var erTest = /(^|[.-])test([.-]|$)/.test(location.hostname);
   document.getElementById("versjon-info").textContent =
     "LÆRLING v" + VERSJON + " · " + (erTest ? "TESTKANAL" : "STABIL") + " · BYGGET FOR OP BYGG";
@@ -1654,6 +1671,38 @@ Mvh Ole Fabian, OP Bygg AS</div>
         document.getElementById("pu-mail").href = "mailto:?subject=" +
           encodeURIComponent(t === "3" ? "Inkassovarsel — " + f.fakt : "Påminnelse — " + f.fakt) +
           "&body=" + encodeURIComponent(tekst);
+        /* kalenderfrist: neste oppfølging 7 dager fram (14 ved inkassovarsel) —
+           .ics lages HELT lokalt; deles via delearket (iOS) eller lastes ned */
+        var kal = document.getElementById("pu-kalender");
+        var frist = new Date(); frist.setDate(frist.getDate() + (t === "3" ? 14 : 7));
+        var fristStr = frist.getFullYear() + String(frist.getMonth() + 1).padStart(2, "0") +
+          String(frist.getDate()).padStart(2, "0");
+        kal.style.display = "block";
+        kal.textContent = "🗓 Legg oppfølgingen i kalenderen (" + frist.getDate() + "." +
+          (frist.getMonth() + 1) + "." + frist.getFullYear() + ")";
+        kal.onclick = function(){
+          var ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Laerling//purring//NB",
+            "BEGIN:VEVENT",
+            "UID:laerling-purring-" + Date.now() + "@laerling",
+            "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, ""),
+            "DTSTART;VALUE=DATE:" + fristStr,
+            "SUMMARY:Følg opp purring " + (t === "3" ? "(inkassofrist)" : "(trinn " + t + ")") +
+              " — " + f.navn,
+            "DESCRIPTION:" + f.fakt.replace(/[,;\\]/g, " ") + " — åpne Lærling-appen for neste trinn.",
+            "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+          var fil = null;
+          try{ fil = new File([ics], "purring-oppfolging.ics", { type: "text/calendar" }); }catch(e){}
+          if(fil && navigator.canShare && navigator.canShare({ files: [fil] })){
+            navigator.share({ files: [fil] }).catch(function(){});
+          } else {
+            var a = document.createElement("a");
+            a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
+            a.download = "purring-oppfolging.ics";
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            setTimeout(function(){ URL.revokeObjectURL(a.href); }, 5000);
+          }
+          loggHendelse("kalenderfrist-lagt");
+        };
         loggHendelse("purring-laget", "trinn " + t);
       });
     });
@@ -1713,49 +1762,118 @@ Mvh Ole Fabian, OP Bygg AS</div>
     kopier(pr.p, "Varemottak-prompten");
   });
 
-  /* dikter-arket */
+  /* ── dikter-arket: EKTE diktering via nettleserens taletjeneste ──
+     Lyden behandles av nettleserleverandøren (Apple/Google), aldri av oss —
+     opplyst i arket. Aldri auto-start; loggen får kun hendelsestyper. */
   var dikter = document.getElementById("dikter"), mik = document.getElementById("mik"),
       transkript = document.getElementById("transkript"),
       lyttStatus = document.getElementById("lytt-status"),
-      lagUtkast = document.getElementById("lag-utkast"),
-      demoTekst = "husk å bestille container til Krohgs gate før mandag… og send Berg en påminnelse om at vi trenger svar på fargevalg denne uka…";
-  function lukkArk(){ dikter.classList.remove("apen"); }
+      dikterStart = document.getElementById("dikter-start"),
+      dikterStopp = document.getElementById("dikter-stopp"),
+      dikterVelg = document.getElementById("dikter-velg"),
+      SR = window.SpeechRecognition || window.webkitSpeechRecognition,
+      gjenkjenner = null, dikterTekst = "", stoppetMedVilje = false, lytterNaa = false;
+  function visDikterTekst(interim){
+    transkript.style.display = "block";
+    transkript.textContent = dikterTekst + (interim || "");
+  }
+  function tilSkrivemotor(){
+    lyttStatus.textContent = "Teksten er klar — velg hva Lærling skal lage:";
+    dikterVelg.style.display = "block";
+    dikterStopp.style.display = "none";
+    dikterStart.style.display = "block";
+    dikterStart.textContent = "🎙 Dikter mer";
+  }
+  function stoppDiktering(){
+    stoppetMedVilje = true; lytterNaa = false;
+    if(gjenkjenner){ try{ gjenkjenner.stop(); }catch(e){} }
+  }
+  function dikterFeil(melding){
+    lytterNaa = false;
+    dikterStopp.style.display = "none";
+    dikterStart.style.display = "block";
+    lyttStatus.textContent = melding;
+  }
+  function lukkArk(){ stoppDiktering(); dikter.classList.remove("apen"); }
   document.getElementById("ark-bak").addEventListener("click", lukkArk);
   document.getElementById("dikter-lukk").addEventListener("click", lukkArk);
   mik.addEventListener("click", function(){
     loggHendelse("dikter-åpnet");
     dikter.classList.add("apen");
-    transkript.innerHTML = '<span class="peker"></span>';
-    lyttStatus.textContent = "Lytter …";
-    lagUtkast.style.display = "none";
-    var i = 0;
-    setTimeout(function skriv(){
-      if(!dikter.classList.contains("apen")) return;
-      if(i <= demoTekst.length){
-        transkript.innerHTML = demoTekst.slice(0, i) + '<span class="peker"></span>';
-        i += 2; setTimeout(skriv, 42);
-      } else {
-        transkript.textContent = demoTekst;
-        lyttStatus.textContent = "Forstått — to oppgaver";
-        lagUtkast.style.display = "block";
-      }
-    }, 700);
+    dikterTekst = ""; transkript.textContent = ""; transkript.style.display = "none";
+    dikterVelg.style.display = "none";
+    dikterStopp.style.display = "none";
+    if(!SR){
+      dikterStart.textContent = "⚡ Åpne Skrivemotoren i stedet";
+      dikterStart.style.display = "block";
+      lyttStatus.textContent = "Nettleseren støtter ikke diktering her — bruk mikrofonen på tastaturet i Skrivemotoren.";
+    } else {
+      dikterStart.textContent = "🎙 Start diktering";
+      dikterStart.style.display = "block";
+      lyttStatus.textContent = "Klar til å lytte";
+    }
   });
-  lagUtkast.addEventListener("click", function(){
-    lukkArk();
-    var kort = document.createElement("div");
-    kort.className = "kort utkast";
-    kort.innerHTML = '<span class="badge">E-POST</span>'
-      + '<h3>Påminnelse — fargevalg, Berg</h3>'
-      + '<p class="prev">Hei! En liten påminnelse om fargevalget for vinduene — vi trenger svaret ditt innen fredag for å holde leveringstiden…</p>'
-      + '<div class="full">Hei!\n\nEn liten påminnelse om fargevalget for vinduene — vi trenger svaret ditt innen fredag for å holde leveringstiden.\n\nGi meg gjerne en lyd om du vil ta det over telefon.\n\nMvh Ole Fabian, OP Bygg AS</div>'
-      + '<div class="rad"><button class="knapp godkjenn">Godkjenn og send</button>'
-      + '<button class="knapp svak se">Se utkast</button></div>';
-    document.getElementById("utkast-liste").prepend(kort);
-    kobleUtkast(kort);
-    antall.textContent = document.querySelectorAll(".utkast").length;
-    document.getElementById("tomt").classList.remove("vis");
-    siFra("<b>✓</b> Utkast klart · påminnelse lagt i containerlista");
+  dikterStart.addEventListener("click", function(){
+    if(!SR){
+      lukkArk();
+      apneSkriv(PROMPTER.filter(function(p){ return p.m === "tilbud"; })[0]);
+      return;
+    }
+    /* iOS auto-stopper ved stillhet — vi starter på nytt i onend til brukeren
+       selv trykker stopp, og akkumulerer ferdige resultater selv */
+    stoppetMedVilje = false; lytterNaa = true;
+    gjenkjenner = new SR();
+    gjenkjenner.lang = "nb-NO";
+    gjenkjenner.continuous = true;
+    gjenkjenner.interimResults = true;
+    gjenkjenner.onresult = function(e){
+      var interim = "";
+      for(var i = e.resultIndex; i < e.results.length; i++){
+        if(e.results[i].isFinal){ dikterTekst += e.results[i][0].transcript + " "; }
+        else { interim += e.results[i][0].transcript; }
+      }
+      visDikterTekst(interim);
+    };
+    gjenkjenner.onerror = function(e){
+      if(e.error === "not-allowed" || e.error === "service-not-allowed"){
+        dikterFeil("Mikrofonen er ikke tillatt — gi tilgang i innstillingene, eller bruk tastatur-mikrofonen i Skrivemotoren.");
+      } else if(e.error === "network"){
+        dikterFeil("Diktering trenger dekning — åpne Skrivemotoren og bruk mikrofonen på tastaturet i stedet.");
+      } else if(e.error !== "no-speech" && e.error !== "aborted"){
+        dikterFeil("Dikteringen stoppet (" + e.error + ") — prøv igjen.");
+      }
+    };
+    gjenkjenner.onend = function(){
+      if(lytterNaa && !stoppetMedVilje){
+        try{ gjenkjenner.start(); }catch(e){ dikterFeil("Dikteringen stoppet — trykk for å fortsette."); }
+      }
+    };
+    try{ gjenkjenner.start(); }catch(e){ dikterFeil("Fikk ikke startet mikrofonen — prøv igjen."); return; }
+    dikterStart.style.display = "none";
+    dikterVelg.style.display = "none";
+    dikterStopp.style.display = "block";
+    lyttStatus.textContent = "Lytter … snakk rett fram";
+    visDikterTekst("");
+  });
+  dikterStopp.addEventListener("click", function(){
+    stoppDiktering();
+    if(dikterTekst.trim()){ loggHendelse("dikter-brukt"); tilSkrivemotor(); }
+    else {
+      dikterStopp.style.display = "none";
+      dikterStart.style.display = "block";
+      lyttStatus.textContent = "Hørte ingenting — prøv igjen.";
+    }
+  });
+  Array.prototype.forEach.call(dikterVelg.querySelectorAll("[data-dikteroppgave]"), function(kn){
+    kn.addEventListener("click", function(){
+      var m = kn.getAttribute("data-dikteroppgave");
+      var pr = PROMPTER.filter(function(p){ return p.m === m; })[0];
+      if(!pr) return;
+      var tekst = dikterTekst.trim();
+      lukkArk();
+      apneSkriv(pr);
+      document.getElementById("sk-tekst").value = tekst;
+    });
   });
 })();
 </script>

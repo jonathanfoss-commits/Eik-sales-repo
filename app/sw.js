@@ -1,6 +1,6 @@
 /* Lærling service worker — appen virker offline og åpner umiddelbart */
 /* cache-navnet er ALLTID "laerling-" + VERSJON (index.html/versjon.json) — én kilde, aldri drift */
-const CACHE = "laerling-0.18.1";
+const CACHE = "laerling-0.19.0";
 const FILER = ["./", "./index.html", "./rapport.html", "./bli-med.html", "./admin.html",
   "./ansatte.html", "./ledelsen.html", "./lab.html", "./eksport.html",
   "./manifest.webmanifest", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
