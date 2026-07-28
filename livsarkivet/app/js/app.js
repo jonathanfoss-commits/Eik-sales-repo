@@ -1,6 +1,7 @@
 // Visningsruting: innlogging → faner etter rolle og relasjoner.
 import { kall } from './api.js';
 import { el, tom, feilboks } from './dom.js';
+import { ikon } from './ikoner.js';
 import * as hvelv from './moduler/hvelv.js';
 import * as kontakter from './moduler/kontakter.js';
 import * as matrise from './moduler/matrise.js';
@@ -28,10 +29,13 @@ function visInnlogging(visning = 'inn', feil = '') {
   loggUtKnapp.hidden = true;
   tom(innhold);
 
+  // Overskriften sto «Livsarkivet» — som allerede står i toppfeltet rett over.
+  // Her er det bedre brukt på hva tjenesten faktisk gjør.
   const skjema = el('div', {},
-    el('h1', {}, 'Livsarkivet'),
+    el('h1', {}, 'Alt dine nærmeste trenger'),
     el('p', { class: 'undertekst' },
-      'Alt dine nærmeste trenger — frigitt kontrollert, aldri før.'),
+      'Frigitt kontrollert når det skjer — aldri før, og aldri til andre '
+      + 'enn dem du har pekt ut.'),
     feil ? feilboks(feil) : null);
 
   // Selskapets egen innlogging står FØRST: det er veien kundene deres kjenner,
@@ -56,10 +60,10 @@ function visInnlogging(visning = 'inn', feil = '') {
         if (!svar.ok) return visInnlogging('inn', svar.data.feil || 'Innlogging feilet');
         start();
       } }, 'Logg inn'),
-      el('button', { class: 'sekundaer', onclick: () => visInnlogging('kode') }, 'Har du fått en kode?'),
+      el('button', { class: 'stille', onclick: () => visInnlogging('kode') }, 'Har du fått en kode?'),
       // vises bare når selvregistrering er åpen — ellers er den en blindvei
       tilstand.miljo.registrering
-        ? el('button', { class: 'sekundaer', onclick: () => visInnlogging('ny') }, 'Opprett ditt livsarkiv')
+        ? el('button', { class: 'stille', onclick: () => visInnlogging('ny') }, 'Opprett ditt livsarkiv')
         : null,
       el('button', { class: 'lenkeknapp', onclick: () => visInnlogging('glemt') }, 'Glemt passord?'));
   } else if (visning === 'ny') {
@@ -118,19 +122,19 @@ function byggFaner() {
   const meg = tilstand.meg;
   const liste = [];
   if (meg.rolle === 'admin') {
-    liste.push(['koe', '🗂', 'Kø', admin.visKoe], ['logg', '📜', 'Logg', admin.visLogg]);
+    liste.push(['koe', 'koe', 'Kø', admin.visKoe], ['logg', 'logg', 'Logg', admin.visLogg]);
   } else {
     liste.push(
-      ['hvelv', '🗄', 'Hvelv', hvelv.vis],
-      ['kontakter', '👥', 'Kontakter', kontakter.vis],
-      ['matrise', '🔀', 'Hvem får hva', matrise.vis],
-      ['status', '🛡', 'Status', status.vis]);
-    if (tilstand.betroddI?.length) liste.push(['melding', '🕯', 'Meld', melding.vis]);
-    if (tilstand.harEtterlatt) liste.push(['etterlatt', '🤍', 'Til deg', etterlatt.vis]);
+      ['hvelv', 'hvelv', 'Hvelv', hvelv.vis],
+      ['kontakter', 'kontakter', 'Kontakter', kontakter.vis],
+      ['matrise', 'matrise', 'Hvem får hva', matrise.vis],
+      ['status', 'status', 'Status', status.vis]);
+    if (tilstand.betroddI?.length) liste.push(['melding', 'meld', 'Meld', melding.vis]);
+    if (tilstand.harEtterlatt) liste.push(['etterlatt', 'etterlatt', 'Til deg', etterlatt.vis]);
   }
-  for (const [id, ikon, navn, vis] of liste) {
+  for (const [id, ikonnavn, navn, vis] of liste) {
     faner.append(el('button', { 'data-fane': id, onclick: () => byttFane(id, vis) },
-      el('span', { class: 'ikon' }, ikon), navn));
+      el('span', { class: 'ikon' }, ikon(ikonnavn)), navn));
   }
   faner.hidden = false;
   return liste;

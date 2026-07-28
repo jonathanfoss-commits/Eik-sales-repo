@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Livsarkivet — kontrollert frigivelse ved død</title>
+<meta name="theme-color" content="#0E1B25">
+<meta name="description" content="Livsarkivet er et digitalt beredskapsarkiv. Det de nærmeste trenger ligger klart, og frigis først når et dødsfall er verifisert, to saksbehandlere har godkjent og karenstiden har løpt ut.">
+<meta name="robots" content="noindex">
+<style>
+:root {
+  --bakgrunn: #0E1B25;
+  --flate: #16283A;
+  --flate-hev: #1D3348;
+  --kant: #27405A;
+  --tekst: #EDF2F0;
+  --tekst-demp: #9FB3AD;
+  --aksent: #7FB7A3;
+  --fare: #D9777B;
+  --advarsel: #D9B36B;
+  --radius: 14px;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--bakgrunn);
+  color: var(--tekst);
+  font: 17px/1.62 var(--sans);
+  min-height: 100dvh;
+}
+
+img, svg { max-width: 100%; height: auto; }
+
+a { color: var(--aksent); text-decoration: underline; text-underline-offset: 3px; }
+a:focus-visible, :focus-visible {
+  outline: 2px solid var(--aksent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.mono {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--tekst-demp);
+}
+
+/* ---------- rammeverk ---------- */
+
+.ramme {
+  width: 100%;
+  max-width: 34rem;      /* ~68 tegn lesekolonne */
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+#topp {
+  border-bottom: 1px solid var(--kant);
+  padding: 16px 0;
+}
+#topp .ramme { display: flex; align-items: center; gap: 11px; }
+#topp .navn { display: flex; flex-direction: column; line-height: 1.25; }
+#topp strong { font-family: var(--serif); font-size: 18px; font-weight: 600; }
+
+section { padding: 34px 0; border-top: 1px solid var(--kant); }
+section:first-of-type { border-top: 0; }
+
+h1 {
+  font-family: var(--serif);
+  font-size: 30px;
+  line-height: 1.22;
+  font-weight: 600;
+  letter-spacing: -.005em;
+  margin: 12px 0 14px;
+}
+h2 {
+  font-family: var(--serif);
+  font-size: 23px;
+  line-height: 1.28;
+  font-weight: 600;
+  margin: 10px 0 12px;
+}
+h3 {
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+p { margin: 0 0 14px; }
+p:last-child { margin-bottom: 0; }
+
+.ingress { font-size: 19px; line-height: 1.55; color: var(--tekst); }
+.demp { color: var(--tekst-demp); }
+.liten { font-size: 15px; line-height: 1.55; }
+
+/* ---------- problemliste ---------- */
+
+.funn { list-style: none; padding: 0; margin: 18px 0 0; }
+.funn li {
+  border-left: 2px solid var(--kant);
+  padding: 2px 0 2px 16px;
+  margin: 0 0 18px;
+}
+.funn li:last-child { margin-bottom: 0; }
+.funn p { margin: 4px 0 0; font-size: 15px; line-height: 1.55; color: var(--tekst-demp); }
+
+/* ---------- tidslinje ---------- */
+
+.tidslinje { list-style: none; margin: 22px 0 0; padding: 0; position: relative; }
+
+.tidslinje > li {
+  position: relative;
+  padding: 0 0 26px 30px;
+}
+/* linjen tegnes av hvert ledd, så den stopper naturlig ved det siste */
+.tidslinje > li::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 16px;
+  bottom: 0;
+  width: 1px;
+  background: var(--kant);
+}
+.tidslinje > li:last-child { padding-bottom: 0; }
+.tidslinje > li:last-child::before { display: none; }
+
+.tidslinje > li::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1px solid var(--kant);
+  background: var(--flate-hev);
+}
+.tidslinje > li.merket::after {
+  background: var(--aksent);
+  border-color: var(--aksent);
+}
+.tidslinje > li.stopp::after {
+  background: var(--advarsel);
+  border-color: var(--advarsel);
+}
+
+.tidslinje .steg { display: block; margin-bottom: 5px; }
+.tidslinje h3 { margin-bottom: 5px; }
+.tidslinje .hvorfor {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--tekst-demp);
+  margin: 0;
+}
+.tidslinje .hvorfor b {
+  color: var(--tekst);
+  font-weight: 600;
+}
+
+.karensboks {
+  background: var(--flate);
+  border: 1px solid var(--kant);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-top: 12px;
+}
+.karensboks .tall {
+  font-variant-numeric: tabular-nums;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--advarsel);
+}
+.karensboks p { margin: 6px 0 0; font-size: 15px; line-height: 1.5; color: var(--tekst-demp); }
+
+/* ---------- kort ---------- */
+
+.kort {
+  background: var(--flate);
+  border: 1px solid var(--kant);
+  border-radius: var(--radius);
+  padding: 15px;
+  margin: 12px 0 0;
+}
+.kort p { margin: 0; font-size: 15px; line-height: 1.55; color: var(--tekst-demp); }
+
+/* ---------- sammenligning ---------- */
+
+.deling { margin: 18px 0 0; }
+.deling dt {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--tekst-demp);
+  margin-bottom: 6px;
+}
+.deling dd {
+  margin: 0 0 20px;
+  padding-left: 16px;
+  border-left: 2px solid var(--kant);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.deling dd:last-child { margin-bottom: 0; }
+.deling dd b { font-weight: 600; }
+
+/* ---------- avslutning ---------- */
+
+.slutt { padding-bottom: 46px; }
+.slutt p { color: var(--tekst-demp); font-size: 16px; }
+.slutt .siste { color: var(--tekst); }
+
+footer {
+  border-top: 1px solid var(--kant);
+  padding: 20px 0 40px;
+}
+footer p { font-size: 14px; color: var(--tekst-demp); margin: 0 0 6px; }
+
+@media (min-width: 700px) {
+  h1 { font-size: 36px; }
+  h2 { font-size: 25px; }
+  section { padding: 42px 0; }
+}
+</style>
+</head>
+<body>
+
+<header id="topp">
+  <div class="ramme">
+    <svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+      <rect width="64" height="64" rx="14" fill="#16283A"/>
+      <path d="M16 50 V30 a16 16 0 0 1 32 0 V50" fill="none" stroke="#7FB7A3" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="32" cy="36" r="4.5" fill="#7FB7A3"/>
+      <rect x="29.5" y="38" width="5" height="9" rx="2.5" fill="#7FB7A3"/>
+    </svg>
+    <span class="navn">
+      <strong>Livsarkivet</strong>
+      <span class="mono">et beredskapsarkiv</span>
+    </span>
+  </div>
+</header>
+
+<main>
+
+  <section aria-labelledby="ingress-tittel">
+    <div class="ramme">
+      <p class="mono">Del av Etterpå</p>
+      <h1 id="ingress-tittel">Alt de nærmeste trenger, frigitt først når du er borte.</h1>
+      <p class="ingress">
+        Livsarkivet er et digitalt hvelv der du legger inn det familien din vil
+        lete etter den dagen du dør: hvor dokumentene ligger, hvilke kontoer som
+        finnes, hva du ønsker, og de nøklene ingen andre kjenner. Du bestemmer
+        hvem som skal se hva. Ingenting slippes ut mens du lever.
+      </p>
+      <p class="demp liten">
+        For voksne som håndterer familiens papirer alene — og for
+        forsikringsselskaper som vil gi kundene sine noe å etterlate seg mer enn
+        et polisenummer.
+      </p>
+    </div>
+  </section>
+
+  <section aria-labelledby="problem-tittel">
+    <div class="ramme">
+      <p class="mono">Problemet</p>
+      <h2 id="problem-tittel">Familien mangler sjelden informasjonen. De mangler tilgangen.</h2>
+      <p>
+        Når en som holdt orden på alt dør, forsvinner ikke opplysningene. De
+        ligger der de alltid har ligget — bak et passord ingen andre kan.
+      </p>
+      <ul class="funn">
+        <li>
+          <h3>Alt stenger samme uke</h3>
+          <p>
+            Kredittkort, strøm, bankkonto, pensjon, medlemskap. Familien vet at
+            avtalene finnes, men kommer ikke inn i noen av dem.
+          </p>
+        </li>
+        <li>
+          <h3>Tiden jobber mot de etterlatte</h3>
+          <p>
+            Kontoer slettes ved inaktivitet mens familien fortsatt leter. Bilder
+            og korrespondanse forsvinner ikke fordi noen bestemte det, men fordi
+            en frist løp ut i stillhet.
+          </p>
+        </li>
+        <li>
+          <h3>Personvernet beskytter den døde mot sine egne</h3>
+          <p>
+            Tjenestene nekter innsyn med god grunn: de har ingen måte å vite at
+            den som spør faktisk skal ha tilgang. Uten en avklaring på forhånd
+            blir svaret nei — i måneder, eller for alltid.
+          </p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section aria-labelledby="frigivelse-tittel">
+    <div class="ramme">
+      <p class="mono">Kjernen i tjenesten</p>
+      <h2 id="frigivelse-tittel">Hvordan frigivelsen virker</h2>
+      <p>
+        Et hvelv er lett å bygge. Det vanskelige er å åpne det på riktig dag, for
+        riktige personer — og aldri en dag for tidlig. Seks ledd står mellom en
+        melding om dødsfall og en åpen dør. Hvert ledd finnes fordi det ene før
+        det kan svikte.
+      </p>
+
+      <ol class="tidslinje">
+        <li>
+          <span class="mono steg">Ledd 1</span>
+          <h3>Noen melder dødsfallet</h3>
+          <p class="hvorfor">
+            En av de betrodde kontaktene du selv har pekt ut sier fra.
+            <b>Meldingen alene gjør ingenting</b> — den åpner en sak, den åpner
+            ikke arkivet. En påstand er ikke et bevis.
+          </p>
+        </li>
+        <li>
+          <span class="mono steg">Ledd 2</span>
+          <h3>Dødsattest lastes opp</h3>
+          <p class="hvorfor">
+            Kontakten legger ved dokumentasjon. Vi krever
+            <b>to uavhengige kilder</b> før noe kan verifiseres — attest pluss en
+            uavhengig bekreftelse. Ett dokument fra én person er for lite til å
+            åpne et helt liv.
+          </p>
+        </li>
+        <li>
+          <span class="mono steg">Ledd 3</span>
+          <h3>Saken går til verifisering — og du får beskjed</h3>
+          <p class="hvorfor">
+            I samme øyeblikk varsles <b>du og alle dine kontakter</b> om at noen
+            har bedt om frigivelse. Er du i live, vet du det med en gang. Varselet
+            og loggen bærer aldri innholdet ditt, bare at noe skjedde.
+          </p>
+        </li>
+        <li>
+          <span class="mono steg">Ledd 4</span>
+          <h3>To saksbehandlere må godkjenne</h3>
+          <p class="hvorfor">
+            <b>Fire øyne:</b> to forskjellige mennesker må godkjenne hver for seg.
+            Regelen ligger som en sperre i databasen, ikke bare i en rutine, så
+            den samme personen kan ikke godkjenne to ganger. Én saksbehandler kan
+            ta feil, bli presset eller bli lurt. To må lures samtidig.
+          </p>
+        </li>
+        <li class="stopp">
+          <span class="mono steg">Ledd 5</span>
+          <h3>48 timers karenstid — din nødbrems</h3>
+          <p class="hvorfor">
+            Alt er godkjent, og likevel skjer ingenting på to døgn. I hele
+            perioden kan <b>du stoppe frigivelsen med ett trykk</b>, uten å
+            forklare deg for noen. Registre tar feil, og mennesker har blitt
+            erklært døde mens de levde. En frigivelse kan ikke ringes tilbake —
+            derfor må den kunne stanses før den skjer.
+          </p>
+          <div class="karensboks">
+            <div class="tall">48:00:00</div>
+            <p>Nedtellingen står synlig i appen din hele tiden, med stoppknappen ved siden av.</p>
+          </div>
+        </li>
+        <li class="merket">
+          <span class="mono steg">Ledd 6</span>
+          <h3>Frigivelse — til akkurat de du har pekt ut</h3>
+          <p class="hvorfor">
+            Karenstiden løper ut, og hver mottaker får <b>bare sin del</b>. Du har
+            satt opp på forhånd hvem som ser hva: søsteren din trenger ikke
+            forsikringspapirene, og regnskapsføreren trenger ikke brevet til
+            barna. Alt som skjedde underveis står i en logg som ikke kan endres.
+          </p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section aria-labelledby="skiller-tittel">
+    <div class="ramme">
+      <p class="mono">Hva som skiller oss</p>
+      <h2 id="skiller-tittel">Fire løfter vi har bygget inn, ikke skrevet ned</h2>
+
+      <div class="kort">
+        <h3>Du kan alltid stoppe</h3>
+        <p>
+          Eierens nødbrems står over alt annet i systemet — over saksbehandlerne,
+          over abonnementet, over oss. Et utløpt abonnement stenger bare din egen
+          redigering; frigivelsesløpet, stoppknappen og de etterlattes lesetilgang
+          er aldri stengt bak betaling.
+        </p>
+      </div>
+
+      <div class="kort">
+        <h3>Vi kan ikke lese det sensitive</h3>
+        <p>
+          Alt du merker som sensitivt krypteres i nettleseren din før det sendes.
+          Serveren tar imot chiffertekst og har aldri nøkkelen. Det er ikke en
+          policy vi lover å følge — vi har ikke teknisk mulighet til å se det. Vår
+          egen drift heller ikke.
+        </p>
+      </div>
+
+      <div class="kort">
+        <h3>Revisjonsloggen kan ikke endres — heller ikke av oss</h3>
+        <p>
+          Hver hendelse i frigivelsesløpet skrives én gang og kan aldri redigeres
+          eller slettes. Databasen gir ingen rett til det, til noen. Sporet
+          overlever også hvis du sletter kontoen din, slik at etterlatte kan se at
+          alt gikk riktig for seg.
+        </p>
+      </div>
+
+      <div class="kort">
+        <h3>Du kan gå fra oss når som helst</h3>
+        <p>
+          Én knapp laster ned hele arkivet ditt som vanlige filer, inkludert
+          nøklene som trengs for å låse opp det krypterte — utenfor tjenesten
+          vår, uten oss. Vi har sett tjenester i denne bransjen bli kjøpt opp og
+          slått av med kort varsel, og brukernes data forsvinne med dem. Derfor
+          skal det aldri koste deg noe å forlate oss.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="stat-tittel">
+    <div class="ramme">
+      <p class="mono">Ærlig om hva som allerede finnes</p>
+      <h2 id="stat-tittel">Staten har løst den økonomiske halvdelen. Gratis.</h2>
+      <p>
+        Digitalt dødsbo fra Digdir og Kartverket ble lansert i juni 2025. Den
+        henter automatisk inn bankkontoer, eiendom, kjøretøy, gjeld, forsikring
+        og pensjon, og gir arvingene tilgang via Altinn når tingretten har åpnet
+        for det. Den er bedre enn noe vi kunne bygget, med kilder vi aldri får
+        tilgang til.
+      </p>
+      <p>Vi konkurrerer ikke med den. Vi tar det den ikke kan vite.</p>
+
+      <dl class="deling">
+        <dt>Staten vet</dt>
+        <dd><b>hva</b> som fantes. Registrene kjenner kontoene, boligen, bilen og gjelden.</dd>
+        <dt>Vi vet</dt>
+        <dd>
+          <b>hvor nøkkelen ligger</b>, hva du ønsket, hvilken av de tre permene som
+          er den viktige, hvem som skal ha hva — og hvordan alt dette slippes ut
+          kontrollert. Ingenting av det står i noe register.
+        </dd>
+      </dl>
+
+      <p class="demp liten" style="margin-top:20px">
+        Det samme gjelder juss: et testament og en fremtidsfullmakt krever fortsatt
+        våt signatur og vitner fysisk til stede i Norge. Vi kan hjelpe deg å
+        forberede dokumentet og huske hvor originalen er. Vi later ikke som om vi
+        kan utstede det.
+      </p>
+    </div>
+  </section>
+
+  <section class="slutt" aria-labelledby="slutt-tittel">
+    <div class="ramme">
+      <h2 id="slutt-tittel">Det tar en ettermiddag. Det virker den dagen det trengs.</h2>
+      <p>
+        Kjerneproduktet er bygget og testet ende til ende. Vi har ingen kunder og
+        ingen brukertall ennå, og skal ikke finne på noen. Det vi har, er en
+        frigivelsesmekanikk vi tør stå for og en arkitektur som ikke krever at du
+        stoler på oss.
+      </p>
+      <p class="siste">
+        Er du nysgjerrig, eller vurderer du å tilby dette til dine egne kunder —
+        ta kontakt, så viser vi deg hele løpet i praksis.
+      </p>
+      <p style="margin-top:14px">
+        <a href="mailto:jonathan.foss@eikandfriends.no">jonathan.foss@eikandfriends.no</a>
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="ramme">
+    <p>Livsarkivet er en del av Etterpå. Data lagres i EU/EØS.</p>
+    <p>Ingen frigivelse uten verifisert hendelse, fire øyne og karenstid. Aldri av en maskin alene.</p>
+  </div>
+</footer>
+
+</body>
+</html>

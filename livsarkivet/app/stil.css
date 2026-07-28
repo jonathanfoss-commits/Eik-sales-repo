@@ -11,6 +11,9 @@
   --fare: #D9777B;
   --advarsel: #D9B36B;
   --radius: 14px;
+  /* Display-serif fra systemet: ingen nedlastet font. En PWA som skal virke
+     offline har ikke råd til en font som kanskje ikke kommer. */
+  --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
 }
 * { box-sizing: border-box; margin: 0; }
 html { -webkit-text-size-adjust: 100%; }
@@ -38,9 +41,12 @@ body {
 
 #innhold { padding: 16px; max-width: 640px; margin: 0 auto; }
 
-h1 { font-size: 22px; margin: 4px 0 2px; }
-h2 { font-size: 17px; margin: 18px 0 8px; }
-.undertekst { color: var(--tekst-demp); font-size: 14px; margin-bottom: 14px; }
+/* Overskrifter i serif, brødtekst i sans: dette er et arkiv, ikke et dashbord. */
+h1 { font: 600 27px/1.2 var(--display); letter-spacing: -.01em; margin: 6px 0 4px;
+  text-wrap: balance; }
+h2 { font: 600 19px/1.3 var(--display); margin: 22px 0 8px; text-wrap: balance; }
+.undertekst { color: var(--tekst-demp); font-size: 15px; line-height: 1.55;
+  margin-bottom: 16px; max-width: 60ch; text-wrap: pretty; }
 
 .kort { background: var(--flate); border: 1px solid var(--kant);
   border-radius: var(--radius); padding: 14px; margin: 10px 0; }
@@ -86,8 +92,41 @@ label { font-size: 14px; color: var(--tekst-demp); }
 .merkelapp.varsel { background: #453A22; border-color: var(--advarsel); color: var(--advarsel); }
 .merkelapp.stoppet { background: #3A2226; border-color: var(--fare); color: var(--fare); }
 
-.nedtelling { font-variant-numeric: tabular-nums; font-size: 34px; font-weight: 700;
-  text-align: center; margin: 8px 0; }
+/* Nedtellingen er produktets tese i én skjerm: eieren kan alltid stoppe.
+   Sifrene skal dominere — enhetene er etiketter, ikke tall. */
+.nedtelling { font-variant-numeric: tabular-nums; font: 600 46px/1 var(--display);
+  letter-spacing: -.02em; text-align: center; margin: 20px 0 6px; }
+.nedtelling .enhet { font-size: 16px; font-weight: 500; color: var(--tekst-demp);
+  margin: 0 12px 0 3px; vertical-align: .32em; }
+.nedtelling .enhet:last-child { margin-right: 0; }
+.gang { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--kant); }
+
+/* Frigivelsens gang. Hele vollgraven forklart i ett blikk — for eieren, og
+   for den som skal forstå hvorfor dette ikke er et vanlig hvelv. */
+.tidslinje { list-style: none; padding: 0; margin: 16px 0 4px; }
+.tidslinje li { display: grid; grid-template-columns: 22px 1fr; gap: 12px;
+  padding-bottom: 16px; position: relative; }
+.tidslinje li:last-child { padding-bottom: 0; }
+.tidslinje li::before { content: ""; position: absolute; left: 10.5px; top: 18px;
+  bottom: -2px; width: 1px; background: var(--kant); }
+.tidslinje li:last-child::before { display: none; }
+.tidslinje .prikk { width: 11px; height: 11px; border-radius: 50%; margin: 5px auto 0;
+  border: 1.5px solid var(--kant); background: var(--bakgrunn); }
+.tidslinje .steg-navn { font-size: 15px; color: var(--tekst-demp); }
+.tidslinje .steg-om { font-size: 13.5px; color: var(--tekst-demp); opacity: .8;
+  line-height: 1.45; }
+.tidslinje .ferdig .prikk { background: var(--aksent-mork); border-color: var(--aksent-mork); }
+.tidslinje .ferdig .steg-navn { color: var(--tekst); }
+.tidslinje .naa .prikk { background: var(--aksent); border-color: var(--aksent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--aksent) 22%, transparent); }
+.tidslinje .naa .steg-navn { color: var(--aksent); font-weight: 600; }
+
+/* Tomtilstander: en setning et menneske ville sagt, ikke «ingen data». */
+.tomt { border: 1px dashed var(--kant); border-radius: var(--radius);
+  padding: 24px 20px; text-align: center; color: var(--tekst-demp);
+  font-size: 15px; line-height: 1.55; margin: 12px 0; }
+.tomt strong { display: block; color: var(--tekst); font: 600 17px/1.35 var(--display);
+  margin-bottom: 6px; }
 
 #faner { position: fixed; bottom: 0; left: 0; right: 0;
   display: flex; background: var(--flate); border-top: 1px solid var(--kant);
@@ -95,8 +134,12 @@ label { font-size: 14px; color: var(--tekst-demp); }
 #faner button { flex: 1; background: none; color: var(--tekst-demp);
   border-radius: 0; margin: 0; padding: 12px 4px; font-size: 12px; font-weight: 600;
   display: flex; flex-direction: column; gap: 3px; align-items: center; min-height: 60px; }
-#faner button .ikon { font-size: 20px; line-height: 1; }
+#faner button .ikon { display: flex; line-height: 0; }
 #faner button.valgt { color: var(--aksent); }
+/* Etterlattemodus: fanelinjen skal ikke rope til noen som nettopp har mistet
+   noen. Den valgte fanen leser normalt, resten trekker seg tilbake. */
+body.etterlatt-modus #faner button { color: #A3ABA4; }
+body.etterlatt-modus #faner button.valgt { color: #2E5F4C; }
 
 .matrise-tabell { width: 100%; border-collapse: collapse; font-size: 14px; }
 .matrise-tabell th, .matrise-tabell td { border: 1px solid var(--kant);
@@ -112,3 +155,18 @@ body.etterlatt-modus .mono { color: #8A9088; }
 body.etterlatt-modus .kort { background: #FCFAF5; border-color: #E3DCCD; }
 body.etterlatt-modus .kort .meta, body.etterlatt-modus .undertekst { color: #77817B; }
 body.etterlatt-modus #faner { background: #FCFAF5; border-color: #E3DCCD; }
+body.etterlatt-modus h1 { font-size: 30px; }
+body.etterlatt-modus .kort h3 { font: 600 17px/1.35 var(--display); }
+body.etterlatt-modus .stille { color: #2E5F4C; border-color: #CFDDD4; }
+
+/* «Åpne» skal ikke være det tyngste på siden. Det tyngste er navnet på det
+   avdøde etterlot seg. */
+.stille { background: none; border: 1px solid var(--kant); color: var(--tekst-demp);
+  font-weight: 500; }
+.stille:hover { color: var(--tekst); }
+
+.kort.offentlig { border-style: dashed; background: none; margin-top: 22px; }
+.lenke-ut { display: inline-block; margin-top: 10px; color: var(--aksent);
+  font-size: 15px; text-underline-offset: 3px; }
+body.etterlatt-modus .lenke-ut { color: #2E5F4C; }
+:focus-visible { outline: 2px solid var(--aksent); outline-offset: 2px; }

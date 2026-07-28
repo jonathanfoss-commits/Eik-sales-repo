@@ -26,7 +26,7 @@ export async function vis(rot) {
     const kort = el('div', { class: 'kort' },
       el('div', { class: 'rad' },
         el('div', {}, el('h3', {}, e.tittel), el('div', { class: 'meta' }, `Fra ${e.eier_navn}`)),
-        el('button', { class: 'liten sekundaer', onclick: async (hendelse) => {
+        el('button', { class: 'liten stille', onclick: async (hendelse) => {
           if (detalj.hidden) {
             const en = await kall('GET', `/api/etterlatt/elementer/${e.id}`);
             let tekst = en.data.element?.innhold || '';
@@ -53,4 +53,22 @@ export async function vis(rot) {
       detalj);
     rot.append(kort);
   }
+
+  if (elementer.length) rot.append(offentligHjelp());
+}
+
+// Staten har allerede bygget den økonomiske oversikten: Digitalt dødsbo
+// (Digdir/Kartverket, juni 2025) henter bank, eiendom, kjøretøy, gjeld,
+// forsikring og pensjon automatisk fra autoritative kilder. Vi har ikke de
+// kildene og får dem ikke. Å tie om det ville latt en etterlatt lete etter
+// noe de kunne fått utlevert gratis samme dag.
+function offentligHjelp() {
+  return el('div', { class: 'kort offentlig' },
+    el('h3', {}, 'Dette trenger du ikke lete etter'),
+    el('p', { class: 'meta' },
+      'Bankkontoer, eiendom, kjøretøy, gjeld, forsikring og pensjon kommer '
+      + 'automatisk gjennom Digitalt dødsbo når tingretten har gitt deg tilgang '
+      + 'som arving. Du får varsel, og finner oversikten i Altinn.'),
+    el('a', { class: 'lenke-ut', href: 'https://www.altinn.no', target: '_blank',
+      rel: 'noopener noreferrer' }, 'Åpne Altinn'));
 }
