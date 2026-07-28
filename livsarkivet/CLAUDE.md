@@ -14,6 +14,7 @@ og arbeidsformen (les først, planlegg, små leveranser, norsk bokmål) gjelder.
 - `node server/verktoy/ny-admin.js "Navn" epost [slug]` — ny saksbehandler (TOTP)
 - `node server/verktoy/ny-integrasjon.js <slug> "Navn" [webhook-url]` — API-nøkkel
 - `node server/verktoy/ny-oidc.js <slug> <issuer> <klient-id> [hemmelighet]` — selskapets IdP
+- `node server/verktoy/prospekt-demo.js <slug> "Navn" <vertsnavn> [#farge]` — merkevaret demo
 - Nivå 7 (manuell akseptansetest): `docs/akseptansetest.md`
 
 ## Ufravikelig
