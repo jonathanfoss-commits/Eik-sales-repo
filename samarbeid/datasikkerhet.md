@@ -9,10 +9,14 @@ Her er nøyaktig hvor data bor i dag, og de tre sikkerhetsnivåene fremover.
 |---|---|---|
 | Utkast, godkjenninger, innstillinger i appen | **Lokalt på Ole Fabians telefon** (localStorage) | Nei — appen har ingen database hos oss |
 | Dikteringer og tekster han jobber med | I hans egen Claude-konto | Til Anthropic (se tiltak under), ingen andre |
+| Tekst i «⚡ Utkast» (Skrivemotoren i appen) | **Lagres ingen steder** — sendes kryptert til AI-API-et kun når han trykker knappen, svaret kommer rett tilbake | Til Anthropic via vår serverfunksjon (ren gjennomstrømming — ingen lagring, ingen trening; databehandleravtale, se under) |
 | Bruksstatistikk (pilotloggen) | Netlify Forms | Kun hendelsestyper («kopierte tilbudsprompt») — **aldri innhold** |
 | E-poster han sender | Hans egen Mail-app | Som all annen e-post fra OP Bygg |
 
-Det finnes altså **ingen Lærling-server med OP Byggs data**. Vi kan ikke miste det vi ikke har.
+Det finnes altså **ingen Lærling-server som lagrer OP Byggs data**. Vi kan ikke miste det
+vi ikke har. Skrivemotoren er eneste sted tekst passerer gjennom vår infrastruktur — den
+strømmes og forkastes, og databehandleravtale med AI-leverandøren dekker denne flyten
+(Jonathans sjekkpunkt: bekreft/signer DPA hos Anthropic).
 
 **To tiltak som gjøres i oppsettsmøtet:**
 1. I Claude-appen: Innstillinger → Personvern → skru av deling av samtaler til
@@ -52,7 +56,8 @@ med absolutte krav.
 ## Anbefalt svar til sjefen (kortversjon)
 
 > «I testperioden lagres alt lokalt på Ole Fabians telefon og i en Claude-konto med trening
-> avskrudd — det finnes ingen server med deres data. Blir dere med videre som
+> avskrudd. Hurtigutkastene i appen sendes kryptert til AI-en kun når han trykker på knappen,
+> og lagres ingen steder — det finnes ingen server som lagrer deres data. Blir dere med videre som
 > utviklingspartner, får dere databehandleravtale, EU-lagring med null datalagring hos
 > AI-leverandøren — og hvis dere vil: en boks som står fysisk hos dere, slik at
 > bedriftsdataene aldri forlater huset.»

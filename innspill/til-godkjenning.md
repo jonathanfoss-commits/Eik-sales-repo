@@ -3,7 +3,65 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
-## INGEN LEVERANSER VENTER
+## v0.18.1 — 21. juli 2026 (sentralkoden ut av alle filer — ⚠ HASTER fra Musk-reviewen)
+
+**Hvorfor:** sentralkoden var eksponert offentlig via GitHub Pages (klartekst i
+`innspill.js`, PBKDF2-avtrykk i admin/lab) og må anses brent.
+
+**Hva:** Kommandosentralen og Prøverommet prøver nå koden mot innspill-funksjonen
+(lås opp kun på 200, «feil kode» kun på 401, alt annet meldes som serverfeil — aldri
+falsk «feil kode»). PBKDF2-maskineriet er slettet. Serverfunksjonen godtar kun
+miljøvariabelen PILOT_API_KODE (mangler den: 503 uten detaljer). Variabelen er alt
+satt til dagens kode på BEGGE sitene, så ingenting knekker ved deploy.
+**Rotasjon etter merge (Jonathans steg 4):** bytt PILOT_API_KODE i Netlify på begge
+sitene til en ny selvvalgt kode → SMS til Ole Fabian → gammel kode er død.
+
+**Panelets vedtak:** Personvernvakt JA (krav: rotér straks etter utrulling; kun koden i
+header; 503 uten detaljer — alle innfridd), Frontend ENDRE (statuskode-disiplin —
+innarbeidet). **QA:** Playwright 390×844 + 1440×900 på admin/lab/index: låst ved start,
+feil kode avvist, riktig kode låser opp, null pageerror. Versjonstriaden 0.18.1 med
+cache «laerling-0.18.1» (én kilde).
+
+## Musk-tiltak — 20. juli 2026 (infrastruktur, bestilt av Jonathan: «alt du kan gjøre auto»)
+
+**Hva:** (1) `.github/workflows/pages.yml` slettet — den publiserte HELE repoet (pilotdata,
+forretningsdokumenter) offentlig på GitHub Pages; Jonathan må i tillegg skru av Pages i
+repo-innstillingene. (2) Query-string-veien for sentralkoden fjernet i `innspill.js` (kun
+header; alle klientene brukte allerede header). (3) Cache-navnet i `sw.js` bundet til
+versjonsnummeret («laerling-0.18.0») — ny regel: alltid «laerling-» + VERSJON, én kilde.
+(4) `samarbeid/datasikkerhet.md` presisert med Skrivemotorens gjennomstrømming + DPA-punkt.
+(5) `innspill/pilotlogg-innsikt.md` opprettet med faktiske brukstall (17 hendelser, null
+verktøybruk målt). (6) Rutinesanering utenfor repoet: lunsjtriage og kostnadssjekk slettet,
+kveldsteamet gjenskapt med behovsstyrt panel (maks 3 eksperter), tidlig-slutt-regel og
+automatisk innspill-henting fra Netlify Forms. Sentralkode-rotasjon lagt som HASTER i
+prioritering.md.
+
+## v0.18.0 — 20. juli 2026 (Lov- og regelsjekk — brukerinnspill fra pilotloggen)
+
+**Hva:** Ny rad i prompt-biblioteket på Verktøy-fanen: «Lov- og regelsjekk» (undertekst
+«Veileder — erstatter ikke rådgiver»). Spør rett fram — «må vi ha rekkverk ved to
+meter?» — og Skrivemotoren svarer med hva regelverket sier og hvilken forskrift og
+paragraf som gjelder (TEK17, arbeidsplassforskriften, byggherreforskriften, SAK10 m.fl.).
+Instruksen er avgrenset etter jurist-vilkårene: aldri konklusjon i den konkrete saken,
+aldri «dette er lov/ulovlig», «dette må sjekkes» ved usikker hjemmel, stans-arbeidet-svar
+ved pågående farlige situasjoner, og fast ansvarsfraskrivelse nederst i hvert svar.
+KOPIER-fallbacken (Claude-appen ved dårlig dekning) har samme avgrensning bakt inn i
+prompten. Ingen ny dataflyt: samme rene gjennomstrømming som resten av Skrivemotoren,
+loggen får kun hendelsestypen.
+
+**Panelets vedtak:** 5 × JA, 1 × ENDRE (tekst). Ingen personvern-veto.
+
+**Sjekkpunkt til Jonathan (fra Kontraktsjuristen):** databehandleravtale (DPA) med
+API-leverandøren bør bekreftes/signeres — samme punkt som Musk-reviewen 20. juli flagget
+for `pilot/datasikkerhet.md`.
+
+**QA:** Playwright 390×844 + 1440×900, null JS-feil, ny rad og ark verifisert i begge.
+Funn under QA (pre-eksisterende, IKKE rettet i natt): `op-bygg-logo.png` refereres to
+steder i index.html men finnes ikke — 404 også på live STABIL. Bildet har alt-tekst, så
+det vises bare som tomrom. Rettes ved at Jonathan legger logofilen i `app/`, eller at
+referansene fjernes i en egen leveranse.
+
+---
 
 Pakken v0.9.4–v0.17.1 ble publisert til STABIL 19. juli 2026 på admin-overstyring
 fra Jonathan (se publiseringsloggen nederst). Delversjonene under står som
@@ -206,6 +264,16 @@ publiser» til Claude.
 ---
 
 ## Publiseringslogg
+
+- **28. juli 2026 — v0.18.0–v0.18.1 + Musk-tiltak publisert til STABIL.** Innhold:
+  «Lov- og regelsjekk» i Skrivemotoren (brukerinnspill), pages.yml-slettingen,
+  sentralkode-herdingen (server-verifisert opplåsing, kode kun i miljøvariabel),
+  versjonsbinding av sw-cachen, datasikkerhet-presisering og pilotlogg-innsikten.
+  Bakgrunn: lanseringsforberedelse for ledelsen + Ole Fabian.
+  **Avvik fra to-nøkkel-regelen:** publisert på admin-overstyring fra Jonathan
+  (valgte «Admin-overstyring nå» i lanseringsplanen, 28. juli). Ole Fabian hadde
+  ikke stemt i testappen da publiseringen skjedde. Utført av Claude med merge
+  kveldsteam-forslag → main. Kun Jonathan har denne retten.
 
 - **19. juli 2026 — v0.9.4–v0.17.1 publisert til STABIL.** Innhold: Skrivemotoren
   serverless, sikkerhetspakken (pilotkode-splitten v0.14.1), panel-konstellasjonen,

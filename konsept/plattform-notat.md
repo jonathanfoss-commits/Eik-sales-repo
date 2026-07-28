@@ -15,7 +15,7 @@ Alt under må bli konfigurasjon per kunde. Fil + sted for hver:
 | Prompter (PROMPTER) | `app/index.html` l.787–802 — sju byggeprompter med NS-referanser |
 | Demo-utkast | `app/index.html` l.346–415 og l.1390–1405 — fire kort + dikteringsdemo, alle signert «Mvh Ole Fabian, OP Bygg AS» |
 | Varemottak-mal | `app/index.html` l.1334–1342 — «3 virkedager»-frist og «OP Bygg AS» i signaturen |
-| Pilotkoder | To koder siden v0.13.1: sentralkoden som PBKDF2-avtrykk i `app/admin.html` + `app/lab.html` og klartekst kun server-side i `netlify/functions/innspill.js` (overstyrbar med PILOT_API_KODE); ansattkoden for Skrivemotoren i `app/index.html` (PILOTKODE) + `netlify/functions/skriv.mjs` (overstyrbar med SKRIV_KODE) — parene må holdes i synk |
+| Pilotkoder | To koder siden v0.13.1; fra v0.18.1 bor sentralkoden KUN i miljøvariabelen PILOT_API_KODE (ingen fil) — `app/admin.html` + `app/lab.html` prøver den mot innspill-funksjonen (200/401), rotasjon = bytt variabelen på begge sitene; ansattkoden for Skrivemotoren i `app/index.html` (PILOTKODE) + `netlify/functions/skriv.mjs` (overstyrbar med SKRIV_KODE) må holdes i synk |
 | Kanal-URL-er | `netlify/functions/innspill.js` (`VERTER`, l.7–10), `app/admin.html` (`STANDARD`, l.323–325, inkl. pilotstart-dato) |
 | Logo | `op-bygg-logo.png` referert i `app/index.html` l.301 og l.700 (med `onerror`-fallback — bra mønster) |
 | Kontakt/eskalering | `mailto:jonathan.foss@eikandfriends.no` i `app/index.html` l.557 og `app/bli-med.html` |
@@ -30,7 +30,7 @@ window.KUNDE = {
   firma: "OP Bygg AS", type: "totalentreprenør", sted: "Oslo", ansatte: 11,
   kontaktperson: "Ole Fabian Foss", rolle: "prosjektleder",
   eier: { navn: "Jonathan", epost: "jonathan.foss@eikandfriends.no" },
-  pilotkodeAvtrykk: "<PBKDF2-hex>", ansattkode: "<per kunde>", pilotstart: "2026-07-17",
+  ansattkode: "<per kunde>", pilotstart: "2026-07-17", /* sentralkoden: kun miljøvariabel */
   kanaler: { stabil: "https://…-app.netlify.app", test: "https://…-app-test.netlify.app" },
   logo: "kunde-logo.png",
   bransjelag: "bygg-totalentreprise",   // peker til faglaget (se pkt. 3)
