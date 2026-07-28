@@ -63,6 +63,18 @@ node server/verktoy/ny-integrasjon.js storebrand "Skadesystem" https://api.store
   aktivt deler. Sjekkes på nytt ved hvert oppslag, så et tilbaketrekk virker
   også mot en integrasjon som kjenner sak-id-en.
 
+## Innlogging via selskapets IdP (ADR-009)
+```
+node server/verktoy/ny-oidc.js storebrand https://login.storebrand.no livsarkivet-klient <hemmelighet>
+```
+Authorization Code + PKCE, RS256 verifisert mot JWKS med `node:crypto` — ingen
+avhengigheter. Knappen «Logg inn med \<selskap\>» står først på
+innloggingsskjermen: kundene deres har allerede en identitet, og for etterlatte
+er et passord til «enda en tjeneste» en terskel de kanskje aldri kommer over.
+**Kobling skjer på `sub`, aldri e-post alene**, en eksisterende passordkonto
+overtas ikke automatisk, og **en ekstern innlogging kan aldri bli
+saksbehandler** — ellers kunne selskapets IdP utnevne godkjennere hos oss.
+
 ## Folkeregister-trigger (ADR-008)
 Et dødsfall kan oppdages fra offisiell kilde i stedet for at en betrodd kontakt
 må orke å melde det. **Men en offisiell kilde erstatter ikke fire øyne:** saken

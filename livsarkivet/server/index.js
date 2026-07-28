@@ -5,9 +5,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { config } from './config.js';
-import { Ruter, ApiFeil, svarJson, lesJson, lesCookies } from './http.js';
+import { Ruter, ApiFeil, svarJson, lesJson, lesCookies, settSesjonsCookie } from './http.js';
 import { loggInn, loggUt, finnSesjon, registrerSelv, innlosInvitasjon,
-  finnBrukerPaaEpost, lagNullstilling, fullforNullstilling, byttPassord } from './auth.js';
+  finnBrukerPaaEpost, lagNullstilling, fullforNullstilling, byttPassord,
+  lagSesjon } from './auth.js';
 import { sendEpost, epostTilgjengelig } from './epost.js';
 import { finnTenant, merkevare } from './tenant.js';
 import { medBruker, authPool } from './db.js';
@@ -23,6 +24,7 @@ import * as konto from './api/konto.js';
 import * as deling from './api/deling.js';
 import * as selskap from './api/selskap.js';
 import * as folkeregister from './api/folkeregister.js';
+import * as oidc from './api/oidc.js';
 import { feiKarenstid } from './feier.js';
 import { sendUtestaaende } from './varsling.js';
 import { sendUtestaaendeWebhooks } from './webhook.js';
@@ -30,7 +32,7 @@ import { ingestDodsfall } from './folkeregister.js';
 
 const ruter = new Ruter();
 for (const modul of [hvelv, kontakter, matrise, hendelse, verifisering, etterlatt,
-  abonnement, krypto, konto, deling, selskap, folkeregister]) {
+  abonnement, krypto, konto, deling, selskap, folkeregister, oidc]) {
   modul.registrer(ruter);
 }
 
@@ -72,6 +74,7 @@ const AAPNE = new Set(['POST /api/auth/logg-inn', 'POST /api/auth/registrer',
   'POST /api/auth/glemt', 'POST /api/auth/nullstill',
   'GET /api/demo/inn',           // egen vaktpost i ruten (kun demomiljø)
   'GET /api/miljo',              // må leses FØR innlogging (demoadvarsel)
+  'GET /api/auth/oidc/start', 'GET /api/auth/oidc/tilbake',  // selskapets IdP
   'POST /api/stripe/webhook']); // signaturverifisert i ruten
 
 // Selskapenes integrasjons-API autentiserer med API-nøkkel i stedet for
@@ -88,18 +91,20 @@ ruter.add('GET', '/api/helse', async () => ({ ok: true }));
 // «registrering» styrer om «Opprett ditt livsarkiv» vises i det hele tatt. I
 // produksjon står flagget av, og da er knappen en blindvei: brukeren fyller ut
 // skjemaet og får «Registrering er ikke åpnet ennå» etterpå.
-ruter.add('GET', '/api/miljo', async ({ req }) => ({
-  demo: config.demoInnlogging,
-  registrering: config.registreringAapen,
-  // White-label: hvilket selskap svarer denne adressen for
-  merkevare: merkevare(await finnTenant(req)),
-}));
-
-function settSesjonsCookie(res, token) {
-  const sikker = process.env.NODE_ENV === 'production' ? '; Secure' : '';
-  res.setHeader('Set-Cookie',
-    `livsarkiv_sesjon=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${14 * 86400}${sikker}`);
-}
+ruter.add('GET', '/api/miljo', async ({ req }) => {
+  const tenant = await finnTenant(req);
+  // Har selskapet egen innlogging, skal knappen stå der FØR skjemaet — det er
+  // den veien kundene deres allerede kjenner.
+  const sso = tenant ? (await medBruker({ rolle: 'system' }, async (c) =>
+    (await c.query('SELECT 1 FROM oidc_for_tenant($1)', [tenant.id])).rows.length > 0)) : false;
+  return {
+    demo: config.demoInnlogging,
+    registrering: config.registreringAapen,
+    // White-label: hvilket selskap svarer denne adressen for
+    merkevare: merkevare(tenant),
+    sso,
+  };
+});
 
 ruter.add('POST', '/api/auth/logg-inn', async ({ req, body, res }) => {
   // dobbel nøkkel: per klient-IP OG per e-post — verner kontoen selv når
@@ -141,20 +146,10 @@ ruter.add('POST', '/api/auth/innlos-invitasjon', async ({ req, body, res }) => {
   }
   // ny konto: logg rett inn (passordet ble nettopp satt, e-posten står på invitasjonen)
   if (!sesjon && resultat.bruker) {
-    settSesjonsCookie(res, await loggInnMedId(resultat.bruker));
+    settSesjonsCookie(res, await lagSesjon(resultat.bruker.id));
   }
   return { ok: true };
 });
-
-// Ny konto fra invitasjon: lag sesjon direkte (passordet er alt verifisert satt).
-async function loggInnMedId(bruker) {
-  const token = crypto.randomBytes(32).toString('hex');
-  const utloper = new Date(Date.now() + 14 * 86400_000);
-  await authPool.query(
-    'INSERT INTO sesjoner (token_hash, bruker_id, utloper) VALUES ($1, $2, $3)',
-    [crypto.createHash('sha256').update(token).digest('hex'), bruker.id, utloper]);
-  return token;
-}
 
 // Ett-trykks innlogging for demoing (DEMO_INNLOGGING=1). Ingen «av med
 // innlogging»-modus finnes, og skal ikke finnes: hele appen er definert av hvem
@@ -170,7 +165,7 @@ ruter.add('GET', '/api/demo/inn', async ({ sok, res }) => {
     'SELECT id, navn FROM brukere WHERE epost = $1 AND aktiv', [epost])).rows[0];
   if (!bruker) throw new ApiFeil(404, `Fant ingen demokonto «${kort}»`);
   console.log(JSON.stringify({ hendelse: 'demo_innlogging', konto: epost }));
-  settSesjonsCookie(res, await loggInnMedId(bruker));
+  settSesjonsCookie(res, await lagSesjon(bruker.id));
   return { _omdirigering: '/' };
 });
 

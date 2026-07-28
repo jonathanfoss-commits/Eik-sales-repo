@@ -15,6 +15,14 @@ export function svarJson(res, status, data) {
   res.end(kropp);
 }
 
+// Sesjonscookien settes fra to steder (passordinnlogging og OIDC), og
+// Secure-flagget må ikke kunne drifte fra hverandre mellom dem.
+export function settSesjonsCookie(res, token) {
+  const sikker = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+  res.setHeader('Set-Cookie',
+    `livsarkiv_sesjon=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${14 * 86400}${sikker}`);
+}
+
 export function lesCookies(req) {
   const ut = {};
   for (const del of (req.headers.cookie || '').split(';')) {

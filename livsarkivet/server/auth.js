@@ -98,6 +98,17 @@ export async function loggInn(epost, passord, totp) {
   return { token, bruker: { id: bruker.id, navn: bruker.navn, rolle: bruker.rolle } };
 }
 
+// Lag en sesjon for en bruker som alt er autentisert på annen måte
+// (invitasjonsinnløsning, demoinnlogging, OIDC).
+export async function lagSesjon(brukerId) {
+  const token = crypto.randomBytes(32).toString('hex');
+  const utloper = new Date(Date.now() + SESJON_LEVETID_TIMER * 3600_000);
+  await authPool.query(
+    'INSERT INTO sesjoner (token_hash, bruker_id, utloper) VALUES ($1, $2, $3)',
+    [sha256(token), brukerId, utloper]);
+  return token;
+}
+
 export async function finnSesjon(token) {
   if (!token) return null;
   const res = await authPool.query(

@@ -13,6 +13,7 @@ og arbeidsformen (les først, planlegg, små leveranser, norsk bokmål) gjelder.
 - `node server/verktoy/ny-tenant.js <slug> "Navn" [vertsnavn]` — nytt selskap
 - `node server/verktoy/ny-admin.js "Navn" epost [slug]` — ny saksbehandler (TOTP)
 - `node server/verktoy/ny-integrasjon.js <slug> "Navn" [webhook-url]` — API-nøkkel
+- `node server/verktoy/ny-oidc.js <slug> <issuer> <klient-id> [hemmelighet]` — selskapets IdP
 - Nivå 7 (manuell akseptansetest): `docs/akseptansetest.md`
 
 ## Ufravikelig
@@ -24,9 +25,13 @@ og arbeidsformen (les først, planlegg, små leveranser, norsk bokmål) gjelder.
 3b. Nye admin-policyer bruker `er_admin_for(hvelv_id)`, aldri `er_admin()`
    alene (ADR-005). Et ubetinget `er_admin()` lar ett selskaps saksbehandler
    se et annets kunder.
+3c. En ekstern innlogging (OIDC) gir ALLTID rolle 'person'. Selskapets IdP skal
+   aldri kunne utnevne saksbehandlere hos oss (ADR-009).
 4. Revisjonsloggen er append-only (ingen UPDATE/DELETE-grant). Logg og varsler
    bærer aldri innhold.
-5. Sensitiv-tier er stengt (501) til ADR-001 er godkjent av Jonathan.
+5. Sensitiv-tier krypteres i nettleseren (ADR-001, godkjent og implementert).
+   Serveren skal ALDRI ta imot klartekst på dette nivået — API-et avviser
+   `nivaa='sensitiv'` uten `kryptert` + `nokkelRef`.
 6. Ny tabell = ENABLE RLS (aldri FORCE) + eksplisitte grants + RLS-test i
    samme PR. Husk: en UPDATE med WHERE på kolonner krever også SELECT-policy.
 7. Beslutninger som binder juss, sikkerhet eller penger: spør Jonathan.

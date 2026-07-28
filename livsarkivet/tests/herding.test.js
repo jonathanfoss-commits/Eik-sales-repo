@@ -162,11 +162,12 @@ test('/api/miljo melder demomodus uten innlogging', { skip: hopp() }, async () =
   // nye felt i stillhet. Verdiene sjekkes hver for seg, så et nytt felt krever
   // en bevisst endring her i stedet for å velte en urelatert assertion.
   const miljo = (await api(null, 'GET', '/api/miljo')).data;
-  assert.deepEqual(Object.keys(miljo).sort(), ['demo', 'merkevare', 'registrering']);
+  assert.deepEqual(Object.keys(miljo).sort(), ['demo', 'merkevare', 'registrering', 'sso']);
   assert.equal(miljo.demo, false);
   assert.equal(miljo.registrering, true, 'denne serveren har åpen registrering');
   assert.deepEqual(Object.keys(miljo.merkevare).sort(), ['aksent', 'avsender', 'navn']);
   assert.equal(miljo.merkevare.navn, 'Livsarkivet');
+  assert.equal(miljo.sso, false, 'plattformen har ingen ekstern IdP');
 
   // med flagget: advarselen må komme, og den må kunne leses FØR innlogging
   const port = PORT + 1;
