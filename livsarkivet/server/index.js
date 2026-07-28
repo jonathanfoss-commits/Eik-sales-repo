@@ -21,12 +21,14 @@ import * as abonnement from './api/abonnement.js';
 import * as krypto from './api/krypto.js';
 import * as konto from './api/konto.js';
 import * as deling from './api/deling.js';
+import * as selskap from './api/selskap.js';
 import { feiKarenstid } from './feier.js';
 import { sendUtestaaende } from './varsling.js';
+import { sendUtestaaendeWebhooks } from './webhook.js';
 
 const ruter = new Ruter();
 for (const modul of [hvelv, kontakter, matrise, hendelse, verifisering, etterlatt,
-  abonnement, krypto, konto, deling]) {
+  abonnement, krypto, konto, deling, selskap]) {
   modul.registrer(ruter);
 }
 
@@ -38,6 +40,7 @@ if (!config.testmodus) {
   setInterval(() => {
     feiKarenstid()
       .then(() => sendUtestaaende())
+      .then(() => sendUtestaaendeWebhooks())
       .catch((f) => console.error('Feier:', f.message));
   }, 60_000).unref();
 }
@@ -67,6 +70,12 @@ const AAPNE = new Set(['POST /api/auth/logg-inn', 'POST /api/auth/registrer',
   'GET /api/demo/inn',           // egen vaktpost i ruten (kun demomiljø)
   'GET /api/miljo',              // må leses FØR innlogging (demoadvarsel)
   'POST /api/stripe/webhook']); // signaturverifisert i ruten
+
+// Selskapenes integrasjons-API autentiserer med API-nøkkel i stedet for
+// sesjonscookie, og har variable stier (/api/selskap/saker/:id) som et exact
+// match i AAPNE ikke kan uttrykke. Hver rute sjekker nøkkelen selv — slipper
+// man forbi her, får man 401 i ruten.
+const NOKKELRUTER = /^\/api\/selskap\//;
 
 ruter.add('GET', '/api/helse', async () => ({ ok: true }));
 
@@ -279,7 +288,7 @@ const server = http.createServer(async (req, res) => {
 
     const noekkel = `${req.method} ${sti}`;
     let ctx = null;
-    if (!AAPNE.has(noekkel)) {
+    if (!AAPNE.has(noekkel) && !NOKKELRUTER.test(sti)) {
       ctx = await finnSesjon(lesCookies(req).livsarkiv_sesjon);
       if (!ctx) throw new ApiFeil(401, 'Logg inn først');
       res._rolle = ctx.rolle;

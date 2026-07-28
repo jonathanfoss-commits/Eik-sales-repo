@@ -12,6 +12,7 @@ og arbeidsformen (les først, planlegg, små leveranser, norsk bokmål) gjelder.
 - `npm run lasttest` — nivå 6: innlogging + frigivelsesflytens lesninger
 - `node server/verktoy/ny-tenant.js <slug> "Navn" [vertsnavn]` — nytt selskap
 - `node server/verktoy/ny-admin.js "Navn" epost [slug]` — ny saksbehandler (TOTP)
+- `node server/verktoy/ny-integrasjon.js <slug> "Navn" [webhook-url]` — API-nøkkel
 - Nivå 7 (manuell akseptansetest): `docs/akseptansetest.md`
 
 ## Ufravikelig
@@ -30,8 +31,11 @@ og arbeidsformen (les først, planlegg, små leveranser, norsk bokmål) gjelder.
    samme PR. Husk: en UPDATE med WHERE på kolonner krever også SELECT-policy.
 7. Beslutninger som binder juss, sikkerhet eller penger: spør Jonathan.
 8. Varsling skjer ALLTID i samme transaksjon som tilstandsendringen
-   (`koVarsler`, aldri etter commit) — ellers kan en frigivelse skje uten at
-   noen ble varslet. E-postutsending er den gjentakbare delen.
+   (`koVarsler`/`ko_webhooks`, aldri etter commit) — ellers kan en frigivelse
+   skje uten at noen ble varslet. Utsending er den gjentakbare delen.
+8b. Selskapet varsles KUN ved `frigitt`, aldri ved karenstidens start: eieren
+   kan fortsatt stoppe alt, og en for tidlig utbetaling kan ikke ringes
+   tilbake. Webhook-nyttelasten bærer aldri personopplysninger (ADR-007).
 9. Testfilene kjører parallelt: aldri assert på globale radtall — skop
    assertions til testens egne fiksturer.
 

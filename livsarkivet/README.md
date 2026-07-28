@@ -46,6 +46,23 @@ vegne eller gjenopplive et tilbaketrekk. **Plattformdriften ser ikke delte
 felt** — vi trenger saksmetadata for å drifte frigivelsesløpet, ikke kundens
 polisenummer. Resten av hvelvet er stengt for selskapet, også etter frigivelse.
 
+## Integrasjonsflate for selskapet (ADR-007)
+```
+node server/verktoy/ny-integrasjon.js storebrand "Skadesystem" https://api.storebrand.no/livsarkivet
+```
+- **Webhook** ved frigivelse: `{hendelse, sak_id, tidspunkt}` — ingen
+  personopplysninger. HMAC-SHA256 over `"<tidsstempel>.<kropp>"` i
+  `X-Livsarkivet-Signatur`, med tidsstemplet signert så kallet ikke kan spilles
+  av på nytt. Køes i frigivelsestransaksjonen, sendes med eksponentiell
+  tilbaketrekning, og en feilet utsending slettes aldri.
+- **Vi varsler først ved FRIGITT**, aldri ved karenstidens start: i karenstiden
+  kan eieren fortsatt stoppe alt, og en for tidlig utbetaling kan ikke ringes
+  tilbake.
+- `GET /api/selskap/saker` og `/api/selskap/saker/:id` med
+  `Authorization: Bearer lva_…` gir egne **frigitte** saker og de feltene kunden
+  aktivt deler. Sjekkes på nytt ved hvert oppslag, så et tilbaketrekk virker
+  også mot en integrasjon som kjenner sak-id-en.
+
 ## Ufravikelige prinsipper (håndhevet i kode og tester)
 1. Ingen frigivelse uten verifisert hendelse + karenstid (48 t).
 2. Fire øyne: to ULIKE saksbehandlere må godkjenne (app-sjekk + CHECK i basen).
