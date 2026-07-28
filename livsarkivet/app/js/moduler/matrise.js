@@ -29,15 +29,23 @@ export async function vis(rot) {
   const feilRom = el('div', {});
   rot.append(feilRom);
   const tabell = el('table', { class: 'matrise-tabell' });
-  tabell.append(el('tr', {}, el('th', {}, 'Element'),
-    ...folk.map((k) => el('th', {}, k.navn))));
+  tabell.append(el('thead', {}, el('tr', {}, el('th', { scope: 'col' }, 'Element'),
+    ...folk.map((k) => el('th', { scope: 'col' }, k.navn)))));
+  const kropp0 = el('tbody', {});
+  tabell.append(kropp0);
 
   for (const e of elementer) {
-    const rad = el('tr', {}, el('td', {}, e.tittel));
+    const rad = el('tr', {}, el('th', { scope: 'row' }, e.tittel));
     for (const k of folk) {
-      const celle = el('td', { class: 'matrise-celle', role: 'button',
+      // Ekte knapp, ikke en td med role=button: da virker mellomrom og enter,
+      // og skjermleseren leser av- og påslått i stedet for «prikk».
+      const celle = el('button', { class: 'matrise-celle', type: 'button',
         'aria-label': `${e.tittel} til ${k.navn}` });
-      const oppdater = () => { celle.textContent = kart.has(`${e.id}|${k.id}`) ? '✓' : '·'; };
+      const oppdater = () => {
+        const paa = kart.has(`${e.id}|${k.id}`);
+        celle.setAttribute('aria-pressed', paa ? 'true' : 'false');
+        celle.textContent = paa ? '✓' : '–';
+      };
       celle.addEventListener('click', async () => {
         const eksisterende = kart.get(`${e.id}|${k.id}`);
         if (eksisterende) {
@@ -64,9 +72,9 @@ export async function vis(rot) {
         oppdater();
       });
       oppdater();
-      rad.append(celle);
+      rad.append(el('td', {}, celle));
     }
-    tabell.append(rad);
+    kropp0.append(rad);
   }
   rot.append(el('div', { class: 'kort', style: 'overflow-x:auto' }, tabell));
 }

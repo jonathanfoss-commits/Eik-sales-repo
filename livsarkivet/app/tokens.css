@@ -1,0 +1,73 @@
+/* Livsarkivet — designtokens. Kontrakten står i docs/designsystem.md.
+   Bruk aldri en rå verdi i en komponent; legg til et token her først. */
+:root {
+  /* ── Type ── */
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-tekst: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --t-xs: 12px;  --t-s: 14px;  --t-m: 16px;  --t-l: 19px;
+  --t-xl: 24px;  --t-2xl: 30px; --t-3xl: 44px;
+
+  /* ── Avstand: én 4px-skala for hele produktet ── */
+  --r-1: 4px;  --r-2: 8px;  --r-3: 12px; --r-4: 16px; --r-5: 20px;
+  --r-6: 24px; --r-7: 32px; --r-8: 40px; --r-9: 56px;
+
+  /* ── Form ── */
+  --radius-s: 8px; --radius-m: 12px; --radius-l: 16px; --radius-full: 999px;
+  --skygge-loft: 0 12px 32px rgb(0 0 0 / .38);
+
+  /* ── Layout ── */
+  --kolonne: 680px;      /* lesekolonne på mobil/nettbrett */
+  --arbeidsflate: 1180px; /* maks arbeidsbredde på desktop */
+  --sidestolpe: 244px;
+
+  /* ── Bevegelse ── */
+  --fart-rask: 120ms;
+  --fart-glid: 160ms;
+  --kurve: cubic-bezier(.2, .7, .3, 1);
+
+  /* ── Farge: mørk er standard for eier og saksbehandler ── */
+  --grunn: #0B1620;
+  --flate: #132433;
+  --flate-hev: #1B3043;
+  --kant: #24405A;
+  --kant-sterk: #365A78;
+  --tekst: #EDF2F0;
+  --tekst-demp: #A6BAB4;
+  --tekst-svak: #7E948E;
+  --aksent: #7FB7A3;
+  --aksent-dyp: #4E8271;
+  --paa-aksent: #08131A;
+  --fare: #E08A8E;
+  --fare-flate: #33202400;
+  --fare-flate-fylt: #331F23;
+  --varsel: #E0BC79;
+  --varsel-flate: #332B18;
+  --ok: #7FB7A3;
+  --ok-flate: #16302B;
+  --skjelett: #1B3043;
+}
+
+/* Etterlattemodus er ikke «lys modus» — det er en annen temperatur for et
+   annet menneske i en annen tilstand. Varmere, luftigere, større type. */
+body.etterlatt-modus {
+  --grunn: #F4F2ED;
+  --flate: #FFFFFF;
+  --flate-hev: #EAE7DF;
+  --kant: #DAD5CA;
+  --kant-sterk: #BDB6A8;
+  --tekst: #17242C;
+  --tekst-demp: #5A6A64;
+  --tekst-svak: #7B8781;
+  --aksent: #2E6A55;
+  --aksent-dyp: #1F5140;
+  --paa-aksent: #FFFFFF;
+  --fare: #9B3138;
+  --fare-flate-fylt: #F6E4E5;
+  --varsel: #7A5B15;
+  --varsel-flate: #F5EDD9;
+  --ok: #2E6A55;
+  --ok-flate: #E4F0EA;
+  --skjelett: #EAE7DF;
+}

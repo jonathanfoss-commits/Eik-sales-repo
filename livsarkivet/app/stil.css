@@ -1,201 +1,352 @@
-/* Livsarkivet — rolig, verdig, én tommel. Mørk skifer med salviegrønn aksent. */
-:root {
-  --bakgrunn: #0E1B25;
-  --flate: #16283A;
-  --flate-hev: #1D3348;
-  --kant: #27405A;
-  --tekst: #EDF2F0;
-  --tekst-demp: #9FB3AD;
-  --aksent: #7FB7A3;
-  --aksent-mork: #4E8271;
-  --fare: #D9777B;
-  --advarsel: #D9B36B;
-  --radius: 14px;
-  /* Display-serif fra systemet: ingen nedlastet font. En PWA som skal virke
-     offline har ikke råd til en font som kanskje ikke kommer. */
-  --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-}
+/* Livsarkivet — stilark. Tokens i tokens.css, kontrakt i docs/designsystem.md.
+   Ingen rå verdier her: alt går gjennom var(--…). */
+@import "tokens.css";
+
 * { box-sizing: border-box; margin: 0; }
 html { -webkit-text-size-adjust: 100%; }
-body {
-  background: var(--bakgrunn);
-  color: var(--tekst);
-  font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  min-height: 100dvh;
-  padding-bottom: calc(76px + env(safe-area-inset-bottom));
-}
-.mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px;
-  letter-spacing: .08em; text-transform: uppercase; color: var(--tekst-demp); }
 
-/* Egne display-regler på button og #faner slo nettleserens [hidden] — så
-   «Logg ut» og fanelinjen sto synlige på innloggingsskjermen. */
+body {
+  background: var(--grunn);
+  color: var(--tekst);
+  font: var(--t-m)/1.55 var(--font-tekst);
+  min-height: 100dvh;
+  transition: background var(--fart-rask) var(--kurve),
+              color var(--fart-rask) var(--kurve);
+}
+/* Egne display-regler på button og nav slo nettleserens [hidden]. */
 [hidden] { display: none !important; }
 
-.miljobanner { background: #4A3A16; border-bottom: 1px solid #8A6D24;
-  color: #F3E2B4; padding: 10px 16px; font-size: 13px; line-height: 1.4; }
+::selection { background: var(--aksent-dyp); color: var(--tekst); }
 
-#topp { display: flex; justify-content: space-between; align-items: center;
-  padding: 14px 16px; border-bottom: 1px solid var(--kant); }
-.merke { display: flex; gap: 10px; align-items: center; }
-.merke div { display: flex; flex-direction: column; line-height: 1.2; }
+/* Fokus: samme ring overalt, alltid synlig, aldri fjernet. */
+:focus-visible {
+  outline: 2px solid var(--aksent);
+  outline-offset: 2px;
+  border-radius: var(--radius-s);
+}
 
-#innhold { padding: 16px; max-width: 640px; margin: 0 auto; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
 
-/* Overskrifter i serif, brødtekst i sans: dette er et arkiv, ikke et dashbord. */
-h1 { font: 600 27px/1.2 var(--display); letter-spacing: -.01em; margin: 6px 0 4px;
+/* ─────────────────────────────────────────────────────────────────────────
+   Skallet. Tre bredder, én struktur.
+   ───────────────────────────────────────────────────────────────────────── */
+#topp {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: var(--r-4); padding: var(--r-3) var(--r-4);
+  border-bottom: 1px solid var(--kant); background: var(--grunn);
+  position: sticky; top: 0; z-index: 20;
+}
+.merke { display: flex; gap: var(--r-3); align-items: center; min-width: 0; }
+.merke div { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+.merke b { font: 600 var(--t-m)/1.2 var(--font-tekst); }
+
+.mono {
+  font: 600 var(--t-xs)/1.3 var(--font-mono);
+  letter-spacing: .09em; text-transform: uppercase; color: var(--tekst-svak);
+}
+
+#innhold {
+  width: 100%; padding: var(--r-5) var(--r-4);
+  padding-bottom: calc(var(--r-9) + 44px + env(safe-area-inset-bottom));
+  max-width: var(--kolonne); margin: 0 auto;
+  display: flex; flex-direction: column; gap: var(--r-5);
+}
+
+/* Navigasjon: fanelinje i bunnen der tommelen er. */
+#faner {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
+  display: flex; background: var(--flate);
+  border-top: 1px solid var(--kant);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+#faner button {
+  flex: 1; background: none; border: 0; cursor: pointer; color: var(--tekst-svak);
+  font: 600 var(--t-xs)/1.2 var(--font-tekst); padding: var(--r-2) var(--r-1);
+  min-height: 58px; display: flex; flex-direction: column; gap: var(--r-1);
+  align-items: center; justify-content: center; border-radius: 0;
+  transition: color var(--fart-rask) var(--kurve);
+}
+#faner button .ikon { display: flex; line-height: 0; }
+#faner button[aria-current="page"] { color: var(--aksent); }
+
+/* ≥1100px: fanene flytter til en sidestolpe, og innholdet får bruke bredden.
+   Dette var hovedfeilen — 640px kolonne på 1440px skjerm. */
+@media (min-width: 1100px) {
+  #topp {
+    position: fixed; top: 0; left: 0; width: var(--sidestolpe); height: 100dvh;
+    flex-direction: column; align-items: stretch; justify-content: flex-start;
+    gap: var(--r-6); border-bottom: 0; border-right: 1px solid var(--kant);
+    padding: var(--r-5) var(--r-4);
+  }
+  #faner {
+    position: fixed; top: 132px; bottom: auto; left: 0; width: var(--sidestolpe);
+    flex-direction: column; background: none; border: 0; padding: 0 var(--r-3);
+    gap: 2px;
+  }
+  #faner button {
+    flex: none; flex-direction: row; justify-content: flex-start; gap: var(--r-3);
+    min-height: 42px; padding: 0 var(--r-3); border-radius: var(--radius-s);
+    font-size: var(--t-s); letter-spacing: 0; text-transform: none;
+  }
+  #faner button:hover { background: var(--flate); color: var(--tekst); }
+  #faner button[aria-current="page"] { background: var(--flate-hev); color: var(--aksent); }
+  #innhold {
+    margin-left: var(--sidestolpe); max-width: var(--arbeidsflate);
+    padding: var(--r-7) var(--r-7) var(--r-9);
+  }
+  #logg-ut { margin-top: auto; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Typografi
+   ───────────────────────────────────────────────────────────────────────── */
+h1 { font: 600 var(--t-2xl)/1.15 var(--font-display); letter-spacing: -.015em;
   text-wrap: balance; }
-h2 { font: 600 19px/1.3 var(--display); margin: 22px 0 8px; text-wrap: balance; }
-.undertekst { color: var(--tekst-demp); font-size: 15px; line-height: 1.55;
-  margin-bottom: 16px; max-width: 60ch; text-wrap: pretty; }
+h2 { font: 600 var(--t-xl)/1.25 var(--font-display); text-wrap: balance; }
+h3 { font: 600 var(--t-l)/1.35 var(--font-tekst); }
+p { text-wrap: pretty; }
+a { color: var(--aksent); text-underline-offset: 3px; }
 
-.kort { background: var(--flate); border: 1px solid var(--kant);
-  border-radius: var(--radius); padding: 14px; margin: 10px 0; }
-.kort h3 { font-size: 16px; margin-bottom: 2px; }
-.kort .meta { color: var(--tekst-demp); font-size: 13px; }
-.rad { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.sidetopp { display: flex; justify-content: space-between; align-items: flex-start;
+  gap: var(--r-4); flex-wrap: wrap; }
+.undertekst { color: var(--tekst-demp); font-size: var(--t-s); line-height: 1.6;
+  max-width: 62ch; margin-top: var(--r-2); }
 
-button, .knapp {
-  display: inline-block; border: 0; border-radius: 12px; cursor: pointer;
-  font: 600 16px/1 inherit; padding: 14px 18px; min-height: 48px;
-  background: var(--aksent); color: #0B1720; width: 100%; margin-top: 8px;
+/* ─────────────────────────────────────────────────────────────────────────
+   Kort og paneler
+   ───────────────────────────────────────────────────────────────────────── */
+.kort {
+  background: var(--flate); border: 1px solid var(--kant);
+  border-radius: var(--radius-m); padding: var(--r-4);
+  display: flex; flex-direction: column; gap: var(--r-3);
 }
-button.sekundaer { background: var(--flate-hev); color: var(--tekst);
-  border: 1px solid var(--kant); }
-button.fare { background: var(--fare); color: #2A0F11; }
-button.liten { width: auto; padding: 10px 14px; min-height: 40px; font-size: 14px; margin: 0; }
+.kort-hode { display: flex; justify-content: space-between; align-items: flex-start;
+  gap: var(--r-3); }
+.kort-meta, .kort .meta { color: var(--tekst-demp); font-size: var(--t-s); }
+.kort.tone-varsel { border-color: var(--varsel); background: var(--varsel-flate); }
+.kort.tone-fare { border-color: var(--fare); background: var(--fare-flate-fylt); }
+.kort.tone-ok { border-color: var(--aksent-dyp); background: var(--ok-flate); }
+.kort.stiplet, .kort.offentlig { border-style: dashed; background: none; }
+
+.panel { display: flex; flex-direction: column; gap: var(--r-3); }
+.panel-hode { display: flex; justify-content: space-between; align-items: baseline;
+  gap: var(--r-3); }
+.panel-kropp { display: flex; flex-direction: column; gap: var(--r-3); }
+
+/* Rutenettet er grunnen til at desktop ikke lenger er en telefonkolonne. */
+.rutenett { display: grid; gap: var(--r-4); grid-template-columns: 1fr; }
+@media (min-width: 1100px) {
+  .rutenett { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); align-items: start; }
+  .rutenett > .bred { grid-column: 1 / -1; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Knapper — fire nivåer, én primær per skjerm
+   ───────────────────────────────────────────────────────────────────────── */
+button, .knapp, .knapp:is(a) {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--r-2);
+  border: 1px solid transparent; border-radius: var(--radius-s); cursor: pointer;
+  font: 600 var(--t-s)/1 var(--font-tekst); padding: 0 var(--r-4);
+  min-height: 44px; white-space: nowrap; background: var(--aksent);
+  color: var(--paa-aksent); text-decoration: none;
+  transition: background var(--fart-rask) var(--kurve),
+              border-color var(--fart-rask) var(--kurve);
+}
+.k-primaer { background: var(--aksent); color: var(--paa-aksent); }
+.k-primaer:hover { background: var(--aksent-dyp); color: var(--tekst); }
+.k-sekundaer, button.sekundaer { background: var(--flate-hev); color: var(--tekst);
+  border-color: var(--kant); }
+.k-sekundaer:hover, button.sekundaer:hover { border-color: var(--kant-sterk); }
+.k-stille, button.stille { background: none; color: var(--tekst-demp); border-color: var(--kant); }
+.k-stille:hover, button.stille:hover { color: var(--tekst); border-color: var(--kant-sterk); }
+.k-fare, button.fare { background: none; color: var(--fare); border-color: var(--fare); }
+.k-fare:hover, button.fare:hover { background: var(--fare-flate-fylt); }
+.k-liten, button.liten { min-height: 34px; padding: 0 var(--r-3); font-size: var(--t-xs); }
+.k-full { width: 100%; }
 button:disabled { opacity: .45; cursor: default; }
-.lenkeknapp { background: none; border: 0; color: var(--aksent); font: inherit;
-  cursor: pointer; padding: 6px; width: auto; min-height: 0; margin: 0; }
+.knapp svg, button svg { flex: none; }
 
+.lenkeknapp { background: none !important; border: 0; color: var(--aksent); font: inherit;
+  cursor: pointer; padding: var(--r-1) 0; text-align: left; min-height: 0;
+  justify-content: flex-start; }
+
+.knapperad { display: flex; gap: var(--r-2); flex-wrap: wrap; }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Skjema
+   ───────────────────────────────────────────────────────────────────────── */
+.felt { display: flex; flex-direction: column; gap: var(--r-1); }
+.felt label, label { font: 600 var(--t-s)/1.3 var(--font-tekst); color: var(--tekst); }
+.felt-hjelp { font-size: var(--t-s); line-height: 1.5; color: var(--tekst-demp);
+  font-weight: 400; }
 input, select, textarea {
-  width: 100%; background: var(--bakgrunn); color: var(--tekst);
-  border: 1px solid var(--kant); border-radius: 10px; padding: 13px 12px;
-  font: inherit; margin: 6px 0 12px;
+  width: 100%; background: var(--grunn); color: var(--tekst);
+  border: 1px solid var(--kant); border-radius: var(--radius-s);
+  padding: var(--r-3); font: var(--t-m)/1.4 var(--font-tekst); min-height: 44px;
+  transition: border-color var(--fart-rask) var(--kurve);
 }
-textarea { min-height: 110px; resize: vertical; }
-label { font-size: 14px; color: var(--tekst-demp); }
-.sjekk { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
-.sjekk input { width: 22px; height: 22px; margin: 0; }
-.sjekk label { color: var(--tekst); }
+input:hover, select:hover, textarea:hover { border-color: var(--kant-sterk); }
+textarea { min-height: 104px; resize: vertical; }
+::placeholder { color: var(--tekst-svak); }
+.sjekk { display: flex; align-items: center; gap: var(--r-3); }
+.sjekk input { width: 22px; height: 22px; min-height: 0; }
 
-.beredskap .score { font: 600 40px/1 var(--display); letter-spacing: -.02em;
-  margin: 6px 0 12px; font-variant-numeric: tabular-nums; }
-.beredskap .score .av { font-size: 16px; font-weight: 500; color: var(--tekst-demp);
-  margin-left: 8px; letter-spacing: 0; }
-.beredskap .stolper { display: flex; gap: 5px; }
-.beredskap .stolpe { flex: 1; height: 5px; border-radius: 3px; background: var(--kant); }
-.beredskap .stolpe.fylt { background: var(--aksent-mork); }
-.beredskap .neste { font-size: 14.5px; line-height: 1.55; color: var(--tekst-demp);
-  margin-top: 14px; }
-.beredskap .neste strong { color: var(--tekst); }
+/* ─────────────────────────────────────────────────────────────────────────
+   Tilstand: merkelapper, tomt, skjelett, feil
+   ───────────────────────────────────────────────────────────────────────── */
+.merkelapp {
+  display: inline-flex; align-items: center; border-radius: var(--radius-full);
+  padding: var(--r-1) var(--r-3); font: 600 var(--t-xs)/1.4 var(--font-tekst);
+  background: var(--flate-hev); border: 1px solid var(--kant); color: var(--tekst-demp);
+  white-space: nowrap;
+}
+.m-ok, .merkelapp.aktiv { background: var(--ok-flate); border-color: var(--aksent-dyp);
+  color: var(--aksent); }
+.m-varsel, .merkelapp.varsel { background: var(--varsel-flate); border-color: var(--varsel);
+  color: var(--varsel); }
+.m-fare, .merkelapp.stoppet { background: var(--fare-flate-fylt); border-color: var(--fare);
+  color: var(--fare); }
 
-.kategorihjelp { font-size: 13.5px; line-height: 1.5; color: var(--tekst-demp);
-  border-left: 2px solid var(--aksent-mork); padding-left: 12px; margin: 2px 0 14px; }
+.tomt {
+  border: 1px dashed var(--kant); border-radius: var(--radius-m);
+  padding: var(--r-7) var(--r-5); text-align: center; color: var(--tekst-demp);
+  display: flex; flex-direction: column; gap: var(--r-2); align-items: center;
+}
+.tomt strong { color: var(--tekst); font: 600 var(--t-l)/1.35 var(--font-display); }
+.tomt p { max-width: 46ch; font-size: var(--t-s); line-height: 1.6; }
 
-.delingsrad { margin: 12px 0; }
-.delingsrad label { display: block; font-size: 13px; color: var(--tekst-demp); }
+.skjelett { display: flex; flex-direction: column; gap: var(--r-3); }
+.skj-linje { height: 12px; border-radius: var(--radius-full); background: var(--skjelett);
+  animation: puls 1.4s ease-in-out infinite; }
+@keyframes puls { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
 
-.melding-feil { background: #3A2226; border: 1px solid var(--fare);
-  border-radius: 10px; padding: 12px; margin: 10px 0; color: #F1C3C5; }
-.melding-ok { background: #1D3A30; border: 1px solid var(--aksent-mork);
-  border-radius: 10px; padding: 12px; margin: 10px 0; }
-.merkelapp { display: inline-block; border-radius: 999px; padding: 3px 10px;
-  font-size: 12px; font-weight: 600; background: var(--flate-hev);
-  border: 1px solid var(--kant); color: var(--tekst-demp); }
-.merkelapp.aktiv { background: #2C4636; border-color: var(--aksent-mork); color: var(--aksent); }
-.merkelapp.varsel { background: #453A22; border-color: var(--advarsel); color: var(--advarsel); }
-.merkelapp.stoppet { background: #3A2226; border-color: var(--fare); color: var(--fare); }
+.feilboks, .melding-feil {
+  background: var(--fare-flate-fylt); border: 1px solid var(--fare);
+  border-radius: var(--radius-m); padding: var(--r-4); color: var(--tekst);
+  display: flex; flex-direction: column; gap: var(--r-3); align-items: flex-start;
+  font-size: var(--t-s);
+}
+.okboks, .melding-ok {
+  background: var(--ok-flate); border: 1px solid var(--aksent-dyp);
+  border-radius: var(--radius-m); padding: var(--r-3) var(--r-4); font-size: var(--t-s);
+}
 
-/* Nedtellingen er produktets tese i én skjerm: eieren kan alltid stoppe.
-   Sifrene skal dominere — enhetene er etiketter, ikke tall. */
-.nedtelling { font-variant-numeric: tabular-nums; font: 600 46px/1 var(--display);
-  letter-spacing: -.02em; text-align: center; margin: 20px 0 6px; }
-.nedtelling .enhet { font-size: 16px; font-weight: 500; color: var(--tekst-demp);
-  margin: 0 12px 0 3px; vertical-align: .32em; }
+.miljobanner {
+  background: var(--varsel-flate); border-bottom: 1px solid var(--varsel);
+  color: var(--varsel); padding: var(--r-3) var(--r-4);
+  font-size: var(--t-s); line-height: 1.45; text-align: center;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Nedtelling og frigivelsens gang
+   ───────────────────────────────────────────────────────────────────────── */
+.nedtelling {
+  font: 600 var(--t-3xl)/1 var(--font-display); letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums; text-align: center; margin: var(--r-4) 0 var(--r-2);
+}
+.nedtelling .enhet { font-size: var(--t-m); font-weight: 500; color: var(--tekst-demp);
+  margin: 0 var(--r-3) 0 3px; vertical-align: .32em; }
 .nedtelling .enhet:last-child { margin-right: 0; }
-.gang { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--kant); }
+.gang { padding-top: var(--r-4); border-top: 1px solid var(--kant); }
 
-/* Frigivelsens gang. Hele vollgraven forklart i ett blikk — for eieren, og
-   for den som skal forstå hvorfor dette ikke er et vanlig hvelv. */
-.tidslinje { list-style: none; padding: 0; margin: 16px 0 4px; }
-.tidslinje li { display: grid; grid-template-columns: 22px 1fr; gap: 12px;
-  padding-bottom: 16px; position: relative; }
+.tidslinje { list-style: none; padding: 0; display: flex; flex-direction: column;
+  margin-top: var(--r-3); }
+.tidslinje li { display: grid; grid-template-columns: 22px 1fr; gap: var(--r-3);
+  padding-bottom: var(--r-4); position: relative; }
 .tidslinje li:last-child { padding-bottom: 0; }
 .tidslinje li::before { content: ""; position: absolute; left: 10.5px; top: 18px;
   bottom: -2px; width: 1px; background: var(--kant); }
 .tidslinje li:last-child::before { display: none; }
 .tidslinje .prikk { width: 11px; height: 11px; border-radius: 50%; margin: 5px auto 0;
-  border: 1.5px solid var(--kant); background: var(--bakgrunn); }
-.tidslinje .steg-navn { font-size: 15px; color: var(--tekst-demp); }
-.tidslinje .steg-om { font-size: 13.5px; color: var(--tekst-demp); opacity: .8;
-  line-height: 1.45; }
-.tidslinje .ferdig .prikk { background: var(--aksent-mork); border-color: var(--aksent-mork); }
+  border: 1.5px solid var(--kant); background: var(--grunn); }
+.tidslinje .steg-navn { font-size: var(--t-s); color: var(--tekst-demp); }
+.tidslinje .steg-om { font-size: var(--t-xs); color: var(--tekst-svak); line-height: 1.5; }
+.tidslinje .ferdig .prikk { background: var(--aksent-dyp); border-color: var(--aksent-dyp); }
 .tidslinje .ferdig .steg-navn { color: var(--tekst); }
 .tidslinje .naa .prikk { background: var(--aksent); border-color: var(--aksent);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--aksent) 22%, transparent); }
 .tidslinje .naa .steg-navn { color: var(--aksent); font-weight: 600; }
 
-/* Tomtilstander: en setning et menneske ville sagt, ikke «ingen data». */
-.tomt { border: 1px dashed var(--kant); border-radius: var(--radius);
-  padding: 24px 20px; text-align: center; color: var(--tekst-demp);
-  font-size: 15px; line-height: 1.55; margin: 12px 0; }
-.tomt strong { display: block; color: var(--tekst); font: 600 17px/1.35 var(--display);
-  margin-bottom: 6px; }
+/* ─────────────────────────────────────────────────────────────────────────
+   Beredskapsscore
+   ───────────────────────────────────────────────────────────────────────── */
+.beredskap .score { font: 600 var(--t-3xl)/1 var(--font-display); letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums; }
+.beredskap .score .av { font-size: var(--t-m); font-weight: 500; color: var(--tekst-demp);
+  margin-left: var(--r-2); letter-spacing: 0; }
+.beredskap .stolper { display: flex; gap: var(--r-1); }
+.beredskap .stolpe { flex: 1; height: 5px; border-radius: var(--radius-full);
+  background: var(--kant); }
+.beredskap .stolpe.fylt { background: var(--aksent-dyp); }
+.beredskap .neste { font-size: var(--t-s); line-height: 1.6; color: var(--tekst-demp); }
+.beredskap .neste strong { color: var(--tekst); }
 
-#faner { position: fixed; bottom: 0; left: 0; right: 0;
-  display: flex; background: var(--flate); border-top: 1px solid var(--kant);
-  padding-bottom: env(safe-area-inset-bottom); }
-#faner button { flex: 1; background: none; color: var(--tekst-demp);
-  border-radius: 0; margin: 0; padding: 12px 4px; font-size: 12px; font-weight: 600;
-  display: flex; flex-direction: column; gap: 3px; align-items: center; min-height: 60px; }
-#faner button .ikon { display: flex; line-height: 0; }
-#faner button.valgt { color: var(--aksent); }
-/* Etterlattemodus: fanelinjen skal ikke rope til noen som nettopp har mistet
-   noen. Den valgte fanen leser normalt, resten trekker seg tilbake. */
-body.etterlatt-modus #faner button { color: #A3ABA4; }
-body.etterlatt-modus #faner button.valgt { color: #2E5F4C; }
-
-.matrise-tabell { width: 100%; border-collapse: collapse; font-size: 14px; }
-.matrise-tabell th, .matrise-tabell td { border: 1px solid var(--kant);
-  padding: 8px 6px; text-align: center; }
-.matrise-tabell th { color: var(--tekst-demp); font-weight: 600; font-size: 12px; }
+/* ─────────────────────────────────────────────────────────────────────────
+   Tabell / matrise — den flaten som led mest av 640px-kolonnen
+   ───────────────────────────────────────────────────────────────────────── */
+.tabellramme { overflow-x: auto; border: 1px solid var(--kant);
+  border-radius: var(--radius-m); background: var(--flate); }
+.matrise-tabell { width: 100%; border-collapse: collapse; font-size: var(--t-s); }
+.matrise-tabell th, .matrise-tabell td {
+  padding: var(--r-3); text-align: center; border-bottom: 1px solid var(--kant);
+}
+.matrise-tabell thead th {
+  font: 600 var(--t-xs)/1.3 var(--font-mono); letter-spacing: .08em;
+  text-transform: uppercase; color: var(--tekst-svak); background: var(--flate-hev);
+}
+.matrise-tabell tbody tr:last-child td { border-bottom: 0; }
+.matrise-tabell tbody tr:hover { background: var(--flate-hev); }
 .matrise-tabell td:first-child, .matrise-tabell th:first-child { text-align: left; }
-.matrise-celle { cursor: pointer; user-select: none; font-size: 18px; }
+.matrise-celle {
+  cursor: pointer; user-select: none; width: 100%; min-height: 34px; border: 0;
+  background: none !important; color: var(--tekst-svak); font-size: var(--t-m);
+  border-radius: var(--radius-s); padding: 0;
+}
+.matrise-celle[aria-pressed="true"], .matrise-celle.paa { color: var(--aksent); }
+.matrise-celle:hover { color: var(--tekst); }
 
-/* Etterlattemodus: lunere, lysere, stillere */
-body.etterlatt-modus { background: #F4F1EA; color: #33413C; }
-body.etterlatt-modus #topp { border-color: #DDD6C8; }
-body.etterlatt-modus .mono { color: #8A9088; }
-body.etterlatt-modus .kort { background: #FCFAF5; border-color: #E3DCCD; }
-body.etterlatt-modus .kort .meta, body.etterlatt-modus .undertekst { color: #77817B; }
-body.etterlatt-modus #faner { background: #FCFAF5; border-color: #E3DCCD; }
-body.etterlatt-modus h1 { font-size: 30px; }
-body.etterlatt-modus .kort h3 { font: 600 17px/1.35 var(--display); }
-body.etterlatt-modus .stille { color: #2E5F4C; border-color: #CFDDD4; }
+/* ─────────────────────────────────────────────────────────────────────────
+   Etterlattemodus — samme system, annen temperatur
+   ───────────────────────────────────────────────────────────────────────── */
+body.etterlatt-modus #innhold { max-width: 720px; gap: var(--r-6); }
+body.etterlatt-modus .kort { padding: var(--r-5); }
+body.etterlatt-modus .kort h3 { font-family: var(--font-display); }
+body.etterlatt-modus .undertekst { font-size: var(--t-m); }
+@media (min-width: 1100px) {
+  body.etterlatt-modus #innhold { max-width: 760px; }
+}
 
-/* «Åpne» skal ikke være det tyngste på siden. Det tyngste er navnet på det
-   avdøde etterlot seg. */
-.stille { background: none; border: 1px solid var(--kant); color: var(--tekst-demp);
-  font-weight: 500; }
-.stille:hover { color: var(--tekst); }
+.forst { border: 1px solid var(--kant); border-radius: var(--radius-l);
+  padding: var(--r-5); background: var(--flate);
+  display: flex; flex-direction: column; gap: var(--r-2); align-items: flex-start; }
+.forst-tittel { font: 600 var(--t-xl)/1.25 var(--font-display); }
+.forst-tekst { font-size: var(--t-m); line-height: 1.6; color: var(--tekst-demp); }
 
-.kort.offentlig { border-style: dashed; background: none; margin-top: 22px; }
-.lenke-ut { display: inline-block; margin-top: 10px; color: var(--aksent);
-  font-size: 15px; text-underline-offset: 3px; }
-body.etterlatt-modus .lenke-ut { color: #2E5F4C; }
-:focus-visible { outline: 2px solid var(--aksent); outline-offset: 2px; }
+.kategorihjelp { font-size: var(--t-s); line-height: 1.55; color: var(--tekst-demp);
+  border-left: 2px solid var(--aksent-dyp); padding-left: var(--r-3); }
 
-.sporsmaal { border-top: 1px solid var(--kant); padding: 12px 0 4px; }
-.sporsmaal:first-of-type { border-top: 0; }
-.sporsmaal .svarknapper { display: flex; gap: 8px; }
-.sporsmaal textarea { min-height: 70px; margin-top: 10px; }
+.sporsmaal { border-top: 1px solid var(--kant); padding-top: var(--r-3);
+  display: flex; flex-direction: column; gap: var(--r-2); }
+.sporsmaal:first-of-type { border-top: 0; padding-top: 0; }
+.svarknapper { display: flex; gap: var(--r-2); }
+.rad { display: flex; justify-content: space-between; align-items: center;
+  gap: var(--r-3); flex-wrap: wrap; }
+.delingsrad { display: flex; flex-direction: column; gap: var(--r-2); }
+.lenke-ut { display: inline-block; font-size: var(--t-s); }
 
-/* Én ting om gangen. Konkurrentene viser hele lista; for et menneske i de
-   første ukene er 40 punkter en grunn til å lukke appen. */
-.forst { border: 1px solid var(--kant); border-radius: var(--radius);
-  padding: 18px 20px; margin: 14px 0 18px; background: var(--flate); }
-.forst-tittel { font: 600 21px/1.25 var(--display); margin: 8px 0 6px; }
-.forst-tekst { font-size: 15.5px; line-height: 1.6; color: var(--tekst-demp);
-  margin-bottom: 14px; }
-body.etterlatt-modus .forst { background: #FCFAF5; border-color: #E3DCCD; }
-body.etterlatt-modus .forst-tekst { color: #5D6862; }
+/* Innlogging: den ene flaten alle møter først. */
+.innlogging { max-width: 420px; margin: 0 auto; width: 100%;
+  display: flex; flex-direction: column; gap: var(--r-5); }
+.innlogging .sidetopp { display: block; }
+.skjemablokk { display: flex; flex-direction: column; gap: var(--r-4); }
+@media (min-width: 1100px) { .innlogging { margin-top: var(--r-8); } }
+
+/* Kolonnefordeling: elementnavnet skal ha plassen, ikke kontaktkolonnene.
+   Uten dette brøt titlene over tre linjer mens én kontaktkolonne var 400px. */
+.matrise-tabell th:first-child { width: auto; min-width: 220px; }
+.matrise-tabell th:not(:first-child) { width: 132px; }
+.matrise-tabell tbody th { font: 500 var(--t-s)/1.4 var(--font-tekst);
+  color: var(--tekst); text-align: left; }
+.matrise-tabell td { padding: var(--r-2); }

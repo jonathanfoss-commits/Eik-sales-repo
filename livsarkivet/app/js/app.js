@@ -1,7 +1,8 @@
 // Visningsruting: innlogging → faner etter rolle og relasjoner.
 import { kall } from './api.js';
-import { el, tom, feilboks } from './dom.js';
+import { el, tom } from './dom.js';
 import { ikon } from './ikoner.js';
+import { felt, knapp, feilboks, okboks, sidetopp } from './komponenter.js';
 import * as hvelv from './moduler/hvelv.js';
 import * as kontakter from './moduler/kontakter.js';
 import * as matrise from './moduler/matrise.js';
@@ -31,12 +32,11 @@ function visInnlogging(visning = 'inn', feil = '') {
 
   // Overskriften sto «Livsarkivet» — som allerede står i toppfeltet rett over.
   // Her er det bedre brukt på hva tjenesten faktisk gjør.
-  const skjema = el('div', {},
-    el('h1', {}, 'Alt dine nærmeste trenger'),
-    el('p', { class: 'undertekst' },
-      'Frigitt kontrollert når det skjer — aldri før, og aldri til andre '
-      + 'enn dem du har pekt ut.'),
-    feil ? feilboks(feil) : null);
+  const skjema = el('div', { class: 'innlogging' },
+    sidetopp({ tittel: 'Alt dine nærmeste trenger',
+      undertekst: 'Frigitt kontrollert når det skjer — aldri før, og aldri til '
+        + 'andre enn dem du har pekt ut.' }),
+    feil ? feilboks({ tekst: feil }) : null);
 
   // Selskapets egen innlogging står FØRST: det er veien kundene deres kjenner,
   // og for etterlatte er et passord til «enda en tjeneste» en terskel de
@@ -49,22 +49,27 @@ function visInnlogging(visning = 'inn', feil = '') {
   }
 
   if (visning === 'inn') {
-    const epost = el('input', { type: 'email', placeholder: 'E-post', autocomplete: 'username' });
-    const passord = el('input', { type: 'password', placeholder: 'Passord', autocomplete: 'current-password' });
-    const totp = el('input', { type: 'text', placeholder: 'Engangskode (kun saksbehandlere)', inputmode: 'numeric', hidden: true });
-    skjema.append(epost, passord, totp,
-      el('button', { onclick: async () => {
+    const epost = felt({ etikett: 'E-post', type: 'email', autocomplete: 'username' });
+    const passord = felt({ etikett: 'Passord', type: 'password', autocomplete: 'current-password' });
+    const totp = felt({ etikett: 'Engangskode', type: 'text', inputmode: 'numeric',
+      hjelp: 'Fra autentiseringsappen din. Kun saksbehandlere.' });
+    totp.hidden = true;
+    skjema.append(el('div', { class: 'skjemablokk' }, epost, passord, totp,
+      knapp({ tekst: 'Logg inn', full: true, onclick: async () => {
         const svar = await kall('POST', '/api/auth/logg-inn',
-          { epost: epost.value, passord: passord.value, totp: totp.value });
-        if (svar.data.trengerTotp) { totp.hidden = false; totp.focus(); return; }
+          { epost: epost.inn.value, passord: passord.inn.value, totp: totp.inn.value });
+        if (svar.data.trengerTotp) { totp.hidden = false; totp.inn.focus(); return; }
         if (!svar.ok) return visInnlogging('inn', svar.data.feil || 'Innlogging feilet');
         start();
-      } }, 'Logg inn'),
-      el('button', { class: 'stille', onclick: () => visInnlogging('kode') }, 'Har du fått en kode?'),
-      // vises bare når selvregistrering er åpen — ellers er den en blindvei
-      tilstand.miljo.registrering
-        ? el('button', { class: 'stille', onclick: () => visInnlogging('ny') }, 'Opprett ditt livsarkiv')
-        : null,
+      } })),
+      el('div', { class: 'knapperad' },
+        knapp({ tekst: 'Har du fått en kode?', rolle: 'stille', storrelse: 'liten',
+          onclick: () => visInnlogging('kode') }),
+        // vises bare når selvregistrering er åpen — ellers er den en blindvei
+        tilstand.miljo.registrering
+          ? knapp({ tekst: 'Opprett ditt livsarkiv', rolle: 'stille', storrelse: 'liten',
+            onclick: () => visInnlogging('ny') })
+          : null),
       el('button', { class: 'lenkeknapp', onclick: () => visInnlogging('glemt') }, 'Glemt passord?'));
   } else if (visning === 'ny') {
     const navn = el('input', { type: 'text', placeholder: 'Fullt navn', autocomplete: 'name' });
@@ -144,7 +149,10 @@ function byttFane(id, vis) {
   tilstand.fane = id;
   document.body.classList.toggle('etterlatt-modus', id === 'etterlatt');
   for (const knapp of faner.querySelectorAll('button')) {
-    knapp.classList.toggle('valgt', knapp.dataset.fane === id);
+    const valgt = knapp.dataset.fane === id;
+    knapp.classList.toggle('valgt', valgt);
+    if (valgt) knapp.setAttribute('aria-current', 'page');
+    else knapp.removeAttribute('aria-current');
   }
   location.hash = id;
   tom(innhold);
