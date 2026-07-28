@@ -71,3 +71,11 @@ export const STATUS_NAVN = {
   godkjent_1: 'Én godkjenning', karenstid: 'Karenstid', frigitt: 'Frigitt',
   avvist: 'Avvist', blokkert: 'Stoppet av eier', tilbakekalt: 'Tilbakekalt',
 };
+
+// Tonen på statusmerket. Tilstand, aldri dekor: en sak som løper mot frigivelse
+// (karenstid) og en som er stoppet skal ikke se like ut.
+export const STATUS_TONE = {
+  meldt: 'noytral', attest_lastet_opp: 'noytral', under_verifisering: 'varsel',
+  godkjent_1: 'varsel', karenstid: 'varsel', frigitt: 'ok',
+  avvist: 'fare', blokkert: 'fare', tilbakekalt: 'fare',
+};

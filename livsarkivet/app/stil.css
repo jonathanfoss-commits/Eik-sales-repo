@@ -343,6 +343,27 @@ body.etterlatt-modus .undertekst { font-size: var(--t-m); }
 .skjemablokk { display: flex; flex-direction: column; gap: var(--r-4); }
 @media (min-width: 1100px) { .innlogging { margin-top: var(--r-8); } }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   Lagt til ved konverteringen av kø-, logg- og meldeflaten.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Fanens eget rom er en naken div: uten dette klistret sidetoppen seg til
+   innholdet under, fordi gapet på #innhold bare gjelder rommets ytterste nivå. */
+.flate { display: flex; flex-direction: column; gap: var(--r-5); }
+/* Sakens skiftende innmat inne i et kort. */
+.sakrom { display: flex; flex-direction: column; gap: var(--r-3); }
+
+/* Mono-etikett over en rad merkelapper: vaktagentens flagg lå før som en
+   klump uten å si hvor gruppen begynte. */
+.merkeblokk { display: flex; flex-direction: column; gap: var(--r-2); }
+.merkerad { display: flex; flex-wrap: wrap; gap: var(--r-2); align-items: center; }
+
+/* Revisjonsloggens detaljer er JSON uten mellomrom. Uten brytepunkt overalt
+   dyttet én lang linje hele siden sidelengs. .mono kunne ikke brukes: den
+   VERSALISERER, og da lyver linjen om hva som faktisk står i loggen. */
+.logglinje { font: var(--t-xs)/1.5 var(--font-mono); color: var(--tekst-demp);
+  overflow-wrap: anywhere; }
+
 /* Kolonnefordeling: elementnavnet skal ha plassen, ikke kontaktkolonnene.
    Uten dette brøt titlene over tre linjer mens én kontaktkolonne var 400px. */
 .matrise-tabell th:first-child { width: auto; min-width: 220px; }
@@ -350,3 +371,40 @@ body.etterlatt-modus .undertekst { font-size: var(--t-m); }
 .matrise-tabell tbody th { font: 500 var(--t-s)/1.4 var(--font-tekst);
   color: var(--tekst); text-align: left; }
 .matrise-tabell td { padding: var(--r-2); }
+
+/* Stabel: loddrett gruppe inne i en rutenettcelle. Rutenettet gir gap mellom
+   cellene, men et vanlig div-barn inni en celle har ingen — og elementlisten
+   trenger luft mellom kategoriseksjonene og skjemaet under. */
+.stabel { display: flex; flex-direction: column; gap: var(--r-5); }
+
+/* Smal: brukes inne i en .bred celle på det som ikke tåler full arbeidsbredde.
+   Et tekstfelt på 1180 px er ingen forbedring — skjemaet holdes på lesebredde. */
+.smal { max-width: var(--kolonne); }
+
+/* Kategoriseksjonene i hvelvet, side om side. auto-FILL, ikke auto-fit som
+   .rutenett: med auto-fit kollapser tomme spor, og en kategori med ETT element
+   ble strukket over hele arbeidsflaten — en 1180 px boks med en tittel og
+   «Endre» tusen piksler unna. */
+.kategoririst { display: grid; gap: var(--r-6); grid-template-columns: 1fr; }
+@media (min-width: 1100px) {
+  .kategoririst { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    align-items: start; }
+}
+
+/* En lenke som ser ut som en knapp: grunnregelen .knapp:is(a) er sterkere enn
+   rollklassen, så en sekundær nedlastingslenke ble tegnet som primærknapp. */
+a.knapp.k-sekundaer { background: var(--flate-hev); color: var(--tekst);
+  border-color: var(--kant); }
+
+/* Karenstid-blokka på brede skjermer: en nødbrems som er 1080px bred leser
+   som en bannerflate, ikke som en knapp man trykker på i panikk. */
+@media (min-width: 1100px) {
+  .kort .nedtelling, .kort .nedtelling + div, .kort .k-fare.k-full {
+    max-width: 520px; margin-left: auto; margin-right: auto;
+  }
+}
+
+/* Frigitt innhold: teksten avdøde etterlot seg skal lese som tekst, ikke som
+   et datafelt. */
+.frigitt-tekst { white-space: pre-wrap; font-size: var(--t-m); line-height: 1.7;
+  padding-top: var(--r-3); border-top: 1px solid var(--kant); }

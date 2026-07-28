@@ -103,12 +103,15 @@ async function bevisVedFeil(side, navn) {
   } catch { /* feilsøking skal aldri velte testen */ }
 }
 
+// Innloggingsfeltene har etiketter, ikke plassholdere: en plassholder forsvinner
+// idet man begynner å skrive. Testen peker derfor på etiketten — det er også det
+// en bruker og en skjermleser faktisk forholder seg til.
 async function loggInnAdmin(side, epost) {
-  await side.fill('input[placeholder="E-post"]', epost);
-  await side.fill('input[placeholder="Passord"]', 'adminpassord123');
+  await side.getByLabel('E-post').fill(epost);
+  await side.getByLabel('Passord').fill('adminpassord123');
   await side.click('button:has-text("Logg inn")');
-  await side.waitForSelector('input[placeholder*="Engangskode"]:not([hidden])');
-  await side.fill('input[placeholder*="Engangskode"]', totpKode(totpHemmeligheter.get(epost)));
+  await side.waitForSelector('input[inputmode="numeric"]');
+  await side.getByLabel('Engangskode').fill(totpKode(totpHemmeligheter.get(epost)));
   await side.click('button:has-text("Logg inn")');
   await side.waitForSelector('#faner:not([hidden])');
 }
@@ -121,6 +124,11 @@ try {
   sjekk(!(await eva.isVisible('#logg-ut')) && !(await eva.isVisible('#faner')),
     '«Logg ut» og fanelinjen er skjult før innlogging');
   // med åpen registrering MÅ knappen finnes — den skjules bare når flagget er av
+  // isVisible venter IKKE. Knappen tegnes først når /api/miljo har svart, så
+  // sjekken kunne kjøre før den fantes — mens click() rett etter fant den, fordi
+  // den auto-venter. Derfor så testen ut som om knappen manglet i et sekund.
+  await eva.waitForSelector('button:has-text("Opprett ditt livsarkiv")', { timeout: 8000 })
+    .catch(() => {});
   sjekk(await eva.isVisible('button:has-text("Opprett ditt livsarkiv")'),
     'registreringsknappen vises når selvregistrering er åpen');
   await eva.click('button:has-text("Opprett ditt livsarkiv")');
@@ -137,7 +145,7 @@ try {
     ['praktisk', 'Strømavtale', 'Fjordkraft avtale 998877']]) {
     await eva.click('button:has-text("+ Legg til element")');
     await eva.selectOption('select', { value: kategori });
-    await eva.fill('input[placeholder="Tittel"]', tittel);
+    await eva.getByLabel('Tittel').fill(tittel);
     await eva.fill('textarea', innhold);
     await eva.click('button:has-text("Lagre")');
     await eva.waitForSelector(`h3:has-text("${tittel}")`);
@@ -150,7 +158,7 @@ try {
   await eva.click('button:has-text("+ Legg til element")');
   await eva.locator('select').nth(0).selectOption('tilgangsinfo');
   await eva.locator('select').nth(1).selectOption('sensitiv');
-  await eva.fill('input[placeholder="Tittel"]', 'Safekode');
+  await eva.getByLabel('Tittel').fill('Safekode');
   // ordet må ha bokstaver utenfor heksadesimal, så «finnes ikke i chiffertekst»
   // ikke kan slå til tilfeldig
   await eva.fill('textarea', 'Koden er zulu-plog');
@@ -171,8 +179,8 @@ try {
   for (const [navn, epost] of [['Kari', 'e2e-kari@test.no'], ['Per', 'e2e-per@test.no']]) {
     await eva.click('#faner button:has-text("Kontakter")');
     await eva.waitForSelector('h1:has-text("Kontakter")');
-    await eva.fill('input[placeholder="Navn"]', navn);
-    await eva.fill('input[placeholder="E-post"]', epost);
+    await eva.getByLabel('Navn').fill(navn);
+    await eva.getByLabel('E-post').fill(epost);
     await eva.check('#ny-betrodd');
     await eva.click('button:has-text("Legg til")');
     await eva.waitForSelector(`h3:has-text("${navn}")`);
@@ -307,7 +315,7 @@ try {
 
   await admin1.click('#faner button:has-text("Kø")');
   await kariSak(admin1).locator('button:has-text("Godkjenn attesten")').waitFor();
-  await kariSak(admin1).locator('input[placeholder="Grunn ved avvisning"]').fill('Dokumentet er uleselig');
+  await kariSak(admin1).getByLabel('Grunn ved avvisning').fill('Dokumentet er uleselig');
   await kariSak(admin1).locator('button:has-text("Avvis")').click();
   await admin1.waitForSelector('p.meta:has-text("Køen er tom."), .kort:has-text("Karenstid")', { state: 'attached' }).catch(() => {});
   await kari.click('#faner button:has-text("Meld")');
