@@ -216,6 +216,28 @@ const aaseKontakt = await api(aase, 'POST', '/api/kontakter',
   { navn: 'Bjørn Nordbø', epost: e('bjorn'), relasjon: 'venn', erBetrodd: true });
 await kobleKontakt(aase, aaseKontakt.kontakt.id, e('bjorn'));
 
+// ── Karis sensitive element ──
+//
+// Uten dette har demoen ingenting å låse opp. Alle 13 elementene lå på nivå
+// «privat», så eksportfila åpnet seg med alt i klartekst og steg 6 i
+// demo-manuset — «skriv sikkerhetsfrasen, innholdet kommer fram» — var umulig
+// å gjennomføre. Det er nettopp det steget som beviser exit-garantien.
+//
+// Krypteringen skjer HER, slik nettleseren gjør den: serveren får aldri
+// klarteksten, heller ikke fra dette verktøyet.
+const KARI_FRASE = 'demofrase123';
+const krypto = await import('../../app/js/krypto.js');
+const { tilServer: kariNokler } = await krypto.opprettHvelvnokler(KARI_FRASE);
+await api(kari, 'PUT', '/api/krypto/hvelvnokler', kariNokler);
+const kariHvelvnokkel = await krypto.laasOppHvelvnokkel(
+  KARI_FRASE, (await api(kari, 'GET', '/api/krypto/hvelvnokler')).nokler);
+const kariKryptert = await krypto.krypterElement(kariHvelvnokkel,
+  'Bankboks 44 i Storgata, nøkkel i skrivebordsskuffen. '
+  + 'Koden til safen på hytta er 1953 — mors fødselsår.');
+await api(kari, 'POST', '/api/elementer', {
+  kategori: 'tilgangsinfo', nivaa: 'sensitiv', tittel: 'Koder og bankboks',
+  innhold: kariKryptert.innhold, kryptert: true, nokkelRef: kariKryptert.nokkelRef });
+
 // ── gjør tidsstemplene troverdige ──
 //
 // Vaktagentens flagg er tidsbaserte: melder registrert siste 14 dager, matrisen
@@ -272,6 +294,7 @@ Demo-data lagt inn. Alle passord: ${PASSORD}
 
   EIER (fullt hvelv, karenstid løper — se «Status» for nedtelling og stopp-knapp)
     ${e('kari')}
+    sikkerhetsfrase: ${KARI_FRASE}  (låser opp «Koder og bankboks» og eksportfila)
 
   BETRODD KONTAKT (kan melde dødsfall for Åse, ser Karis sak i karenstid)
     ${e('bjorn')}

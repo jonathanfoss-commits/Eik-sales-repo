@@ -19,7 +19,15 @@ psql -h localhost -U livsarkiv_eier -d postgres \
 npm run migrate
 KARENSTID_SEKUNDER=240 REGISTRERING_AAPEN=1 npm start &
 node server/verktoy/demo-data.js
+
+# Generalprøve: går gjennom hele manuset og fotograferer hvert steg
+node tests/generalprove.js docs/skjermbilder
 ```
+
+Generalprøven feiler høyt hvis noe i manuset ikke lar seg gjennomføre — den
+sjekker blant annet at nødbremsen faktisk er over skjermkanten, at fire-øyne-
+sperren stopper samme saksbehandler, og at eksportfila dekrypterer med serveren
+avslått. Kjør den kvelden før.
 
 **Hvorfor fersk base:** `demo-data.js` fjerner bare kontoer på `@demo.livsarkivet.no`.
 Har testsuiten kjørt mot samme base, blir saksbehandlerkøen full av testfiksturer — saker
@@ -39,7 +47,8 @@ hvert 30. sekund — ha `node -e` klar, eller legg TOTP-hemmelighetene i en aute
 1. `curl localhost:3400/api/helse` → `{"ok":true}`
 2. Logg inn som Kari og se at Status viser en løpende nedtelling
 3. Ha eksportfilen fra Kari allerede lastet ned på maskinen (steg 6 blir vanskelig hvis
-   nedlastingen henger)
+   nedlastingen henger). **Karis sikkerhetsfrase er `demofrase123`** — den låser opp
+   både «Koder og bankboks» i appen og det krypterte i eksportfila.
 
 **Fallback hvis noe ryker:** skjermbildene i `docs/skjermbilder/`. Si det rett ut —
 «serveren min ligger nede, her er skjermbildene» er langt bedre enn å fikle i tre minutter.

@@ -72,7 +72,7 @@ async function tegnSak(rom, h, rot) {
         const opp = await kall('POST', `/api/hendelser/${h.hendelse_id}/attest`,
           { filnavn: valgt.name, mime: valgt.type || 'application/pdf', innholdBase64: base64 });
         if (!opp.ok) { tom(feilRom); feilRom.append(feilboks(opp.data.feil || 'Opplasting feilet')); return; }
-        vis(document.getElementById('innhold'));
+        vis(rot);
       } }, 'Last opp attest'));
   }
 
@@ -90,7 +90,7 @@ async function tegnSak(rom, h, rot) {
         const t = await kall('POST', `/api/hendelser/${h.hendelse_id}/tilbakekall`);
         tom(feilRom);
         if (!t.ok) { feilRom.append(feilboks(t.data.feil || 'Kun melderen kan tilbakekalle')); return; }
-        vis(document.getElementById('innhold'));
+        vis(rot);
       } }, 'Trekk tilbake (kun melder)'));
   }
 

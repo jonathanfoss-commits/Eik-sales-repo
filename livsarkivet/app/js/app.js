@@ -148,7 +148,20 @@ function byttFane(id, vis) {
   }
   location.hash = id;
   tom(innhold);
-  vis(innhold, tilstand);
+  // Hver fane får sitt EGET rom, ikke #innhold direkte.
+  //
+  // Fanevisningene er asynkrone: de henter data og skriver innholdet sitt
+  // etterpå. Skrev alle til #innhold, rakk den forrige fanen å legge sitt
+  // innhold inn i den nye visningen når man byttet før lastingen var ferdig —
+  // og da sto «Status» som overskrift med hele hvelvet under, med nødbremsen
+  // dyttet 2000 piksler ned. Generalprøven fanget det; det skjer hver gang man
+  // trykker litt raskt, altså i en demo på dårlig nett.
+  //
+  // Med et eget rom fjerner neste tom(innhold) det gamle rommet fra DOM-en, og
+  // en forsinket skriving havner i en frakoblet node der ingen ser den.
+  const rom = el('div', {});
+  innhold.append(rom);
+  vis(rom, tilstand);
 }
 
 // ── Miljøet: demoadvarsel og om selvregistrering er åpen ──
