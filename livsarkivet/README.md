@@ -63,6 +63,16 @@ node server/verktoy/ny-integrasjon.js storebrand "Skadesystem" https://api.store
   aktivt deler. Sjekkes på nytt ved hvert oppslag, så et tilbaketrekk virker
   også mot en integrasjon som kjenner sak-id-en.
 
+## Folkeregister-trigger (ADR-008)
+Et dødsfall kan oppdages fra offisiell kilde i stedet for at en betrodd kontakt
+må orke å melde det. **Men en offisiell kilde erstatter ikke fire øyne:** saken
+opprettes i `under_verifisering`, to saksbehandlere må fortsatt godkjenne,
+karenstiden gjenstår, og eierens nødbrems virker som før — registre tar feil,
+og folk har blitt erklært døde mens de levde. Det som forsvinner er
+attest-steget og ventingen. Fødselsnummeret lagres aldri, kun en HMAC-hash med
+en pepper som bor utenfor databasen. Uten `FOLKEREGISTER_URL` og `FNR_PEPPER`
+gjør ingest ingenting.
+
 ## Ufravikelige prinsipper (håndhevet i kode og tester)
 1. Ingen frigivelse uten verifisert hendelse + karenstid (48 t).
 2. Fire øyne: to ULIKE saksbehandlere må godkjenne (app-sjekk + CHECK i basen).
@@ -70,9 +80,12 @@ node server/verktoy/ny-integrasjon.js storebrand "Skadesystem" https://api.store
 4. Varsel til eier + ALLE kontakter ved ethvert frigivelsesforsøk.
 5. Immutabel revisjonslogg (ingen UPDATE/DELETE-grant) — hendelsestyper, aldri innhold.
 6. To uavhengige kilder ved manuell trigger (attest + uavhengig bekreftelse,
-   eller attest + fire-øyne når hvelvet kun har én betrodd kontakt).
-7. Zero-knowledge sensitiv-tier: skjema er klart, implementering venter på
-   godkjent ADR-001 (API-et svarer 501 inntil da).
+   eller attest + fire-øyne når hvelvet kun har én betrodd kontakt). Ved
+   Folkeregister-trigger er registeret kilde 1 og fire øyne kilde 2 — aldri
+   færre enn to (ADR-008).
+7. Zero-knowledge sensitiv-tier: kryptert i nettleseren, serveren ser aldri
+   klartekst (ADR-001, verifisert i E2E mot chifferteksten i basen).
+8. Selskapet ser kun det kunden aktivt deler, og aldri hvelvinnhold (ADR-006).
 
 ## Arkitektur
 Selvforsynt Node ≥ 20 + Postgres 16. Avhengigheter: `pg` (+ Playwright i dev).

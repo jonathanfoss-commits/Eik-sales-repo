@@ -22,13 +22,15 @@ import * as krypto from './api/krypto.js';
 import * as konto from './api/konto.js';
 import * as deling from './api/deling.js';
 import * as selskap from './api/selskap.js';
+import * as folkeregister from './api/folkeregister.js';
 import { feiKarenstid } from './feier.js';
 import { sendUtestaaende } from './varsling.js';
 import { sendUtestaaendeWebhooks } from './webhook.js';
+import { ingestDodsfall } from './folkeregister.js';
 
 const ruter = new Ruter();
 for (const modul of [hvelv, kontakter, matrise, hendelse, verifisering, etterlatt,
-  abonnement, krypto, konto, deling, selskap]) {
+  abonnement, krypto, konto, deling, selskap, folkeregister]) {
   modul.registrer(ruter);
 }
 
@@ -41,6 +43,7 @@ if (!config.testmodus) {
     feiKarenstid()
       .then(() => sendUtestaaende())
       .then(() => sendUtestaaendeWebhooks())
+      .then(() => ingestDodsfall())
       .catch((f) => console.error('Feier:', f.message));
   }, 60_000).unref();
 }
