@@ -25,6 +25,12 @@ innarbeidet). Ingen veto.
 chips → Skrivemotor verifisert, faktura → trinn 1 → kalenderknapp med dato, null
 pageerror. Versjonstriade 0.19.0 (cache «laerling-0.19.0»).
 
+---
+
+Pakken under (v0.18.0 + Musk-tiltak + v0.18.1) ble publisert til STABIL 28. juli 2026
+på admin-overstyring fra Jonathan (se publiseringsloggen nederst) — kun v0.19.0 over
+venter på godkjenning.
+
 ## v0.18.1 — 21. juli 2026 (sentralkoden ut av alle filer — ⚠ HASTER fra Musk-reviewen)
 
 **Hvorfor:** sentralkoden var eksponert offentlig via GitHub Pages (klartekst i
