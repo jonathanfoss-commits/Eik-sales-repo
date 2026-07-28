@@ -127,12 +127,16 @@ export async function vis(rot) {
   // Alt flaten trenger hentes i ett — da kan medTilstand vise skjelett mens det
   // står på, og en feilboks med «Prøv igjen» hvis linjen ryker.
   const hent = async () => {
+    // kall() kaster bare når linjen ryker. Uten dette står nettleserens engelske
+    // «Failed to fetch» i feilboksen — på en flate som ellers er på bokmål.
     const [abo, hvelv, deling, harNokkel] = await Promise.all([
       kall('GET', '/api/abonnement'),
       kall('GET', '/api/hvelv'),
       kall('GET', '/api/deling'),
       harMinNokkel(),
-    ]);
+    ]).catch(() => {
+      throw new Error('Vi fikk ikke kontakt med tjenesten. Innholdet ditt er trygt.');
+    });
     return {
       abo: abo.data.abonnement,
       elementer: hvelv.data.elementer || [],

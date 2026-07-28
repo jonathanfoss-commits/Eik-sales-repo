@@ -14,7 +14,11 @@ export async function vis(rot) {
   }));
 
   await medTilstand(rot,
-    async () => (await kall('GET', '/api/kontakter')).data.kontakter || [],
+    // kall() kaster bare når linjen ryker. Uten egen melding står nettleserens
+    // engelske «Failed to fetch» i feilboksen på en flate som ellers er bokmål.
+    async () => (await kall('GET', '/api/kontakter').catch(() => {
+      throw new Error('Vi fikk ikke kontakt med tjenesten. Kontaktene dine er trygge.');
+    })).data.kontakter || [],
     (plass, folk) => {
       const nett = rutenett();
       plass.append(nett);

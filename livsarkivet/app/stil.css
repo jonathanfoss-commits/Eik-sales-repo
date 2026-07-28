@@ -364,6 +364,15 @@ body.etterlatt-modus .undertekst { font-size: var(--t-m); }
 .logglinje { font: var(--t-xs)/1.5 var(--font-mono); color: var(--tekst-demp);
   overflow-wrap: anywhere; }
 
+/* Filvelgeren er nettleserens egen knapp: på den mørke flaten kom den som en
+   hvit klump — det klart lyseste elementet på en side om dødsattester. */
+.felt input[type="file"] { padding: var(--r-2); font-size: var(--t-s); }
+.felt input[type="file"]::file-selector-button {
+  margin-right: var(--r-3); border: 1px solid var(--kant); border-radius: var(--radius-s);
+  background: var(--flate-hev); color: var(--tekst); cursor: pointer;
+  font: 600 var(--t-s)/1 var(--font-tekst); padding: var(--r-2) var(--r-3);
+}
+
 /* Kolonnefordeling: elementnavnet skal ha plassen, ikke kontaktkolonnene.
    Uten dette brøt titlene over tre linjer mens én kontaktkolonne var 400px. */
 .matrise-tabell th:first-child { width: auto; min-width: 220px; }
@@ -380,6 +389,8 @@ body.etterlatt-modus .undertekst { font-size: var(--t-m); }
 /* Smal: brukes inne i en .bred celle på det som ikke tåler full arbeidsbredde.
    Et tekstfelt på 1180 px er ingen forbedring — skjemaet holdes på lesebredde. */
 .smal { max-width: var(--kolonne); }
+/* Et tomt skjemarom er fortsatt et flex-barn og gir et gap ingen ser årsaken til. */
+.smal:empty { display: none; }
 
 /* Kategoriseksjonene i hvelvet, side om side. auto-FILL, ikke auto-fit som
    .rutenett: med auto-fit kollapser tomme spor, og en kategori med ETT element
