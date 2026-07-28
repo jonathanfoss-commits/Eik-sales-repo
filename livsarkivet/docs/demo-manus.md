@@ -11,10 +11,21 @@ bygget for én tommel, og det skal synes.
 ```bash
 service postgresql start                    # eller docker compose up -d
 cd livsarkivet
+
+# FERSK BASE. Ikke hopp over dette.
+psql -h localhost -U livsarkiv_eier -d postgres \
+  -c 'DROP DATABASE IF EXISTS livsarkiv WITH (FORCE)' -c 'CREATE DATABASE livsarkiv'
+
 npm run migrate
 KARENSTID_SEKUNDER=240 REGISTRERING_AAPEN=1 npm start &
-node server/verktoy/demo-data.js --tving
+node server/verktoy/demo-data.js
 ```
+
+**Hvorfor fersk base:** `demo-data.js` fjerner bare kontoer på `@demo.livsarkivet.no`.
+Har testsuiten kjørt mot samme base, blir saksbehandlerkøen full av testfiksturer — saker
+fra «Eva E2E» og «Odd Herd», og merkevaren i toppfeltet kan vise et test-selskap i stedet
+for Livsarkivet. Det så vi i generalprøven, og det er ikke noe du vil oppdage i rommet.
+Kjører du mot en fersk base, trenger du heller ikke `--tving`.
 
 **Karenstiden settes til 240 sekunder med vilje.** Da rekker nedtellingen å nå null mens
 du snakker, og du får vist frigivelsen skje i stedet for å forklare at den ville skjedd.

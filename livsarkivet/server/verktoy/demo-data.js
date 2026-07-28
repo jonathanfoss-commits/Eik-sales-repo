@@ -216,6 +216,55 @@ const aaseKontakt = await api(aase, 'POST', '/api/kontakter',
   { navn: 'Bjørn Nordbø', epost: e('bjorn'), relasjon: 'venn', erBetrodd: true });
 await kobleKontakt(aase, aaseKontakt.kontakt.id, e('bjorn'));
 
+// ── gjør tidsstemplene troverdige ──
+//
+// Vaktagentens flagg er tidsbaserte: melder registrert siste 14 dager, matrisen
+// endret siste 7, attest lastet opp under 30 sekunder etter meldingen. Demoen
+// bygger ALT på ett sekund, så alle tre slo ut på hver eneste sak — og en
+// risikoagent som flagger alt, sier ingenting. Verre: den ser ut som den roper
+// ulv, foran den som skal vurdere om vi kan noe.
+//
+// Vi flytter derfor historikken bakover for de hvelvene som skal se normale ut,
+// og lar Odds sak beholde flaggene. Da viser køen det den skal vise: agenten
+// varsler på én sak, ikke på alle, og et menneske bestemmer uansett.
+// Merk rekkefølgen: attesten må ligge ETTER meldingen, ellers er differansen
+// negativ og «påfallende rask»-flagget slår ut likevel. Meldingen flyttes åtte
+// timer tilbake, attesten seks — altså to timer mellom dem, som er hvordan det
+// faktisk går til når noen skal skaffe en dødsattest.
+const rolige = [kariHvelv.hvelv.id, ingridHvelv.hvelv.id];
+await eier.query(
+  `UPDATE kontakter SET opprettet = opprettet - interval '8 months'
+    WHERE hvelv_id = ANY($1)`, [rolige]);
+await eier.query(
+  `UPDATE revisjon SET tid = tid - interval '5 months'
+    WHERE hvelv_id = ANY($1)
+      AND hendelse IN ('matrise_lagt_til','matrise_fjernet','kontakt_opprettet','kontakt_endret')`,
+  [rolige]);
+await eier.query(
+  `UPDATE hendelser SET opprettet = opprettet - interval '8 hours'
+    WHERE hvelv_id = ANY($1)`, [rolige]);
+await eier.query(
+  `UPDATE frigivelser SET opprettet = opprettet - interval '8 hours'
+    WHERE hvelv_id = ANY($1)`, [rolige]);
+await eier.query(
+  `UPDATE attester SET opprettet = opprettet - interval '6 hours'
+     WHERE hendelse_id IN (SELECT id FROM hendelser WHERE hvelv_id = ANY($1))`,
+  [rolige]);
+
+// Flaggene LAGRES når saken opprettes, så det holder ikke å flytte
+// tidsstemplene. Vi lar vaktagenten vurdere på nytt — det er den ekte koden
+// som gir det nye svaret, ikke en håndredigert JSON-rad.
+const { vurder } = await import('../agenter/vakt.js');
+const paaNytt = (await eier.query(
+  `SELECT id FROM frigivelser WHERE hvelv_id = ANY($1)`, [rolige])).rows;
+for (const { id } of paaNytt) {
+  const ny = await vurder(id);
+  if (!ny) continue;
+  await eier.query(
+    `UPDATE agent_vurderinger SET vurdering = $2
+      WHERE frigivelse_id = $1 AND agent = 'vakt'`, [id, ny]);
+}
+
 await eier.end();
 
 console.log(`
