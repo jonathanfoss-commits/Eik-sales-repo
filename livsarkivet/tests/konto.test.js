@@ -109,8 +109,12 @@ test('eksport: komplett, og sensitivt innhold kan dekrypteres utenfor tjenesten'
   // eksporter
   const svar = await fetch(BASE + '/api/eksport', { headers: { Cookie: ida.cookie } });
   assert.equal(svar.status, 200);
-  assert.match(svar.headers.get('content-disposition'), /attachment; filename="livsarkivet-eksport\.json"/);
-  const dump = await svar.json();
+  assert.match(svar.headers.get('content-disposition'), /attachment; filename="livsarkivet-eksport\.html"/);
+  // Eksporten er én selvstendig HTML-fil; datasettet ligger i JSON-blokka.
+  // At fila FAKTISK dekrypterer i en nettleser, bevises i tests/eksport.test.js.
+  const html = await svar.text();
+  const dump = JSON.parse(
+    html.match(/<script type="application\/json" id="eksport-data">([\s\S]*?)<\/script>/)[1]);
 
   assert.equal(dump.format, 'livsarkivet-eksport/1');
   assert.equal(dump.bruker.epost, 'konto-ida@test.no');
@@ -124,7 +128,7 @@ test('eksport: komplett, og sensitivt innhold kan dekrypteres utenfor tjenesten'
   assert.ok(dump.kryptonokler?.hvelvnokkel_pakket, 'frasepakket hvelvnøkkel er med');
   const fraEksport = dump.elementer.find((e) => e.id === sensitivtId);
   assert.equal(fraEksport.kryptert, true);
-  assert.ok(!JSON.stringify(dump).includes(SOEKEORD), 'eksporten bærer ikke klartekst');
+  assert.ok(!html.includes(SOEKEORD), 'eksporten bærer ikke klartekst');
   const hnFraEksport = await krypto.laasOppHvelvnokkel('idas sikkerhetsfrase', dump.kryptonokler);
   assert.equal(
     await krypto.dekrypterElement(hnFraEksport, fraEksport.innhold, fraEksport.nokkel_ref),

@@ -1,13 +1,16 @@
 // Dataportabilitet og sletterett (GDPR art. 15, 17 og 20).
 //
 // Eksporten inneholder ALT eieren har lagt inn — også sensitivt innhold som
-// chiffertekst SAMMEN MED de frasepakkede nøklene. Dermed er eksporten
-// virkelig portabel: eieren kan dekryptere den utenfor tjenesten med sin egen
-// sikkerhetsfrase. Vi kan fortsatt ikke lese den.
+// chiffertekst SAMMEN MED de frasepakkede nøklene. Den leveres som én
+// selvstendig HTML-fil med dekrypteringen inlinet, slik at eieren (eller en
+// etterlatt) faktisk KAN åpne innholdet med sin egen sikkerhetsfrase, uten
+// nett, uten oss og uten å skrive kode selv. Serveren bygger bare skallet
+// rundt chifferteksten den allerede har — vi kan fortsatt ikke lese den.
 import { ApiFeil } from '../http.js';
 import { medBruker, authPool } from '../db.js';
 import { sjekkPassord } from '../auth.js';
 import { sendEpost } from '../epost.js';
+import { byggEksportHtml } from '../eksport-mal.js';
 import { mittHvelv } from './hvelv.js';
 
 export function registrer(ruter) {
@@ -20,7 +23,8 @@ export function registrer(ruter) {
       tidspunkt: new Date().toISOString(),
       om: 'Alt du har lagt inn i Livsarkivet. Sensitivt innhold er kryptert; '
         + 'nøklene under er pakket med din sikkerhetsfrase, slik at du kan '
-        + 'dekryptere innholdet selv — uten oss.',
+        + 'dekryptere innholdet selv — uten oss. Åpne fila i en nettleser og '
+        + 'skriv frasen, så gjøres det for deg.',
       bruker: (await en(
         'SELECT id, navn, epost, telefon, opprettet FROM brukere WHERE id = $1',
         [ctx.brukerId]))[0],
@@ -61,10 +65,10 @@ export function registrer(ruter) {
     };
 
     return { _fil: {
-      filnavn: 'livsarkivet-eksport.json',
-      mime: 'application/json; charset=utf-8',
+      filnavn: 'livsarkivet-eksport.html',
+      mime: 'text/html; charset=utf-8',
       nedlasting: true,
-      innhold: Buffer.from(JSON.stringify(eksport, null, 2), 'utf8'),
+      innhold: Buffer.from(byggEksportHtml(eksport), 'utf8'),
     } };
   }));
 
