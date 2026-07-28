@@ -3,7 +3,12 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
-## v0.19.0 — 28. juli 2026 (EKTE diktering + kalenderfrist — lanseringsbygget)
+## INGEN LEVERANSER VENTER
+
+v0.19.0 ble publisert til STABIL 28. juli kl. ~21 (ordre fra Jonathan, se
+publiseringsloggen). Begge kanalene kjører 0.19.0. Seksjonene under er historikk.
+
+## v0.19.0 — 28. juli 2026 (EKTE diktering + kalenderfrist — PUBLISERT til STABIL)
 
 **Hva:** (1) 🎙 Mikrofonknappen er ekte: dikter rett i appen via nettleserens taletjeneste
 (nb-NO, live-tekst, håndterer iOS-auto-stopp med omstart), stopp → velg hva Lærling skal

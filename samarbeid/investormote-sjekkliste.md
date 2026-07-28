@@ -7,8 +7,7 @@
 | Hva | Status |
 |---|---|
 | Landingssiden (`op-bygg-laerling-nett.netlify.app`) | **Oppdatert i natt** — live-siden manglet «Live/Bevis»-seksjonen fra 19. juli; ny versjon publisert og verifisert. Null JS-feil, ingen brutt layout, mobil + desktop. |
-| Pilot-appen STABIL (v0.18.1) | Alle sider svarer (app, bli-med, rapport, admin, lab, eksport). Null JS-feil. |
-| Pilot-appen TEST (v0.19.0 — ekte diktering) | Live og klar — bruk denne hvis du vil vise dikteringen (godkjenn den gjerne før møtet, så ligger den på STABIL). |
+| Pilot-appen STABIL (**v0.19.0 — publisert kvelden før møtet**) | Ekte diktering, kalenderfrist og alle verktøy live. Alle sider svarer, null JS-feil, funksjonene verifisert etter deploy. Demonstrér rett fra STABIL. |
 | Skrivemotoren (AI ende-til-ende) | **Ekte test kjørt i natt:** diktering inn → korrekt norsk purring ut med frist og konsekvens. Demoøyeblikket virker. |
 | Plattformen (Render, demo-manusets miljø) | `laerling-test` og `laerling` svarer ok; v0.4.1. |
 | Sikkerhet | Sentralkoden kun i miljøvariabel (200/401 verifisert), query-vei avvist. |
@@ -16,8 +15,8 @@
 ## Demoflyt for møtet (anbefalt)
 
 1. **Landingssiden på storskjerm** — historien og prisene (Start 1 490 / Vekst 3 990 / Pro 8 990).
-2. **Pilot-appen på mobilen** — dikter et ekte tilbud (TEST-kanalen har v0.19.0 med ekte
-   mikrofon), vis Lov- og regelsjekk og Timer. Ærlig ramme: dette BRUKES av OP Bygg i pilot.
+2. **Pilot-appen på mobilen (STABIL)** — dikter et ekte tilbud med den nye ekte
+   mikrofonen, vis Lov- og regelsjekk og Timer. Ærlig ramme: dette BRUKES av OP Bygg i pilot.
 3. **Plattform-demoen** (hvis tid) — følg `pitch/demo-manus.md` minutt for minutt
    (LIVE-øyeblikket + bevisdokumentet er høydepunktene).
 
