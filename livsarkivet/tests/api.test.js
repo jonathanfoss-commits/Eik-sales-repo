@@ -6,6 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 import pg from 'pg';
 
 process.env.MIGRATE_DATABASE_URL ||= 'postgres://livsarkiv_eier:livsarkiv@localhost:5432/livsarkiv';
@@ -367,11 +368,18 @@ test('negativ 3: eier blokkerer i karenstid — hvelvet forblir lukket', { skip:
 
 test('zero-knowledge: sensitivt element gjennom HELE kjeden — serveren ser aldri klartekst', { skip: hopp() }, async () => {
   const krypto = await import('../app/js/krypto.js');
-  // Søkeordene under MÅ inneholde bokstaver utenfor heksadesimal (g-z), ellers
-  // treffer skanningen tilfeldig i UUID-er og tidsstempler — «9911» traff
-  // engang mikrosekundene i en revisjonsrad og ga falsk lekkasjealarm.
-  const KLARTEKST = 'Koden til safen er zulu-vinsj-plog. Nettbank-BankID i skuffen.';
-  const SOEKEORD = ['safen', 'zulu-vinsj-plog'];
+  // Søkeordene MÅ inneholde bokstaver utenfor heksadesimal (g-z), ellers treffer
+  // skanningen tilfeldig i UUID-er og tidsstempler — «9911» traff engang
+  // mikrosekundene i en revisjonsrad og ga falsk lekkasjealarm.
+  //
+  // De må dessuten være UNIKE PER KJØRING. Skanningen går over hele tabellen,
+  // og det er hele poenget: klarteksten skal ikke finnes NOE sted. Men da kan
+  // ordene ikke være vanlige ord. «safen» slo ut på tittelen «Safen» i en helt
+  // annen tests fikstur — tittelen er metadata og krypteres ikke, så raden var
+  // korrekt. Testen var det ikke.
+  const KJORING = randomUUID().slice(0, 8).replace(/[0-9]/g, 'x');
+  const SOEKEORD = [`kvistlaas-${KJORING}`, `zulu-vinsj-plog-${KJORING}`];
+  const KLARTEKST = `Koden til ${SOEKEORD[0]} er ${SOEKEORD[1]}. Nettbank-BankID i skuffen.`;
 
   // Siri (mottaker) setter sitt nøkkelpar; Odd (eier) sine hvelvnøkler
   const { tilServer: siriNokkel } = await krypto.opprettNokkelpar('siris egen frase her');
