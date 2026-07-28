@@ -23,14 +23,9 @@
    og `samarbeid/datasikkerhet.md`-kortversjonen som svar på sikkerhetsspørsmålet.
 6. **Vis dem tre ting** (5 min): 🎙 dikter → utkast, ⚖️ Lov- og regelsjekk, ⏱ Timer.
 
-## SMS-varsling (utredet, venter på din beslutning)
+## Integrasjoner (fullt utredet — se konsept/integrasjoner.md)
 
-Behov: purrefrister og «TEST er klar til godkjenning» som SMS til Ole Fabian.
-Anbefaling: **Sveve.no** — norsk, prepaid (~0,5 kr/SMS, ingen månedspris), enkel
-REST-API som passer en Netlify-funksjon. Alternativ: LinkMobility (bedrift, avtale).
-Estimert kost i pilot: < 20 kr/mnd. Krever at du oppretter konto (BankID) og legger
-API-nøkkelen som miljøvariabel — si fra, så bygger kveldsteamet resten.
-Kalenderfristene (.ics) dekker imens samme behov uten konto.
+Elleve tjenester utredet med pris/innsats/personvern. Kortversjon: gratis-trioen push-varsler + vær i byggedagboken + Kartverket-adresseoppslag anbefales bygget først; regnskapsoppslag (Tripletex/Fiken) når du vet hvilket system OP Bygg har; SMS (Sveve) og e-post-sending (Brevo) ligger klare som beslutninger. To spørsmål til lanseringsmøtet: hvilket regnskapssystem bruker dere, og hvor ofte kontraherer dere UE-er?
 
 ## Etter lansering
 
