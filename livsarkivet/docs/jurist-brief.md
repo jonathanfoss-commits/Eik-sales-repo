@@ -75,6 +75,39 @@ formulert slik at den faktisk virker overfor en forbruker.
 - Mottakertilgang er gratis, og en frigivelse skjer selv om abonnementet er
   ubetalt.
 
+## Nye spørsmål etter distribusjonsmodellen mot forsikring
+
+Tjenesten skal kunne tilbys av et livsforsikringsselskap under egen merkevare.
+Det reiser fire spørsmål til:
+
+13. **Hvem er behandlingsansvarlig når selskapet distribuerer?** Vår modell
+    peker mot at Livsarkivet er behandlingsansvarlig og selskapet kun
+    distributør: kunden er vår kunde, og selskapet ser utelukkende de feltene
+    kunden aktivt har delt. Det er også selskapets sterkeste grunn til å ta
+    tjenesten i bruk — de slipper ansvaret for kundenes mest sensitive
+    opplysninger. Holder den konstruksjonen?
+
+14. **Er delingen av utvalgte felt et gyldig samtykke, eller
+    avtaleoppfyllelse?** Kunden krysser av per felt (polisenummer,
+    kundenummer, begunstiget, kontaktperson) og kan trekke tilbake når som
+    helst med umiddelbar virkning. Grunnlaget må være riktig valgt, siden
+    tilbaketrekk skal være reelt.
+
+15. **Fødselsnummer:** vi lagrer kun en HMAC-hash med en pepper utenfor
+    databasen, aldri nummeret. Er hashen fortsatt en personopplysning i
+    rettslig forstand (vi mener ja), og hvilke krav utløser det? Se ADR-008
+    for den ærlige beskrivelsen av svakheten.
+
+16. **Hjemmel for Folkeregisteret:** et forsikringsselskap har som regel
+    hjemmel for opplysninger om egne kunder. Har Livsarkivet den samme
+    hjemmelen som databehandler på deres vegne — eller må oppslaget gjøres av
+    selskapet, som så varsler oss?
+
+Se også `docs/leverandorpakke.md`, som er det samme materialet vendt mot
+selskapets innkjøps- og compliance-funksjon.
+
 ## Vedlegg
 - `docs/vilkar-utkast.md` — vilkårsutkast med åpne punkter markert.
 - `docs/dpia-utkast.md` — DPIA-utkast med dataflyt, risikotabell og åpne punkter.
+- `docs/leverandorpakke.md` — leverandørvurdering (DORA, utkontraktering,
+  isolasjon mellom selskaper), med en eksplisitt liste over det som mangler.

@@ -38,6 +38,20 @@ process.env.LIVSARKIV_APP_PASSORD ||= 'app';
 process.env.LIVSARKIV_AUTH_PASSORD ||= 'auth';
 
 const { medBruker, lukkPools } = await import('../server/db.js');
+const { hashPassord, nyTotpHemmelighet, totpKode } = await import('../server/auth.js');
+
+function jar() { return { cookie: '' }; }
+async function api(j, metode, sti, kropp) {
+  const svar = await fetch(BASE + sti, {
+    method: metode,
+    headers: { 'Content-Type': 'application/json', ...(j?.cookie ? { Cookie: j.cookie } : {}) },
+    body: kropp === undefined ? undefined : JSON.stringify(kropp) });
+  const satt = svar.headers.get('set-cookie');
+  if (satt && j) j.cookie = satt.split(';')[0];
+  let data = {};
+  try { data = await svar.json(); } catch { /* tomt */ }
+  return { status: svar.status, data };
+}
 
 const PORT = 3412;
 const BASE = `http://127.0.0.1:${PORT}`;
@@ -271,6 +285,34 @@ test('vertsnavnet avgjør merkevare og hvilket selskap en ny kunde havner i',
     const rad = (await eier.query(
       'SELECT tenant_id FROM brukere WHERE epost = $1', ['tn-ny-a@test.no'])).rows[0];
     assert.equal(rad.tenant_id, tenantA, 'Ny kunde havnet ikke i Alfa');
+  });
+
+test('revisjonseksport er skopet til egen tenant og sier om den er fullstendig',
+  { skip: hopp() }, async () => {
+    // to revisjonsrader, én per selskap
+    await medBruker(som(kundeA), (c) => c.query(
+      `INSERT INTO revisjon (bruker_id, rolle, hvelv_id, hendelse)
+       VALUES ($1, 'person', $2, 'tn_test_alfa')`, [kundeA, hvelvA]));
+    await medBruker(som(kundeB), (c) => c.query(
+      `INSERT INTO revisjon (bruker_id, rolle, hvelv_id, hendelse)
+       VALUES ($1, 'person', $2, 'tn_test_beta')`, [kundeB, hvelvB]));
+
+    const admin = jar();
+    // saksbehandler trenger TOTP — settes rett i basen for denne testen
+    const totp = nyTotpHemmelighet();
+    await eier.query(
+      `UPDATE brukere SET passord_hash = $2, totp_hemmelighet = $3 WHERE id = $1`,
+      [adminA, await hashPassord('passord1234'), totp]);
+    await api(admin, 'POST', '/api/auth/logg-inn',
+      { epost: 'tn-admin-a@test.no', passord: 'passord1234', totp: totpKode(totp) });
+
+    const svar = await api(admin, 'GET', '/api/admin/revisjon/eksport');
+    assert.equal(svar.status, 200);
+    const hendelser = svar.data.logg.map((r) => r.hendelse);
+    assert.ok(hendelser.includes('tn_test_alfa'), 'egen tenants rad mangler');
+    assert.equal(hendelser.includes('tn_test_beta'), false,
+      'eksporten lekket det andre selskapets revisjonslogg');
+    assert.equal(svar.data.fullstendig, true);
   });
 
 test('ukjent vertsnavn faller til plattformen, ikke til et tilfeldig selskap',

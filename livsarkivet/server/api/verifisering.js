@@ -164,6 +164,28 @@ export function registrer(ruter) {
     return { status: f.status };
   });
 
+  // Revisjonseksport for tilsyn og revisjon (DORA, internrevisjon hos
+  // selskapet). RLS skoper allerede radene til saksbehandlerens egen tenant —
+  // her legges kun tidsrom og fullstendighet på.
+  //
+  // `fullstendig` er ikke pynt: en revisor som får en avkortet logg uten å bli
+  // fortalt det, trekker feil konklusjon. Er den false, må tidsrommet snevres inn.
+  ruter.add('GET', '/api/admin/revisjon/eksport', ({ ctx, sok }) => {
+    krevAdmin(ctx);
+    return medBruker(ctx, async (c) => {
+      const fra = sok.get('fra') || '1970-01-01';
+      const til = sok.get('til') || '2999-12-31';
+      const MAKS = 50_000;
+      const rader = (await c.query(
+        `SELECT id, tid, bruker_id, rolle, hvelv_id, hendelse, detaljer
+           FROM revisjon WHERE tid >= $1::date AND tid < ($2::date + 1)
+          ORDER BY id LIMIT $3`, [fra, til, MAKS + 1])).rows;
+      const fullstendig = rader.length <= MAKS;
+      return { fra, til, fullstendig, antall: Math.min(rader.length, MAKS),
+        logg: rader.slice(0, MAKS) };
+    });
+  });
+
   ruter.add('GET', '/api/admin/logg', ({ ctx }) => {
     krevAdmin(ctx);
     return medBruker(ctx, async (c) => {

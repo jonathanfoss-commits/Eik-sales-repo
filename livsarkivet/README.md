@@ -173,6 +173,9 @@ alt innhold; kontakter i andres hvelv beholdes men løsnes, og revisjonssporet
 - `docs/dpia-utkast.md`, `docs/vilkar-utkast.md` — UTKAST fra utviklingsteamet,
   venter på Jonathans gjennomgang og juridisk kvalitetssikring.
 - `docs/jurist-brief.md` — ferdig brief med de tolv spørsmålene til jurist.
+- `docs/leverandorpakke.md` — svaret til et forsikringsselskaps innkjøps- og
+  compliance-funksjon: isolasjon, sikkerhetsarkitektur, DORA og
+  utkontraktering, med en ærlig liste over det som MANGLER.
 - `docs/lansering-sjekkliste.md` — alt som må gjøres utenfor koden.
 - `render.yaml` — Render Blueprint (EU/Frankfurt), migrasjoner ved deploy.
 
