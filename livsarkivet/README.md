@@ -194,6 +194,8 @@ alt innhold; kontakter i andres hvelv beholdes men løsnes, og revisjonssporet
   slik den faktisk er. Åpne poster står uten omskriving.
 - `docs/pilotavtale-utkast.md` — 100 kunder, seks måneder, ingen betaling.
   Flytter spørsmålet fra «tør vi kjøpe?» til «er dette verdt et halvår?».
+- `docs/henvendelse-utkast.md` — ferdig e-post, hvem den skal til, hva du gjør
+  hvis de svarer og hvis de ikke gjør det. Sendes av Jonathan, under eget navn.
 - `docs/lansering-sjekkliste.md` — alt som må gjøres utenfor koden.
 - `render.yaml` — Render Blueprint (EU/Frankfurt), migrasjoner ved deploy.
 
