@@ -43,7 +43,11 @@ og arbeidsformen (les først, planlegg, små leveranser, norsk bokmål) gjelder.
    kan fortsatt stoppe alt, og en for tidlig utbetaling kan ikke ringes
    tilbake. Webhook-nyttelasten bærer aldri personopplysninger (ADR-007).
 9. Testfilene kjører parallelt: aldri assert på globale radtall — skop
-   assertions til testens egne fiksturer.
+   assertions til testens egne fiksturer. Gjelder også RETURVERDIER fra
+   globale operasjoner: `feiKarenstid()` og `sendUtestaaende()` teller alt i
+   basen, ikke bare ditt. Tester som eier global oppførsel (`drift.test.js`)
+   kjører mot EGEN database — se toppen av filen for hvorfor lappverk ikke
+   holdt.
 
 ## Arkitektur (kort)
 Node uten rammeverk + Postgres m. person-skopet RLS. To DB-roller

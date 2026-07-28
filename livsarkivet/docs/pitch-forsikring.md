@@ -17,6 +17,35 @@ det. Det betyr:
 - **Saken starter uten opplysninger**: hvem er begunstiget, hvor er papirene,
   hvem skal kontaktes.
 
+### Bransjen sier dette selv
+
+Statens pensjonskasse publiserte 1. juli 2026 en pressemelding med tittelen
+**«Ukjent gode: Slik fungerer gruppeliv i staten»**. Deres egen pensjonsekspert
+sier at ordningen er noe *«mange ikke vet om»* — og beløpene det er snakk om er
+ikke små: **drøyt 1,9 millioner kroner** til ektefelle, samboer eller partner,
+og **680 000 kroner** per barn under 25 år.
+
+Det er en statlig aktør som selv kaller sitt eget dødsfallsprodukt et ukjent
+gode. Bruk den setningen i møtet. Den er ikke vår påstand — den er bransjens.
+
+Til sammenlikning ble det utbetalt i størrelsesorden **4,9 milliarder kroner**
+i dødsfallskapital på engangsbetalte produkter i 2025 (Finans Norge).
+**Verifiser dette tallet mot Finans Norges egen tabell før bruk** — jeg fikk
+det fra søk, ikke fra kilden direkte.
+
+### Tallet som IKKE finnes
+
+Jeg har lett etter et offentlig tall på hvor mye livsforsikring som aldri blir
+utbetalt i Norge fordi ingen meldte fra. **Det finnes ikke.** Ikke hos Finans
+Norge, ikke hos Finanstilsynet.
+
+Ikke dikt det opp. Snu det i stedet til møtets sterkeste spørsmål:
+
+> «Hvor mange av deres dødsfallsdekninger ble aldri krevd i fjor?»
+
+De kan svare på det. Hvis de ikke kan, er *dét* funnet. Og hvis de kan, er
+tallet deres eget — det er langt vanskeligere å avfeie enn vårt.
+
 ## Det Livsarkivet gjør
 
 Kunden legger inn det de nærmeste trenger, og deler **fire felt** med
@@ -95,10 +124,20 @@ det et argument: de får forme produktet.
 
 ---
 
-## ANTAKELSER som må erstattes før bruk
+## Kilder
 
-- Antall livsforsikringspoliser i Norge, og hvor stor andel som ikke utbetales
-  fordi ingen melder fra. **Kilde må finnes** — dette tallet bærer hele
-  problemstillingen, og et anslag holder ikke i et styremøte.
-- Pris per kunde per år.
-- Hva selskapet sparer per sak i saksbehandling.
+- Statens pensjonskasse, «Ukjent gode: Slik fungerer gruppeliv i staten»,
+  pressemelding 1. juli 2026 (via NTB Kommunikasjon). Beløpene 1,9 mill. /
+  680 000 og formuleringen «mange ikke vet om» er derfra.
+  https://kommunikasjon.ntb.no/pressemelding/18948198/ukjent-gode-slik-fungerer-gruppeliv-i-staten
+- Finans Norge, forsikringsstatistikk. **Tallet 4,9 mrd. må verifiseres mot
+  deres egen tabell** før det brukes i et møte — jeg fikk 403 da jeg forsøkte å
+  hente siden direkte. https://www.finansnorge.no/tema/statistikk-og-analyse/forsikring/
+
+## ANTAKELSER som fortsatt må erstattes
+
+- **Pris per kunde per år.** Ikke satt.
+- **Hva selskapet sparer per sak i saksbehandling.** Krever et tall fra dem,
+  ikke fra oss — spør i møtet.
+- **Andel dødsfallsdekninger som aldri kreves.** Finnes ikke offentlig. Se
+  spørsmålet under «Tallet som IKKE finnes» — det er bedre enn et estimat.
