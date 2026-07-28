@@ -23,6 +23,56 @@ Etterpå (etterpaa.no). Dette er MVP-kjerneloopen:
   synlig «Testmiljø»-banner over innloggingen, så ingen legger inn ekte
   opplysninger i et miljø uten vilkår og e-postvarsler.
 
+## Flere selskaper på samme plattform (ADR-005)
+Et forsikringsselskap kan tilby Livsarkivet til sine kunder under egen
+merkevare. Vertsnavnet avgjør hvilket selskap en adresse svarer for, og
+merkevaren (navn, aksentfarge) hentes før innlogging. **En saksbehandler ser
+kun sitt eget selskaps saker** — `er_admin_for(hvelv_id)` i stedet for et
+ubetinget `er_admin()`, og fire øyne kreves innenfor samme selskap.
+Plattformdriften ser saksmetadata på tvers for support; ingen av dem ser
+hvelvinnhold. `tests/tenant.test.js` prøver å bryte hver av disse grensene.
+
+```
+node server/verktoy/ny-tenant.js storebrand "Storebrand" livsarkiv.storebrand.no
+node server/verktoy/ny-admin.js "Navn" navn@storebrand.no storebrand
+```
+
+## Deling med eget forsikringsselskap (ADR-006)
+Kunden deler fire felt — polisenummer, kundenummer, begunstiget og
+kontaktperson — hver for seg, og kan trekke dem tilbake når som helst.
+Tilbaketrekket står i RLS-policyen (`trukket_tid IS NULL`), ikke i en WHERE i
+koden, så det virker i samme sekund. Selskapet kan verken skrive på kundens
+vegne eller gjenopplive et tilbaketrekk. **Plattformdriften ser ikke delte
+felt** — vi trenger saksmetadata for å drifte frigivelsesløpet, ikke kundens
+polisenummer. Resten av hvelvet er stengt for selskapet, også etter frigivelse.
+
+## Integrasjonsflate for selskapet (ADR-007)
+```
+node server/verktoy/ny-integrasjon.js storebrand "Skadesystem" https://api.storebrand.no/livsarkivet
+```
+- **Webhook** ved frigivelse: `{hendelse, sak_id, tidspunkt}` — ingen
+  personopplysninger. HMAC-SHA256 over `"<tidsstempel>.<kropp>"` i
+  `X-Livsarkivet-Signatur`, med tidsstemplet signert så kallet ikke kan spilles
+  av på nytt. Køes i frigivelsestransaksjonen, sendes med eksponentiell
+  tilbaketrekning, og en feilet utsending slettes aldri.
+- **Vi varsler først ved FRIGITT**, aldri ved karenstidens start: i karenstiden
+  kan eieren fortsatt stoppe alt, og en for tidlig utbetaling kan ikke ringes
+  tilbake.
+- `GET /api/selskap/saker` og `/api/selskap/saker/:id` med
+  `Authorization: Bearer lva_…` gir egne **frigitte** saker og de feltene kunden
+  aktivt deler. Sjekkes på nytt ved hvert oppslag, så et tilbaketrekk virker
+  også mot en integrasjon som kjenner sak-id-en.
+
+## Folkeregister-trigger (ADR-008)
+Et dødsfall kan oppdages fra offisiell kilde i stedet for at en betrodd kontakt
+må orke å melde det. **Men en offisiell kilde erstatter ikke fire øyne:** saken
+opprettes i `under_verifisering`, to saksbehandlere må fortsatt godkjenne,
+karenstiden gjenstår, og eierens nødbrems virker som før — registre tar feil,
+og folk har blitt erklært døde mens de levde. Det som forsvinner er
+attest-steget og ventingen. Fødselsnummeret lagres aldri, kun en HMAC-hash med
+en pepper som bor utenfor databasen. Uten `FOLKEREGISTER_URL` og `FNR_PEPPER`
+gjør ingest ingenting.
+
 ## Ufravikelige prinsipper (håndhevet i kode og tester)
 1. Ingen frigivelse uten verifisert hendelse + karenstid (48 t).
 2. Fire øyne: to ULIKE saksbehandlere må godkjenne (app-sjekk + CHECK i basen).
@@ -30,9 +80,12 @@ Etterpå (etterpaa.no). Dette er MVP-kjerneloopen:
 4. Varsel til eier + ALLE kontakter ved ethvert frigivelsesforsøk.
 5. Immutabel revisjonslogg (ingen UPDATE/DELETE-grant) — hendelsestyper, aldri innhold.
 6. To uavhengige kilder ved manuell trigger (attest + uavhengig bekreftelse,
-   eller attest + fire-øyne når hvelvet kun har én betrodd kontakt).
-7. Zero-knowledge sensitiv-tier: skjema er klart, implementering venter på
-   godkjent ADR-001 (API-et svarer 501 inntil da).
+   eller attest + fire-øyne når hvelvet kun har én betrodd kontakt). Ved
+   Folkeregister-trigger er registeret kilde 1 og fire øyne kilde 2 — aldri
+   færre enn to (ADR-008).
+7. Zero-knowledge sensitiv-tier: kryptert i nettleseren, serveren ser aldri
+   klartekst (ADR-001, verifisert i E2E mot chifferteksten i basen).
+8. Selskapet ser kun det kunden aktivt deler, og aldri hvelvinnhold (ADR-006).
 
 ## Arkitektur
 Selvforsynt Node ≥ 20 + Postgres 16. Avhengigheter: `pg` (+ Playwright i dev).
@@ -120,6 +173,9 @@ alt innhold; kontakter i andres hvelv beholdes men løsnes, og revisjonssporet
 - `docs/dpia-utkast.md`, `docs/vilkar-utkast.md` — UTKAST fra utviklingsteamet,
   venter på Jonathans gjennomgang og juridisk kvalitetssikring.
 - `docs/jurist-brief.md` — ferdig brief med de tolv spørsmålene til jurist.
+- `docs/leverandorpakke.md` — svaret til et forsikringsselskaps innkjøps- og
+  compliance-funksjon: isolasjon, sikkerhetsarkitektur, DORA og
+  utkontraktering, med en ærlig liste over det som MANGLER.
 - `docs/lansering-sjekkliste.md` — alt som må gjøres utenfor koden.
 - `render.yaml` — Render Blueprint (EU/Frankfurt), migrasjoner ved deploy.
 

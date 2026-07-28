@@ -117,7 +117,10 @@ export async function loggUt(token) {
 }
 
 // ── Selvregistrering for eiere — bak miljøflagg [JONATHAN] ──
-export async function registrerSelv({ navn, epost, passord }) {
+// tenantId kommer fra vertsnavnet (server/tenant.js) — den som registrerer seg
+// på selskapets adresse blir selskapets kunde. Uten treff faller den tilbake
+// til plattform-tenanten via kolonnens DEFAULT.
+export async function registrerSelv({ navn, epost, passord }, tenantId) {
   if (!config.registreringAapen) return { feil: 'Registrering er ikke åpnet ennå' };
   if (!navn || !epost || !passord) return { feil: 'Alle feltene må fylles ut' };
   if (String(passord).length < 10) return { feil: 'Passordet må ha minst 10 tegn' };
@@ -125,10 +128,10 @@ export async function registrerSelv({ navn, epost, passord }) {
     'SELECT 1 FROM brukere WHERE lower(epost) = lower($1)', [String(epost).trim()])).rows[0];
   if (finnes) return { feil: 'E-posten er alt registrert' };
   const bruker = (await authPool.query(
-    `INSERT INTO brukere (navn, epost, passord_hash)
-     VALUES ($1, $2, $3) RETURNING id, navn, rolle`,
+    `INSERT INTO brukere (navn, epost, passord_hash, tenant_id)
+     VALUES ($1, $2, $3, COALESCE($4::uuid, standard_tenant())) RETURNING id, navn, rolle`,
     [String(navn).trim(), String(epost).trim().toLowerCase(),
-      await hashPassord(String(passord))])).rows[0];
+      await hashPassord(String(passord)), tenantId || null])).rows[0];
   return { bruker };
 }
 
@@ -224,10 +227,14 @@ export async function innlosInvitasjon({ kode, navn, passord, innloggetBrukerId 
         await klient.query('ROLLBACK');
         return { feil: 'E-posten har alt en konto — logg inn og bruk koden derfra' };
       }
+      // Kontakten arver tenanten til den som inviterte — ikke vertsnavnet hen
+      // tilfeldigvis åpnet lenken på.
       bruker = (await klient.query(
-        `INSERT INTO brukere (navn, epost, passord_hash)
-         VALUES ($1, $2, $3) RETURNING id, navn, rolle`,
-        [String(navn).trim(), inv.epost.toLowerCase(), await hashPassord(String(passord))])).rows[0];
+        `INSERT INTO brukere (navn, epost, passord_hash, tenant_id)
+         VALUES ($1, $2, $3, COALESCE(tenant_av_kontakt($4::uuid), standard_tenant()))
+         RETURNING id, navn, rolle`,
+        [String(navn).trim(), inv.epost.toLowerCase(), await hashPassord(String(passord)),
+          inv.kontakt_id])).rows[0];
       brukerId = bruker.id;
     }
 

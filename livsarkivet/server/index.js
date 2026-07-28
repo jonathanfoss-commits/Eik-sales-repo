@@ -9,6 +9,7 @@ import { Ruter, ApiFeil, svarJson, lesJson, lesCookies } from './http.js';
 import { loggInn, loggUt, finnSesjon, registrerSelv, innlosInvitasjon,
   finnBrukerPaaEpost, lagNullstilling, fullforNullstilling, byttPassord } from './auth.js';
 import { sendEpost, epostTilgjengelig } from './epost.js';
+import { finnTenant, merkevare } from './tenant.js';
 import { medBruker, authPool } from './db.js';
 import * as hvelv from './api/hvelv.js';
 import * as kontakter from './api/kontakter.js';
@@ -19,12 +20,17 @@ import * as etterlatt from './api/etterlatt.js';
 import * as abonnement from './api/abonnement.js';
 import * as krypto from './api/krypto.js';
 import * as konto from './api/konto.js';
+import * as deling from './api/deling.js';
+import * as selskap from './api/selskap.js';
+import * as folkeregister from './api/folkeregister.js';
 import { feiKarenstid } from './feier.js';
 import { sendUtestaaende } from './varsling.js';
+import { sendUtestaaendeWebhooks } from './webhook.js';
+import { ingestDodsfall } from './folkeregister.js';
 
 const ruter = new Ruter();
 for (const modul of [hvelv, kontakter, matrise, hendelse, verifisering, etterlatt,
-  abonnement, krypto, konto]) {
+  abonnement, krypto, konto, deling, selskap, folkeregister]) {
   modul.registrer(ruter);
 }
 
@@ -36,6 +42,8 @@ if (!config.testmodus) {
   setInterval(() => {
     feiKarenstid()
       .then(() => sendUtestaaende())
+      .then(() => sendUtestaaendeWebhooks())
+      .then(() => ingestDodsfall())
       .catch((f) => console.error('Feier:', f.message));
   }, 60_000).unref();
 }
@@ -66,6 +74,12 @@ const AAPNE = new Set(['POST /api/auth/logg-inn', 'POST /api/auth/registrer',
   'GET /api/miljo',              // må leses FØR innlogging (demoadvarsel)
   'POST /api/stripe/webhook']); // signaturverifisert i ruten
 
+// Selskapenes integrasjons-API autentiserer med API-nøkkel i stedet for
+// sesjonscookie, og har variable stier (/api/selskap/saker/:id) som et exact
+// match i AAPNE ikke kan uttrykke. Hver rute sjekker nøkkelen selv — slipper
+// man forbi her, får man 401 i ruten.
+const NOKKELRUTER = /^\/api\/selskap\//;
+
 ruter.add('GET', '/api/helse', async () => ({ ok: true }));
 
 // Et demomiljø må SI at det er et demomiljø. Står demoinnloggingen på, kommer
@@ -74,9 +88,11 @@ ruter.add('GET', '/api/helse', async () => ({ ok: true }));
 // «registrering» styrer om «Opprett ditt livsarkiv» vises i det hele tatt. I
 // produksjon står flagget av, og da er knappen en blindvei: brukeren fyller ut
 // skjemaet og får «Registrering er ikke åpnet ennå» etterpå.
-ruter.add('GET', '/api/miljo', async () => ({
+ruter.add('GET', '/api/miljo', async ({ req }) => ({
   demo: config.demoInnlogging,
   registrering: config.registreringAapen,
+  // White-label: hvilket selskap svarer denne adressen for
+  merkevare: merkevare(await finnTenant(req)),
 }));
 
 function settSesjonsCookie(res, token) {
@@ -106,7 +122,7 @@ ruter.add('POST', '/api/auth/logg-inn', async ({ req, body, res }) => {
 
 ruter.add('POST', '/api/auth/registrer', async ({ req, body }) => {
   if (forMange('registrer:' + klientIp(req), 20, 60 * 60_000)) throw new ApiFeil(429, 'For mange forsøk');
-  const resultat = await registrerSelv(body);
+  const resultat = await registrerSelv(body, (await finnTenant(req))?.id);
   if (resultat.feil) throw new ApiFeil(400, resultat.feil);
   return { ok: true, navn: resultat.bruker.navn };
 });
@@ -275,7 +291,7 @@ const server = http.createServer(async (req, res) => {
 
     const noekkel = `${req.method} ${sti}`;
     let ctx = null;
-    if (!AAPNE.has(noekkel)) {
+    if (!AAPNE.has(noekkel) && !NOKKELRUTER.test(sti)) {
       ctx = await finnSesjon(lesCookies(req).livsarkiv_sesjon);
       if (!ctx) throw new ApiFeil(401, 'Logg inn først');
       res._rolle = ctx.rolle;

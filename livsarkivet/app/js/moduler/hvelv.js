@@ -4,6 +4,44 @@ import { el, tom, feilboks, KATEGORI_NAVN } from '../dom.js';
 import { hentHvelvnokkel, gjenopprettMedKode, harMinNokkel, sikreMinNokkel } from '../frase.js';
 import { krypterElement, dekrypterElement } from '../krypto.js';
 
+// Deling med eget forsikringsselskap. Vises KUN når kunden faktisk hører til
+// et selskap — for en kunde som kom inn via livsarkivet.no finnes det ingen
+// å dele med, og da skal kortet ikke stå der og forvirre.
+async function tegnDeling(rot) {
+  const svar = await kall('GET', '/api/deling');
+  const selskap = svar.data?.selskap;
+  if (!selskap) return;
+  const { delinger = [], felttyper = {} } = svar.data;
+  const aktive = new Map(delinger.map((d) => [d.felttype, d]));
+
+  const kort = el('div', { class: 'kort' },
+    el('h3', {}, `Delt med ${selskap.navn}`),
+    el('p', { class: 'meta' },
+      `Du bestemmer selv hva ${selskap.navn} får se. Resten av arkivet er stengt `
+      + 'for dem — også etter at du er borte. Du kan trekke tilbake når som helst.'));
+
+  for (const [type, etikett] of Object.entries(felttyper)) {
+    const delt = aktive.get(type);
+    // ingen placeholder: etiketten står rett over, og gjentakelsen støyer bare
+    const felt = el('input', { type: 'text', value: delt?.verdi || '' });
+    kort.append(el('div', { class: 'delingsrad' },
+      el('label', {}, etikett),
+      felt,
+      delt
+        ? el('button', { class: 'liten fare', onclick: async () => {
+          if (!confirm(`Slutte å dele ${etikett.toLowerCase()} med ${selskap.navn}?`)) return;
+          await kall('DELETE', `/api/deling/${delt.id}`);
+          vis(rot);
+        } }, 'Slutt å dele')
+        : el('button', { class: 'liten sekundaer', onclick: async () => {
+          if (!felt.value.trim()) return;
+          await kall('POST', '/api/deling', { felttype: type, verdi: felt.value });
+          vis(rot);
+        } }, 'Del')));
+  }
+  rot.append(kort);
+}
+
 export async function vis(rot) {
   tom(rot);
   rot.append(el('h1', {}, 'Hvelvet ditt'),
@@ -155,6 +193,8 @@ export async function vis(rot) {
       gammelt.value = ''; nytt.value = '';
       passordFeil.append(el('div', { class: 'melding-ok' }, 'Passordet er byttet.'));
     } }, 'Lagre nytt passord')));
+
+  await tegnDeling(rot);
 
   // Dine data: portabilitet og sletterett
   rot.append(el('div', { class: 'kort' },
