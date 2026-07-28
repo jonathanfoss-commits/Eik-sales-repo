@@ -15,6 +15,8 @@ export async function vis(rot) {
       ? `${eiere.join(' og ')} har sørget for at du skulle få dette. Ta det i ditt tempo.`
       : 'Ingenting er frigitt til deg.'));
 
+  if (elementer.length) rot.append(forstSteg());
+
   let forrigeKategori = null;
   for (const e of elementer) {
     if (e.kategori !== forrigeKategori) {
@@ -55,6 +57,55 @@ export async function vis(rot) {
   }
 
   if (elementer.length) rot.append(offentligHjelp());
+}
+
+// Én ting om gangen.
+//
+// Konkurrentene viser hele lista. For et menneske i de første ukene er 40
+// punkter en grunn til å lukke appen, ikke en plan. Vi viser den ene tingen som
+// haster nå, og holder resten skjult til den er gjort. Rekkefølgen er det
+// vanskelige her — den er redaksjonell kunnskap om norsk dødsbo, ikke kode.
+//
+// Merk hva som IKKE står her: alt staten allerede gjør. Bank, eiendom, gjeld og
+// pensjon kommer gjennom Digitalt dødsbo, og står i kortet lenger nede.
+const FORST = [
+  ['Det første døgnet', 'Varsle de nærmeste. Sjekk om det er kjæledyr som må tas hånd om, og lås boligen.'],
+  ['Begravelsesbyrå', 'De tar seg av det meste av det formelle de første dagene, og kan vente med det økonomiske.'],
+  ['Skifteattest fra tingretten', 'Den trenger du før banker og offentlige instanser vil snakke med deg. Søk tidlig — den tar tid.'],
+  ['Faste trekk og abonnementer', 'Se etter det under «Praktisk» nedenfor. Ikke hastverk, men de fortsetter å trekke.'],
+  ['Digitale kontoer', 'Se instruksene nedenfor. Noe må gjøres innen en frist, annet kan vente.'],
+];
+
+function forstSteg() {
+  const nokkel = 'livsarkivet:etterlatt-steg';
+  const naa = () => Math.min(Number(localStorage.getItem(nokkel) || 0), FORST.length);
+  const boks = el('div', { class: 'forst' });
+
+  const tegn = () => {
+    tom(boks);
+    const i = naa();
+    if (i >= FORST.length) {
+      boks.append(
+        el('div', { class: 'mono' }, 'Det som haster'),
+        el('p', { class: 'forst-tekst' }, 'Du har vært gjennom det som haster. '
+          + 'Resten kan du ta når du orker.'),
+        el('button', { class: 'liten stille', onclick: () => {
+          localStorage.removeItem(nokkel); tegn();
+        } }, 'Vis fra begynnelsen igjen'));
+      return;
+    }
+    const [tittel, tekst] = FORST[i];
+    boks.append(
+      el('div', { class: 'mono' }, `Det som haster · ${i + 1} av ${FORST.length}`),
+      el('h2', { class: 'forst-tittel' }, tittel),
+      el('p', { class: 'forst-tekst' }, tekst),
+      el('button', { class: 'liten stille', onclick: () => {
+        localStorage.setItem(nokkel, String(i + 1)); tegn();
+      } }, 'Dette er gjort'));
+  };
+
+  tegn();
+  return boks;
 }
 
 // Staten har allerede bygget den økonomiske oversikten: Digitalt dødsbo

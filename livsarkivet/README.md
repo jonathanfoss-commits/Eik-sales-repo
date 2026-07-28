@@ -175,8 +175,12 @@ transporten utsetter bare utsendingen. Karenstid-feieren bruker
 ganger, og en karenstid som utløp under nedetid plukkes opp ved neste feiing.
 
 ## Dine data (GDPR art. 15, 17, 20)
-`GET /api/eksport` gir eieren alt som JSON — inkludert de frasepakkede
-krypteringsnøklene, så eksporten kan dekrypteres utenfor tjenesten.
+`GET /api/eksport` gir eieren alt i én selvstendig HTML-fil: dataene, de
+frasepakkede krypteringsnøklene OG dekrypteringskoden, inlinet. Fila åpnes
+lokalt (`file://`, ingen server, ingen nett); skriver man sikkerhetsfrasen,
+dekrypteres det sensitive innholdet i nettleseren. Bevist i
+`tests/eksport.test.js` — med serveren avslått og alt nettverk blokkert.
+Serveren bygger bare skallet rundt chifferteksten den allerede har.
 `POST /api/konto/slett` krever passordet på nytt og fjerner konto og hvelv med
 alt innhold; kontakter i andres hvelv beholdes men løsnes, og revisjonssporet
 (uten innhold) overlever som bevis for at frigivelser var korrekte.

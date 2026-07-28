@@ -75,9 +75,11 @@ etterlatte er levende personer med fulle rettigheter**. Vurderingen vår:
 
 ## 7. De registrertes rettigheter
 - **Innsyn/portabilitet (art. 15 og 20):** `GET /api/eksport` gir alt eieren
-  har lagt inn som JSON — inkludert de frasepakkede krypteringsnøklene, slik at
-  eksporten er brukbar utenfor tjenesten. Testet i `tests/konto.test.js`:
-  sensitivt innhold dekrypteres fra eksporten alene med eierens egen frase.
+  har lagt inn som én selvstendig HTML-fil — inkludert de frasepakkede
+  krypteringsnøklene og dekrypteringskoden, slik at eksporten er brukbar
+  utenfor tjenesten uten teknisk kompetanse. Testet i `tests/konto.test.js`
+  (datasettet er komplett) og `tests/eksport.test.js` (fila dekrypterer i en
+  nettleser med serveren avslått og nettverket blokkert).
 - **Sletting (art. 17):** `POST /api/konto/slett` krever passordet på nytt og
   fjerner konto, hvelv, elementer, kontakter, matrise, hendelser, frigivelser,
   varslinger, krypteringsnøkler og abonnement i én transaksjon. Kontakter i

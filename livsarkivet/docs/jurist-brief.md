@@ -68,8 +68,9 @@ formulert slik at den faktisk virker overfor en forbruker.
 - Uforanderlig revisjonslogg over alt som skjer i frigivelsesløpet. Den
   inneholder aldri innhold, bare hendelsestyper og tidspunkt.
 - Varsler (e-post) inneholder aldri noe fra arkivet.
-- Dataportabilitet og sletterett er bygget: brukeren kan laste ned alt (også
-  krypteringsnøklene, slik at eksporten er brukbar utenfor tjenesten) og slette
+- Dataportabilitet og sletterett er bygget: brukeren kan laste ned alt i én
+  HTML-fil som åpnes lokalt uten oss (også krypteringsnøklene og
+  dekrypteringskoden, slik at eksporten er brukbar utenfor tjenesten) og slette
   kontoen med alt innhold. Revisjonssporet overlever slettingen — vi ber om en
   vurdering av om det er riktig avveining mot art. 17.
 - Mottakertilgang er gratis, og en frigivelse skjer selv om abonnementet er

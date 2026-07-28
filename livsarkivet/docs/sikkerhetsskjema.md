@@ -67,7 +67,7 @@ Sist oppdatert i samme leveranse som OIDC (ADR-009).
 | E1 | Datalokasjon? | EU/EØS (Frankfurt). | `render.yaml` |
 | E2 | Tredjelandsoverføring? | Kun ved valgfri AI-attestkontroll. Lar man nøkkelen stå tom, kjører tjenesten i EØS-modus **uten kodeendring**. | `ai/gateway.js` |
 | E3 | DPIA? | **Utkast foreligger**, ikke juridisk kvalitetssikret. | `docs/dpia-utkast.md` |
-| E4 | Innsyn og portabilitet? | **Ja.** Full eksport som JSON, inkludert krypteringsnøklene, så innholdet kan åpnes utenfor tjenesten. | `GET /api/eksport` |
+| E4 | Innsyn og portabilitet? | **Ja.** Full eksport som én selvstendig HTML-fil med data, frasepakkede nøkler og dekrypteringskoden inlinet — åpnes lokalt uten server og uten nett. | `GET /api/eksport`, `tests/eksport.test.js` |
 | E5 | Sletterett? | **Ja.** Krever passord på nytt. Revisjonssporet uten innhold overlever som bevis for at frigivelser var korrekte — dette er en avveining vi ber jurist bekrefte. | `POST /api/konto/slett` |
 | E6 | Underleverandører? | Hosting (Render, Frankfurt), e-post, Stripe, valgfritt Anthropic. **Databehandleravtaler er ikke inngått.** | — |
 | E7 | Behandlingsansvarlig? | **Ikke avklart.** Blokkerer vilkår, databehandleravtaler og betaling. | — |

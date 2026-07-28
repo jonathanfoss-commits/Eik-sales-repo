@@ -78,6 +78,17 @@ label { font-size: 14px; color: var(--tekst-demp); }
 .sjekk input { width: 22px; height: 22px; margin: 0; }
 .sjekk label { color: var(--tekst); }
 
+.beredskap .score { font: 600 40px/1 var(--display); letter-spacing: -.02em;
+  margin: 6px 0 12px; font-variant-numeric: tabular-nums; }
+.beredskap .score .av { font-size: 16px; font-weight: 500; color: var(--tekst-demp);
+  margin-left: 8px; letter-spacing: 0; }
+.beredskap .stolper { display: flex; gap: 5px; }
+.beredskap .stolpe { flex: 1; height: 5px; border-radius: 3px; background: var(--kant); }
+.beredskap .stolpe.fylt { background: var(--aksent-mork); }
+.beredskap .neste { font-size: 14.5px; line-height: 1.55; color: var(--tekst-demp);
+  margin-top: 14px; }
+.beredskap .neste strong { color: var(--tekst); }
+
 .kategorihjelp { font-size: 13.5px; line-height: 1.5; color: var(--tekst-demp);
   border-left: 2px solid var(--aksent-mork); padding-left: 12px; margin: 2px 0 14px; }
 
@@ -173,3 +184,18 @@ body.etterlatt-modus .stille { color: #2E5F4C; border-color: #CFDDD4; }
   font-size: 15px; text-underline-offset: 3px; }
 body.etterlatt-modus .lenke-ut { color: #2E5F4C; }
 :focus-visible { outline: 2px solid var(--aksent); outline-offset: 2px; }
+
+.sporsmaal { border-top: 1px solid var(--kant); padding: 12px 0 4px; }
+.sporsmaal:first-of-type { border-top: 0; }
+.sporsmaal .svarknapper { display: flex; gap: 8px; }
+.sporsmaal textarea { min-height: 70px; margin-top: 10px; }
+
+/* Én ting om gangen. Konkurrentene viser hele lista; for et menneske i de
+   første ukene er 40 punkter en grunn til å lukke appen. */
+.forst { border: 1px solid var(--kant); border-radius: var(--radius);
+  padding: 18px 20px; margin: 14px 0 18px; background: var(--flate); }
+.forst-tittel { font: 600 21px/1.25 var(--display); margin: 8px 0 6px; }
+.forst-tekst { font-size: 15.5px; line-height: 1.6; color: var(--tekst-demp);
+  margin-bottom: 14px; }
+body.etterlatt-modus .forst { background: #FCFAF5; border-color: #E3DCCD; }
+body.etterlatt-modus .forst-tekst { color: #5D6862; }

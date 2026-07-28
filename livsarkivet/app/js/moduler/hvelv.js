@@ -3,6 +3,7 @@ import { kall } from '../api.js';
 import { el, tom, feilboks, KATEGORI_NAVN, KATEGORI_HJELP } from '../dom.js';
 import { hentHvelvnokkel, gjenopprettMedKode, harMinNokkel, sikreMinNokkel } from '../frase.js';
 import { krypterElement, dekrypterElement } from '../krypto.js';
+import { tegn as tegnBeredskap } from './beredskap.js';
 
 // Deling med eget forsikringsselskap. Vises KUN når kunden faktisk hører til
 // et selskap — for en kunde som kom inn via livsarkivet.no finnes det ingen
@@ -38,6 +39,69 @@ async function tegnDeling(rot) {
           await kall('POST', '/api/deling', { felttype: type, verdi: felt.value });
           vis(rot);
         } }, 'Del')));
+  }
+  rot.append(kort);
+}
+
+// De fem spørsmålene etterlatte faktisk bruker uker på å lete etter svar på.
+//
+// Merk at NEI er like verdifullt som ja — det er hele poenget. Alle arkiver
+// registrerer det som finnes; ingen lar noen slutte å lete. Et bo der noen
+// leter etter en bankboks som aldri fantes, koster like mye tid som ett der
+// boksen finnes og ingen vet hvor.
+const KJENTE = [
+  { tittel: 'Testament', kategori: 'juridisk',
+    ja: 'Hvor ligger originalen, og hvem er testamentfullbyrder?',
+    nei: 'Jeg har ikke opprettet testament. Arven fordeles etter arveloven.' },
+  { tittel: 'Bankboks', kategori: 'eiendeler',
+    ja: 'Hvilken bank, hvilket boksnummer, og hvem har nøkkelen?',
+    nei: 'Jeg har ingen bankboks.' },
+  { tittel: 'Eiendeler i utlandet', kategori: 'eiendeler',
+    ja: 'Hva, i hvilket land? Merk: dette krever advokat i det landet.',
+    nei: 'Jeg har ingen konto, eiendom eller pensjon i utlandet.' },
+  { tittel: 'Kryptovaluta', kategori: 'digitale_kontoer',
+    ja: 'Hvilke lommebøker? Selve nøklene hører hjemme på sensitivt nivå.',
+    nei: 'Jeg eier ingen kryptovaluta.' },
+  { tittel: 'Lån mellom familie', kategori: 'juridisk',
+    ja: 'Hvem skylder hvem hva, og hva var avtalen?',
+    nei: 'Det er ingen muntlige lån eller forskudd på arv å ta hensyn til.' },
+];
+
+function tegnKjenteSporsmaal(rot, elementer, oppdater) {
+  const svart = new Set(elementer.map((e) => e.tittel));
+  const uavklart = KJENTE.filter((k) => !svart.has(k.tittel));
+  if (!uavklart.length) return;
+
+  const kort = el('div', { class: 'kort' },
+    el('h3', {}, 'Kjente spørsmål'),
+    el('p', { class: 'meta' },
+      'Dette leter etterlatte etter. Svarer du nei, slipper de å lete — '
+      + 'og det er like nyttig som et ja.'));
+
+  for (const k of uavklart) {
+    const feilRom = el('div', {});
+    const lagre = async (innhold) => {
+      const svar = await kall('POST', '/api/elementer',
+        { kategori: k.kategori, nivaa: 'privat', tittel: k.tittel, innhold });
+      if (!svar.ok) {
+        feilRom.replaceChildren(feilboks(svar.data.feil || 'Kunne ikke lagre'));
+        return;
+      }
+      oppdater();
+    };
+    const rad = el('div', { class: 'sporsmaal' },
+      el('div', { class: 'rad' },
+        el('strong', {}, k.tittel),
+        el('div', { class: 'svarknapper' },
+          el('button', { class: 'liten stille', onclick: () => {
+            const felt = el('textarea', { placeholder: k.ja });
+            rad.append(felt, el('button', { class: 'liten', onclick: () => {
+              if (felt.value.trim()) lagre(felt.value);
+            } }, 'Lagre'));
+          } }, 'Ja'),
+          el('button', { class: 'liten stille', onclick: () => lagre(k.nei) }, 'Nei'))),
+      feilRom);
+    kort.append(rad);
   }
   rot.append(kort);
 }
@@ -78,6 +142,7 @@ export async function vis(rot) {
 
   const svar = await kall('GET', '/api/hvelv');
   const elementer = svar.data.elementer || [];
+  await tegnBeredskap(rot, elementer);
   const liste = el('div', {});
   rot.append(liste);
 
@@ -181,6 +246,7 @@ export async function vis(rot) {
 
   tegnListe();
   tegnNyKnapp();
+  tegnKjenteSporsmaal(rot, elementer, () => vis(rot));
 
   rot.append(el('button', { class: 'lenkeknapp', onclick: gjenopprettMedKode },
     'Glemt sikkerhetsfrasen? Bruk gjenopprettingskoden'));

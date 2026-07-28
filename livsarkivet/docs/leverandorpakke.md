@@ -177,9 +177,9 @@ er tilsiktet og må avklares i avtalen:
 - **Underleverandører:** hosting (Render, Frankfurt), e-postutsending, Stripe,
   og valgfritt Anthropic for AI-attestkontroll. Alle skal ha
   databehandleravtale. **MANGLER:** avtalene er ikke inngått.
-- **Exit:** kunden kan når som helst hente alt sitt via `GET /api/eksport`,
-  inkludert de frasepakkede krypteringsnøklene, slik at innholdet kan
-  dekrypteres utenfor tjenesten. **MANGLER:** plan for dataoverlevelse ved
+- **Exit:** kunden kan når som helst hente alt sitt via `GET /api/eksport` — én
+  selvstendig HTML-fil med data, frasepakkede nøkler og dekrypteringskoden
+  inlinet, som åpnes lokalt uten server og uten nett. **MANGLER:** plan for dataoverlevelse ved
   selskapsopphør — dette er en garanti vi lover i vilkårene og må kunne vise.
 
 ## 10. Personvern

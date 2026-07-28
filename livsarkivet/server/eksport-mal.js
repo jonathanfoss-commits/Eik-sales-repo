@@ -44,7 +44,9 @@ button { border: 0; border-radius: 12px; cursor: pointer; font: 600 16px/1 inher
   padding: 12px; margin-top: 10px; color: #F1C3C5; }
 .melding-ok { background: #1D3A30; border: 1px solid var(--aksent-mork);
   border-radius: 10px; padding: 12px; margin-top: 10px; color: #CFE7DC; }
-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+/* min-width: på en telefon skal tabellen kunne skyves sidelengs i stedet for
+   å presses sammen til én bokstav per linje */
+table { width: 100%; min-width: 460px; border-collapse: collapse; font-size: 14px; }
 th, td { text-align: left; padding: 7px 10px 7px 0; border-bottom: 1px solid var(--kant);
   vertical-align: top; word-break: break-word; }
 th { color: var(--tekst-demp); font-weight: 600; font-size: 12px;
