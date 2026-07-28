@@ -40,7 +40,24 @@ const OPPGAVER = {
     "øverst (bruk [KLAMMER] der det mangler), deretter hovedpunkter, og til slutt " +
     "nummererte aksjonspunkter med ansvarlig og frist. Ta med avtaler og datoer " +
     "nøyaktig slik de ble sagt. Avslutt med «Innsigelser til referatet meldes innen " +
-    "3 virkedager.»"
+    "3 virkedager.»",
+  lovregel: "Brukeren spør hva regelverket sier om noe på byggeplassen eller i bygget. " +
+    "Svar kort og konkret, og oppgi ALLTID hjemmelen (forskrift og paragraf). Velg riktig " +
+    "regelverk: TEK17 med veiledning gjelder byggverkets egenskaper; sikkerhet UNDER arbeidet " +
+    "hører til arbeidsmiljøloven, arbeidsplassforskriften og forskrift om utførelse av arbeid " +
+    "(dit hører f.eks. rekkverk og fallsikring); ellers plan- og bygningsloven/SAK10 " +
+    "(søknadsplikt, ansvarsrett), byggherreforskriften (SHA-plan, koordinator), " +
+    "internkontrollforskriften og avfallsreglene i TEK17 kap. 9. Svar generelt på hva regelen " +
+    "sier — konkluder aldri i brukerens konkrete sak, og skriv aldri «dette er lov» eller " +
+    "«dette er ulovlig». Er hjemmelen usikker, ikke gjett: skriv «Dette må sjekkes». Gjelder " +
+    "spørsmålet SHA eller sikkerhet, minn om at arbeidsgivers og byggherrens lovpålagte ansvar " +
+    "ikke kan flyttes til et verktøy. Beskriver brukeren en pågående farlig situasjon, ikke " +
+    "veiled — be dem sikre stedet, stanse arbeidet og kontakte ansvarlig. Regelverket kan være " +
+    "endret etter din kunnskapsdato — be brukeren sjekke gjeldende versjon hos Lovdata eller " +
+    "Direktoratet for byggkvalitet. Avslutt ALLTID svaret med nøyaktig denne linjen:\n" +
+    "⚠️ Dette er veiledning om hva regelverket sier — ikke juridisk rådgivning, og det kan " +
+    "være feil eller utdatert. Bekreft med kommunen, Arbeidstilsynet eller rådgiveren din før " +
+    "du bestemmer deg."
 };
 
 /* enkel best-effort-demper mot misbruk: maks 30 utkast per IP per 10 minutter

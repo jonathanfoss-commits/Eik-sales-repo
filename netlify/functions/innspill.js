@@ -1,14 +1,14 @@
 /* Lærling — serverfunksjon som henter pilotloggen for kommandosentralen og Prøverommet.
    Netlify-tokenet bor som miljøvariabel PILOTLOGG_TOKEN i Netlify (settes ÉN gang per
    site) — det skal aldri ligge i nettleseren eller i koden.
-   Adgang: sentralkoden (X-Pilotkode-header) — den deles kun med pilotteamet og
-   står ikke i noen offentlig fil (kommandosentralen/Prøverommet sjekker den mot
-   et PBKDF2-avtrykk og husker den lokalt). Skrivemotoren har egen ansattkode
-   (skriv.mjs) siden den må ligge åpent i appen. Settes miljøvariabelen
-   PILOT_API_KODE, kreves DEN i stedet for koden under.
+   Adgang: sentralkoden (X-Pilotkode-header) — den bor KUN i miljøvariabelen
+   PILOT_API_KODE (aldri i noen fil) og deles kun muntlig/SMS med pilotteamet.
+   Kommandosentralen/Prøverommet prøver koden mot denne funksjonen (200/401)
+   og husker den lokalt i nettleseren. Rotasjon = bytt miljøvariabelen på begge
+   sitene. Skrivemotoren har egen ansattkode (skriv.mjs) siden den må ligge
+   åpent i appen.
    Svarer kun med feltene klientene trenger, og kun relevante hendelsestyper. */
 
-const KODE = "gerikt-laft-beslag-30"; // sentralkoden (kan overstyres med PILOT_API_KODE)
 const VERTER = [
   "op-bygg-laerling-app.netlify.app",
   "op-bygg-laerling-app-test.netlify.app"
@@ -27,9 +27,10 @@ exports.handler = async (event) => {
     body: JSON.stringify(kropp)
   });
 
-  const riktigKode = process.env.PILOT_API_KODE || KODE;
-  const gittKode = (event.headers && (event.headers["x-pilotkode"] || event.headers["X-Pilotkode"])) ||
-    ((event.queryStringParameters || {}).kode || "");
+  const riktigKode = process.env.PILOT_API_KODE;
+  if (!riktigKode) return svar(503, { feil: "sentralkoden er ikke konfigurert" });
+  /* kun header — kode i URL havner i logger og nettleserhistorikk */
+  const gittKode = (event.headers && (event.headers["x-pilotkode"] || event.headers["X-Pilotkode"])) || "";
   if (gittKode !== riktigKode) return svar(401, { feil: "feil pilotkode" });
 
   const token = process.env.PILOTLOGG_TOKEN;
