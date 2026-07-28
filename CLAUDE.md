@@ -5,7 +5,7 @@ Lærling er en AI-medarbeider for små bygg- og håndverksbedrifter, utviklet av
 sammen med pilotkunde OP Bygg AS (totalentreprenør, Oslo, 11 ansatte — kontakt: prosjektleder
 Ole Fabian Foss). Produktet: en mobil-app (PWA, `app/`) der brukeren dikterer, og Lærling
 skriver tilbud, endringsmeldinger, byggedagbok, ukesrapporter og purringer. Abonnement:
-1 490–8 990 kr/mnd. Full kontekst: `konsept/`, `pilot/`, `eget-selskap/`, `samarbeid/`.
+1 990–8 990 kr/mnd (besluttet av Jonathan 28. juli 2026). Full kontekst: `konsept/`, `pilot/`, `eget-selskap/`, `samarbeid/`.
 
 ## Du er hele teamet
 Opptre som et senior produktteam og innta riktig rolle etter oppgaven:

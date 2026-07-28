@@ -47,7 +47,7 @@ byggebransjen i ryggmargen:
 Lærling er en AI-medarbeider for små bygg- og håndverksbedrifter, utviklet av Jonathan Foss
 sammen med pilotkunde OP Bygg AS (totalentreprenør, Oslo, 11 ansatte — kontakt: prosjektleder
 Ole Fabian Foss). Produktet: en mobil-app (PWA) der brukeren dikterer, og Lærling skriver
-tilbud, endringsmeldinger, byggedagbok, ukesrapporter og purringer. Abonnement: 1 490–8 990
+tilbud, endringsmeldinger, byggedagbok, ukesrapporter og purringer. Abonnement: 1 990–8 990
 kr/mnd. Full kontekst i konsept/, pilot/ og eget-selskap/.
 
 ## Du er hele teamet

@@ -14,7 +14,7 @@
 
 ## Demoflyt for møtet (anbefalt)
 
-1. **Landingssiden på storskjerm** — historien og prisene (Start 1 490 / Vekst 3 990 / Pro 8 990).
+1. **Landingssiden på storskjerm** — historien og prisene (Start 1 990 / Vekst 3 990 / Pro 8 990).
 2. **Pilot-appen på mobilen (STABIL)** — dikter et ekte tilbud med den nye ekte
    mikrofonen, vis Lov- og regelsjekk og Timer. Ærlig ramme: dette BRUKES av OP Bygg i pilot.
 3. **Plattform-demoen** (hvis tid) — følg `pitch/demo-manus.md` minutt for minutt
@@ -22,10 +22,9 @@
 
 ## ⚠ To ting bare du kan avklare før møtet
 
-1. **Prisavvik i materialet:** landingssiden (og CLAUDE.md) sier Start **1 490** /
-   Vekst 3 990 / Pro 8 990 — men `eget-selskap/tjenester-og-priser.md` sier Basis
-   **1 990** / Aktiv 3 990 (to nivåer). Hvis investor får begge dokumentene, spriker
-   tallene. Si hvilken som gjelder, så retter jeg den andre.
+1. ~~Prisavvik~~ **AVKLART av Jonathan kvelden før møtet: startpris er 1 990 kr.**
+   Landingssiden, CLAUDE.md og samarbeidsnotatet er rettet og republisert — alt
+   materiale sier nå det samme (Start 1 990 / Vekst 3 990 / Pro 8 990).
 2. **Demodata på plattformen:** demo-manuset forutsetter at Malermester
    Demo-tenanten er fylt (`node server/verktoy/demodata.js malermester-demo` i
    Render-shellet på laerling-test) og at du kan logge inn med to brukere. Jeg kan
