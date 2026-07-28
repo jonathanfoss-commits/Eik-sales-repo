@@ -265,6 +265,16 @@ publiser» til Claude.
 
 ## Publiseringslogg
 
+- **23. juli 2026 — v0.18.0–v0.18.1 + Musk-tiltak publisert til STABIL.** Innhold:
+  «Lov- og regelsjekk» i Skrivemotoren (brukerinnspill), pages.yml-slettingen,
+  sentralkode-herdingen (server-verifisert opplåsing, kode kun i miljøvariabel),
+  versjonsbinding av sw-cachen, datasikkerhet-presisering og pilotlogg-innsikten.
+  Bakgrunn: lanseringsforberedelse for ledelsen + Ole Fabian.
+  **Avvik fra to-nøkkel-regelen:** publisert på admin-overstyring fra Jonathan
+  (valgte «Admin-overstyring nå» i lanseringsplanen, 23. juli). Ole Fabian hadde
+  ikke stemt i testappen da publiseringen skjedde. Utført av Claude med merge
+  kveldsteam-forslag → main. Kun Jonathan har denne retten.
+
 - **19. juli 2026 — v0.9.4–v0.17.1 publisert til STABIL.** Innhold: Skrivemotoren
   serverless, sikkerhetspakken (pilotkode-splitten v0.14.1), panel-konstellasjonen,
   purring med norsk purretrapp, dagslys-modus og granskingsrettelsene (v0.17.1).
