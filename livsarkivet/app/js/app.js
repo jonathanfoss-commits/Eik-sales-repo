@@ -34,6 +34,16 @@ function visInnlogging(visning = 'inn', feil = '') {
       'Alt dine nærmeste trenger — frigitt kontrollert, aldri før.'),
     feil ? feilboks(feil) : null);
 
+  // Selskapets egen innlogging står FØRST: det er veien kundene deres kjenner,
+  // og for etterlatte er et passord til «enda en tjeneste» en terskel de
+  // kanskje aldri kommer over.
+  if (visning === 'inn' && tilstand.miljo.sso) {
+    skjema.append(
+      el('a', { class: 'knapp', href: '/api/auth/oidc/start' },
+        `Logg inn med ${tilstand.miljo.merkevare?.navn || 'selskapet ditt'}`),
+      el('p', { class: 'meta' }, 'eller med e-post og passord:'));
+  }
+
   if (visning === 'inn') {
     const epost = el('input', { type: 'email', placeholder: 'E-post', autocomplete: 'username' });
     const passord = el('input', { type: 'password', placeholder: 'Passord', autocomplete: 'current-password' });

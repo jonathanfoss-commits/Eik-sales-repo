@@ -126,8 +126,12 @@ Se ADR-007 for detaljene. Kort:
 - **Les-API** med bærer-nøkkel gir egne frigitte saker og de feltene kunden
   aktivt deler. Et tilbaketrekk virker umiddelbart, også mot en integrasjon som
   allerede kjenner sak-id-en.
-- **MANGLER:** OIDC/BankID-innlogging. Bør bygges sammen med første kunde mot
-  deres faktiske IdP, ikke gjettes fram i forkant.
+- **OIDC-innlogging er på plass** (ADR-009): Authorization Code + PKCE,
+  RS256 verifisert mot IdP-ens JWKS. Kobling på `sub`, aldri e-post alene, og
+  en ekstern innlogging kan aldri bli saksbehandler. Selskapet registrerer
+  `https://<deres vertsnavn>/api/auth/oidc/tilbake` som redirect-URI hos sin
+  egen tilbyder. Integrasjonstesten mot deres faktiske IdP gjenstår, men
+  protokollen er implementert og angrepstestet.
 - **MANGLER:** mTLS. Nøkkelmodellen står ikke i veien for å legge det på.
 
 ## 7. Testregime
@@ -138,6 +142,7 @@ Sju nivåer, hvorav nivå 1–6 kjører automatisk i CI ved hver endring:
 |---|---|---|
 | 1 | Tilstandsmaskinen, 100 % av overgangene mot en håndskrevet fasit | `tests/frigivelse.test.js` |
 | 2 | RLS og migrasjoner — policyene, ikke koden, er muren | `tests/rls.test.js`, `tenant.test.js`, `deling.test.js` |
+| 2 | OIDC mot falsk IdP med ekte RSA-nøkler (8 angrepsforsøk) | `tests/oidc.test.js` |
 | 3 | Zero-knowledge-krypto | `tests/krypto.test.js` |
 | 4 | E2E i Chromium, hele frigivelsesløpet + negativløp | `tests/e2e.js` |
 | 5 | Agenter (golden + red-team) | `tests/agenter.test.js` |
@@ -206,5 +211,5 @@ Se `dpia-utkast.md`. Hovedpunkter:
 | 4 | RTO/RPO formelt fastsatt | Jonathan | DORA-vurdering |
 | 5 | Databehandleravtaler med underleverandører | Jonathan | Signatur |
 | 6 | Exit-plan ved selskapsopphør | Jonathan | Vilkår |
-| 7 | OIDC/BankID | Utvikling, med første kunde | Brukeropplevelse, ikke signatur |
+| 7 | Integrasjonstest mot selskapets faktiske IdP | Felles, ved oppstart | Innlogging i produksjon |
 | 8 | Maskinporten-avtale + hjemmel for Folkeregisteret | Jonathan + jurist | Automatisk trigger |
