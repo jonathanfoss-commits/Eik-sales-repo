@@ -188,6 +188,12 @@ alt innhold; kontakter i andres hvelv beholdes men løsnes, og revisjonssporet
 - `docs/leverandorpakke.md` — svaret til et forsikringsselskaps innkjøps- og
   compliance-funksjon: isolasjon, sikkerhetsarkitektur, DORA og
   utkontraktering, med en ærlig liste over det som MANGLER.
+- `docs/pitch-forsikring.md` — én side til et livsforsikringsselskap, med
+  vinkel per selskap og ANTAKELSER tydelig merket.
+- `docs/sikkerhetsskjema.md` — ferdig utfylt sikkerhetsskjema, svart fra koden
+  slik den faktisk er. Åpne poster står uten omskriving.
+- `docs/pilotavtale-utkast.md` — 100 kunder, seks måneder, ingen betaling.
+  Flytter spørsmålet fra «tør vi kjøpe?» til «er dette verdt et halvår?».
 - `docs/lansering-sjekkliste.md` — alt som må gjøres utenfor koden.
 - `render.yaml` — Render Blueprint (EU/Frankfurt), migrasjoner ved deploy.
 
