@@ -140,6 +140,16 @@ function byttFane(id, vis) {
 // ── Miljøet: demoadvarsel og om selvregistrering er åpen ──
 async function hentMiljo() {
   tilstand.miljo = (await kall('GET', '/api/miljo')).data || {};
+  const merke = tilstand.miljo.merkevare;
+  if (merke?.navn && merke.navn !== 'Livsarkivet') {
+    // White-label: selskapet eier flaten, vi står som leverandør under.
+    document.querySelector('#topp .merke strong').textContent = merke.navn;
+    document.title = merke.navn;
+    if (merke.avsender) {
+      document.getElementById('topp-under').dataset.avsender = merke.avsender;
+    }
+  }
+  if (merke?.aksent) document.documentElement.style.setProperty('--aksent', merke.aksent);
   if (!tilstand.miljo.demo) return;
   document.getElementById('topp').before(el('div', { class: 'miljobanner' },
     el('strong', {}, 'Testmiljø'),

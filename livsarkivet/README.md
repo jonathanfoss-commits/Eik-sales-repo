@@ -23,6 +23,20 @@ Etterpå (etterpaa.no). Dette er MVP-kjerneloopen:
   synlig «Testmiljø»-banner over innloggingen, så ingen legger inn ekte
   opplysninger i et miljø uten vilkår og e-postvarsler.
 
+## Flere selskaper på samme plattform (ADR-005)
+Et forsikringsselskap kan tilby Livsarkivet til sine kunder under egen
+merkevare. Vertsnavnet avgjør hvilket selskap en adresse svarer for, og
+merkevaren (navn, aksentfarge) hentes før innlogging. **En saksbehandler ser
+kun sitt eget selskaps saker** — `er_admin_for(hvelv_id)` i stedet for et
+ubetinget `er_admin()`, og fire øyne kreves innenfor samme selskap.
+Plattformdriften ser saksmetadata på tvers for support; ingen av dem ser
+hvelvinnhold. `tests/tenant.test.js` prøver å bryte hver av disse grensene.
+
+```
+node server/verktoy/ny-tenant.js storebrand "Storebrand" livsarkiv.storebrand.no
+node server/verktoy/ny-admin.js "Navn" navn@storebrand.no storebrand
+```
+
 ## Ufravikelige prinsipper (håndhevet i kode og tester)
 1. Ingen frigivelse uten verifisert hendelse + karenstid (48 t).
 2. Fire øyne: to ULIKE saksbehandlere må godkjenne (app-sjekk + CHECK i basen).

@@ -9,6 +9,7 @@ import { Ruter, ApiFeil, svarJson, lesJson, lesCookies } from './http.js';
 import { loggInn, loggUt, finnSesjon, registrerSelv, innlosInvitasjon,
   finnBrukerPaaEpost, lagNullstilling, fullforNullstilling, byttPassord } from './auth.js';
 import { sendEpost, epostTilgjengelig } from './epost.js';
+import { finnTenant, merkevare } from './tenant.js';
 import { medBruker, authPool } from './db.js';
 import * as hvelv from './api/hvelv.js';
 import * as kontakter from './api/kontakter.js';
@@ -74,9 +75,11 @@ ruter.add('GET', '/api/helse', async () => ({ ok: true }));
 // «registrering» styrer om «Opprett ditt livsarkiv» vises i det hele tatt. I
 // produksjon står flagget av, og da er knappen en blindvei: brukeren fyller ut
 // skjemaet og får «Registrering er ikke åpnet ennå» etterpå.
-ruter.add('GET', '/api/miljo', async () => ({
+ruter.add('GET', '/api/miljo', async ({ req }) => ({
   demo: config.demoInnlogging,
   registrering: config.registreringAapen,
+  // White-label: hvilket selskap svarer denne adressen for
+  merkevare: merkevare(await finnTenant(req)),
 }));
 
 function settSesjonsCookie(res, token) {
@@ -106,7 +109,7 @@ ruter.add('POST', '/api/auth/logg-inn', async ({ req, body, res }) => {
 
 ruter.add('POST', '/api/auth/registrer', async ({ req, body }) => {
   if (forMange('registrer:' + klientIp(req), 20, 60 * 60_000)) throw new ApiFeil(429, 'For mange forsøk');
-  const resultat = await registrerSelv(body);
+  const resultat = await registrerSelv(body, (await finnTenant(req))?.id);
   if (resultat.feil) throw new ApiFeil(400, resultat.feil);
   return { ok: true, navn: resultat.bruker.navn };
 });

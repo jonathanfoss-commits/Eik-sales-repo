@@ -10,14 +10,19 @@ og arbeidsformen (les først, planlegg, små leveranser, norsk bokmål) gjelder.
 - `npm test` — nivå 1–3, 5 og 6 (krever Postgres, hopper ellers over)
 - `npm run e2e` — nivå 4: Playwright 390×844, null JS-feil
 - `npm run lasttest` — nivå 6: innlogging + frigivelsesflytens lesninger
-- `node server/verktoy/ny-admin.js "Navn" epost` — ny saksbehandler (TOTP)
+- `node server/verktoy/ny-tenant.js <slug> "Navn" [vertsnavn]` — nytt selskap
+- `node server/verktoy/ny-admin.js "Navn" epost [slug]` — ny saksbehandler (TOTP)
 - Nivå 7 (manuell akseptansetest): `docs/akseptansetest.md`
 
 ## Ufravikelig
 1. Ingen frigivelse uten verifisert hendelse + karenstid. Aldri AI alene.
-2. Fire øyne på frigivelse (to ULIKE admin-er) — også som CHECK i basen.
+2. Fire øyne på frigivelse (to ULIKE admin-er i SAMME tenant) — også som
+   CHECK i basen.
 3. Admin skal ALDRI kunne lese hvelvinnhold. Det finnes ingen policy som gir
-   det — ikke lag en.
+   det — ikke lag en. Gjelder også plattformdrift.
+3b. Nye admin-policyer bruker `er_admin_for(hvelv_id)`, aldri `er_admin()`
+   alene (ADR-005). Et ubetinget `er_admin()` lar ett selskaps saksbehandler
+   se et annets kunder.
 4. Revisjonsloggen er append-only (ingen UPDATE/DELETE-grant). Logg og varsler
    bærer aldri innhold.
 5. Sensitiv-tier er stengt (501) til ADR-001 er godkjent av Jonathan.
