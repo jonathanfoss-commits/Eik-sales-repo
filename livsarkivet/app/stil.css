@@ -72,6 +72,9 @@ label { font-size: 14px; color: var(--tekst-demp); }
 .sjekk input { width: 22px; height: 22px; margin: 0; }
 .sjekk label { color: var(--tekst); }
 
+.delingsrad { margin: 12px 0; }
+.delingsrad label { display: block; font-size: 13px; color: var(--tekst-demp); }
+
 .melding-feil { background: #3A2226; border: 1px solid var(--fare);
   border-radius: 10px; padding: 12px; margin: 10px 0; color: #F1C3C5; }
 .melding-ok { background: #1D3A30; border: 1px solid var(--aksent-mork);

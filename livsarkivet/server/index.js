@@ -20,12 +20,13 @@ import * as etterlatt from './api/etterlatt.js';
 import * as abonnement from './api/abonnement.js';
 import * as krypto from './api/krypto.js';
 import * as konto from './api/konto.js';
+import * as deling from './api/deling.js';
 import { feiKarenstid } from './feier.js';
 import { sendUtestaaende } from './varsling.js';
 
 const ruter = new Ruter();
 for (const modul of [hvelv, kontakter, matrise, hendelse, verifisering, etterlatt,
-  abonnement, krypto, konto]) {
+  abonnement, krypto, konto, deling]) {
   modul.registrer(ruter);
 }
 

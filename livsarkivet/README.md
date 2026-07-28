@@ -37,6 +37,15 @@ node server/verktoy/ny-tenant.js storebrand "Storebrand" livsarkiv.storebrand.no
 node server/verktoy/ny-admin.js "Navn" navn@storebrand.no storebrand
 ```
 
+## Deling med eget forsikringsselskap (ADR-006)
+Kunden deler fire felt — polisenummer, kundenummer, begunstiget og
+kontaktperson — hver for seg, og kan trekke dem tilbake når som helst.
+Tilbaketrekket står i RLS-policyen (`trukket_tid IS NULL`), ikke i en WHERE i
+koden, så det virker i samme sekund. Selskapet kan verken skrive på kundens
+vegne eller gjenopplive et tilbaketrekk. **Plattformdriften ser ikke delte
+felt** — vi trenger saksmetadata for å drifte frigivelsesløpet, ikke kundens
+polisenummer. Resten av hvelvet er stengt for selskapet, også etter frigivelse.
+
 ## Ufravikelige prinsipper (håndhevet i kode og tester)
 1. Ingen frigivelse uten verifisert hendelse + karenstid (48 t).
 2. Fire øyne: to ULIKE saksbehandlere må godkjenne (app-sjekk + CHECK i basen).
