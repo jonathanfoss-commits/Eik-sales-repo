@@ -3,6 +3,34 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
+## v0.19.0 — 28. juli 2026 (EKTE diktering + kalenderfrist — lanseringsbygget)
+
+**Hva:** (1) 🎙 Mikrofonknappen er ekte: dikter rett i appen via nettleserens taletjeneste
+(nb-NO, live-tekst, håndterer iOS-auto-stopp med omstart), stopp → velg hva Lærling skal
+lage (tilbud/endringsmelding/purring/referat/lov og regel) → teksten står klar i
+Skrivemotoren. Demoteksten og det falske demo-utkastet er slettet. Personvern opplyst i
+arket: «Talen din gjøres om til tekst av nettleseren din (Apple/Google), ikke av Lærling»;
+aldri auto-start; logges kun som hendelsestype. Uten støtte/dekning: tydelig beskjed +
+Skrivemotoren med tastatur-mikrofon. (2) 🗓 Purringa kan legge oppfølgingsfristen i
+kalenderen (7 dager, 14 ved inkassovarsel) — .ics laget helt lokalt, deles via delearket
+på iOS med nedlastings-fallback. (3) «Byggemøte → referat» fikk ⚡ UTKAST-knappen
+(m-feltet manglet — pilotplanens verktøy 2 hadde ingen Skrivemotor-vei).
+
+**Panelets vedtak:** 3 × ENDRE (Personvernvakt: opplysningstekst + aldri auto-start —
+innarbeidet; UX: snakk først, velg type etterpå, stor stoppknapp, tydelig dekningsfeil —
+innarbeidet; Frontend: onend-omstart på iOS, not-allowed-håndtering, Web Share for .ics —
+innarbeidet). Ingen veto.
+
+**QA:** Playwright 390×844 + 1440×900: dikter-ark med personverntekst og startknapp,
+chips → Skrivemotor verifisert, faktura → trinn 1 → kalenderknapp med dato, null
+pageerror. Versjonstriade 0.19.0 (cache «laerling-0.19.0»).
+
+---
+
+Pakken under (v0.18.0 + Musk-tiltak + v0.18.1) ble publisert til STABIL 28. juli 2026
+på admin-overstyring fra Jonathan (se publiseringsloggen nederst) — kun v0.19.0 over
+venter på godkjenning.
+
 ## v0.18.1 — 21. juli 2026 (sentralkoden ut av alle filer — ⚠ HASTER fra Musk-reviewen)
 
 **Hvorfor:** sentralkoden var eksponert offentlig via GitHub Pages (klartekst i
@@ -264,6 +292,15 @@ publiser» til Claude.
 ---
 
 ## Publiseringslogg
+
+- **28. juli 2026 (natt til investormøtet) — v0.19.0 publisert til STABIL.** Innhold:
+  ekte diktering (mikrofonknappen koblet til nettleserens taletjeneste, demoteateret
+  slettet), kalenderfrist i purringa (.ics lokalt), referatets ⚡-knapp. Pluss
+  landingsside-oppdatering og investormøte-sjekkliste.
+  **Avvik fra to-nøkkel-regelen:** publisert på direkte ordre fra Jonathan
+  («publiser v0.19»). Ole Fabian hadde ikke stemt i testappen da publiseringen
+  skjedde. Utført av Claude med merge kveldsteam-forslag → main. Kun Jonathan
+  har denne retten.
 
 - **28. juli 2026 — v0.18.0–v0.18.1 + Musk-tiltak publisert til STABIL.** Innhold:
   «Lov- og regelsjekk» i Skrivemotoren (brukerinnspill), pages.yml-slettingen,
