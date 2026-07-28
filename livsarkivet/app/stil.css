@@ -78,6 +78,9 @@ label { font-size: 14px; color: var(--tekst-demp); }
 .sjekk input { width: 22px; height: 22px; margin: 0; }
 .sjekk label { color: var(--tekst); }
 
+.kategorihjelp { font-size: 13.5px; line-height: 1.5; color: var(--tekst-demp);
+  border-left: 2px solid var(--aksent-mork); padding-left: 12px; margin: 2px 0 14px; }
+
 .delingsrad { margin: 12px 0; }
 .delingsrad label { display: block; font-size: 13px; color: var(--tekst-demp); }
 

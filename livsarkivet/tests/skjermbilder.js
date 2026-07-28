@@ -19,6 +19,11 @@ const PASSORD = 'demopassord123';
 // demo-dataen er lagt inn på nytt og hemmelighetene er andre.
 const ASTRID_TOTP = process.env.ASTRID_TOTP || 'UJKGZX53E3PRFFNYVXUUP24AI6FPILSQ';
 
+// Forventede meldinger som IKKE er feil i appen: appen spør /api/meg ved
+// oppstart for å vite om noen er innlogget, og et 401 der er svaret «nei» —
+// nettleseren logger det som ressursfeil uansett. Filtreres bort, ellers
+// drukner ekte feil i støy og porten blir verdiløs.
+const VENTET = /401 \(Unauthorized\)/;
 const feil = [];
 
 async function skjerm(side, navn) {
@@ -55,7 +60,7 @@ const kontekst = await nettleser.newContext({
 
 const side = await kontekst.newPage();
 side.on('console', (m) => {
-  if (m.type() === 'error') feil.push(`${side.url()} → ${m.text()}`);
+  if (m.type() === 'error' && !VENTET.test(m.text())) feil.push(`${side.url()} → ${m.text()}`);
 });
 side.on('pageerror', (e) => feil.push(`${side.url()} → ${e.message}`));
 
@@ -73,7 +78,6 @@ await fane(side, 'Hvem får hva'); await skjerm(side, '04-matrise');
 await fane(side, 'Status');     await skjerm(side, '05-status-karenstid');
 
 // 3. Betrodd kontakt: meld dødsfall
-await side.goto(`${BASE}/api/auth/logg-ut`).catch(() => {});
 await kontekst.clearCookies();
 await loggInn(side, 'bjorn@demo.livsarkivet.no');
 await fane(side, 'Meld');       await skjerm(side, '06-meld-dodsfall');

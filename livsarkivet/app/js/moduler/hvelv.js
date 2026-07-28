@@ -1,6 +1,6 @@
 // Eierens hvelv: elementer per kategori, opprett/endre/slett.
 import { kall } from '../api.js';
-import { el, tom, feilboks, KATEGORI_NAVN } from '../dom.js';
+import { el, tom, feilboks, KATEGORI_NAVN, KATEGORI_HJELP } from '../dom.js';
 import { hentHvelvnokkel, gjenopprettMedKode, harMinNokkel, sikreMinNokkel } from '../frase.js';
 import { krypterElement, dekrypterElement } from '../krypto.js';
 
@@ -116,6 +116,14 @@ export async function vis(rot) {
       el('option', { value: 'delt', selected: e.nivaa === 'delt' }, 'Delt'),
       el('option', { value: 'sensitiv', selected: e.nivaa === 'sensitiv' },
         'Sensitiv (krypteres — bare du og valgte mottakere kan åpne)'));
+    // Veiledningen står ved siden av valget, ikke i en hjelpeside. Det er her
+    // brukeren er i ferd med å skrive noe hen tror er bindende.
+    const hjelp = el('p', { class: 'kategorihjelp' }, KATEGORI_HJELP[kategori.value] || '');
+    hjelp.hidden = !KATEGORI_HJELP[kategori.value];
+    kategori.addEventListener('change', () => {
+      hjelp.textContent = KATEGORI_HJELP[kategori.value] || '';
+      hjelp.hidden = !KATEGORI_HJELP[kategori.value];
+    });
     const tittel = el('input', { type: 'text', placeholder: 'Tittel', value: e.tittel || '' });
     const innholdFelt = el('textarea', { placeholder: 'Det de trenger å vite …' });
     innholdFelt.value = e.kryptert ? '' : (e.innhold || '');
@@ -134,7 +142,7 @@ export async function vis(rot) {
     skjemaBoks.append(el('div', { class: 'kort' },
       el('h3', {}, e.id ? 'Endre element' : 'Nytt element'),
       feilRom,
-      el('label', {}, 'Kategori'), kategori,
+      el('label', {}, 'Kategori'), kategori, hjelp,
       el('label', {}, 'Nivå'), nivaa,
       tittel, innholdFelt,
       el('button', { onclick: async () => {
@@ -200,9 +208,10 @@ export async function vis(rot) {
   rot.append(el('div', { class: 'kort' },
     el('h3', {}, 'Dine data'),
     el('p', { class: 'meta' },
-      'Du kan ta med deg alt når som helst. Eksporten inneholder også de '
-      + 'frasepakkede nøklene, så du kan åpne sensitivt innhold utenfor tjenesten.'),
-    el('a', { class: 'knapp', href: '/api/eksport', download: 'livsarkivet-eksport.json' },
+      'Du kan ta med deg alt når som helst. Du får én fil du åpner i nettleseren — '
+      + 'uten nett og uten oss. Skriv sikkerhetsfrasen i fila, så åpnes også det '
+      + 'sensitive innholdet.'),
+    el('a', { class: 'knapp', href: '/api/eksport', download: 'livsarkivet-eksport.html' },
       'Last ned alt'),
     el('button', { class: 'fare', onclick: async () => {
       if (!confirm('Slette kontoen og HELE arkivet? Dette kan ikke angres, og '
