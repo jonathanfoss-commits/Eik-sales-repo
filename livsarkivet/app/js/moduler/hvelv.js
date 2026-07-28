@@ -80,6 +80,7 @@ function tegnKjenteSporsmaal(rot, elementer, oppdater) {
 
   for (const k of uavklart) {
     const feilRom = el('div', {});
+    let felt = null;
     const lagre = async (innhold) => {
       const svar = await kall('POST', '/api/elementer',
         { kategori: k.kategori, nivaa: 'privat', tittel: k.tittel, innhold });
@@ -94,10 +95,15 @@ function tegnKjenteSporsmaal(rot, elementer, oppdater) {
         el('strong', {}, k.tittel),
         el('div', { class: 'svarknapper' },
           el('button', { class: 'liten stille', onclick: () => {
-            const felt = el('textarea', { placeholder: k.ja });
+            // Andre trykk skal ikke legge et TOMT felt oppå det du allerede
+            // har skrevet i. Første versjon la til et nytt tekstfelt hver gang,
+            // så et dobbelttrykk kastet teksten uten å si fra.
+            if (felt) { felt.focus(); return; }
+            felt = el('textarea', { placeholder: k.ja });
             rad.append(felt, el('button', { class: 'liten', onclick: () => {
               if (felt.value.trim()) lagre(felt.value);
             } }, 'Lagre'));
+            felt.focus();
           } }, 'Ja'),
           el('button', { class: 'liten stille', onclick: () => lagre(k.nei) }, 'Nei'))),
       feilRom);
