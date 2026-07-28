@@ -17,24 +17,62 @@ process.env.MIGRATE_DATABASE_URL ||= 'postgres://livsarkiv_eier:livsarkiv@localh
 process.env.LIVSARKIV_APP_PASSORD ||= 'app';
 process.env.LIVSARKIV_AUTH_PASSORD ||= 'auth';
 
-const { medBruker, lukkPools } = await import('../server/db.js');
-const { feiKarenstid } = await import('../server/feier.js');
-const { koVarsler, sendUtestaaende } = await import('../server/varsling.js');
-
-const EIER_URL = process.env.MIGRATE_DATABASE_URL;
+const DELT_EIER_URL = process.env.MIGRATE_DATABASE_URL;
+const DRIFTBASE = 'livsarkiv_drifttest';
 const GJENOPPRETTBASE = 'livsarkiv_restoretest';
 const DUMP = path.join(ROT, 'testbevis', 'drift-backup.sql');
-
-let eier, admin;
-let tilgjengelig = true;
-let evaId, bjornId, adminId, hvelvId, kontaktId, elementId, hendelseId, frigivelseId;
-let epostMock, mottattEpost = [];
 
 function medBase(url, base) {
   const u = new URL(url);
   u.pathname = '/' + base;
   return u.toString();
 }
+
+// ── EGEN DATABASE FOR HELE DENNE FILEN ──
+// Denne filen tester karenstid-feieren, og feieren er GLOBAL med vilje: den
+// plukker enhver utløpt sak i basen. Kjører andre testfiler samtidig — og det
+// gjør de — kan en lat feiing hos dem rive saken vår ut under føttene på oss.
+// Da feiler testen av kappløp, ikke av en produktfeil.
+//
+// Vi oppdaget det først som «assert.ok(antall >= 1)» rødt i CI på en PR som
+// bare endret et markdown-dokument. Å fjerne den ene assertionen holdt ikke:
+// gjenskaper man kappløpet med vilje, faller atomisitets- og e-posttestene
+// også. Derfor får filen sin egen base i stedet for tre lappverk.
+//
+// Uten rett til CREATE DATABASE faller vi tilbake på den delte basen — da er
+// testene like utsatt som før, men de kjører.
+let egenBase = false;
+try {
+  const adm = new pg.Client({ connectionString: medBase(DELT_EIER_URL, 'postgres') });
+  await adm.connect();
+  await adm.query(`DROP DATABASE IF EXISTS ${DRIFTBASE} WITH (FORCE)`);
+  await adm.query(`CREATE DATABASE ${DRIFTBASE}`);
+  await adm.end();
+  const eierUrl = medBase(DELT_EIER_URL, DRIFTBASE);
+  await kjor('node', ['server/migrate.js'],
+    { cwd: ROT, env: { ...process.env, MIGRATE_DATABASE_URL: eierUrl } });
+  // Må settes FØR db.js importeres — poolene bygges ved import.
+  process.env.MIGRATE_DATABASE_URL = eierUrl;
+  const somRolle = (rolle, passord) =>
+    eierUrl.replace(/\/\/[^@]+@/, `//${rolle}:${passord}@`);
+  process.env.DATABASE_URL = somRolle('livsarkiv_app', process.env.LIVSARKIV_APP_PASSORD);
+  process.env.DATABASE_URL_AUTH = somRolle('livsarkiv_auth', process.env.LIVSARKIV_AUTH_PASSORD);
+  egenBase = true;
+} catch (e) {
+  console.log(`  (drift kjører mot delt base: ${e.message})`);
+}
+
+const { medBruker, lukkPools } = await import('../server/db.js');
+const { feiKarenstid } = await import('../server/feier.js');
+const { koVarsler, sendUtestaaende } = await import('../server/varsling.js');
+
+const EIER_URL = process.env.MIGRATE_DATABASE_URL;
+
+let eier, admin;
+let tilgjengelig = true;
+let evaId, bjornId, adminId, hvelvId, kontaktId, elementId, hendelseId, frigivelseId;
+let epostMock, mottattEpost = [];
+
 
 // karenstid-sak klar til frigivelse (karenstid_slutt satt i FORTID = utløpt
 // mens ingen feide, altså «nedetid»)
@@ -106,8 +144,13 @@ test.after(async () => {
   delete process.env.EPOST_API_URL;
   delete process.env.EPOST_API_NOKKEL;
   if (tilgjengelig) await eier.end().catch(() => {});
-  await admin?.end().catch(() => {});
   await lukkPools();
+  // Basen ryddes til slutt — poolene må være lukket først, ellers nekter
+  // Postgres å slette en base det står tilkoblinger til.
+  if (egenBase && admin) {
+    await admin.query(`DROP DATABASE IF EXISTS ${DRIFTBASE} WITH (FORCE)`).catch(() => {});
+  }
+  await admin?.end().catch(() => {});
 });
 
 const hopp = () => !tilgjengelig;
@@ -119,8 +162,12 @@ test('nedetid midt i karenstid: tilstanden består, og neste feiing frigir', { s
     'SELECT status FROM frigivelser WHERE id = $1', [frigivelseId])).rows[0];
   assert.equal(foer.status, 'karenstid', 'tilstanden står urørt etter nedetid');
 
-  const antall = await feiKarenstid();
-  assert.ok(antall >= 1);
+  // Ingen assertion på returverdien: feiKarenstid() feier GLOBALT, og
+  // testfilene kjører parallelt. En lat feiing i en annen fil kan ha plukket
+  // opp nettopp denne saken et millisekund før — da returnerer vår feiing 0
+  // selv om alt er som det skal. Beviset er tilstanden til VÅR sak, ikke
+  // hvem som tilfeldigvis feide den (CLAUDE.md punkt 9).
+  await feiKarenstid();
   const etter = (await eier.query(
     'SELECT status, frigitt_tid FROM frigivelser WHERE id = $1', [frigivelseId])).rows[0];
   assert.equal(etter.status, 'frigitt', 'saken plukkes opp etter nedetid — ikke tapt');
@@ -202,8 +249,16 @@ test('e-post nede: varslene blir liggende i kø og sendes ved neste passering', 
 // ── Feilinjeksjon 4: to samtidige feiinger ──
 test('samtidige feiinger frigir hver sak nøyaktig én gang', { skip: hopp() }, async () => {
   const saker = [await nyUtloptSak(), await nyUtloptSak(), await nyUtloptSak()];
-  const [a, b] = await Promise.all([feiKarenstid(), feiKarenstid()]);
-  assert.equal(a + b, saker.length, 'til sammen frigis nøyaktig antallet utløpte saker');
+  await Promise.all([feiKarenstid(), feiKarenstid()]);
+  // Samme grunn som over: summen av de to returverdiene er et GLOBALT tall og
+  // kan inneholde andre testfilers saker. Invarianten vi faktisk tester er at
+  // hver av VÅRE saker ble frigitt nøyaktig én gang — og det er dobbelt-
+  // varslingen under som beviser det, ikke en telling.
+  for (const sak of saker) {
+    const status = (await eier.query(
+      'SELECT status FROM frigivelser WHERE id = $1', [sak.frigivelseId])).rows[0].status;
+    assert.equal(status, 'frigitt', 'en utløpt sak ble stående igjen ved kappløp');
+  }
   for (const sak of saker) {
     const varsler = (await eier.query(
       `SELECT count(*) AS n FROM varslinger

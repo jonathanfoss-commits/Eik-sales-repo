@@ -34,6 +34,16 @@ function visInnlogging(visning = 'inn', feil = '') {
       'Alt dine nærmeste trenger — frigitt kontrollert, aldri før.'),
     feil ? feilboks(feil) : null);
 
+  // Selskapets egen innlogging står FØRST: det er veien kundene deres kjenner,
+  // og for etterlatte er et passord til «enda en tjeneste» en terskel de
+  // kanskje aldri kommer over.
+  if (visning === 'inn' && tilstand.miljo.sso) {
+    skjema.append(
+      el('a', { class: 'knapp', href: '/api/auth/oidc/start' },
+        `Logg inn med ${tilstand.miljo.merkevare?.navn || 'selskapet ditt'}`),
+      el('p', { class: 'meta' }, 'eller med e-post og passord:'));
+  }
+
   if (visning === 'inn') {
     const epost = el('input', { type: 'email', placeholder: 'E-post', autocomplete: 'username' });
     const passord = el('input', { type: 'password', placeholder: 'Passord', autocomplete: 'current-password' });
@@ -140,6 +150,16 @@ function byttFane(id, vis) {
 // ── Miljøet: demoadvarsel og om selvregistrering er åpen ──
 async function hentMiljo() {
   tilstand.miljo = (await kall('GET', '/api/miljo')).data || {};
+  const merke = tilstand.miljo.merkevare;
+  if (merke?.navn && merke.navn !== 'Livsarkivet') {
+    // White-label: selskapet eier flaten, vi står som leverandør under.
+    document.querySelector('#topp .merke strong').textContent = merke.navn;
+    document.title = merke.navn;
+    if (merke.avsender) {
+      document.getElementById('topp-under').dataset.avsender = merke.avsender;
+    }
+  }
+  if (merke?.aksent) document.documentElement.style.setProperty('--aksent', merke.aksent);
   if (!tilstand.miljo.demo) return;
   document.getElementById('topp').before(el('div', { class: 'miljobanner' },
     el('strong', {}, 'Testmiljø'),

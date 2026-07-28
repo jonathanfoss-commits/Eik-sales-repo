@@ -20,7 +20,11 @@ opplysninger her.
 ## 2. E-postavsender (1 time)
 Uten dette går ingen varsler ut — og varselet er eierens eneste sjanse til å
 stoppe en feilaktig frigivelse. Køen i databasen tar vare på alt i mellomtiden.
-- [ ] Velg leverandør med EU-region (Resend eller Postmark har begge det).
+- [ ] Velg leverandør med EU-region. **Resend** er drop-in: `server/epost.js`
+      sender `{from, to, subject, text}` med `Authorization: Bearer …`, som er
+      nøyaktig Resends format. Postmark har også EU-region, men bruker andre
+      feltnavn (`From`/`To`/`TextBody`) og egen token-header — det krever en liten
+      kodeendring, så si det hvis du vil dit.
 - [ ] Verifiser avsenderdomenet: **SPF og DKIM** må være grønt, ellers havner
       varslene i søppelpost.
 - [ ] Sett `EPOST_API_URL`, `EPOST_API_NOKKEL`, `EPOST_FRA` i Render.

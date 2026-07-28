@@ -1,6 +1,7 @@
 # ADR-003: Tenantmodell — forberedt, ikke aktivert
 
 **Status:** Vedtatt (implementert i migrasjon 001).
+**Aktivert av ADR-005** (migrasjon 011) — les den for modellen som gjelder nå.
 
 ## Kontekst
 /goal krever multi-tenant i datamodellen (partnere/white-label, B2B2C mot

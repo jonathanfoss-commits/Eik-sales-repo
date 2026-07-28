@@ -10,6 +10,7 @@
 import { medBruker } from './db.js';
 import { loggRevisjon } from './revisjon.js';
 import { koVarsler, sendUtestaaende } from './varsling.js';
+import { sendUtestaaendeWebhooks } from './webhook.js';
 
 export async function feiKarenstid() {
   const frigitte = await medBruker({ rolle: 'system' }, async (c) => {
@@ -30,9 +31,18 @@ export async function feiKarenstid() {
       await loggRevisjon(c, { rolle: 'system' }, f.hvelv_id, 'frigivelse_frigitt',
         { frigivelse_id: f.id, fra: 'karenstid', aktor: 'system' });
       await koVarsler(c, f.hvelv_id, f.hendelse_id, 'frigivelse_frigitt');
+      // Selskapet varsles FØRST her — aldri når karenstiden starter. I
+      // karenstiden kan eieren fortsatt stoppe alt, og en utbetaling som er
+      // satt i gang for tidlig kan ikke ringes tilbake. Samme transaksjon som
+      // tilstandsendringen, av samme grunn som varslene.
+      await c.query('SELECT ko_webhooks($1, $2, $3)',
+        [f.hvelv_id, f.id, 'arkiv_frigitt']);
     }
     return rader;
   });
-  if (frigitte.length) await sendUtestaaende();
+  if (frigitte.length) {
+    await sendUtestaaende();
+    await sendUtestaaendeWebhooks();
+  }
   return frigitte.length;
 }

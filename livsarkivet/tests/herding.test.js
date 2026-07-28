@@ -158,9 +158,16 @@ test('ingen flate indekseres av søkemotorer', { skip: hopp() }, async () => {
 });
 
 test('/api/miljo melder demomodus uten innlogging', { skip: hopp() }, async () => {
-  // uten flagget: ingen advarsel (og denne serveren har åpen registrering)
-  assert.deepEqual((await api(null, 'GET', '/api/miljo')).data,
-    { demo: false, registrering: true });
+  // Nøkkelsettet låses fortsatt: ruten er åpen for alle, og skal ikke vokse med
+  // nye felt i stillhet. Verdiene sjekkes hver for seg, så et nytt felt krever
+  // en bevisst endring her i stedet for å velte en urelatert assertion.
+  const miljo = (await api(null, 'GET', '/api/miljo')).data;
+  assert.deepEqual(Object.keys(miljo).sort(), ['demo', 'merkevare', 'registrering', 'sso']);
+  assert.equal(miljo.demo, false);
+  assert.equal(miljo.registrering, true, 'denne serveren har åpen registrering');
+  assert.deepEqual(Object.keys(miljo.merkevare).sort(), ['aksent', 'avsender', 'navn']);
+  assert.equal(miljo.merkevare.navn, 'Livsarkivet');
+  assert.equal(miljo.sso, false, 'plattformen har ingen ekstern IdP');
 
   // med flagget: advarselen må komme, og den må kunne leses FØR innlogging
   const port = PORT + 1;
@@ -173,7 +180,9 @@ test('/api/miljo melder demomodus uten innlogging', { skip: hopp() }, async () =
     const svar = await fetch(`http://127.0.0.1:${port}/api/miljo`);
     assert.equal(svar.status, 200, 'ruten må være åpen — banneret vises før innlogging');
     // stengt registrering skal også meldes, så knappen ikke blir en blindvei
-    assert.deepEqual(await svar.json(), { demo: true, registrering: false });
+    const demoMiljo = await svar.json();
+    assert.equal(demoMiljo.demo, true);
+    assert.equal(demoMiljo.registrering, false);
   } finally {
     demo.kill();
   }
