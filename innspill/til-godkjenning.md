@@ -293,6 +293,15 @@ publiser» til Claude.
 
 ## Publiseringslogg
 
+- **28. juli 2026 (natt til investormøtet) — v0.19.0 publisert til STABIL.** Innhold:
+  ekte diktering (mikrofonknappen koblet til nettleserens taletjeneste, demoteateret
+  slettet), kalenderfrist i purringa (.ics lokalt), referatets ⚡-knapp. Pluss
+  landingsside-oppdatering og investormøte-sjekkliste.
+  **Avvik fra to-nøkkel-regelen:** publisert på direkte ordre fra Jonathan
+  («publiser v0.19»). Ole Fabian hadde ikke stemt i testappen da publiseringen
+  skjedde. Utført av Claude med merge kveldsteam-forslag → main. Kun Jonathan
+  har denne retten.
+
 - **28. juli 2026 — v0.18.0–v0.18.1 + Musk-tiltak publisert til STABIL.** Innhold:
   «Lov- og regelsjekk» i Skrivemotoren (brukerinnspill), pages.yml-slettingen,
   sentralkode-herdingen (server-verifisert opplåsing, kode kun i miljøvariabel),
