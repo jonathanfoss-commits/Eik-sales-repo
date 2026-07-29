@@ -120,7 +120,9 @@ try {
   // innloggingsskjermen skal være ren: hidden må faktisk skjule
   sjekk(!(await eva.isVisible('#logg-ut')) && !(await eva.isVisible('#faner')),
     '«Logg ut» og fanelinjen er skjult før innlogging');
-  // med åpen registrering MÅ knappen finnes — den skjules bare når flagget er av
+  // med åpen registrering MÅ knappen finnes — den skjules bare når flagget er av.
+  // isVisible venter ikke, og innloggingsskjermen rendres etter /api/miljo — vent først.
+  await eva.locator('button:has-text("Opprett ditt livsarkiv")').waitFor();
   sjekk(await eva.isVisible('button:has-text("Opprett ditt livsarkiv")'),
     'registreringsknappen vises når selvregistrering er åpen');
   await eva.click('button:has-text("Opprett ditt livsarkiv")');
@@ -240,6 +242,8 @@ try {
   const admin1 = await nySide('admin1');
   await loggInnAdmin(admin1, 'e2e-admin1@test.no');
   await admin1.waitForSelector('h1:has-text("Verifiseringskø")');
+  // isVisible venter ikke — køen lastes asynkront, så vent på kortet først
+  await kariSak(admin1).waitFor();
   sjekk(await admin1.isVisible('.kort:has-text("meldt av Kari")'), 'saken står i køen med melder-metadata');
   await kariSak(admin1).locator('button:has-text("Godkjenn attesten")').click();
   await kariSak(admin1).locator('button:has-text("Godkjenn (andre signatur)")').waitFor();
