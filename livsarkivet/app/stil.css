@@ -1,16 +1,21 @@
-/* Livsarkivet — rolig, verdig, én tommel. Mørk skifer med salviegrønn aksent. */
+/* Livsarkivet — rolig, verdig, én tommel.
+   «Stien gjennom»-familien i mørk hvelv-variant: dyp fjord, frost-tekst og
+   rav som standardaksent. --aksent overstyres per tenant (app.js) og skal
+   alltid bære mørk tekst (#0B1720) — velg lyse merkevarefarger. */
 :root {
-  --bakgrunn: #0E1B25;
-  --flate: #16283A;
-  --flate-hev: #1D3348;
-  --kant: #27405A;
-  --tekst: #EDF2F0;
-  --tekst-demp: #9FB3AD;
-  --aksent: #7FB7A3;
-  --aksent-mork: #4E8271;
-  --fare: #D9777B;
-  --advarsel: #D9B36B;
-  --radius: 14px;
+  --bakgrunn: #0C2129;
+  --flate: #12333D;
+  --flate-hev: #1C4450;
+  --kant: #29505D;
+  --tekst: #F2F6F5;
+  --tekst-demp: #9FB4B4;
+  --aksent: #E9B45F;
+  --aksent-mork: #B7853B;
+  --fare: #E08B86;
+  --advarsel: #DDB56E;
+  --radius: 16px;      /* kort og paneler */
+  --radius-kontroll: 10px; /* knapper og felter */
+  --skygge: 0 1px 2px rgba(4, 12, 16, .35), 0 6px 18px rgba(4, 12, 16, .25);
 }
 * { box-sizing: border-box; margin: 0; }
 html { -webkit-text-size-adjust: 100%; }
@@ -28,87 +33,113 @@ body {
    «Logg ut» og fanelinjen sto synlige på innloggingsskjermen. */
 [hidden] { display: none !important; }
 
-.miljobanner { background: #4A3A16; border-bottom: 1px solid #8A6D24;
-  color: #F3E2B4; padding: 10px 16px; font-size: 13px; line-height: 1.4; }
+/* Synlig fokus overalt — tastatur og brytere skal aldri famle i mørket */
+:focus-visible { outline: 3px solid var(--aksent); outline-offset: 2px;
+  border-radius: 6px; }
+
+.miljobanner { background: #3E3115; border-bottom: 1px solid var(--aksent-mork);
+  color: #F0DCAE; padding: 10px 16px; font-size: 13px; line-height: 1.4; }
 
 #topp { display: flex; justify-content: space-between; align-items: center;
   padding: 14px 16px; border-bottom: 1px solid var(--kant); }
 .merke { display: flex; gap: 10px; align-items: center; }
 .merke div { display: flex; flex-direction: column; line-height: 1.2; }
+.merke strong { letter-spacing: -0.01em; }
 
 #innhold { padding: 16px; max-width: 640px; margin: 0 auto; }
 
-h1 { font-size: 22px; margin: 4px 0 2px; }
-h2 { font-size: 17px; margin: 18px 0 8px; }
+h1 { font-size: 23px; letter-spacing: -0.015em; margin: 4px 0 2px; }
+h2 { font-size: 17px; letter-spacing: -0.01em; margin: 18px 0 8px; }
 .undertekst { color: var(--tekst-demp); font-size: 14px; margin-bottom: 14px; }
 
 .kort { background: var(--flate); border: 1px solid var(--kant);
-  border-radius: var(--radius); padding: 14px; margin: 10px 0; }
+  border-radius: var(--radius); padding: 15px; margin: 10px 0;
+  box-shadow: var(--skygge); }
 .kort h3 { font-size: 16px; margin-bottom: 2px; }
 .kort .meta { color: var(--tekst-demp); font-size: 13px; }
 .rad { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 
 button, .knapp {
-  display: inline-block; border: 0; border-radius: 12px; cursor: pointer;
-  font: 600 16px/1 inherit; padding: 14px 18px; min-height: 48px;
+  display: inline-block; border: 0; border-radius: var(--radius-kontroll);
+  cursor: pointer; font: 600 16px/1 inherit; padding: 14px 18px; min-height: 48px;
   background: var(--aksent); color: #0B1720; width: 100%; margin-top: 8px;
+  transition: filter .15s ease, transform .15s ease;
 }
+button:active { transform: translateY(1px); }
+button:hover { filter: brightness(1.06); }
 button.sekundaer { background: var(--flate-hev); color: var(--tekst);
   border: 1px solid var(--kant); }
 button.fare { background: var(--fare); color: #2A0F11; }
 button.liten { width: auto; padding: 10px 14px; min-height: 40px; font-size: 14px; margin: 0; }
-button:disabled { opacity: .45; cursor: default; }
+button:disabled { opacity: .45; cursor: default; transform: none; filter: none; }
 .lenkeknapp { background: none; border: 0; color: var(--aksent); font: inherit;
   cursor: pointer; padding: 6px; width: auto; min-height: 0; margin: 0; }
 
 input, select, textarea {
   width: 100%; background: var(--bakgrunn); color: var(--tekst);
-  border: 1px solid var(--kant); border-radius: 10px; padding: 13px 12px;
-  font: inherit; margin: 6px 0 12px;
+  border: 1px solid var(--kant); border-radius: var(--radius-kontroll);
+  padding: 13px 12px; font: inherit; margin: 6px 0 12px;
 }
 textarea { min-height: 110px; resize: vertical; }
 label { font-size: 14px; color: var(--tekst-demp); }
 .sjekk { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
-.sjekk input { width: 22px; height: 22px; margin: 0; }
+.sjekk input { width: 22px; height: 22px; margin: 0; accent-color: var(--aksent); }
 .sjekk label { color: var(--tekst); }
 
 .delingsrad { margin: 12px 0; }
 .delingsrad label { display: block; font-size: 13px; color: var(--tekst-demp); }
 
-.melding-feil { background: #3A2226; border: 1px solid var(--fare);
-  border-radius: 10px; padding: 12px; margin: 10px 0; color: #F1C3C5; }
-.melding-ok { background: #1D3A30; border: 1px solid var(--aksent-mork);
-  border-radius: 10px; padding: 12px; margin: 10px 0; }
+.melding-feil { background: #3A2124; border: 1px solid var(--fare);
+  border-radius: var(--radius-kontroll); padding: 12px; margin: 10px 0; color: #F4C9C6; }
+.melding-ok { background: #21402F; border: 1px solid #4E8271;
+  border-radius: var(--radius-kontroll); padding: 12px; margin: 10px 0; }
 .merkelapp { display: inline-block; border-radius: 999px; padding: 3px 10px;
   font-size: 12px; font-weight: 600; background: var(--flate-hev);
   border: 1px solid var(--kant); color: var(--tekst-demp); }
-.merkelapp.aktiv { background: #2C4636; border-color: var(--aksent-mork); color: var(--aksent); }
-.merkelapp.varsel { background: #453A22; border-color: var(--advarsel); color: var(--advarsel); }
-.merkelapp.stoppet { background: #3A2226; border-color: var(--fare); color: var(--fare); }
+.merkelapp.aktiv { background: #21402F; border-color: #4E8271; color: #8FD0B2; }
+.merkelapp.varsel { background: #3E3115; border-color: var(--advarsel); color: var(--advarsel); }
+.merkelapp.stoppet { background: #3A2124; border-color: var(--fare); color: var(--fare); }
 
-.nedtelling { font-variant-numeric: tabular-nums; font-size: 34px; font-weight: 700;
+/* Nedtellingen er øyeblikket alt handler om — stor, stø og i aksentfargen */
+.nedtelling { font-variant-numeric: tabular-nums; font-size: 36px; font-weight: 700;
+  letter-spacing: -0.01em; color: var(--aksent);
   text-align: center; margin: 8px 0; }
 
 #faner { position: fixed; bottom: 0; left: 0; right: 0;
   display: flex; background: var(--flate); border-top: 1px solid var(--kant);
-  padding-bottom: env(safe-area-inset-bottom); }
+  padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -4px 16px rgba(4, 12, 16, .3); }
 #faner button { flex: 1; background: none; color: var(--tekst-demp);
   border-radius: 0; margin: 0; padding: 12px 4px; font-size: 12px; font-weight: 600;
-  display: flex; flex-direction: column; gap: 3px; align-items: center; min-height: 60px; }
+  display: flex; flex-direction: column; gap: 3px; align-items: center; min-height: 60px;
+  transition: color .15s ease; }
 #faner button .ikon { font-size: 20px; line-height: 1; }
 #faner button.valgt { color: var(--aksent); }
+#faner button:hover, #faner button:active { filter: none; transform: none; }
 
-.matrise-tabell { width: 100%; border-collapse: collapse; font-size: 14px; }
+.matrise-tabell { width: 100%; border-collapse: collapse; font-size: 14px;
+  font-variant-numeric: tabular-nums; }
 .matrise-tabell th, .matrise-tabell td { border: 1px solid var(--kant);
   padding: 8px 6px; text-align: center; }
 .matrise-tabell th { color: var(--tekst-demp); font-weight: 600; font-size: 12px; }
 .matrise-tabell td:first-child, .matrise-tabell th:first-child { text-align: left; }
 .matrise-celle { cursor: pointer; user-select: none; font-size: 18px; }
 
-/* Etterlattemodus: lunere, lysere, stillere */
-body.etterlatt-modus { background: #F4F1EA; color: #33413C; }
-body.etterlatt-modus #topp { border-color: #DDD6C8; }
-body.etterlatt-modus .mono { color: #8A9088; }
-body.etterlatt-modus .kort { background: #FCFAF5; border-color: #E3DCCD; }
-body.etterlatt-modus .kort .meta, body.etterlatt-modus .undertekst { color: #77817B; }
-body.etterlatt-modus #faner { background: #FCFAF5; border-color: #E3DCCD; }
+@media (prefers-reduced-motion: reduce) {
+  button, #faner button { transition: none; }
+  button:active { transform: none; }
+}
+
+/* Etterlattemodus: lysere, stillere — vinterlys i stedet for hvelvmørke */
+body.etterlatt-modus { background: #F5F7F6; color: #22383C; }
+body.etterlatt-modus #topp { border-color: #DCE4E4; }
+body.etterlatt-modus .mono { color: #6E8287; }
+body.etterlatt-modus .kort { background: #FFFFFF; border-color: #DCE4E4;
+  box-shadow: 0 1px 2px rgba(12, 33, 41, .05), 0 4px 16px rgba(12, 33, 41, .06); }
+body.etterlatt-modus .kort .meta, body.etterlatt-modus .undertekst { color: #55686B; }
+body.etterlatt-modus #faner { background: #FFFFFF; border-color: #DCE4E4;
+  box-shadow: 0 -4px 16px rgba(12, 33, 41, .06); }
+/* Lys rav leses ikke på lys bunn — bruk mørk rav for tekstaksenter her */
+body.etterlatt-modus .lenkeknapp,
+body.etterlatt-modus #faner button.valgt,
+body.etterlatt-modus .nedtelling { color: #82550F; }
