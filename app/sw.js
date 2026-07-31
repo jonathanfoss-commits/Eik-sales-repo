@@ -1,6 +1,6 @@
 /* Lærling service worker — appen virker offline og åpner umiddelbart */
 /* cache-navnet er ALLTID "laerling-" + VERSJON (index.html/versjon.json) — én kilde, aldri drift */
-const CACHE = "laerling-0.22.0";
+const CACHE = "laerling-0.22.1";
 const FILER = ["./", "./index.html", "./rapport.html", "./bli-med.html", "./admin.html",
   "./ansatte.html", "./ledelsen.html", "./lab.html", "./eksport.html",
   "./manifest.webmanifest", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
@@ -25,8 +25,11 @@ self.addEventListener("fetch", (e) => {
   if (url.origin !== location.origin) return;
   if (url.pathname.startsWith("/.netlify/")) return;
   const sti = url.pathname;
-  // versjon/changelog/panelsvar: network-first, med cache som offline-reserve
-  if (sti.endsWith("/versjon.json") || sti.endsWith("/changelog.json") || sti.endsWith("/panelsvar.json")) {
+  // versjon/changelog/panelsvar + bli-kjent (kundeside i rask utvikling — lenke-
+  // parametrene styrer oppstarten, så en gammel cache-kopi gir feil intervju):
+  // network-first, med cache som offline-reserve
+  if (sti.endsWith("/versjon.json") || sti.endsWith("/changelog.json") || sti.endsWith("/panelsvar.json") ||
+      sti.endsWith("/bli-kjent.html")) {
     e.respondWith(
       fetch(e.request).then((svar) => {
         const kopi = svar.clone();
