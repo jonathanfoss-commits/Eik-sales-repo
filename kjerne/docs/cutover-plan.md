@@ -60,7 +60,14 @@ backlog/rapporter. Deretter: eksporter CSV fra Netlify-panelet til
 - [ ] To nøkler på plattform-versjonen i TEST (autentiserte stemmer i Sentral)
 - [ ] Alle pilotbrukere har importert med grønn kvittering
 - [x] ANTHROPIC_API_KEY satt på begge Render-tjenestene (Skrivemotoren virker)
-- [ ] Backup verifisert i Render (gjenopprettingsprøve mot test-databasen)
+- [ ] Backup verifisert i Render (gjenopprettingsprøve mot test-databasen).
+      *Delvis verifisert 20. juli via API: manuell backup utløst og bekreftet på
+      begge databasene (Renders automatiske døgnbackup hadde ikke startet av seg
+      selv — driftsvakta overvåker at den nå kommer daglig), og gjenoppretting
+      bekreftet AVAILABLE for hele vinduet siden 19. juli. Selve prøven gjenstår
+      og gjøres i Render-dashbordet: laerling-test-db → Recovery → velg tidspunkt
+      → gjenopprett til ny instans → be Claude verifisere innholdet → slett
+      instansen etterpå.*
 - [ ] TOTP aktivert for admin-brukeren (Jonathan)
 - [ ] Engangspassord byttet for alle brukere
 - [ ] bli-med-lenken peker på ny STABIL
