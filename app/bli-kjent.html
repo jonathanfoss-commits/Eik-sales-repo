@@ -150,6 +150,21 @@
       <p id="sendt-kvittering" style="display:none;color:var(--aurora-a);margin-top:10px;text-align:center">
          ✓ Sendt! Vi setter opp appen og tar kontakt — som regel innen et døgn.</p>
     </div>
+
+    <!-- research/forslag: ventekort eller ferdige forslag -->
+    <div class="kort" id="research-kort" style="display:none">
+      <div class="eyebrow">Research pågår</div>
+      <h1>Lærlingen jobber for dere nå 🔍</h1>
+      <p>Vi går gjennom bransjen, regelverket og mulighetene for firmaet deres og setter
+         sammen konkrete forslag. <b>Kom innom denne siden igjen i morgen etter kl. 10</b> —
+         da ligger forslagene her. (Store grep kvalitetssikres av et menneske først.)</p>
+    </div>
+    <div class="kort" id="forslag-kort" style="display:none">
+      <div class="eyebrow">✨ Forslagene er klare</div>
+      <h1 id="forslag-tittel">Dette tror vi kan hjelpe dere</h1>
+      <p id="forslag-hilsen"></p>
+      <div id="forslag-liste"></div>
+    </div>
   </main>
 
   <aside class="bygg" id="byggeplass" aria-label="Profilen bygger seg">
@@ -199,12 +214,21 @@
         "appen (fornavn+rolle), mobiltype — og Drømmen."
     }
   };
-  var KJENT = KJENTE_FIRMA[(new URLSearchParams(location.search).get("firma") || "").toLowerCase()] || null;
+  var FIRMA_NOKKEL = (new URLSearchParams(location.search).get("firma") || "").toLowerCase();
+  var KJENT = KJENTE_FIRMA[FIRMA_NOKKEL] || null;
   var lager;
   try{ lager = JSON.parse(localStorage.getItem("laerling-blikjent") || "{}"); }catch(e){ lager = {}; }
   lager.historikk = lager.historikk || [];
   lager.profil = lager.profil || {};
   function lagre(){ try{ localStorage.setItem("laerling-blikjent", JSON.stringify(lager)); }catch(e){} }
+  /* ny samtale når firma-lenka er en annen enn den lagrede, eller ved ?ny=1 —
+     ellers skjuler gjenopptaket den skreddersydde oppstarten */
+  var _q = new URLSearchParams(location.search);
+  if((_q.get("ny") === "1" && lager.historikk.length) ||
+     (lager.historikk.length && (lager.firma || "") !== FIRMA_NOKKEL)){
+    lager = { historikk: [], profil: {}, firma: FIRMA_NOKKEL }; lagre();
+  }
+  lager.firma = FIRMA_NOKKEL;
 
   var prat = document.getElementById("prat"), linje = document.getElementById("linje"),
       startKort = document.getElementById("start-kort"), sendKort = document.getElementById("send-kort"),
@@ -442,11 +466,44 @@
       if(!svar.ok) throw new Error("feil " + svar.status);
       kn.style.display = "none";
       document.getElementById("sendt-kvittering").style.display = "block";
+      lager.sendt = true; lagre();
+      hentForslag();
     }).catch(function(){
       kn.disabled = false; kn.textContent = "Send profilen";
       status.textContent = "Fikk ikke sendt — sjekk dekningen og prøv igjen.";
     });
   });
+
+  /* research-forslagene: vises når kveldsteamet (etter Jonathans kvalitetssikring)
+     har lagt dem klare — ellers et ærlig «kom innom igjen»-kort */
+  function hentForslag(){
+    if(!lager.sendt || !FIRMA_NOKKEL) return;
+    fetch("/.netlify/functions/intervju?forslag=" + encodeURIComponent(FIRMA_NOKKEL), {
+      headers: { "X-Invitasjon": INVITASJON }
+    }).then(function(svar){ if(!svar.ok) throw 0; return svar.json(); })
+    .then(function(f){
+      if(f && f.status === "klar" && f.forslag && f.forslag.length){
+        document.getElementById("research-kort").style.display = "none";
+        var kort = document.getElementById("forslag-kort");
+        document.getElementById("forslag-hilsen").textContent = f.hilsen || "";
+        var liste = document.getElementById("forslag-liste");
+        liste.innerHTML = "";
+        f.forslag.forEach(function(p){
+          var el = document.createElement("div");
+          el.style.cssText = "border:1px solid var(--strek);border-radius:12px;padding:14px 16px;margin-top:10px;background:rgba(9,16,22,.5)";
+          var merke = p.status === "under-vurdering"
+            ? ' <span style="font-family:var(--mono);font-size:.62rem;color:var(--aurora-b);border:1px solid var(--strek);border-radius:99px;padding:2px 8px;vertical-align:middle">UNDER VURDERING</span>' : "";
+          el.innerHTML = '<div style="font-weight:650;margin-bottom:4px">' + p.tittel + merke + '</div>' +
+                         '<p style="font-size:.86rem;color:var(--dis);margin:0">' + p.tekst + '</p>';
+          liste.appendChild(el);
+        });
+        kort.style.display = "block";
+      } else {
+        document.getElementById("research-kort").style.display = "block";
+      }
+    }).catch(function(){ document.getElementById("research-kort").style.display = "block"; });
+  }
+  if(lager.sendt) hentForslag();
 })();
 </script>
 </body>

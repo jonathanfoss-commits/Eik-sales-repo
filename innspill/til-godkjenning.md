@@ -3,6 +3,26 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
+## v0.22.0 — 31. juli 2026 («Bli kjent» med research og forslag — pluss gjenopptaks-fiks)
+
+**Hva (bestilt av Jonathan):** (1) Etter innsendt profil får kunden et ærlig ventekort:
+«Lærlingen jobber for dere nå 🔍 — kom innom igjen i morgen etter kl. 10. Store grep
+kvalitetssikres av et menneske først.» Ved neste besøk henter siden forslagene (GET på
+intervju-funksjonen med invitasjonskode — dataene bor i koden, aldri i offentlig fil) og
+viser dem som kort; «UNDER VURDERING»-merke på det som venter på Jonathan. (2) Kveldsteam-
+rutinen er utvidet: leser nå BEGGE kanalenes skjema (oppfølgingen fra bifangsten — stemmer
+og profiler avgis i TEST), og ved ny bedriftsprofil kjøres research med agenter →
+forslags-utkast til Jonathan → **forslagene blir synlige for kunden KUN etter Jonathans
+klarsignal** (avansert/kostbart alltid via ham). (3) OP Bygg har fått startsettet:
+vær-i-dagbok, gnr/bnr-oppslag, UE-sjekken, push-varsler (klare) + regnskapskobling
+(«under vurdering» — venter på systemsvar). (4) Fiks: gjenopptaket skjulte den skredder-
+sydde oppstarten — ny samtale starter nå automatisk når firma-lenka er en annen enn den
+lagrede, og `&ny=1` tvinger frisk start.
+
+**Testbevis:** Playwright begge viewporter: full flyt → kvittering → forslags-kortet
+rendres med under-vurdering-merke → `&ny=1` gir frisk start. Null pageerror.
+Versjonstriade 0.22.0.
+
 ## v0.21.0 — 31. juli 2026 («Bli kjent» skreddersydd for OP Bygg: kjent info, klikkbare svar, Drømmen)
 
 **Hva (bestilt av Jonathan):** (1) `?firma=opbygg` gir OP Bygg-tilpasset intervju:

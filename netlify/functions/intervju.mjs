@@ -77,6 +77,36 @@ const INSTRUKS = "Du er onboarding-assistenten til Lærling — en AI-medarbeide
   "kun i meldingen som inneholder den ferdige profilblokken. Linjen er UI-status — aldri " +
   "innhold — og vises ikke til kunden. Sjekk før du avslutter: er siste linje maskinsporet?";
 
+/* FORSLAG per firma — fylles av kveldsteamet ETTER research og Jonathans klarsignal
+   (avanserte/kostbare forslag legges aldri inn her uten at Jonathan har sagt ok).
+   Ligger i koden (ikke som offentlig fil) så invitasjonskoden kreves for lesing. */
+const FORSLAG = {
+  opbygg: {
+    status: "klar",
+    hilsen: "Lærlingen har gjort research på totalentreprenører og mulighetene deres — " +
+      "her er det vi tror kan hjelpe mest. Si ifra hva som frister, så bygger vi.",
+    forslag: [
+      { tittel: "🌦 Været rett inn i byggedagboken",
+        tekst: "Dagboka er bevismateriale ved værhindring og forsering — Lærlingen kan hente " +
+          "været for byggeplassen automatisk (gratis, fra Meteorologisk institutt), så slipper " +
+          "dere å huske det." },
+      { tittel: "📍 Adresse → gårds- og bruksnummer av seg selv",
+        tekst: "Skriv adressen, så fyller Lærlingen gnr/bnr og kartpunkt inn i tilbud og " +
+          "SHA-plan automatisk (gratis, fra Kartverket)." },
+      { tittel: "🏢 UE-sjekken før kontrakt",
+        tekst: "Ett trykk på organisasjonsnummeret til en underentreprenør: konkursflagg, " +
+          "mva-registrering og alder på firmaet, rett fra Brønnøysund — før dere signerer." },
+      { tittel: "🔔 Påminnelser på telefonen",
+        tekst: "Purrefrister og «ny versjon klar til godkjenning» som varsel på hjemskjerm-appen " +
+          "— ingen SMS-kostnad, ingen ny app." },
+      { tittel: "💰 Kobling mot regnskapssystemet",
+        tekst: "Forfalte fakturaer rett inn i purretrappa — og dikterte timer som fakturagrunnlag. " +
+          "Under vurdering: si hvilket system dere bruker (Tripletex? Fiken?), så tar Jonathan " +
+          "beslutningen derfra.", status: "under-vurdering" }
+    ]
+  }
+};
+
 /* samme best-effort IP-demper som skriv.mjs, romsligere vindu for samtaleturer */
 const teller = new Map();
 function forMange(ip) {
@@ -95,11 +125,21 @@ function feil(status, melding) {
 }
 
 export default async function handler(req) {
-  if (req.method !== "POST") return feil(405, "Bare POST.");
-
   const kode = req.headers.get("x-invitasjon") || "";
   const riktigKode = process.env.INTERVJU_KODE || KODE;
   if (kode !== riktigKode) return feil(401, "Ugyldig invitasjon — sjekk lenka du fikk tilsendt.");
+
+  /* GET ?forslag=<firma>: hent research-forslagene når de er klare */
+  if (req.method === "GET") {
+    const hvem = (new URL(req.url).searchParams.get("forslag") || "").toLowerCase();
+    if (!hvem) return feil(400, "Mangler forslag-parameter.");
+    const f = FORSLAG[hvem];
+    return new Response(JSON.stringify(f || { status: "ikke-klar" }), {
+      status: 200,
+      headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" }
+    });
+  }
+  if (req.method !== "POST") return feil(405, "Bare GET eller POST.");
 
   const nokkel = process.env.ANTHROPIC_API_KEY;
   if (!nokkel) return feil(503, "Intervjueren er ikke koblet til ennå.");
