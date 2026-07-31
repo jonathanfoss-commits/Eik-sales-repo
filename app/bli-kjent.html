@@ -124,8 +124,9 @@
   <main>
     <!-- velkomstkortet -->
     <div class="kort" id="start-kort">
-      <div class="eyebrow">Før vi setter opp appen deres</div>
-      <h1>Bare prat — så bygger <span style="color:var(--aurora-a)">Lærlingen</span> firmaprofilen deres</h1>
+      <div class="eyebrow" id="start-eyebrow">Før vi setter opp appen deres</div>
+      <h1 id="start-tittel">Bare prat — så bygger <span style="color:var(--aurora-a)">Lærlingen</span> firmaprofilen deres</h1>
+      <p id="start-kjent" style="display:none;color:var(--aurora-a)"></p>
       <p>Dette tar 10–15 minutter. Bruk gjerne mikrofonen og svar mens du sitter i bilen
          eller sofaen. Si <b>«hopp over»</b> eller <b>«vet ikke»</b> når som helst — det er
          helt greit. Du kan lukke siden midt i og fortsette senere.</p>
@@ -174,8 +175,31 @@
 (function(){
   var FELTER = [["firma","Firmaet"],["jobbene","Jobbene"],["kundene","Kundene"],
                 ["skrivestil","Skrivestilen"],["penger","Penger og purring"],
-                ["systemer","Systemene"],["folk","Folkene"]];
+                ["systemer","Systemene"],["folk","Folkene"],["drommen","Drømmen ✨"]];
   var INVITASJON = new URLSearchParams(location.search).get("invitasjon") || "";
+
+  /* kjente firma: forhåndsutfylt info — intervjuet KONTROLLERER i stedet for å spørre.
+     Samme opplysninger som alt ligger i Skrivemotorens PROFIL (ingen ny datakategori). */
+  var KJENTE_FIRMA = {
+    opbygg: {
+      navn: "OP Bygg AS",
+      hilsen: "Hei, OP Bygg! Mye vet vi allerede fra piloten — dette blir mest å bekrefte, " +
+              "fylle hullene og drømme litt.",
+      kjent: "KJENT INFO (fra piloten — bekreft heller enn å spørre på nytt):\n" +
+        "- Firma: OP Bygg AS, totalentreprenør, Oslo, ca. 11 ansatte.\n" +
+        "- Leverer renovering, oppussing og nybygg for bolig, kontor og næring; " +
+        "profilerer seg på ryddig prosjektstyring.\n" +
+        "- Kontaktperson i piloten: Ole Fabian, prosjektleder, bakgrunn som tømrer — " +
+        "praktisk og direkte. Firmaet har egen daglig leder og driftsleder.\n" +
+        "- Skrivestil: kort, tydelig og jordnær; «Hei [navn]» og «Mvh, Ole Fabian Foss, " +
+        "Prosjektleder, OP Bygg AS».\n" +
+        "- Bruker appen i pilot: timeføring og lov- og regelsjekk er bygget på deres innspill.\n" +
+        "UKJENT (fyll disse): kundemiks privat/proff i %, underentreprenør-bruk og oppfølging, " +
+        "purre-/betalingsrutiner (hvem gjør det?), regnskaps-/timesystem, hvem flere skal bruke " +
+        "appen (fornavn+rolle), mobiltype — og Drømmen."
+    }
+  };
+  var KJENT = KJENTE_FIRMA[(new URLSearchParams(location.search).get("firma") || "").toLowerCase()] || null;
   var lager;
   try{ lager = JSON.parse(localStorage.getItem("laerling-blikjent") || "{}"); }catch(e){ lager = {}; }
   lager.historikk = lager.historikk || [];
@@ -227,19 +251,41 @@
     lager.historikk.forEach(function(m){ boble(m.rolle === "laerling" ? "laerling" : "kunde", m.tekst); });
   }
 
-  /* stripp maskinsporet og oppdater Byggeplassen — på HELE bufferen etter stream-slutt */
+  /* stripp maskinsporene (PROFIL + VALG) — på HELE bufferen etter stream-slutt */
+  var valgRad = null;
+  function visValg(liste){
+    fjernValg();
+    if(!liste || !liste.length) return;
+    valgRad = document.createElement("div");
+    valgRad.id = "valg-rad";
+    valgRad.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;align-self:flex-start;max-width:88%";
+    liste.slice(0, 4).forEach(function(v){
+      var kn = document.createElement("button");
+      kn.className = "knapp svak";
+      kn.style.cssText = "padding:10px 16px;font-size:.88rem;border-radius:99px";
+      kn.textContent = v;
+      kn.addEventListener("click", function(){ fjernValg(); kundeSier(v); });
+      valgRad.appendChild(kn);
+    });
+    prat.appendChild(valgRad);
+    valgRad.scrollIntoView({ block: "end", behavior: "smooth" });
+  }
+  function fjernValg(){ if(valgRad){ valgRad.remove(); valgRad = null; } }
   function taImotSvar(fullTekst){
     var ren = fullTekst;
     var m = fullTekst.match(/<!--PROFIL(\{[\s\S]*?\})-->/);
     if(m){
-      ren = fullTekst.replace(/<!--PROFIL\{[\s\S]*?\}-->/g, "").trim();
       try{
         var st = JSON.parse(m[1]);
         FELTER.forEach(function(f){ if(st[f[0]]) lager.profil[f[0]] = true; });
         if(st.klar) lager.profil.klar = true;
       }catch(e){}
     }
-    return ren;
+    var v = fullTekst.match(/<!--VALG(\[[\s\S]*?\])-->/);
+    var valg = null;
+    if(v){ try{ valg = JSON.parse(v[1]); }catch(e){} }
+    ren = fullTekst.replace(/<!--(PROFIL\{[\s\S]*?\}|VALG\[[\s\S]*?\])-->/g, "").trim();
+    return { tekst: ren, valg: valg };
   }
 
   function sendTur(){
@@ -266,15 +312,16 @@
       var leser = svar.body.getReader(), dekoder = new TextDecoder();
       return leser.read().then(function les(del){
         if(del.done){
-          var ren = taImotSvar(buffer);
-          b.textContent = ren;
-          lager.historikk.push({ rolle: "laerling", tekst: ren });
+          var svar2 = taImotSvar(buffer);
+          b.textContent = svar2.tekst;
+          lager.historikk.push({ rolle: "laerling", tekst: svar2.tekst });
           lagre(); visProfilStatus();
           if(lager.profil.klar){ sendKort.style.display = "block"; sendKort.scrollIntoView({ behavior: "smooth" }); }
+          else { visValg(svar2.valg); }
           return;
         }
         buffer += dekoder.decode(del.value, { stream: true });
-        b.textContent = buffer.replace(/<!--PROFIL[\s\S]*$/, "");
+        b.textContent = buffer.replace(/<!--(PROFIL|VALG)[\s\S]*$/, "");
         b.scrollIntoView({ block: "end" });
         return leser.read().then(les);
       });
@@ -288,6 +335,7 @@
   function kundeSier(tekst){
     tekst = (tekst || "").trim();
     if(!tekst || jobber) return;
+    fjernValg();
     boble("kunde", tekst);
     lager.historikk.push({ rolle: "kunde", tekst: tekst });
     lagre();
@@ -304,9 +352,16 @@
     if(lager.historikk.length){
       visHistorikk();
       if(lager.profil.klar) sendKort.style.display = "block";
+    } else if(KJENT){
+      kundeSier("Hei! Klar til å gå gjennom firmaet.\n\n" + KJENT.kjent);
     } else {
       kundeSier("Hei! Jeg er klar til å fortelle om firmaet.");
     }
+  }
+  if(KJENT){
+    document.getElementById("start-eyebrow").textContent = "Skreddersydd for " + KJENT.navn;
+    var sk = document.getElementById("start-kjent");
+    sk.textContent = KJENT.hilsen; sk.style.display = "block";
   }
   document.getElementById("start-knapp").addEventListener("click", start);
   if(lager.historikk.length) start();

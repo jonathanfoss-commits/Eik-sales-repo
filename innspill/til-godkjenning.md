@@ -3,6 +3,32 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
+## v0.21.0 — 31. juli 2026 («Bli kjent» skreddersydd for OP Bygg: kjent info, klikkbare svar, Drømmen)
+
+**Hva (bestilt av Jonathan):** (1) `?firma=opbygg` gir OP Bygg-tilpasset intervju:
+velkomstkortet hilser firmaet, og alt vi VET fra piloten (firma, fag, Ole Fabians rolle,
+skrivestil, verktøyene de alt bruker) legges som KJENT INFO i første melding — Lærlingen
+**bekrefter i stedet for å spørre på nytt** og bruker tiden på hullene (kundemiks i %,
+UE-bruk, purrerutiner, regnskapssystem, brukere, mobiltype). (2) Klikkbare svarvalg:
+modellen foreslår 2–4 knapper via skjult VALG-spor der korte svar er naturlige — ett
+trykk i stedet for tasting. (3) Nytt fast avslutningstema «Drømmen ✨» («hvis alt
+papirarbeidet forsvant i morgen …» / «hva ville vært drømmen at Lærlingen kunne gjøre?»),
+eget felt i Byggeplassen og ordrett i profilblokken.
+
+**Personvernvakta (hurtigsjekk):** JA — KJENT INFO er nøyaktig samme opplysninger som
+PROFIL-konstanten alt sender API-et i hver Skrivemotor-forespørsel; chips/Drømmen logges
+aldri som innhold; sending fortsatt kun ved aktivt trykk.
+
+**Testbevis:** Motor mot EKTE API med KJENT INFO: Lærlingen bekrefter («Stemmer dette
+fortsatt?»), spør IKKE om kjente ting, setter firma+skrivestil true i maskinsporet og
+tilbyr chips («Ja, stemmer» / «Delvis» / «Nei»). Playwright begge viewporter: OP Bygg-
+velkomst, KJENT INFO i første melding, chips rendres og er klikkbare, Drømmen-feltet i
+Byggeplassen, maskinsporene lekker aldri, full flyt til kvittering. Null pageerror.
+Versjonstriade 0.21.0.
+
+**OP Bygg-lenken (TEST):**
+`https://op-bygg-laerling-app-test.netlify.app/bli-kjent.html?invitasjon=bli-kjent-26&firma=opbygg`
+
 ## v0.20.0 — 31. juli 2026 («Bli kjent»-siden — AI-onboarding av nye kundefirma)
 
 **Hva:** Ny side `app/bli-kjent.html` (+ serverfunksjon `intervju.mjs`): nye kundefirma
