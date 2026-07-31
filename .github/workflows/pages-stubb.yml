@@ -1,0 +1,38 @@
+# Overskriver den tidligere publiserte GitHub Pages-siten med en tom stubb.
+# Bakgrunn: den gamle pages.yml publiserte HELE repoet (path: .) offentlig —
+# workflowen ble slettet 20. juli, men det publiserte innholdet består til noe
+# nytt deployes eller siten skrus av. Denne erstatter innholdet med én tom side.
+# Når Jonathan har skrudd av Pages i Settings, kan hele denne filen slettes. [JONATHAN]
+name: pages-stubb
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Lag tom stubb
+        run: |
+          mkdir stubb
+          printf '<!doctype html><meta charset="utf-8"><title>Ingenting her</title>Denne siden er tatt ned.' > stubb/index.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: stubb
+      - id: deployment
+        uses: actions/deploy-pages@v4
