@@ -3,6 +3,36 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
+## v0.23.0 — 31. juli 2026 (dyp gransking: maskinlesbar profil, to nye spørsmål, robusthetspakke)
+
+**Hva (bestilt av Jonathan — «alt må undersøkes grundig, verifiseres, forbedres og testes»):**
+To research-spor kjørt: (A) arkitekt-kartlegging av HVERT profilfelt mot kildekoden
+(`samarbeid/profil-integrasjon.md` — nå kan en innsendt profil integreres direkte:
+PROFIL/PROMPTER/purretrapp/tenant-config, prosessen portvoktes av Jonathan), og
+(B) adversariell gransking som fant 3 kritiske + 6 bør-feil. Alt rettet:
+
+- **Maskinlesbar profil:** intervjueren leverer nå PROFILJSON (20 normaliserte nøkler)
+  sammen med profilblokken — innsendingen inneholder begge. Kveldsteam-rutinen oppdatert
+  til å integrere etter kartleggingen (kun etter Jonathans klarsignal).
+- **To nye spørsmål** som tetter konfigurasjonshull: kontraktspraksis (NS/forbruker-
+  kontrakt/bare tilbudet) og rapporteringsrutine.
+- **Kritisk fikset:** innlimt tilbud >7500 tegn låste hele samtalen (meldingen ble
+  liggende og forgiftet alle senere turer) — nå vennlig lengdevern FØR lagring;
+  diktering mistet siste del av talen ved stopp på iOS — nå brukes feltets innhold;
+  lange samtaler traff 40 000-taket uten utvei — nå tegn-basert trimming klientside.
+- **Bør fikset:** utsnitt starter alltid med kundemelding (API-krav), feilet tur ruller
+  kundens melding tilbake til feltet (aldri to kunde-meldinger på rad), reserve som
+  oppdager ferdig profilblokk selv om modellen glemmer klar-flagget, forslags-kort
+  bygges med textContent (XSS-vern før research-genererte forslag), tastatur-håndtering
+  med visualViewport på iOS.
+
+**Testbevis:** FULL intervjusimulering mot EKTE API (7 turer, fiktivt malerfirma,
+innlimt tilbud på 2400 tegn): PROFILJSON komplett og korrekt — kundemiks 80 %,
+kontraktspraksis «Tilbud + aksept på e-post, Byggblankett på store jobber», Fiken,
+iphone, drømmen ordrett. Playwright begge viewporter: PROFILJSON i innsendingen men
+aldri i chatten, lengdevernet avviser 9000 tegn uten å røre samtalen, full flyt grønn.
+Versjonstriade 0.23.0.
+
 ## v0.22.0 — 31. juli 2026 («Bli kjent» med research og forslag — pluss gjenopptaks-fiks)
 
 **Hva (bestilt av Jonathan):** (1) Etter innsendt profil får kunden et ærlig ventekort:

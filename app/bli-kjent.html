@@ -305,10 +305,16 @@
         if(st.klar) lager.profil.klar = true;
       }catch(e){}
     }
+    var pj = fullTekst.match(/<!--PROFILJSON(\{[\s\S]*?\})-->/);
+    if(pj){ try{ lager.profiljson = JSON.parse(pj[1]); }catch(e){} }
     var v = fullTekst.match(/<!--VALG(\[[\s\S]*?\])-->/);
     var valg = null;
     if(v){ try{ valg = JSON.parse(v[1]); }catch(e){} }
-    ren = fullTekst.replace(/<!--(PROFIL\{[\s\S]*?\}|VALG\[[\s\S]*?\])-->/g, "").trim();
+    ren = fullTekst.replace(/<!--(PROFILJSON\{[\s\S]*?\}|PROFIL\{[\s\S]*?\}|VALG\[[\s\S]*?\])-->/g, "").trim();
+    /* reserve: er hele profilblokken i teksten, er profilen klar selv om
+       modellen skulle glemme klar-flagget i maskinsporet */
+    if(/=== BEDRIFTSPROFIL TIL LÆRLING v1 ===[\s\S]*?=== SLUTT ===/.test(ren))
+      lager.profil.klar = true;
     return { tekst: ren, valg: valg };
   }
 
@@ -319,8 +325,8 @@
     var tenker = document.createElement("div");
     tenker.className = "tenker"; tenker.textContent = "· · ·";
     prat.appendChild(tenker);
-    /* send siste del av samtalen — serveren har eget tak */
-    var hist = lager.historikk.slice(-60);
+    /* send siste del av samtalen (hele turer, tegn-begrenset) — serveren har eget tak */
+    var hist = historikkUtsnitt();
     fetch("/.netlify/functions/intervju", {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Invitasjon": INVITASJON },
@@ -351,7 +357,16 @@
       });
     }).catch(function(e){
       tenker.remove();
-      boble("laerling", "Beklager — " + (e.message || "noe gikk galt") + ". Prøv igjen.");
+      /* rull kundens melding ut av historikken og tilbake i feltet — to
+         kunde-meldinger på rad avvises av API-et ved neste forsøk */
+      var siste = lager.historikk[lager.historikk.length - 1];
+      if(siste && siste.rolle === "kunde"){
+        lager.historikk.pop(); lagre();
+        inn.value = siste.tekst;
+        var kb = prat.querySelectorAll(".boble.kunde");
+        if(kb.length) kb[kb.length - 1].remove();
+      }
+      boble("laerling", "Beklager — " + (e.message || "noe gikk galt") + ". Teksten din ligger i feltet — trykk send igjen.");
     }).then(function(){ jobber = false; status.textContent = ""; },
             function(){ jobber = false; status.textContent = ""; });
   }
@@ -359,12 +374,34 @@
   function kundeSier(tekst){
     tekst = (tekst || "").trim();
     if(!tekst || jobber) return;
+    /* lengdevern FØR meldingen legges i historikken — en for lang melding må
+       aldri bli liggende og forgifte alle senere turer (serveren avviser >8000) */
+    if(tekst.length > 7500){
+      status.textContent = "Teksten er for lang (" + tekst.length + " tegn) — del den i to " +
+        "og lim inn halvparten om gangen. Ingenting er mistet.";
+      inn.value = tekst;
+      return;
+    }
     fjernValg();
     boble("kunde", tekst);
     lager.historikk.push({ rolle: "kunde", tekst: tekst });
     lagre();
     inn.value = "";
     sendTur();
+  }
+
+  /* bygg utsnittet som sendes: nyeste først til ~28000 tegn, alltid hele turer,
+     og alltid slik at første melding er fra kunden (API-krav) */
+  function historikkUtsnitt(){
+    var ut = [], sum = 0;
+    for(var i = lager.historikk.length - 1; i >= 0; i--){
+      var m = lager.historikk[i];
+      if(sum + (m.tekst || "").length > 28000) break;
+      sum += (m.tekst || "").length;
+      ut.unshift(m);
+    }
+    while(ut.length && ut[0].rolle !== "kunde") ut.shift();
+    return ut;
   }
 
   /* start / gjenopptak */
@@ -405,12 +442,14 @@
   var gjenkjenner = null, lytter = false, stoppetMedVilje = false, dikterTekst = "";
   if(!SR) mik.style.display = "none";
   mik.addEventListener("click", function(){
-    if(lytter){ /* stopp og send */
+    if(lytter){ /* stopp og send — bruk feltets innhold (inkluderer siste, ennå
+      ikke-finaliserte del; på iOS kommer sluttresultatet ofte etter stop()) */
       stoppetMedVilje = true; lytter = false;
       try{ gjenkjenner.stop(); }catch(e){}
       mik.classList.remove("lytter");
       status.textContent = "";
-      if(dikterTekst.trim()) kundeSier(dikterTekst);
+      var sagt = (inn.value || dikterTekst).trim();
+      if(sagt) kundeSier(sagt);
       dikterTekst = "";
       return;
     }
@@ -453,9 +492,15 @@
       var m = t.match(/=== BEDRIFTSPROFIL TIL LÆRLING v1 ===[\s\S]*?=== SLUTT ===/);
       if(m){ profil = m[0]; break; }
     }
-    if(!profil){ status.textContent = "Fant ikke profilblokken — be Lærlingen lage profilen først."; return; }
+    if(!profil){ status.textContent = "Fant ikke profilblokken — skriv «lag profilen på nytt» til Lærlingen."; return; }
+    /* profiltekst + maskinlesbar JSON i samme felt — JSON-delen lar teamet
+       sette opp appen automatisk (kartleggingen i samarbeid/profil-integrasjon.md) */
+    var detalj = profil.slice(0, 8000);
+    if(lager.profiljson){
+      try{ detalj += "\n\nPROFILJSON: " + JSON.stringify(lager.profiljson).slice(0, 4000); }catch(e){}
+    }
     var post = { "form-name": "pilotlogg", hendelse: "bedriftsprofil",
-                 detalj: profil.slice(0, 8000), tid: new Date().toISOString() };
+                 detalj: detalj, tid: new Date().toISOString() };
     var kropp = Object.keys(post).map(function(k){
       return encodeURIComponent(k) + "=" + encodeURIComponent(post[k]); }).join("&");
     var kn = document.getElementById("send-knapp");
@@ -488,13 +533,24 @@
         document.getElementById("forslag-hilsen").textContent = f.hilsen || "";
         var liste = document.getElementById("forslag-liste");
         liste.innerHTML = "";
+        /* bygges med textContent — forslagene vil etter hvert komme fra research,
+           og tekst derfra skal aldri tolkes som HTML */
         f.forslag.forEach(function(p){
           var el = document.createElement("div");
           el.style.cssText = "border:1px solid var(--strek);border-radius:12px;padding:14px 16px;margin-top:10px;background:rgba(9,16,22,.5)";
-          var merke = p.status === "under-vurdering"
-            ? ' <span style="font-family:var(--mono);font-size:.62rem;color:var(--aurora-b);border:1px solid var(--strek);border-radius:99px;padding:2px 8px;vertical-align:middle">UNDER VURDERING</span>' : "";
-          el.innerHTML = '<div style="font-weight:650;margin-bottom:4px">' + p.tittel + merke + '</div>' +
-                         '<p style="font-size:.86rem;color:var(--dis);margin:0">' + p.tekst + '</p>';
+          var tit = document.createElement("div");
+          tit.style.cssText = "font-weight:650;margin-bottom:4px";
+          tit.textContent = p.tittel;
+          if(p.status === "under-vurdering"){
+            var merke = document.createElement("span");
+            merke.style.cssText = "font-family:var(--mono);font-size:.62rem;color:var(--aurora-b);border:1px solid var(--strek);border-radius:99px;padding:2px 8px;margin-left:8px;vertical-align:middle";
+            merke.textContent = "UNDER VURDERING";
+            tit.appendChild(merke);
+          }
+          var tx = document.createElement("p");
+          tx.style.cssText = "font-size:.86rem;color:var(--dis);margin:0";
+          tx.textContent = p.tekst;
+          el.appendChild(tit); el.appendChild(tx);
           liste.appendChild(el);
         });
         kort.style.display = "block";
@@ -504,6 +560,16 @@
     }).catch(function(){ document.getElementById("research-kort").style.display = "block"; });
   }
   if(lager.sendt) hentForslag();
+
+  /* iOS-tastatur: hold skrivelinja synlig over tastaturet i vanlig Safari-fane */
+  if(window.visualViewport){
+    var justerLinje = function(){
+      var løft = Math.max(0, window.innerHeight - visualViewport.height - visualViewport.offsetTop);
+      linje.style.transform = løft ? "translateY(-" + løft + "px)" : "";
+    };
+    visualViewport.addEventListener("resize", justerLinje);
+    visualViewport.addEventListener("scroll", justerLinje);
+  }
 })();
 </script>
 </body>
