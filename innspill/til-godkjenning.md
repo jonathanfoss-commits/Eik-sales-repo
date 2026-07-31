@@ -3,10 +3,51 @@
 <!-- Kveldsteamet fører inn: versjon, dato, hva som er endret og hvorfor.
      Jonathan/Ole Fabian godkjenner i TEST-appen; Jonathan flytter til STABIL. -->
 
-## INGEN LEVERANSER VENTER
+## v0.20.0 — 31. juli 2026 («Bli kjent»-siden — AI-onboarding av nye kundefirma)
+
+**Hva:** Ny side `app/bli-kjent.html` (+ serverfunksjon `intervju.mjs`): nye kundefirma
+åpner en personlig lenke (`…/bli-kjent.html?invitasjon=…`), prater med Lærlingen i
+10–15 min (diktering eller tekst, «hopp over» alltid synlig), og ser bedriftsprofilen
+bygge seg felt for felt i «Byggeplassen»-panelet (kollapsbar fremdriftslinje på mobil).
+Til slutt: Send-knapp → profilen (kun profilblokken, aldri rå samtale) går som
+Forms-hendelse `bedriftsprofil` rett inn i pilotlogg-røret kveldsteamet leser.
+Intervjuet følger super-prompten i `samarbeid/onboarding-superprompt.md`.
+
+**Personvern (vaktas krav, alle innfridd):** ren gjennomstrømming som Skrivemotoren
+(samtalen bor i nettleseren, lagres aldri på server, aldri trening — kontrakt i
+funksjonskommentaren); «Slett samtalen»-knapp; Send-kortet ber brukeren fjerne kunders
+personopplysninger fra innlimt tilbud og opplyser om lagring i pilotloggen + sletterett;
+invitasjonskoden er eksplisitt ikke-hemmelighet (bot-demping) + IP-tak (60/10 min).
+Profilen eksponeres IKKE i innspill.js-API-et (RELEVANTE urørt).
+
+**Panelets vedtak:** UX JA (maks to setninger + ett spørsmål per tur, mik-knapp 76 px i
+tommelsonen, haker som belønning, gjenopptak fra localStorage — alle inne), Personvernvakt
+ENDRE (kravene over — innfridd), Frontend JA (PROFIL-spor parses på full buffer etter
+stream-slutt, historikk-tak server + klient, kompakt innsending, versjonsbump pga.
+runtime-cache — alle inne).
+
+**Testbevis (ende-til-ende, 31. juli):**
+- *Motor mot EKTE API* (fiktivt «Malerfirma Strøket AS»): 401 ved feil invitasjon, 400 ved
+  tom samtale, intervjuspørsmål med maskinspor, ferdig profilblokk med riktige felter og
+  klar-flagg. (Kjent svakhet, tolerert: modellen kan droppe maskinsporet i enkeltturer —
+  klienten tåler det, feltene oppdateres neste tur.)
+- *UI i Playwright* (390×844 + 1440×900, mocket funksjon): velkomstkort med personvern-
+  tekst → samtale → firma-haken tenner → maskinsporet lekker aldri i chatten → Send-kort
+  med personvernkrav → innsending inneholder profilblokk men ikke rå samtale →
+  kvittering → historikken gjenopptas etter reload. Null pageerror.
+- *Forms-røret:* POST verifisert 200 på begge kanalene.
+
+**⚠ Viktig bifangst (fikset):** TEST-siten hadde ALDRI skjemadeteksjon aktivert — alle
+Forms-innsendinger fra TEST-kanalen (inkl. godkjenn-stemmer!) har gått tapt i det stille
+(404). Aktivert via API + rebuild, verifisert 200. Oppfølging: kveldsteamet bør også lese
+TEST-sitens skjema (godkjenninger avgis i TEST-appen).
+
+**Versjonstriade:** 0.20.0 (cache «laerling-0.20.0»). Siden er bevisst IKKE i sw-precachen.
+
+## Historikk
 
 v0.19.0 ble publisert til STABIL 28. juli kl. ~21 (ordre fra Jonathan, se
-publiseringsloggen). Begge kanalene kjører 0.19.0. Seksjonene under er historikk.
+publiseringsloggen). Seksjonene under er historikk.
 
 ## v0.19.0 — 28. juli 2026 (EKTE diktering + kalenderfrist — PUBLISERT til STABIL)
 

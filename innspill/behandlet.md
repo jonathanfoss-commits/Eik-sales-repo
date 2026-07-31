@@ -2,6 +2,14 @@
 
 <!-- Kveldsteamet fører inn: dato, hva som ble vurdert, hva som ble gjort, testresultat -->
 
+- [2026-07-31] **Bestilling fra Jonathan (/goal):** «Bli kjent»-siden — AI-onboarding av
+  nye kundefirma. Panel (behovsstyrt): UX JA, Personvernvakt ENDRE (3 absolutte krav,
+  innfridd), Frontend JA (5 krav, innfridd). Bygget i v0.20.0: app/bli-kjent.html +
+  netlify/functions/intervju.mjs + samarbeid/onboarding-superprompt.md. Testet ende-til-
+  ende: motor mot ekte API med fiktivt firma, UI i Playwright begge viewporter, Forms-rør
+  200 begge kanaler. Bifangst fikset: TEST-siten manglet skjemadeteksjon — alle TEST-
+  innsendinger (inkl. godkjenn-stemmer) har gått tapt til nå; aktivert og verifisert.
+
 - [2026-07-21] **Kveldskjøring (behovsstyrt panel, første):** innspill hentet direkte fra
   Netlify Forms (ingen nye — begge kjente er bygget). Kandidat = ⚠ HASTER fra
   prioriteringen: sentralkode-rotasjon uten kode i repo. To eksperter hørt (behovsstyrt):
