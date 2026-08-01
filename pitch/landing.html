@@ -2,645 +2,688 @@
 <html lang="nb">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lærling — Ansett din første AI-medarbeider</title>
-<meta name="description" content="Lærling undersøker bedriften din, lærer hvordan du jobber, og bygger og drifter AI-verktøyene du trenger. Gratis mulighetsrapport innen 72 timer.">
-<meta property="og:title" content="Lærling — Ansett din første AI-medarbeider">
-<meta property="og:description" content="Den finner selv ut hva den skal gjøre. Gratis mulighetsrapport innen 72 timer.">
-<meta name="theme-color" content="#070D12">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lærling — du snakker, Lærlingen skriver</title>
+<meta name="description" content="AI-medarbeideren for norske bygg- og håndverksfirma. Diktér fra bilen — få tilbud, endringsvarsel, byggedagbok og purring ferdig skrevet, med NS-frister og forbrukerregler innebygd.">
+<link rel="canonical" href="https://op-bygg-laerling-nett.netlify.app/">
+<meta name="theme-color" content="#050A0E">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="nb_NO">
+<meta property="og:site_name" content="Lærling">
+<meta property="og:title" content="Lærling — du snakker, Lærlingen skriver">
+<meta property="og:description" content="Diktér fra bilen. Få tilbudet, endringsvarselet og byggedagboka ferdig skrevet — med norske fagregler innebygd.">
+<meta property="og:url" content="https://op-bygg-laerling-nett.netlify.app/">
+<meta property="og:image" content="https://op-bygg-laerling-nett.netlify.app/og-laerling.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Lærling — du snakker, Lærlingen skriver">
+<meta name="twitter:description" content="AI-medarbeideren for norske bygg- og håndverksfirma.">
+<meta name="twitter:image" content="https://op-bygg-laerling-nett.netlify.app/og-laerling.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='42' fill='%2339E29B'/%3E%3C/svg%3E">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Lærling",
+"applicationCategory":"BusinessApplication","operatingSystem":"iOS, Android, web",
+"description":"AI-medarbeider for norske bygg- og håndverksfirma: diktering blir tilbud, endringsvarsel, byggedagbok og purring.",
+"inLanguage":"nb-NO","offers":{"@type":"Offer","price":"1990","priceCurrency":"NOK",
+"description":"Per bedrift per måned, eks. mva."}}
+</script>
 <style>
-  /* ── Tokens: midnatt + nordlys ───────────────────────────── */
-  :root{
-    --bunn:#070D12;          /* midnattsgrunn, teal-biased */
-    --flate:#0D161E;         /* panel */
-    --flate-2:#111D27;       /* hevet panel */
-    --strek:rgba(140,190,190,.14);
-    --lys:#E9F2EE;           /* grønnstukket off-white */
-    --dis:#93A8AA;           /* dempet tekst */
-    --aurora-a:#39E29B;      /* nordlys grønn */
-    --aurora-b:#2FC4D9;      /* nordlys cyan */
-    --aurora-c:#3E7BFA;      /* nordlys blå */
-    --sans:-apple-system,"Segoe UI",system-ui,Roboto,"Helvetica Neue",Arial,sans-serif;
-    --mono:"SF Mono","Cascadia Code",Consolas,"Roboto Mono",monospace;
-  }
-  *{margin:0;padding:0;box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  body{background:var(--bunn);color:var(--lys);font-family:var(--sans);
-       line-height:1.65;overflow-x:hidden}
-  ::selection{background:rgba(57,226,155,.3)}
-  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
-  a:focus-visible,button:focus-visible{outline:2px solid var(--aurora-a);outline-offset:3px;border-radius:4px}
+/* ─────────────────────────────────────────────────────────────
+   DESIGN-TOKENS — én kilde. Ingen hardkodede verdier i komponentene.
+   Endrer du merkevaren, endrer du kun her. Bevegelse: se MOTION.md
+   ───────────────────────────────────────────────────────────── */
+:root{
+  /* farge */
+  --f-bunn:#050A0E; --f-flate:#0B1319; --f-flate-2:#111C22;
+  --f-lys:#EAF3EF; --f-dis:#8FA3A6; --f-dis-svak:#7E9094;
+  --f-akse:#39E29B; --f-akse-dyp:#1F9E66; --f-akse-mørk:#04120C;
+  --f-strek:rgba(150,200,195,.13); --f-strek-sterk:rgba(150,200,195,.26);
+  /* type */
+  --t-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --t-serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --t-mono:"SF Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,"Roboto Mono",monospace;
+  --t-xs:.72rem; --t-s:.86rem; --t-m:1rem; --t-l:1.12rem;
+  --t-h3:clamp(1.1rem,1.6vw,1.28rem);
+  --t-h2:clamp(1.9rem,3.7vw,3rem);
+  --t-h1:clamp(2.7rem,7vw,6.2rem);
+  /* rom */
+  --r-1:4px; --r-2:8px; --r-3:14px; --r-4:22px; --r-5:34px; --r-6:52px;
+  --r-7:80px; --r-8:120px; --r-9:160px;
+  --bredde:1180px; --kant:clamp(20px,4vw,34px);
+  /* radius og skygge */
+  --b-1:8px; --b-2:14px; --b-3:22px; --b-4:100px;
+  --sk-lav:0 12px 34px rgba(0,0,0,.42);
+  --sk-høy:0 44px 110px rgba(0,0,0,.62);
+  --glød:0 0 44px rgba(57,226,155,.24);
+  /* bevegelse */
+  --m-rask:.22s; --m-mid:.4s; --m-rolig:.8s;
+  --m-fjær:cubic-bezier(.2,.8,.2,1); --m-inn:cubic-bezier(.16,1,.3,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--f-bunn);color:var(--f-lys);font-family:var(--t-sans);
+  line-height:1.62;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:rgba(57,226,155,.28)}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--f-akse);outline-offset:3px;border-radius:var(--r-1)}
+.skjult-visuelt{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.hopp{position:absolute;left:var(--kant);top:8px;z-index:80;padding:10px 18px;border-radius:var(--b-1);
+  background:var(--f-akse);color:var(--f-akse-mørk);font-weight:600;font-size:var(--t-s);
+  text-decoration:none;transform:translateY(-160%);transition:transform var(--m-rask)}
+.hopp:focus{transform:none}
 
-  /* type-skala */
-  h1{font-size:clamp(2.4rem,5.6vw,4rem);line-height:1.06;font-weight:750;
-     letter-spacing:-.025em;text-wrap:balance}
-  h2{font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1.15;font-weight:700;
-     letter-spacing:-.02em;text-wrap:balance}
-  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;
-     text-transform:uppercase;color:var(--aurora-a)}
-  .lead{font-size:1.15rem;color:var(--dis);max-width:34em}
-  .grad{background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b) 55%,var(--aurora-c));
-     -webkit-background-clip:text;background-clip:text;color:transparent}
+/* levende lag */
+#nordlys{position:fixed;inset:0;z-index:0;display:block}
+.nordlys-reserve{position:fixed;inset:0;z-index:0;
+  background:radial-gradient(120% 80% at 50% -10%,#12332B 0%,#081319 45%,var(--f-bunn) 75%)}
+.demping{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(120% 80% at 50% 2%,transparent 18%,rgba(5,10,14,.62) 48%,rgba(5,10,14,.94) 78%)}
+.korn{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.035;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+main,header,footer{position:relative;z-index:3}
+.ramme{max-width:var(--bredde);margin:0 auto;padding:0 var(--kant)}
 
-  /* ── Aurora-bakgrunn ─────────────────────────────────────── */
-  .sky{position:fixed;inset:0;z-index:-1;overflow:hidden;background:
-     radial-gradient(120% 90% at 50% 0%,#0B1620 0%,var(--bunn) 60%)}
-  .sky i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.32;will-change:transform}
-  .sky .a{width:52vw;height:52vw;background:var(--aurora-a);top:-22vw;left:-12vw;
-     animation:driftA 26s ease-in-out infinite alternate}
-  .sky .b{width:44vw;height:44vw;background:var(--aurora-b);top:-18vw;right:-10vw;
-     animation:driftB 32s ease-in-out infinite alternate}
-  .sky .c{width:40vw;height:40vw;background:var(--aurora-c);top:6vw;left:34vw;opacity:.2;
-     animation:driftC 38s ease-in-out infinite alternate}
-  @keyframes driftA{to{transform:translate(9vw,7vw) scale(1.12)}}
-  @keyframes driftB{to{transform:translate(-7vw,9vw) scale(.94)}}
-  @keyframes driftC{to{transform:translate(-9vw,-5vw) scale(1.08)}}
-  /* fint rutenett over aurora */
-  .sky::after{content:"";position:absolute;inset:0;background-image:
-     linear-gradient(rgba(160,220,215,.05) 1px,transparent 1px),
-     linear-gradient(90deg,rgba(160,220,215,.05) 1px,transparent 1px);
-     background-size:56px 56px;
-     mask-image:linear-gradient(#000 0%,transparent 78vh)}
+/* topplinje */
+header{position:sticky;top:0;z-index:60;transition:background var(--m-mid),backdrop-filter var(--m-mid),border-color var(--m-mid);
+  border-bottom:1px solid transparent}
+header.tett{background:rgba(5,10,14,.72);backdrop-filter:blur(16px);border-bottom-color:var(--f-strek)}
+header .ramme{display:flex;align-items:center;justify-content:space-between;height:72px}
+.merke{font-weight:650;font-size:var(--t-l);letter-spacing:-.025em;text-decoration:none}
+.merke b{color:var(--f-akse)}
+.meny{display:flex;align-items:center;gap:var(--r-5)}
+.meny a{color:var(--f-dis);text-decoration:none;font-size:var(--t-s);transition:color var(--m-rask)}
+.meny a:hover{color:var(--f-lys)}
+.meny a.knapp{color:var(--f-akse-mørk)}          /* arver ellers --f-dis mot grønn flate */
+@media(max-width:760px){.meny a:not(.knapp){display:none}}
 
-  /* ── Header ──────────────────────────────────────────────── */
-  header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
-     background:rgba(7,13,18,.6);border-bottom:1px solid var(--strek)}
-  header .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
-  .logo{font-weight:750;font-size:1.15rem;letter-spacing:-.01em}
-  .logo b{color:var(--aurora-a);font-weight:750}
-  .btn{display:inline-block;font-weight:650;font-size:.95rem;text-decoration:none;
-     padding:13px 26px;border-radius:10px;color:#04110B;
-     background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b));
-     box-shadow:0 0 22px rgba(57,226,155,.28);transition:transform .15s,box-shadow .15s}
-  .btn:hover{transform:translateY(-1px);box-shadow:0 0 34px rgba(57,226,155,.42)}
-  .btn.ghost{background:none;color:var(--lys);border:1px solid var(--strek);box-shadow:none}
-  .btn.ghost:hover{border-color:rgba(57,226,155,.5);box-shadow:none}
-  .btn.small{padding:9px 18px;font-size:.85rem}
+/* knapper */
+.knapp{display:inline-flex;align-items:center;gap:10px;padding:15px 28px;border-radius:var(--b-4);
+  background:var(--f-akse);color:var(--f-akse-mørk);text-decoration:none;font-size:var(--t-s);font-weight:650;
+  border:none;cursor:pointer;font-family:inherit;
+  transition:transform var(--m-mid) var(--m-fjær),box-shadow var(--m-mid)}
+.knapp:hover{transform:translateY(-2px);box-shadow:var(--glød)}
+.knapp.liten{padding:10px 20px}
+.knapp.tynn{background:transparent;color:var(--f-lys);border:1px solid var(--f-strek);font-weight:500}
+.knapp.tynn:hover{border-color:var(--f-strek-sterk);box-shadow:none}
 
-  /* ── Hero ────────────────────────────────────────────────── */
-  .hero{padding:84px 0 72px}
-  .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
-  .hero h1{margin:18px 0 20px}
-  .hero .cta-row{display:flex;gap:14px;flex-wrap:wrap;margin-top:32px}
-  .hero .fakta{font-family:var(--mono);font-size:.74rem;color:var(--dis);margin-top:22px;letter-spacing:.04em}
-  .hero .fakta b{color:var(--aurora-a);font-weight:600}
+/* felles typografi */
+.etikett{font-family:var(--t-mono);font-size:var(--t-xs);letter-spacing:.26em;text-transform:uppercase;
+  color:var(--f-akse)}
+h1{font-size:var(--t-h1);line-height:.98;letter-spacing:-.045em;font-weight:300}
+h1 em{font-style:normal;color:var(--f-akse)}
+h2{font-size:var(--t-h2);line-height:1.08;letter-spacing:-.035em;font-weight:300}
+h3{font-size:var(--t-h3);font-weight:550;letter-spacing:-.02em}
+p{color:var(--f-dis)}
+.ingress{font-size:var(--t-l);line-height:1.62;max-width:46ch;font-weight:300}
 
-  /* demo-panelet */
-  .demo{background:linear-gradient(180deg,rgba(20,32,40,.9),rgba(13,22,30,.9));
-     border:1px solid var(--strek);border-radius:16px;overflow:hidden;
-     box-shadow:0 30px 80px rgba(0,0,0,.5),0 0 0 1px rgba(57,226,155,.06),
-                0 0 60px rgba(47,196,217,.08)}
-  .demo-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;
-     border-bottom:1px solid var(--strek);font-family:var(--mono);font-size:.72rem;color:var(--dis)}
-  .puls{width:8px;height:8px;border-radius:50%;background:var(--aurora-a);
-     box-shadow:0 0 10px var(--aurora-a);animation:puls 2s ease-in-out infinite}
-  @keyframes puls{50%{opacity:.35}}
-  .demo-body{padding:18px 20px 22px;min-height:330px}
-  .demo-inn{font-family:var(--mono);font-size:.82rem;line-height:1.7;color:var(--dis);
-     background:rgba(0,0,0,.25);border:1px solid var(--strek);border-radius:10px;
-     padding:12px 14px;min-height:96px}
-  .demo-inn .merk{color:var(--aurora-b);display:block;margin-bottom:6px;font-size:.68rem;
-     letter-spacing:.14em;text-transform:uppercase}
-  .cursor{display:inline-block;width:7px;height:14px;background:var(--aurora-a);
-     vertical-align:-2px;animation:blink 1s steps(1) infinite}
-  @keyframes blink{50%{opacity:0}}
-  .demo-pil{display:flex;align-items:center;gap:10px;margin:14px 2px;font-family:var(--mono);
-     font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--aurora-a);
-     opacity:0;transition:opacity .5s}
-  .demo-pil::before,.demo-pil::after{content:"";height:1px;flex:1;
-     background:linear-gradient(90deg,transparent,rgba(57,226,155,.5),transparent)}
-  .demo-ut{background:rgba(9,16,22,.7);border:1px solid rgba(57,226,155,.22);border-radius:10px;
-     padding:14px 16px;font-size:.86rem;opacity:0;transform:translateY(8px);
-     transition:opacity .6s,transform .6s}
-  .demo-ut.vis,.demo-pil.vis{opacity:1;transform:none}
-  .demo-ut .felt{font-family:var(--mono);font-size:.7rem;color:var(--dis);margin-bottom:2px}
-  .demo-ut .felt b{color:var(--lys);font-weight:600}
-  .demo-ut hr{border:none;border-top:1px solid var(--strek);margin:10px 0}
-  .demo-ut p{margin:0 0 8px;color:#C9D8D3}
-  .demo-ut ul{margin:0 0 8px 18px;color:#C9D8D3}
-  .demo-ut li{margin:2px 0}
-  .demo-stempel{display:inline-flex;align-items:center;gap:8px;margin-top:14px;
-     font-family:var(--mono);font-size:.7rem;color:var(--aurora-a);
-     border:1px solid rgba(57,226,155,.3);border-radius:99px;padding:6px 14px;
-     opacity:0;transition:opacity .6s .2s}
-  .demo-stempel.vis{opacity:1}
+/* avsløring ved scroll (IntersectionObserver — ikke scroll-bibliotek) */
+.avslør{opacity:0;transform:translateY(18px);
+  transition:opacity var(--m-rolig) var(--m-inn),transform var(--m-rolig) var(--m-inn)}
+.avslør.inne{opacity:1;transform:none}
+.avslør.t1{transition-delay:.08s}.avslør.t2{transition-delay:.16s}.avslør.t3{transition-delay:.24s}
+@media(prefers-reduced-motion:reduce){
+  .avslør{opacity:1;transform:none;transition:none}
+  .knapp:hover{transform:none}
+}
 
-  /* ── Tall-stripe ─────────────────────────────────────────── */
-  .tall{border-top:1px solid var(--strek);border-bottom:1px solid var(--strek);
-     background:rgba(13,22,30,.5);backdrop-filter:blur(8px)}
-  .tall .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:34px 24px}
-  .tall .t{text-align:center}
-  .tall .n{font-size:2.1rem;font-weight:750;letter-spacing:-.02em;
-     font-variant-numeric:tabular-nums;color:var(--lys)}
-  .tall .n em{font-style:normal;background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b));
-     -webkit-background-clip:text;background-clip:text;color:transparent}
-  .tall .l{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;
-     text-transform:uppercase;color:var(--dis);margin-top:4px}
+/* HERO */
+.hero{min-height:min(92vh,860px);display:flex;flex-direction:column;justify-content:center;
+  padding:var(--r-6) var(--kant) var(--r-8)}
+.hero h1{margin:var(--r-4) 0 0;max-width:15ch}
+.hero .ingress{margin-top:var(--r-5)}
+.hero .valg{display:flex;gap:var(--r-3);margin-top:var(--r-6);flex-wrap:wrap}
+.nøkkeltall{display:flex;gap:var(--r-7);margin-top:var(--r-7);flex-wrap:wrap;
+  font-family:var(--t-mono);font-size:var(--t-xs);color:var(--f-dis);letter-spacing:.04em}
+.nøkkeltall b{display:block;font-family:var(--t-sans);font-size:1.55rem;color:var(--f-lys);
+  font-weight:300;letter-spacing:-.025em;margin-bottom:6px}
 
-  /* ── Seksjoner ───────────────────────────────────────────── */
-  section{padding:96px 0}
-  .senter{text-align:center}
-  .senter .lead{margin:14px auto 0}
-  .sek-hode{margin-bottom:56px}
+/* seksjonsrytme */
+section{padding:var(--r-8) 0;background:rgba(5,10,14,.82);backdrop-filter:blur(2px)}
+section+section{border-top:1px solid var(--f-strek)}
+.seksjonstopp{max-width:60ch}
+.seksjonstopp h2{margin-top:var(--r-4)}
+.seksjonstopp p{margin-top:var(--r-4);font-size:var(--t-m);max-width:52ch}
 
-  /* faser: vertikal glødende tidslinje */
-  .faser{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;position:relative}
-  .fase{background:linear-gradient(180deg,rgba(17,29,39,.85),rgba(13,22,30,.85));
-     border:1px solid var(--strek);border-radius:14px;padding:26px 22px;position:relative;
-     transition:transform .2s,border-color .2s}
-  .fase:hover{transform:translateY(-4px);border-color:rgba(57,226,155,.35)}
-  .fase .tag{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;color:var(--aurora-b)}
-  .fase h3{font-size:1.15rem;margin:10px 0 8px;font-weight:700}
-  .fase p{font-size:.92rem;color:var(--dis)}
-  .fase::before{content:"";position:absolute;top:-1px;left:22px;right:60%;height:2px;
-     background:linear-gradient(90deg,var(--aurora-a),transparent);border-radius:2px}
+/* NARRATIV: fire jobber, vekslende */
+.jobb{display:grid;grid-template-columns:1fr 1fr;gap:var(--r-7);align-items:center;margin-top:var(--r-7)}
+.jobb:nth-child(even) .jobb-tekst{order:2}
+.jobb-tekst h3{margin:var(--r-3) 0 var(--r-3)}
+.jobb-tekst p{font-size:var(--t-m)}
+.jobb-tekst .detalj{margin-top:var(--r-4);font-family:var(--t-mono);font-size:var(--t-xs);
+  color:var(--f-dis-svak);letter-spacing:.06em}
+/* dokumentkort (fra «Beviset») */
+.dok{background:linear-gradient(168deg,var(--f-flate-2),var(--f-flate));border:1px solid var(--f-strek);
+  border-radius:var(--b-2);padding:var(--r-5);box-shadow:var(--sk-lav)}
+.dok .stempel{font-family:var(--t-mono);font-size:.58rem;letter-spacing:.2em;color:var(--f-akse)}
+.dok .dok-t{font-family:var(--t-serif);font-size:1.1rem;font-weight:400;margin:var(--r-3) 0 var(--r-2);letter-spacing:-.01em}
+.dok p{font-size:var(--t-s);line-height:1.62}
+.dok .strek{height:1px;background:var(--f-strek);margin:var(--r-4) 0}
+.dok .meta{font-family:var(--t-mono);font-size:.58rem;color:var(--f-dis-svak);letter-spacing:.14em;
+  display:flex;justify-content:space-between}
 
-  /* bransjer */
-  .bransjer{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
-  .bransje{background:rgba(13,22,30,.7);border:1px solid var(--strek);border-radius:14px;
-     padding:24px 22px}
-  .bransje .tag{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;
-     text-transform:uppercase;color:var(--aurora-b)}
-  .bransje h3{font-size:1.08rem;margin:8px 0 12px;font-weight:700}
-  .bransje ul{list-style:none}
-  .bransje li{padding:5px 0 5px 22px;position:relative;font-size:.92rem;color:var(--dis)}
-  .bransje li::before{content:"";position:absolute;left:0;top:13px;width:10px;height:10px;
-     border-radius:3px;background:linear-gradient(135deg,var(--aurora-a),var(--aurora-b));opacity:.85}
+/* MONEY-SHOT: appflaten */
+.flate-vis{display:grid;grid-template-columns:.95fr 1.05fr;gap:var(--r-7);align-items:center;margin-top:var(--r-7)}
+.telefon{width:min(320px,86vw);margin:0 auto;border-radius:42px;border:1px solid var(--f-strek);padding:11px;
+  background:linear-gradient(180deg,rgba(26,40,44,.96),rgba(8,14,18,.96));
+  box-shadow:var(--sk-høy),0 0 0 1px rgba(57,226,155,.07),0 0 90px rgba(57,226,155,.07)}
+.skjerm{border-radius:32px;background:#070D11;padding:var(--r-4) var(--r-3);min-height:440px}
+.sk-topp{font-family:var(--t-mono);font-size:.56rem;color:var(--f-dis-svak);letter-spacing:.16em;
+  display:flex;justify-content:space-between;align-items:center}
+.puls{width:7px;height:7px;border-radius:50%;background:var(--f-akse);box-shadow:0 0 10px var(--f-akse);
+  animation:puls 2.4s ease-in-out infinite}
+@keyframes puls{50%{opacity:.28}}
+@media(prefers-reduced-motion:reduce){.puls{animation:none}}
+.sk-tittel{font-size:1.12rem;font-weight:300;margin:var(--r-4) 0 var(--r-3);letter-spacing:-.02em}
+.sk-kort{border:1px solid var(--f-strek);border-radius:var(--b-2);padding:12px 14px;margin-bottom:8px;
+  background:rgba(255,255,255,.016)}
+.sk-kort .m{font-family:var(--t-mono);font-size:.54rem;color:var(--f-akse);letter-spacing:.16em}
+.sk-kort .t{font-size:.82rem;margin-top:5px}
+.sk-kort .u{font-size:.7rem;color:var(--f-dis-svak);margin-top:3px}
+.flate-punkt{display:flex;gap:var(--r-3);align-items:flex-start;margin-top:var(--r-5)}
+.flate-punkt i{width:6px;height:6px;border-radius:50%;background:var(--f-akse);margin-top:9px;flex:none;
+  box-shadow:0 0 12px var(--f-akse)}
+.flate-punkt p{font-size:var(--t-s)}
+.flate-punkt p b{color:var(--f-lys);font-weight:550}
 
-  /* priser */
-  .planer{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:20px;align-items:stretch}
-  .plan{background:linear-gradient(180deg,rgba(17,29,39,.9),rgba(13,22,30,.9));
-     border:1px solid var(--strek);border-radius:16px;padding:32px 28px;
-     display:flex;flex-direction:column;position:relative}
-  .plan.hoved{border:1px solid rgba(57,226,155,.45);
-     box-shadow:0 0 44px rgba(57,226,155,.12)}
-  .plan .merke{position:absolute;top:-12px;left:50%;transform:translateX(-50%);
-     font-family:var(--mono);font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;
-     color:#04110B;background:linear-gradient(100deg,var(--aurora-a),var(--aurora-b));
-     padding:4px 14px;border-radius:99px;font-weight:700}
-  .plan h3{font-size:1.1rem;font-weight:700}
-  .plan .pris{font-size:2.4rem;font-weight:750;letter-spacing:-.02em;margin:10px 0 0;
-     font-variant-numeric:tabular-nums}
-  .plan .per{font-family:var(--mono);font-size:.68rem;color:var(--dis);
-     letter-spacing:.08em;margin-bottom:22px}
-  .plan ul{list-style:none;flex:1;margin-bottom:26px}
-  .plan li{padding:6px 0 6px 24px;position:relative;font-size:.92rem;color:var(--dis)}
-  .plan li::before{content:"";position:absolute;left:0;top:12px;width:12px;height:7px;
-     border-left:2px solid var(--aurora-a);border-bottom:2px solid var(--aurora-a);
-     transform:rotate(-45deg)}
-  .plan .btn{text-align:center}
+/* BEVIS */
+.bevis{display:grid;grid-template-columns:1.05fr .95fr;gap:var(--r-7);align-items:center}
+.bevis h2{font-family:var(--t-serif);font-weight:400;letter-spacing:-.02em;line-height:1.12}
+.bevis .brød{margin-top:var(--r-4);font-size:var(--t-m);line-height:1.75;max-width:52ch}
+.bevis .brød b{color:var(--f-lys);font-weight:550}
+.scene{perspective:1400px;perspective-origin:60% 40%}
+.stabel{position:relative;height:400px;transform-style:preserve-3d;transform:rotateX(6deg) rotateY(-10deg)}
+.stabel .dok{position:absolute;left:0;right:0;top:0;width:100%;max-width:360px;margin:0 auto;
+  box-shadow:var(--sk-høy)}
+.stabel .d1{transform:translateZ(60px) rotate(-1.2deg)}
+.stabel .d2{transform:translateZ(20px) translateY(60px) rotate(1.4deg);opacity:.9}
+.stabel .d3{transform:translateZ(-20px) translateY(120px) rotate(-.6deg);opacity:.72}
 
-  /* trygghet */
-  .trygg{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
-  .trygg div{border:1px solid var(--strek);border-radius:14px;padding:24px 22px;
-     background:rgba(13,22,30,.55)}
-  .trygg svg{width:26px;height:26px;stroke:var(--aurora-a);stroke-width:1.8;fill:none;
-     stroke-linecap:round;stroke-linejoin:round;margin-bottom:12px}
-  .trygg h3{font-size:.98rem;font-weight:700;margin-bottom:6px}
-  .trygg p{font-size:.88rem;color:var(--dis)}
+/* TILLIT */
+.tillit{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--f-strek);
+  border:1px solid var(--f-strek);border-radius:var(--b-2);overflow:hidden;margin-top:var(--r-6)}
+.tillit div{background:var(--f-bunn);padding:var(--r-5) var(--r-4)}
+.tillit .t{font-family:var(--t-mono);font-size:.6rem;letter-spacing:.18em;color:var(--f-akse)}
+.tillit h3{margin:var(--r-3) 0 8px;font-size:1rem}
+.tillit p{font-size:var(--t-s)}
 
-  /* slutt-CTA */
-  .slutt{position:relative;text-align:center;padding:110px 0;overflow:hidden;
-     border-top:1px solid var(--strek)}
-  .slutt::before{content:"";position:absolute;inset:auto -20% -60% -20%;height:120%;
-     background:radial-gradient(50% 60% at 50% 100%,rgba(57,226,155,.22),transparent 70%);
-     pointer-events:none}
-  .slutt .lead{margin:16px auto 36px}
+/* PRIS */
+.priser{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--r-4);margin-top:var(--r-6)}
+.plan{border:1px solid var(--f-strek);border-radius:var(--b-3);padding:var(--r-5);background:rgba(255,255,255,.014);
+  display:flex;flex-direction:column}
+.plan.valgt{border-color:rgba(57,226,155,.4);box-shadow:0 0 60px rgba(57,226,155,.08)}
+.plan .navn{font-family:var(--t-mono);font-size:var(--t-xs);letter-spacing:.2em;text-transform:uppercase;color:var(--f-akse)}
+.plan .pris{font-size:2.4rem;font-weight:300;letter-spacing:-.04em;margin:var(--r-3) 0 2px}
+.plan .per{font-family:var(--t-mono);font-size:.62rem;color:var(--f-dis-svak);letter-spacing:.14em}
+.plan ul{list-style:none;margin:var(--r-5) 0 var(--r-5);display:grid;gap:10px}
+.plan li{font-size:var(--t-s);color:var(--f-dis);padding-left:20px;position:relative}
+.plan li::before{content:"";position:absolute;left:0;top:9px;width:5px;height:5px;border-radius:50%;background:var(--f-akse)}
+.plan .knapp{margin-top:auto;justify-content:center}
 
-  footer{border-top:1px solid var(--strek);padding:30px 0;text-align:center;
-     font-family:var(--mono);font-size:.72rem;color:var(--dis);letter-spacing:.05em}
+/* AVSLUTNING */
+.slutt{text-align:center;padding:var(--r-9) 0 var(--r-8)}
+.slutt h2{max-width:18ch;margin:var(--r-4) auto 0}
+.slutt .ingress{margin:var(--r-4) auto 0;text-align:center}
+form{display:flex;gap:10px;justify-content:center;margin-top:var(--r-6);flex-wrap:wrap}
+form[hidden]{display:none}                        /* skjult Netlify-skjema skal forbli skjult */
+form input{background:var(--f-flate);border:1px solid var(--f-strek);border-radius:var(--b-4);
+  color:var(--f-lys);font-family:inherit;font-size:16px;padding:15px 24px;min-width:min(320px,84vw)}
+form input::placeholder{color:var(--f-dis-svak)}
+.kvittering{margin-top:var(--r-4);color:var(--f-akse);font-size:var(--t-s);min-height:1.4em}
+.slutt .finskrift{margin-top:var(--r-4);font-family:var(--t-mono);font-size:.66rem;color:var(--f-dis-svak);letter-spacing:.06em}
 
-  /* ── levende lag: nettverk, tilt, lysflekk, tidslinje ────── */
-  .hero{position:relative}
-  #nett{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-  .hero .wrap{position:relative;z-index:1}
-  .demo{transition:transform .18s ease-out;will-change:transform}
+footer{border-top:1px solid var(--f-strek);padding:var(--r-6) 0}
+footer .ramme{display:flex;justify-content:space-between;gap:var(--r-4);flex-wrap:wrap;
+  font-size:var(--t-s);color:var(--f-dis-svak)}
+footer a{text-decoration:none;color:var(--f-dis)}
+footer a:hover{color:var(--f-lys)}
 
-  /* lysflekk som følger pekeren over kort */
-  .fase::after,.bransje::after,.plan::after,.trygg > div::after{
-     content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-     opacity:0;transition:opacity .35s;
-     background:radial-gradient(230px circle at var(--mx,50%) var(--my,50%),
-        rgba(57,226,155,.13),transparent 65%)}
-  .bransje,.plan,.trygg > div{position:relative}
-  .fase:hover::after,.bransje:hover::after,.plan:hover::after,.trygg > div:hover::after{opacity:1}
-
-  /* nordlys-linjen som tegner seg gjennom fasene */
-  .ledning{height:2px;margin:0 22px 22px;border-radius:2px;position:relative;
-     background:rgba(140,190,190,.1);overflow:hidden}
-  .ledning i{display:block;height:100%;width:100%;
-     background:linear-gradient(90deg,var(--aurora-a),var(--aurora-b),var(--aurora-c));
-     box-shadow:0 0 14px rgba(57,226,155,.55)}
-  html.js .ledning i{width:0;transition:width 1.6s cubic-bezier(.22,.8,.3,1) .15s}
-  html.js .ledning.inne i{width:100%}
-  html.js .faser .fase:nth-child(2){transition-delay:.16s}
-  html.js .faser .fase:nth-child(3){transition-delay:.32s}
-  html.js .faser .fase:nth-child(4){transition-delay:.48s}
-
-  /* scroll-reveal — skjules kun når JS kjører, så siden aldri kan bli tom */
-  html.js .avslor{opacity:0;transform:translateY(18px);transition:opacity .6s,transform .6s}
-  html.js .avslor.inne{opacity:1;transform:none}
-
-  @media (max-width:900px){
-    .hero .wrap{grid-template-columns:1fr;gap:40px}
-    .tall .wrap{grid-template-columns:repeat(2,1fr)}
-    .faser{grid-template-columns:repeat(2,1fr)}
-  }
-  @media (max-width:560px){
-    .faser{grid-template-columns:1fr}
-    section{padding:68px 0}
-  }
-  @media (prefers-reduced-motion:reduce){
-    *,*::before,*::after{animation:none!important;transition:none!important}
-    .avslor{opacity:1;transform:none}
-    .demo-ut,.demo-pil,.demo-stempel{opacity:1;transform:none}
-    html{scroll-behavior:auto}
-  }
+@media(max-width:900px){
+  .jobb,.flate-vis,.bevis{grid-template-columns:1fr;gap:var(--r-5)}
+  .jobb:nth-child(even) .jobb-tekst{order:0}
+  .tillit,.priser{grid-template-columns:1fr}
+  .nøkkeltall{gap:var(--r-5)}
+  .stabel{height:340px}
+}
 </style>
 </head>
 <body>
+<a class="hopp" href="#innhold">Hopp til innhold</a>
+<canvas id="nordlys" aria-hidden="true"></canvas>
+<div class="demping" aria-hidden="true"></div>
+<div class="korn" aria-hidden="true"></div>
 
-<div class="sky" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></div>
-
-<header>
-  <div class="wrap">
-    <div class="logo">Lærling<b>.</b></div>
-    <a class="btn small" href="#pris">Få mulighetsrapport</a>
+<header id="topp">
+  <div class="ramme">
+    <a class="merke" href="#topp">Lærling<b>.</b></a>
+    <nav class="meny" aria-label="Hovedmeny">
+      <a href="#jobbene">Verktøyene</a>
+      <a href="#beviset">Dokumentasjon</a>
+      <a href="#priser">Priser</a>
+      <a class="knapp liten" href="https://op-bygg-laerling-app.netlify.app/bli-kjent.html?invitasjon=bli-kjent-26">Bli kjent</a>
+    </nav>
   </div>
 </header>
 
-<section class="hero">
-  <canvas id="nett" aria-hidden="true"></canvas>
-  <div class="wrap">
-    <div>
-      <div class="eyebrow">AI — uten at du trenger å kunne AI</div>
-      <h1>Ansett din første AI&#8209;medarbeider. <span class="grad">Den finner selv ut hva den skal gjøre.</span></h1>
-      <p class="lead">Lærling undersøker bedriften din, lærer hvordan du jobber, og bygger og
-      drifter AI-verktøyene du aldri visste du trengte. Du godkjenner — den gjør jobben.</p>
-      <div class="cta-row">
-        <a class="btn" href="#pris">Start Lærlings første arbeidsuke</a>
-        <a class="btn ghost" href="#slik">Se hvordan det virker</a>
-      </div>
-      <div class="fakta">GRATIS MULIGHETSRAPPORT PÅ <b>72 TIMER</b> · INGEN BINDING · NULL OPPSETT</div>
+<main id="innhold">
+  <div class="ramme hero">
+    <p class="etikett avslør">AI-medarbeider for bygg og håndverk</p>
+    <h1 class="avslør t1">Du snakker.<br>Lærlingen <em>skriver.</em></h1>
+    <p class="ingress avslør t2">Diktér fra bilen etter befaringen — få tilbudet, endringsvarselet
+      eller byggedagboka ferdig skrevet før du er hjemme. Norsk fagspråk, NS-frister og
+      forbrukerregler er innebygd.</p>
+    <div class="valg avslør t3">
+      <a class="knapp" href="https://op-bygg-laerling-app.netlify.app/bli-kjent.html?invitasjon=bli-kjent-26">Bli kjent med Lærlingen <span aria-hidden="true">→</span></a>
+      <a class="knapp tynn" href="#jobbene">Se hva den gjør</a>
     </div>
+    <div class="nøkkeltall avslør t3">
+      <div><b>15 min</b>en samtale, så står appen klar</div>
+      <div><b>Samme dag</b>endringsvarsel før NS-fristen løper</div>
+      <div><b>På telefonen</b>alt lagres hos deg, ikke hos oss</div>
+    </div>
+  </div>
 
-    <div class="demo" aria-label="Demonstrasjon: diktert notat blir til ferdig e-post">
-      <div class="demo-bar"><span class="puls" aria-hidden="true"></span>
-        LÆRLING · ARBEIDER AKKURAT NÅ <span style="margin-left:auto">DEMO</span></div>
-      <div class="demo-body">
-        <div class="demo-inn"><span class="merk" id="etikett">Diktert fra bilen · 0:23</span><span id="inn"></span><span class="cursor" id="mark"></span></div>
-        <div class="demo-pil" id="pil">Lærling skriver utkastet</div>
-        <div class="demo-ut" id="ut">
-          <div class="felt">Til: <b>kunde@epost.no</b></div>
-          <div class="felt">Emne: <b>Oppsummering etter befaring — utskifting av vinduer</b></div>
-          <hr>
-          <p>Hei, og takk for hyggelig befaring i dag. Dette ble vi enige om:</p>
-          <ul>
-            <li>Utskifting av 12 vinduer</li>
-            <li>Utbedring av råteskade i to karmer, sørvegg</li>
-            <li>Stillas i ca. én uke</li>
-          </ul>
-          <p>Fastpris-tilbud kommer innen fredag, som avtalt før påske.</p>
-          <p>Mvh Ole Fabian, OP Bygg AS</p>
+  <!-- NARRATIV -->
+  <section id="jobbene" aria-labelledby="jobbene-t">
+    <div class="ramme">
+      <div class="seksjonstopp">
+        <p class="etikett avslør">Fire jobber hver uke</p>
+        <h2 id="jobbene-t" class="avslør t1">Papirarbeidet som spiste søndagene.</h2>
+        <p class="avslør t2">Ingen ny plattform å lære. Du snakker slik du gjør til en kollega på
+          plassen — Lærlingen rydder, skriver og setter norsk fagspråk på det.</p>
+      </div>
+
+      <div class="jobb">
+        <div class="jobb-tekst avslør">
+          <p class="etikett">01 · Befaring</p>
+          <h3>Notatene i bilen blir tilbud</h3>
+          <p>Diktér rått og ustrukturert. Ut kommer oppsummerings-e-post til kunden og internt
+            tilbudsgrunnlag med omfang, forutsetninger og forbehold — inkludert forbehold om
+            skjulte feil i eldre bygg.</p>
+          <p class="detalj">Du leser over og sender selv. Lærlingen sender aldri noe på egen hånd.</p>
         </div>
-        <div class="demo-stempel" id="stempel">✓ UTKAST KLART — DU LESER GJENNOM OG TRYKKER SEND</div>
+        <div class="dok avslør t1">
+          <p class="stempel">TILBUDSGRUNNLAG · UTKAST</p>
+          <p class="dok-t">Utskifting av 12 vinduer — Krohgs gate 60</p>
+          <p>Inkludert: demontering, montering, listverk. Forutsetninger: stillas tilgjengelig
+            uke 21. Forbehold: skjult råte i karmer avdekkes først ved demontering.</p>
+          <div class="strek"></div>
+          <div class="meta"><span>FRA BEFARING 14. MAI</span><span>KLAR TIL Å SENDES</span></div>
+        </div>
+      </div>
+
+      <div class="jobb">
+        <div class="jobb-tekst avslør">
+          <p class="etikett">02 · Endring</p>
+          <h3>Varselet er skrevet før du forlater plassen</h3>
+          <p>NS 8407 krever varsel «uten ugrunnet opphold» — det er dager, ikke uker. Er beløpet
+            ukjent, varsles det nøytralt, med konsekvens for pris og fremdrift når omfanget er avklart.</p>
+          <p class="detalj">Et krav som ikke er varslet, finnes ikke.</p>
+        </div>
+        <div class="dok avslør t1">
+          <p class="stempel">ENDRINGSMELDING · NS 8407</p>
+          <p class="dok-t">Varsel om endring — råteskade sørvegg</p>
+          <p>Det er avdekket råte i to vindusomramminger. Vi varsler herved endringen. Konsekvens
+            for pris og fremdrift følger så snart omfanget er avklart.</p>
+          <div class="strek"></div>
+          <div class="meta"><span>SENDT 14:12</span><span>SAMME DAG</span></div>
+        </div>
+      </div>
+
+      <div class="jobb">
+        <div class="jobb-tekst avslør">
+          <p class="etikett">03 · Timer og dagbok</p>
+          <h3>Store knapper. Én tommel. Ingen dekning nødvendig.</h3>
+          <p>Timeføring med hurtigvalg for prosjekt, og byggedagbok med vær, mannskap, leveranser
+            og hindringer. Kort og faktabasert — dagboka er bevismateriale, ikke markedsføring.</p>
+          <p class="detalj">Alt lagres lokalt på telefonen. Loggen vår får kun hendelsestyper, aldri innhold.</p>
+        </div>
+        <div class="dok avslør t1">
+          <p class="stempel">BYGGEDAGBOK</p>
+          <p class="dok-t">Krohgs gate 60 · 14. mai</p>
+          <p>Mannskap 4. Vindusmontasje 2. etasje. Levering av stillas forsinket 3 timer.
+            Byggherre varslet muntlig kl. 09 om utsatt befaring.</p>
+          <div class="strek"></div>
+          <div class="meta"><span>FØRT 16:40</span><span>LÅST · REV. 1</span></div>
+        </div>
+      </div>
+
+      <div class="jobb">
+        <div class="jobb-tekst avslør">
+          <p class="etikett">04 · Penger og regler</p>
+          <h3>Purretrapp og lov- og regelsjekk</h3>
+          <p>Riktig purretrinn til riktig tid — vennlig påminnelse, varsel om forsinkelsesrente,
+            og inkassovarsel etter inkassoloven § 9. Og spør du «må vi ha rekkverk ved to meter?»,
+            får du svaret med forskrift og paragraf.</p>
+          <p class="detalj">Veiledning om hva regelverket sier — aldri en erstatning for rådgiver.</p>
+        </div>
+        <div class="dok avslør t1">
+          <p class="stempel">PURRING · TRINN 2</p>
+          <p class="dok-t">Faktura 1042 — varsel om forsinkelsesrente</p>
+          <p>Vi viser til faktura 1042, forfalt for 47 dager siden, og tidligere påminnelse. Ved
+            fortsatt manglende betaling beregnes forsinkelsesrente fra forfallsdato.</p>
+          <div class="strek"></div>
+          <div class="meta"><span>47 DAGER OVER</span><span>NESTE TRINN 14. JUNI</span></div>
+        </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<div class="tall">
-  <div class="wrap">
-    <div class="t"><div class="n"><em data-tall="6.5">0</em> t</div><div class="l">Spart per uke — typisk kunde</div></div>
-    <div class="t"><div class="n"><em data-tall="72">0</em> timer</div><div class="l">Til din mulighetsrapport</div></div>
-    <div class="t"><div class="n"><em data-tall="5">0</em> verktøy</div><div class="l">I drift første måned</div></div>
-    <div class="t"><div class="n"><em>0</em> kr</div><div class="l">Før du ser rapporten</div></div>
-  </div>
-</div>
-
-<section id="slik">
-  <div class="wrap">
-    <div class="senter sek-hode avslor">
-      <div class="eyebrow">Slik virker det</div>
-      <h2>Lærlings første arbeidsuke</h2>
-      <p class="lead">Som en ny ansatt — bare raskere. Ingen oppsett, ingen kurs, ingen prompting.</p>
-    </div>
-    <div class="ledning avslor" aria-hidden="true"><i></i></div>
-    <div class="faser">
-      <div class="fase avslor"><div class="tag">FASE 1 · DAG 1–3</div><h3>Undersøker</h3>
-        <p>Leser nettsiden din, offentlige registre og — med din tillatelse — e-post og kalender.
-        Intervjuer deg 20 minutter på vanlig norsk.</p></div>
-      <div class="fase avslor"><div class="tag">FASE 2 · DAG 3–7</div><h3>Lærer</h3>
-        <p>Finner de repetitive oppgavene som stjeler tiden din, og leverer rapporten:
-        «Her er timene jeg kan ta over.»</p></div>
-      <div class="fase avslor"><div class="tag">FASE 3 · UKE 2</div><h3>Bygger</h3>
-        <p>Utvikler skreddersydde verktøy for din bransje — tilbud, booking-svar, purringer,
-        rapporter. Du godkjenner med ett klikk.</p></div>
-      <div class="fase avslor"><div class="tag">FASE 4 · LØPENDE</div><h3>Drifter</h3>
-        <p>Verktøyene kjører automatisk. Lærling overvåker, lærer av hver tilbakemelding og
-        viser deg timene du sparer — hver uke.</p></div>
-    </div>
-  </div>
-</section>
-
-<section style="padding-top:0">
-  <div class="wrap">
-    <div class="senter sek-hode avslor">
-      <div class="eyebrow">Live</div>
-      <h2>Det plassen fører, ser kontoret <span class="grad">i samme sekund.</span></h2>
-    </div>
-    <div class="bransjer">
-      <div class="bransje avslor"><div class="tag">Sanntid</div><h3>Ett lag, ett bilde</h3>
-        <ul><li>Dagbok, avvik og tillegg deles live — ingen ringerunder</li>
-        <li>«Ola · skrev i dagboka · nå nettopp» rett i appen</li>
-        <li>Virker offline — synker når dekningen er tilbake</li></ul></div>
-      <div class="bransje avslor"><div class="tag">Trygghet</div><h3>Sensitivt forblir sensitivt</h3>
-        <ul><li>Timene dine ser bare du og sjefen</li>
-        <li>Økonomi ser bare eieren</li>
-        <li>Håndhevet i databasen — ikke et filter noen kan glemme</li></ul></div>
-      <div class="bransje avslor"><div class="tag">Norsk</div><h3>Data i EU, aldri trening</h3>
-        <ul><li>Norske fagregler innebygd (NS-frister, inkassoloven)</li>
-        <li>Innholdet ditt brukes aldri til å trene AI</li>
-        <li>Slutter du, tar du med deg alt</li></ul></div>
-      <div class="bransje avslor"><div class="tag">Én pris</div><h3>Per bedrift — ikke per hode</h3>
-        <ul><li>Hele laget inkludert</li>
-        <li>Én fanget tilleggsjobb betaler måneden</li>
-        <li>Ingen moduler, ingen kurs, ingen kontor-PC</li></ul></div>
-      <div class="bransje avslor"><div class="tag">Bevis</div><h3>Prosjektrommet: alt blir dokumentasjon</h3>
-        <ul><li>Dagbok, varsler og tillegg samles per prosjekt — automatisk</li>
-        <li>Bevisdokument på ett trykk: kronologisk, med navn og tidsstempel</li>
-        <li>Linjer slettes aldri — rettelser har åpent versjonsspor</li></ul></div>
-      <div class="bransje avslor"><div class="tag">Rapport</div><h3>Ukesrapporten skriver seg selv</h3>
-        <ul><li>Sys av ukens ekte registreringer — aldri diktet fremdrift</li>
-        <li>Én variant til byggherren, én intern med timer og tillegg</li>
-        <li>Du leser over og sender — appen sender aldri selv</li></ul></div>
-    </div>
-  </div>
-</section>
-
-<section style="padding-top:0">
-  <div class="wrap">
-    <div class="senter sek-hode avslor">
-      <div class="eyebrow">Bransjer</div>
-      <h2>Kan bransjen din fra dag én. <span class="grad">Lærer din måte å drive den på.</span></h2>
-    </div>
-    <div class="bransjer">
-      <div class="bransje avslor"><div class="tag">Håndverk &amp; bygg</div><h3>Fra byggeplass til innboks</h3>
-        <ul><li>Tilbud fra befaringsnotater</li><li>Endringsmelding samme dag — før NS-fristen løper ut</li><li>Byggedagbok og ukesrapport på autopilot</li></ul></div>
-      <div class="bransje avslor"><div class="tag">Klinikk &amp; salong</div><h3>Full timebok, mindre tast</h3>
-        <ul><li>Booking-svar døgnet rundt</li><li>Fyller avbestilte timer</li><li>Journal- og notatutkast</li></ul></div>
-      <div class="bransje avslor"><div class="tag">Butikk &amp; netthandel</div><h3>Selg mer, skriv mindre</h3>
-        <ul><li>Produkttekster i din tone</li><li>Kundeservice-utkast</li><li>Lager- og trendvarsler</li></ul></div>
-      <div class="bransje avslor"><div class="tag">Regnskap &amp; rådgivning</div><h3>Klientene føler seg fulgt opp</h3>
-        <ul><li>Bilagspurring til klienter</li><li>Fristvarsler</li><li>Klientoppsummeringer</li></ul></div>
-    </div>
-  </div>
-</section>
-
-<section id="pris" style="padding-top:0">
-  <div class="wrap">
-    <div class="senter sek-hode avslor">
-      <div class="eyebrow">Pris</div>
-      <h2>Mindre enn én ansatt-time om dagen</h2>
-      <p class="lead">Alle nivåer starter med gratis undersøkelse og mulighetsrapport. Ingen binding.</p>
-    </div>
-    <div class="planer">
-      <div class="plan avslor">
-        <h3>Start</h3><div class="pris">1 990</div><div class="per">KR / MND · EKS. MVA</div>
-        <ul><li>2 aktive AI-verktøy</li><li>Bedriftsprofil og læring</li><li>Ukentlig rapport</li><li>2 integrasjoner</li></ul>
-        <a class="btn ghost cta-epost" data-emne="Lærling Start — jeg vil ha mulighetsrapporten" href="#">Kom i gang</a>
+  <!-- MONEY-SHOT -->
+  <section id="appen" aria-labelledby="appen-t">
+    <div class="ramme">
+      <div class="seksjonstopp">
+        <p class="etikett avslør">Appen</p>
+        <h2 id="appen-t" class="avslør t1">Hele dagen på én skjerm.</h2>
       </div>
-      <div class="plan hoved avslor">
-        <div class="merke">Mest valgt</div>
-        <h3>Vekst</h3><div class="pris">3 990</div><div class="per">KR / MND · EKS. MVA</div>
-        <ul><li>6 aktive AI-verktøy</li><li>Autopilot per verktøy</li><li>Månedlige verktøyforslag</li><li>6 integrasjoner</li><li>Onboarding med menneske</li></ul>
-        <a class="btn cta-epost" data-emne="Lærling Vekst — jeg vil ha mulighetsrapporten" href="#">Kom i gang</a>
-      </div>
-      <div class="plan avslor">
-        <h3>Pro</h3><div class="pris">8 990</div><div class="per">KR / MND · EKS. MVA</div>
-        <ul><li>Ubegrensede verktøy</li><li>Full autopilot</li><li>Skreddersydde verktøy</li><li>Dedikert rådgiver</li></ul>
-        <a class="btn ghost cta-epost" data-emne="Lærling Pro — fortell meg mer" href="#">Kontakt oss</a>
+      <div class="flate-vis">
+        <div class="telefon avslør t1">
+          <div class="skjerm">
+            <div class="sk-topp"><span>LÆRLING</span><span class="puls" aria-hidden="true"></span></div>
+            <p class="sk-tittel">I dag</p>
+            <div class="sk-kort"><p class="m">TILBUD · KROHGS GATE 60</p>
+              <p class="t">Utskifting av 12 vinduer</p><p class="u">Utkast klart — les over før du sender</p></div>
+            <div class="sk-kort"><p class="m">ENDRINGSMELDING</p>
+              <p class="t">Råteskade i sørvegg</p><p class="u">Varsel sendt 14:12 · samme dag</p></div>
+            <div class="sk-kort"><p class="m">TIMER</p>
+              <p class="t">7,5 t · Krohgs gate</p><p class="u">Uka: 32,5 t</p></div>
+            <div class="sk-kort"><p class="m">LOV OG REGEL</p>
+              <p class="t">«Rekkverk ved to meter?»</p><p class="u">Svar med forskrift og paragraf</p></div>
+            <div class="sk-kort"><p class="m">PURRING</p>
+              <p class="t">Faktura 1042 · 47 dager</p><p class="u">Trinn 2 foreslått</p></div>
+          </div>
+        </div>
+        <div>
+          <div class="flate-punkt avslør"><i aria-hidden="true"></i>
+            <p><b>Legges på hjemskjermen.</b> Ingen app-butikk, ingen installasjon, ingen opplæring —
+              den åpner som en vanlig app og virker uten dekning.</p></div>
+          <div class="flate-punkt avslør t1"><i aria-hidden="true"></i>
+            <p><b>Mikrofonen er ekte.</b> Trykk, snakk rett fram, velg hva det skal bli. Talen gjøres
+              om til tekst av telefonen din — ikke av oss.</p></div>
+          <div class="flate-punkt avslør t2"><i aria-hidden="true"></i>
+            <p><b>Bygget på innspill fra plassen.</b> Send et forslag i appen, og det er ofte bygget
+              til neste morgen. Slik ble både timeføringen og lov- og regelsjekken til.</p></div>
+          <div class="flate-punkt avslør t3"><i aria-hidden="true"></i>
+            <p><b>Hele laget inkludert.</b> Prisen er per bedrift — ikke per hode. Én fanget
+              tilleggsjobb betaler måneden.</p></div>
+        </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section style="padding-top:0">
-  <div class="wrap">
-    <div class="senter sek-hode avslor">
-      <div class="eyebrow">Trygghet</div>
-      <h2>Bygget for norske bedrifter</h2>
+  <!-- BEVIS -->
+  <section id="beviset" aria-labelledby="beviset-t">
+    <div class="ramme bevis">
+      <div>
+        <p class="etikett avslør">Tidsnære notater vinner tvister</p>
+        <h2 id="beviset-t" class="avslør t1">I en tvist er det ikke hvem som har rett.
+          Det er hvem som skrev det ned.</h2>
+        <p class="brød avslør t2">Norske domstoler legger vekt på <b>tidsnære nedtegnelser</b> —
+          det som ble skrevet da det skjedde, ikke det som ble husket etterpå. Problemet er at ingen
+          orker å skrive dagbok klokka fem på en fredag. Lærling løser det ved å la deg si det høyt
+          i stedet — og datostempler resten.</p>
+        <div class="valg avslør t3" style="margin-top:var(--r-6)">
+          <a class="knapp" href="https://op-bygg-laerling-app.netlify.app/bli-kjent.html?invitasjon=bli-kjent-26">Bli kjent — 15 min</a>
+        </div>
+      </div>
+      <div class="scene avslør t1">
+        <div class="stabel" id="stabel">
+          <div class="dok d1"><p class="stempel">ENDRINGSMELDING · NS 8407</p>
+            <p class="dok-t">Varsel om endring — råteskade sørvegg</p>
+            <p>Vi varsler herved endringen. Konsekvens for pris og fremdrift følger så snart
+              omfanget er avklart.</p>
+            <div class="strek"></div>
+            <div class="meta"><span>SENDT 14:12</span><span>SAMME DAG</span></div></div>
+          <div class="dok d2"><p class="stempel">BYGGEDAGBOK</p>
+            <p class="dok-t">Krohgs gate 60 · 14. mai</p>
+            <p>Mannskap 4. Stillas forsinket 3 t. Byggherre varslet muntlig kl. 09.</p>
+            <div class="strek"></div>
+            <div class="meta"><span>LÅST</span><span>REV. 1</span></div></div>
+          <div class="dok d3"><p class="stempel">TIMELISTE · UKE 20</p>
+            <p class="dok-t">32,5 timer fordelt på to prosjekter</p>
+            <p>Klar til fakturagrunnlag, med notat per dag.</p>
+            <div class="strek"></div>
+            <div class="meta"><span>KOPIERT</span><span>14. MAI</span></div></div>
+        </div>
+      </div>
     </div>
-    <div class="trygg">
-      <div class="avslor">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"></path></svg>
-        <h3>Data i EØS</h3><p>All data lagres i Europa. Databehandleravtale følger med.</p></div>
-      <div class="avslor">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>
-        <h3>Du ser alt</h3><p>Full logg over alt Lærling gjør — og hvorfor den gjorde det.</p></div>
-      <div class="avslor">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13l5 5L20 7"></path></svg>
-        <h3>Du godkjenner</h3><p>Ingenting sendes uten ditt ja — til du selv skrur på autopilot.</p></div>
-      <div class="avslor">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7V4h6v3M7 7h10l1 13H6z"></path></svg>
-        <h3>Angre når som helst</h3><p>Koble fra alle tilganger med ett klikk. Dine data slettes.</p></div>
-    </div>
-  </div>
-</section>
+  </section>
 
-<section class="slutt">
-  <div class="wrap avslor">
-    <div class="eyebrow">Gratis · uforpliktende</div>
-    <h2>Få mulighetsrapporten. <span class="grad">Innen 72 timer.</span></h2>
-    <p class="lead">Lærling undersøker bedriften din og viser deg nøyaktig hvilke timer den kan
-    ta over — før du betaler en krone.</p>
-    <a class="btn cta-epost" data-emne="Start undersøkelsen av bedriften min" href="#">Start undersøkelsen</a>
-  </div>
-</section>
+  <!-- TILLIT -->
+  <section id="tillit" aria-labelledby="tillit-t">
+    <div class="ramme">
+      <div class="seksjonstopp">
+        <p class="etikett avslør">Trygghet</p>
+        <h2 id="tillit-t" class="avslør t1">Vi kan ikke miste det vi ikke har.</h2>
+      </div>
+      <div class="tillit">
+        <div class="avslør"><p class="t">LOKAL-FØRST</p><h3>Data på din telefon</h3>
+          <p>Timer, utkast og fakturaer lagres lokalt. Det finnes ingen server som lagrer
+            prosjektdataene dine.</p></div>
+        <div class="avslør t1"><p class="t">GJENNOMSTRØMMING</p><h3>Tekst som ikke blir liggende</h3>
+          <p>Dikteringen sendes kryptert kun når du trykker — den lagres ingen steder og brukes
+            aldri til trening.</p></div>
+        <div class="avslør t2"><p class="t">NORSKE REGLER</p><h3>NS og forbrukervern</h3>
+          <p>Skiller proffkunde (NS 8407/8405) fra forbruker (bustadoppføringslova,
+            håndverkertjenesteloven) — automatisk.</p></div>
+        <div class="avslør t3"><p class="t">DITT ARKIV</p><h3>Slutter du, tar du alt med</h3>
+          <p>Full eksport når som helst. Ingen innlåsing, ingen oppsigelsestid på dataene dine.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRIS -->
+  <section id="priser" aria-labelledby="priser-t">
+    <div class="ramme">
+      <div class="seksjonstopp">
+        <p class="etikett avslør">Pris per bedrift</p>
+        <h2 id="priser-t" class="avslør t1">Hele laget inkludert. Alltid.</h2>
+        <p class="avslør t2">Ingen lisens per ansatt, ingen moduler, ingen kursavgift.
+          Månedlig, uten bindingstid.</p>
+      </div>
+      <div class="priser">
+        <div class="plan avslør">
+          <p class="navn">Start</p><p class="pris">1 990</p><p class="per">KR / MND · EKS. MVA</p>
+          <ul><li>To aktive verktøy</li><li>Bedriftsprofil og skrivestil</li>
+            <li>Ukentlig oppsummering</li><li>Support på e-post</li></ul>
+          <a class="knapp tynn" href="https://op-bygg-laerling-app.netlify.app/bli-kjent.html?invitasjon=bli-kjent-26">Kom i gang</a>
+        </div>
+        <div class="plan valgt avslør t1">
+          <p class="navn">Vekst · mest valgt</p><p class="pris">3 990</p><p class="per">KR / MND · EKS. MVA</p>
+          <ul><li>Alle verktøy</li><li>Nye verktøy bygget på innspillene deres</li>
+            <li>Oppsett med menneske</li><li>Prioritert support</li></ul>
+          <a class="knapp" href="https://op-bygg-laerling-app.netlify.app/bli-kjent.html?invitasjon=bli-kjent-26">Kom i gang</a>
+        </div>
+        <div class="plan avslør t2">
+          <p class="navn">Pro</p><p class="pris">8 990</p><p class="per">KR / MND · EKS. MVA</p>
+          <ul><li>Skreddersydde verktøy</li><li>Integrasjon mot regnskap</li>
+            <li>Egen rådgiver</li><li>Data hos dere om dere vil</li></ul>
+          <a class="knapp tynn" href="https://op-bygg-laerling-app.netlify.app/bli-kjent.html?invitasjon=bli-kjent-26">Ta kontakt</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AVSLUTNING -->
+  <section class="slutt" aria-labelledby="slutt-t">
+    <div class="ramme">
+      <p class="etikett avslør">Neste steg</p>
+      <h2 id="slutt-t" class="avslør t1">Prat i et kvarter. Så står appen klar.</h2>
+      <p class="ingress avslør t2">Lærlingen intervjuer deg om firmaet — du kan snakke i stedet for
+        å skrive. Dagen etter er appen satt opp med deres navn, deres måte å skrive på og verktøyene
+        dere faktisk trenger.</p>
+      <div class="valg avslør t3" style="justify-content:center">
+        <a class="knapp" href="https://op-bygg-laerling-app.netlify.app/bli-kjent.html?invitasjon=bli-kjent-26">Start «Bli kjent» <span aria-hidden="true">→</span></a>
+      </div>
+      <!-- Netlify Forms: skjult statisk skjema for deteksjon, sending via JS -->
+      <form name="interesse" netlify netlify-honeypot="bot-felt" hidden>
+        <input type="email" name="epost"><input name="bot-felt">
+      </form>
+      <form id="interesse-skjema" novalidate>
+        <label class="skjult-visuelt" for="epost">E-postadresse</label>
+        <input id="epost" name="epost" type="email" required autocomplete="email"
+          placeholder="Eller legg igjen e-posten din">
+        <button class="knapp tynn" type="submit">Send meg en oppsummering</button>
+      </form>
+      <p class="kvittering" id="kvittering" role="status"></p>
+      <p class="finskrift avslør">Ingen forpliktelser · vi ringer ikke uoppfordret · svar innen ett døgn</p>
+    </div>
+  </section>
+</main>
 
 <footer>
-  <div class="wrap">LÆRLING · UTVIKLES SAMMEN MED PILOTKUNDER I BYGGEBRANSJEN · PROTOTYPE — IKKE LANSERT TJENESTE · DEMOEN ER ILLUSTRATIV</div>
+  <div class="ramme">
+    <span>© 2026 Lærling · utviklet med OP Bygg AS</span>
+    <span><a href="https://op-bygg-laerling-app.netlify.app/bli-kjent.html?invitasjon=bli-kjent-26">Bli kjent</a> · <a href="#priser">Priser</a> ·
+      <a href="mailto:jonathan.foss@eikandfriends.no">jonathan.foss@eikandfriends.no</a></span>
+  </div>
 </footer>
 
 <script>
 (function(){
-  /* KONTAKT: bytt til firmaadressen når den er klar */
-  var KONTAKT = "jonathan.foss@eikandfriends.no";
-  document.querySelectorAll(".cta-epost").forEach(function(a){
-    a.href = "mailto:" + KONTAKT
-      + "?subject=" + encodeURIComponent(a.dataset.emne || "Lærling — jeg vil vite mer")
-      + "&body=" + encodeURIComponent("Hei!\n\nBedriften min: \nNettside: \nTelefon: \n\nMvh ");
+  "use strict";
+  var stille = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ── 1. Avsløringer: IntersectionObserver (ikke scroll-bibliotek) ── */
+  var mål = document.querySelectorAll(".avslør");
+  if(!("IntersectionObserver" in window) || stille){
+    Array.prototype.forEach.call(mål, function(e){ e.classList.add("inne"); });
+  } else {
+    var io = new IntersectionObserver(function(rader){
+      rader.forEach(function(r){ if(r.isIntersecting){ r.target.classList.add("inne"); io.unobserve(r.target); } });
+    }, { rootMargin: "0px 0px -12% 0px", threshold: .12 });
+    Array.prototype.forEach.call(mål, function(e){ io.observe(e); });
+  }
+
+  /* ── 2. Topplinja fortettes ved scroll ── */
+  var head = document.getElementById("topp"), sist = -1;
+  addEventListener("scroll", function(){
+    var på = scrollY > 24;
+    if(på !== sist){ head.classList.toggle("tett", på); sist = på; }
+  }, { passive: true });
+
+  /* ── 3. Dokumentstabelen vipper mot pekeren (dempet, fysisk) ── */
+  var stabel = document.getElementById("stabel");
+  if(stabel && !stille){
+    var rx = 6, ry = -10, mrx = 6, mry = -10, kjører = false;
+    addEventListener("pointermove", function(e){
+      mry = -10 + (e.clientX / innerWidth - .5) * 20;
+      mrx = 6 - (e.clientY / innerHeight - .5) * 12;
+      if(!kjører){ kjører = true; requestAnimationFrame(vipp); }
+    }, { passive: true });
+    var vipp = function(){
+      rx += (mrx - rx) * .055; ry += (mry - ry) * .055;
+      stabel.style.transform = "rotateX(" + rx.toFixed(2) + "deg) rotateY(" + ry.toFixed(2) + "deg)";
+      if(Math.abs(mrx - rx) > .01 || Math.abs(mry - ry) > .01) requestAnimationFrame(vipp); else kjører = false;
+    };
+  }
+
+  /* ── 4. Skjemaet: Netlify Forms, ingen lagring i nettleseren ── */
+  var skjema = document.getElementById("interesse-skjema"),
+      kvitt = document.getElementById("kvittering");
+  if(skjema) skjema.addEventListener("submit", function(e){
+    e.preventDefault();
+    var felt = document.getElementById("epost"), verdi = (felt.value || "").trim();
+    if(!verdi || verdi.indexOf("@") < 1){ kvitt.textContent = "Skriv en gyldig e-postadresse."; felt.focus(); return; }
+    var knapp = skjema.querySelector("button");
+    knapp.disabled = true; knapp.textContent = "Sender …";
+    var kropp = "form-name=interesse&epost=" + encodeURIComponent(verdi);
+    fetch("/", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: kropp })
+      .then(function(svar){
+        if(!svar.ok) throw new Error(svar.status);
+        skjema.style.display = "none";
+        kvitt.textContent = "✓ Takk! Du hører fra oss innen ett døgn.";
+      })
+      .catch(function(){
+        knapp.disabled = false; knapp.textContent = "Send meg en oppsummering";
+        kvitt.textContent = "Fikk ikke sendt — prøv igjen, eller send e-post til jonathan.foss@eikandfriends.no";
+      });
   });
 
-  var redusert = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if("IntersectionObserver" in window && !redusert){
-    document.documentElement.classList.add("js");
-  }
-
-  /* ── nettverket som lærer: hero-canvas med signalpulser ── */
-  var lerret = document.getElementById("nett");
-  if(lerret && lerret.getContext && !redusert){
-    var ctx = lerret.getContext("2d"), DPR = Math.min(window.devicePixelRatio || 1, 2),
-        W = 0, H = 0, pulser = [], mus = {x:-9999, y:-9999}, synligNett = true,
-        N = innerWidth < 700 ? 40 : 70, pkt = [];
-    function dim(){
-      var r = lerret.getBoundingClientRect(); W = r.width; H = r.height;
-      lerret.width = W * DPR; lerret.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  /* ── 5. Nordlyset: sanntids GLSL, robust mot manglende WebGL ── */
+  (function(){
+    var c = document.getElementById("nordlys"), gl = null;
+    function reserve(){
+      if(c) c.remove();
+      var d = document.createElement("div"); d.className = "nordlys-reserve"; d.setAttribute("aria-hidden","true");
+      document.body.insertBefore(d, document.body.firstChild);
     }
-    dim(); addEventListener("resize", dim);
-    for(var i = 0; i < N; i++) pkt.push({
-      x: Math.random() * innerWidth, y: Math.random() * 700,
-      vx: (Math.random() - .5) * .3, vy: (Math.random() - .5) * .3,
-      r: 1 + Math.random() * 1.7, c: Math.random() < .5 ? "57,226,155" : "47,196,217"
-    });
-    var hero = document.querySelector(".hero");
-    hero.addEventListener("pointermove", function(e){
-      var b = lerret.getBoundingClientRect();
-      mus.x = e.clientX - b.left; mus.y = e.clientY - b.top;
-    });
-    hero.addEventListener("pointerleave", function(){ mus.x = -9999; mus.y = -9999; });
-    new IntersectionObserver(function(o){ synligNett = o[0].isIntersecting; }, {threshold: 0}).observe(lerret);
-    setInterval(function(){
-      if(!synligNett || document.hidden || pulser.length > 2) return;
-      var a = pkt[Math.floor(Math.random() * N)], b = null, best = 150 * 150;
-      pkt.forEach(function(p){ if(p === a) return;
-        var d = (p.x - a.x) * (p.x - a.x) + (p.y - a.y) * (p.y - a.y);
-        if(d < best){ best = d; b = p; } });
-      if(b) pulser.push({a: a, b: b, t: 0});
-    }, 900);
-    (function tegn(){
+    try { gl = c.getContext("webgl", { antialias:false, alpha:false, powerPreference:"low-power" })
+              || c.getContext("experimental-webgl"); } catch(e){ gl = null; }
+    if(!gl){ reserve(); return; }
+
+    var vs = "attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}";
+    var fs = "precision highp float;uniform vec2 r;uniform float t;uniform vec2 m;" +
+      "float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}" +
+      "float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);" +
+      "return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}" +
+      "float fbm(vec2 p){float s=0.,a=.5;for(int i=0;i<5;i++){s+=a*noise(p);p*=2.03;a*=.5;}return s;}" +
+      "float band(vec2 uv,float off,float sp,float th){" +
+      "float w=fbm(vec2(uv.x*1.6+t*sp,off))*.55+fbm(vec2(uv.x*3.4-t*sp*.6,off+9.))*.22;" +
+      "float y=off*.10+w-.42+m.y*.05;return th/(abs(uv.y-y)*32.+th*1.5);}" +
+      "void main(){vec2 uv=gl_FragCoord.xy/r.xy;uv.y=1.-uv.y;uv.x*=r.x/r.y;" +
+      "float b1=band(uv,1.6,.042,.46),b2=band(uv,2.9,.030,.30),b3=band(uv,4.4,.021,.18);" +
+      "vec3 col=vec3(0.);col+=vec3(.22,.89,.61)*b1*.44;col+=vec3(.18,.77,.85)*b2*.26;" +
+      "col+=vec3(.24,.48,.98)*b3*.15;" +
+      "float g=exp(-length(uv-vec2(.5*r.x/r.y+m.x*.10,.06))*2.9);col+=vec3(.07,.30,.25)*g*.30;" +
+      "col*=smoothstep(.92,.02,uv.y);col+=vec3(.010,.020,.024);gl_FragColor=vec4(col,1.);}";
+
+    function lagShader(type, kilde){
+      var s = gl.createShader(type); gl.shaderSource(s, kilde); gl.compileShader(s);
+      return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null;
+    }
+    var v = lagShader(gl.VERTEX_SHADER, vs), f = lagShader(gl.FRAGMENT_SHADER, fs);
+    if(!v || !f){ reserve(); return; }
+    var pr = gl.createProgram(); gl.attachShader(pr, v); gl.attachShader(pr, f); gl.linkProgram(pr);
+    if(!gl.getProgramParameter(pr, gl.LINK_STATUS)){ reserve(); return; }
+    gl.useProgram(pr);
+
+    var buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+    var lp = gl.getAttribLocation(pr, "p"); gl.enableVertexAttribArray(lp);
+    gl.vertexAttribPointer(lp, 2, gl.FLOAT, false, 0, 0);
+    var ur = gl.getUniformLocation(pr, "r"), ut = gl.getUniformLocation(pr, "t"), um = gl.getUniformLocation(pr, "m");
+
+    var mx = 0, my = 0, tx = 0, ty = 0, synlig = true, kjører = false, t0 = performance.now();
+    function størrelse(){
+      var d = Math.min(window.devicePixelRatio || 1, 2);       /* tak på 2 */
+      c.width = Math.floor(innerWidth * d); c.height = Math.floor(innerHeight * d);
+      c.style.width = innerWidth + "px"; c.style.height = innerHeight + "px";
+      gl.viewport(0, 0, c.width, c.height);
+    }
+    addEventListener("resize", størrelse, { passive: true }); størrelse();
+    addEventListener("pointermove", function(e){
+      tx = (e.clientX / innerWidth - .5) * 2; ty = (e.clientY / innerHeight - .5) * 2;
+    }, { passive: true });
+
+    function tegn(n){
+      kjører = true;
+      mx += (tx - mx) * .045; my += (ty - my) * .045;          /* damping, ikke lineær */
+      gl.uniform2f(ur, c.width, c.height);
+      gl.uniform1f(ut, stille ? 12 : (n - t0) / 1000);
+      gl.uniform2f(um, mx, my);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      if(stille || !synlig){ kjører = false; return; }          /* pause utenfor viewport */
       requestAnimationFrame(tegn);
-      if(!synligNett || document.hidden) return;
-      ctx.clearRect(0, 0, W, H);
-      for(var i = 0; i < N; i++){
-        var p = pkt[i];
-        p.x += p.vx; p.y += p.vy;
-        if(p.x < 0) p.x = W; if(p.x > W) p.x = 0;
-        if(p.y < 0) p.y = H; if(p.y > H) p.y = 0;
-        for(var j = i + 1; j < N; j++){
-          var q = pkt[j], dx = p.x - q.x, dy = p.y - q.y, d = Math.sqrt(dx*dx + dy*dy);
-          if(d < 120){
-            ctx.strokeStyle = "rgba(97,210,190," + (.3 * (1 - d/120)) + ")";
-            ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke();
-          }
-        }
-        var mdx = p.x - mus.x, mdy = p.y - mus.y, md = Math.sqrt(mdx*mdx + mdy*mdy);
-        if(md < 170 && md > 1){
-          ctx.strokeStyle = "rgba(57,226,155," + (.5 * (1 - md/170)) + ")";
-          ctx.lineWidth = 1.2;
-          ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(mus.x, mus.y); ctx.stroke();
-          p.x -= mdx / md * .18; p.y -= mdy / md * .18;
-        }
-        ctx.fillStyle = "rgba(" + p.c + ",.75)";
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill();
-      }
-      for(var k = pulser.length - 1; k >= 0; k--){
-        var u = pulser[k]; u.t += .02;
-        if(u.t >= 1){ pulser.splice(k, 1); continue; }
-        var x = u.a.x + (u.b.x - u.a.x) * u.t, y = u.a.y + (u.b.y - u.a.y) * u.t;
-        ctx.fillStyle = "rgba(57,226,155," + (.15 + .85 * (1 - Math.abs(u.t - .5) * 2)) + ")";
-        ctx.shadowColor = "rgba(57,226,155,.9)"; ctx.shadowBlur = 10;
-        ctx.beginPath(); ctx.arc(x, y, 2.4, 0, 7); ctx.fill();
-        ctx.shadowBlur = 0;
-      }
-    })();
-  }
-
-  /* ── hero-demo: veksler mellom bransje-scenarioer ── */
-  var scener = [
-    { merk: "Diktert fra bilen · 0:23",
-      raw: "eh, befaring hos Berg i dag… bytte tolv vinduer, fant råte i to karmer på sørveggen, trenger stillas ca en uke… kunden vil ha fastpris før påske…",
-      ut: '<div class="felt">Til: <b>kunde@epost.no</b></div><div class="felt">Emne: <b>Oppsummering etter befaring — utskifting av vinduer</b></div><hr><p>Hei, og takk for hyggelig befaring i dag. Dette ble vi enige om:</p><ul><li>Utskifting av 12 vinduer</li><li>Utbedring av råteskade i to karmer, sørvegg</li><li>Stillas i ca. én uke</li></ul><p>Fastpris-tilbud kommer innen fredag, som avtalt før påske.</p><p>Mvh Ole Fabian, OP Bygg AS</p>',
-      stempel: "✓ UTKAST KLART — DU LESER GJENNOM OG TRYKKER SEND" },
-    { merk: "Diktert mellom to kunder · 0:11",
-      raw: "Marte avlyste torsdag klokka to… send melding til de tre på ventelista og tilby timen, første som svarer får den…",
-      ut: '<div class="felt">SMS til: <b>3 kunder på venteliste</b></div><hr><p>Hei! Det ble akkurat ledig en time hos oss torsdag kl. 14.00. Første som svarer JA får timen.</p><p>Hilsen oss i salongen</p>',
-      stempel: "✓ TIMEN BLE FYLT PÅ 4 MINUTTER" }
-  ];
-  var inn = document.getElementById("inn"), mark = document.getElementById("mark"),
-      pil = document.getElementById("pil"), ut = document.getElementById("ut"),
-      stempel = document.getElementById("stempel"), etikett = document.getElementById("etikett"),
-      scene = 0;
-  function spillDemo(){
-    var sc = scener[scene]; scene = (scene + 1) % scener.length;
-    etikett.textContent = sc.merk; ut.innerHTML = sc.ut; stempel.textContent = sc.stempel;
-    inn.textContent = ""; mark.style.display = "inline-block";
-    pil.classList.remove("vis"); ut.classList.remove("vis"); stempel.classList.remove("vis");
-    var i = 0;
-    (function skriv(){
-      if(i <= sc.raw.length){
-        inn.textContent = sc.raw.slice(0, i); i += 2;
-        setTimeout(skriv, 34);
-      } else {
-        inn.textContent = sc.raw;
-        mark.style.display = "none";
-        setTimeout(function(){ pil.classList.add("vis"); }, 350);
-        setTimeout(function(){ ut.classList.add("vis"); }, 1100);
-        setTimeout(function(){ stempel.classList.add("vis"); }, 1900);
-        setTimeout(spillDemo, 10000);
-      }
-    })();
-  }
-  if(redusert){
-    inn.textContent = scener[0].raw; mark.style.display = "none";
-    pil.classList.add("vis"); ut.classList.add("vis"); stempel.classList.add("vis");
-  } else { spillDemo(); }
-
-  /* ── 3D-tilt på demo-panelet ── */
-  var demo = document.querySelector(".demo");
-  if(demo && !redusert){
-    demo.addEventListener("pointermove", function(e){
-      var b = demo.getBoundingClientRect(),
-          rx = ((e.clientY - b.top) / b.height - .5) * -5,
-          ry = ((e.clientX - b.left) / b.width - .5) * 7;
-      demo.style.transform = "perspective(900px) rotateX(" + rx + "deg) rotateY(" + ry + "deg)";
-    });
-    demo.addEventListener("pointerleave", function(){ demo.style.transform = ""; });
-  }
-
-  /* ── lysflekk som følger pekeren over kort ── */
-  if(!redusert){
-    document.querySelectorAll(".fase,.bransje,.plan,.trygg > div").forEach(function(k){
-      k.addEventListener("pointermove", function(e){
-        var b = k.getBoundingClientRect();
-        k.style.setProperty("--mx", (e.clientX - b.left) + "px");
-        k.style.setProperty("--my", (e.clientY - b.top) + "px");
-      });
-    });
-  }
-
-  /* telleverk i tall-stripen */
-  function tell(el){
-    var mål = parseFloat(el.getAttribute("data-tall")), desimal = mål % 1 !== 0,
-        start = null;
-    function steg(t){
-      if(!start) start = t;
-      var p = Math.min((t - start) / 1200, 1), eased = 1 - Math.pow(1 - p, 3),
-          v = mål * eased;
-      el.textContent = desimal ? v.toFixed(1).replace(".", ",") : Math.round(v);
-      if(p < 1) requestAnimationFrame(steg);
     }
-    requestAnimationFrame(steg);
-  }
+    requestAnimationFrame(tegn);
 
-  /* scroll-avsløring + tall */
-  var io = new IntersectionObserver(function(oppf){
-    oppf.forEach(function(o){
-      if(o.isIntersecting){
-        o.target.classList.add("inne");
-        o.target.querySelectorAll("[data-tall]").forEach(function(el){
-          if(!el.dataset.telt){ el.dataset.telt = "1"; redusert ?
-            el.textContent = el.getAttribute("data-tall").replace(".", ",") : tell(el); }
-        });
-        io.unobserve(o.target);
-      }
+    /* pause render-løkka når heltebildet er ute av syne */
+    if("IntersectionObserver" in window){
+      var vakt = new IntersectionObserver(function(rader){
+        synlig = rader[0].isIntersecting;
+        if(synlig && !kjører && !stille) requestAnimationFrame(tegn);
+      }, { threshold: 0 });
+      vakt.observe(document.querySelector(".hero"));
+    }
+    addEventListener("visibilitychange", function(){
+      synlig = !document.hidden;
+      if(synlig && !kjører && !stille) requestAnimationFrame(tegn);
     });
-  }, {threshold:.2});
-  document.querySelectorAll(".avslor, .tall").forEach(function(el){ io.observe(el); });
+    c.addEventListener("webglcontextlost", function(e){ e.preventDefault(); synlig = false; reserve(); });
+  })();
 })();
 </script>
-
 </body>
 </html>

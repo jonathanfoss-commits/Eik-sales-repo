@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="nb"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Utkast 3 — Stemmen</title>
+<style>
+:root{--bunn:#0B0C0B;--lys:#F1EEE7;--dis:#8E8C84;--akse:#E3B15C;--strek:rgba(240,235,225,.11);
+--sans:-apple-system,"Segoe UI",system-ui,Inter,sans-serif;--mono:"SF Mono",ui-monospace,Menlo,monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bunn);color:var(--lys);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+.grain{position:fixed;inset:0;z-index:5;pointer-events:none;opacity:.04;mix-blend-mode:overlay;
+background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='130' height='130'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9'/%3E%3C/filter%3E%3Crect width='130' height='130' filter='url(%23n)'/%3E%3C/svg%3E")}
+canvas#felt{position:fixed;inset:0;z-index:0;display:block}
+main{position:relative;z-index:2}
+.wrap{max-width:1120px;margin:0 auto;padding:0 34px}
+nav{display:flex;justify-content:space-between;align-items:center;height:80px;font-size:.88rem}
+.logo{font-weight:600;letter-spacing:-.02em;font-size:1.05rem}.logo b{color:var(--akse)}
+nav a{color:var(--dis);text-decoration:none;margin-left:26px}
+.hero{min-height:90vh;display:flex;flex-direction:column;justify-content:center;text-align:center;align-items:center;padding:30px 0 80px}
+.merke{font-family:var(--mono);font-size:.66rem;letter-spacing:.3em;text-transform:uppercase;color:var(--akse)}
+h1{font-size:clamp(2.6rem,8vw,6.8rem);line-height:.95;letter-spacing:-.05em;font-weight:500;margin:30px 0 0;max-width:14ch}
+.ingress{margin-top:28px;font-size:clamp(1rem,1.3vw,1.18rem);color:var(--dis);max-width:50ch;line-height:1.62}
+.sitat{margin-top:56px;font-family:var(--mono);font-size:.82rem;color:var(--lys);letter-spacing:-.01em;
+border-left:2px solid var(--akse);padding:6px 0 6px 18px;text-align:left;max-width:52ch;opacity:0;animation:inn 1s .5s forwards}
+.sitat span{color:var(--dis)}
+@keyframes inn{to{opacity:1}}
+.cta{display:flex;gap:14px;margin-top:46px;flex-wrap:wrap;justify-content:center}
+.knapp{padding:15px 30px;border-radius:100px;background:var(--akse);color:#1A1204;text-decoration:none;font-size:.95rem;font-weight:600;
+transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
+.knapp:hover{transform:translateY(-2px);box-shadow:0 16px 46px rgba(227,177,92,.24)}
+.knapp.tynn{background:none;color:var(--lys);border:1px solid var(--strek);font-weight:500}
+section{padding:110px 0 130px;border-top:1px solid var(--strek);background:linear-gradient(180deg,rgba(11,12,11,.4),rgba(11,12,11,.92))}
+h2{font-size:clamp(1.9rem,3.6vw,2.9rem);font-weight:500;letter-spacing:-.035em;max-width:18ch;line-height:1.1}
+.steg{display:grid;grid-template-columns:repeat(3,1fr);gap:34px;margin-top:60px}
+.boks{border:1px solid var(--strek);border-radius:18px;padding:28px 26px 32px;background:rgba(255,255,255,.018)}
+.boks .nr{font-family:var(--mono);font-size:.64rem;letter-spacing:.22em;color:var(--akse)}
+.boks h3{margin:18px 0 10px;font-size:1.1rem;font-weight:500;letter-spacing:-.02em}
+.boks p{color:var(--dis);font-size:.92rem;line-height:1.6}
+.bølge{display:flex;gap:3px;align-items:flex-end;height:26px;margin-top:22px}
+.bølge i{width:3px;background:var(--akse);border-radius:2px;opacity:.75;animation:b 1.4s ease-in-out infinite}
+@keyframes b{0%,100%{height:20%}50%{height:100%}}
+@media(prefers-reduced-motion:reduce){.bølge i{animation:none;height:55%}}
+@media(max-width:900px){.steg{grid-template-columns:1fr}.wrap{padding:0 22px}}
+</style></head><body>
+<canvas id="felt"></canvas><div class="grain"></div>
+<main>
+<div class="wrap"><nav><div class="logo">Lærling<b>.</b></div>
+<div><a href="#">Verktøy</a><a href="#">Priser</a><a href="#">Logg inn</a></div></nav></div>
+
+<div class="wrap hero">
+  <div class="merke">Snakk — så er det skrevet</div>
+  <h1>Stemmen din er nok.</h1>
+  <p class="ingress">Lærling hører etter når du dikterer fra bilen, og leverer ferdig tilbud,
+    endringsmelding, dagbok eller purring. Norsk fagspråk, NS-frister og forbrukerregler er
+    innebygd — du leser over og sender.</p>
+  <div class="sitat">«… husk container til Krohgs gate før mandag, og Berg må svare på
+    fargevalget denne uka …» <span>— 14 sekunder diktering</span></div>
+  <div class="cta"><a class="knapp" href="#">Bli kjent med Lærlingen</a><a class="knapp tynn" href="#">Hør et eksempel</a></div>
+</div>
+
+<section><div class="wrap">
+  <div class="merke">Fra stemme til dokument</div>
+  <h2>Tre steg — ingen av dem er tastatur.</h2>
+  <div class="steg">
+    <div class="boks"><div class="nr">01 · SNAKK</div><h3>Diktér rått</h3>
+      <p>Ustrukturert er helt greit. Snakk som du gjør til en kollega på plassen — Lærlingen rydder.</p>
+      <div class="bølge"><i style="animation-delay:0s"></i><i style="animation-delay:.1s"></i><i style="animation-delay:.2s"></i><i style="animation-delay:.3s"></i><i style="animation-delay:.15s"></i><i style="animation-delay:.05s"></i><i style="animation-delay:.25s"></i><i style="animation-delay:.35s"></i></div></div>
+    <div class="boks"><div class="nr">02 · VELG</div><h3>Hva skal det bli?</h3>
+      <p>Tilbud, endringsmelding, referat, purring eller lov- og regelsjekk. Ett trykk — resten er skrevet.</p></div>
+    <div class="boks"><div class="nr">03 · SEND</div><h3>Du er avsenderen</h3>
+      <p>Les over, juster hvis du vil, send fra din egen e-post. Lærlingen sender aldri noe selv.</p></div>
+  </div>
+</div></section>
+</main>
+<script>
+/* Stemmen: partikkelfelt formet som en lydbølge — pekeren dytter partiklene unna */
+(function(){
+  var c=document.getElementById("felt"),x=c.getContext("2d");
+  if(!x){return;}
+  var stille=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var d=Math.min(devicePixelRatio||1,2),W,H,P=[],mus={x:-9999,y:-9999};
+  function bygg(){
+    W=c.width=innerWidth*d; H=c.height=innerHeight*d;
+    c.style.width=innerWidth+"px"; c.style.height=innerHeight+"px";
+    P=[]; var n=Math.min(1500,Math.floor(innerWidth*innerHeight/1300));
+    for(var i=0;i<n;i++){
+      var u=Math.random(), fase=u*Math.PI*8;
+      var hx=u*W;
+      var amp=(H*0.16)*Math.exp(-Math.pow((u-.5)*2.4,2));
+      var hy=H*0.52+Math.sin(fase)*amp*(0.35+Math.random()*0.65);
+      P.push({hx:hx,hy:hy,x:hx,y:hy,vx:0,vy:0,r:(Math.random()*1.5+.5)*d,a:Math.random()*.5+.25,f:fase,amp:amp});
+    }
+  }
+  addEventListener("resize",bygg); bygg();
+  addEventListener("pointermove",function(e){mus.x=e.clientX*d;mus.y=e.clientY*d;});
+  addEventListener("pointerleave",function(){mus.x=mus.y=-9999;});
+  var t=0;
+  function tegn(){
+    t+=stille?0:.012;
+    x.clearRect(0,0,W,H);
+    for(var i=0;i<P.length;i++){
+      var p=P[i];
+      /* hvileposisjon puster med tiden */
+      var mål_y=p.hy+Math.sin(p.f+t*1.6)*p.amp*.20;
+      var dx=p.x-mus.x, dy=p.y-mus.y, d2=dx*dx+dy*dy, rad=150*d;
+      if(d2<rad*rad){ var dist=Math.max(Math.sqrt(d2),1), kraft=(1-dist/rad)*3.2*d;
+        p.vx+=dx/dist*kraft; p.vy+=dy/dist*kraft; }
+      p.vx+=(p.hx-p.x)*.014; p.vy+=(mål_y-p.y)*.014;   /* fjær tilbake */
+      p.vx*=.86; p.vy*=.86;                            /* demping */
+      p.x+=p.vx; p.y+=p.vy;
+      var glød=Math.min(1,(Math.abs(p.vx)+Math.abs(p.vy))*.5);
+      x.fillStyle="rgba("+(227+ -0*glød)+","+(177+40*glød)+","+(92+90*glød)+","+(p.a*(.55+.45*glød))+")";
+      x.beginPath(); x.arc(p.x,p.y,p.r,0,6.283); x.fill();
+    }
+    requestAnimationFrame(tegn);
+  }
+  tegn();
+})();
+</script></body></html>

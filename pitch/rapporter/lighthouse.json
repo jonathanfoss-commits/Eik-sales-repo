@@ -1,0 +1,12 @@
+{
+ "performance": 100,
+ "accessibility": 100,
+ "bestPractices": 100,
+ "seo": 100,
+ "metrics": {
+  "fcp": "0.3 s",
+  "lcp": "0.3 s",
+  "cls": "0",
+  "tbt": "0 ms"
+ }
+}

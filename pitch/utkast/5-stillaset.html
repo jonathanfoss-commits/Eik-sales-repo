@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="nb"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Utkast 5 — Stillaset</title>
+<style>
+:root{--bunn:#08110E;--lys:#F4F7F4;--dis:#7E8D86;--akse:#39E29B;--strek:rgba(140,190,170,.14);
+--sans:-apple-system,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;--mono:"SF Mono",ui-monospace,Menlo,monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bunn);color:var(--lys);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+canvas#stillas{position:fixed;inset:0;z-index:0;display:block;opacity:.9}
+.vignett{position:fixed;inset:0;z-index:1;pointer-events:none;
+background:radial-gradient(110% 75% at 50% 45%,transparent 35%,rgba(8,17,14,.9) 82%)}
+.grain{position:fixed;inset:0;z-index:8;pointer-events:none;opacity:.04;mix-blend-mode:overlay;
+background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E")}
+main{position:relative;z-index:2}
+.wrap{max-width:1240px;margin:0 auto;padding:0 30px}
+nav{display:flex;justify-content:space-between;align-items:center;height:72px;
+font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;border-bottom:1px solid var(--strek)}
+.logo{font-family:var(--sans);font-size:1.02rem;font-weight:800;letter-spacing:-.03em;text-transform:none}
+.logo b{color:var(--akse)}
+nav a{color:var(--dis);text-decoration:none;margin-left:24px}
+.hero{padding:80px 0 90px;min-height:84vh;display:flex;flex-direction:column;justify-content:center}
+.strekmerke{font-family:var(--mono);font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;color:var(--akse);
+display:flex;gap:14px;align-items:center}
+.strekmerke::before{content:"";width:38px;height:2px;background:var(--akse)}
+h1{font-size:clamp(3rem,10.5vw,9rem);line-height:.86;letter-spacing:-.055em;font-weight:800;margin:24px 0 0;text-transform:uppercase}
+h1 .tynn{display:block;font-weight:200;color:var(--dis);letter-spacing:-.04em}
+.under{display:grid;grid-template-columns:1.1fr .9fr;gap:50px;margin-top:52px;align-items:end;border-top:1px solid var(--strek);padding-top:34px}
+.ingress{font-size:1.08rem;color:var(--dis);line-height:1.6;max-width:44ch}
+.ingress b{color:var(--lys);font-weight:600}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.knapp{padding:17px 30px;background:var(--akse);color:#05130D;text-decoration:none;font-size:.92rem;font-weight:700;
+letter-spacing:-.01em;transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.knapp:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 rgba(57,226,155,.25)}
+.knapp.tynn{background:none;color:var(--lys);border:1px solid var(--strek);font-weight:500}
+.tall{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--strek);margin-top:70px}
+.tall div{padding:26px 0;border-right:1px solid var(--strek)}
+.tall div:last-child{border-right:none}
+.tall b{display:block;font-size:clamp(2rem,4.4vw,3.4rem);font-weight:800;letter-spacing:-.05em;line-height:1}
+.tall span{font-family:var(--mono);font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dis);display:block;margin-top:10px}
+section{padding:110px 0 130px;background:linear-gradient(180deg,rgba(8,17,14,.75),rgba(8,17,14,.97))}
+h2{font-size:clamp(2rem,5vw,3.6rem);font-weight:800;letter-spacing:-.045em;text-transform:uppercase;line-height:.95;max-width:16ch}
+.liste{margin-top:56px;border-top:1px solid var(--strek)}
+.linje{display:grid;grid-template-columns:64px 1fr 1.2fr;gap:24px;padding:28px 0;border-bottom:1px solid var(--strek);align-items:baseline;
+transition:background .3s}
+.linje:hover{background:rgba(57,226,155,.035)}
+.linje .n{font-family:var(--mono);font-size:.68rem;color:var(--akse);letter-spacing:.14em}
+.linje h3{font-size:1.32rem;font-weight:700;letter-spacing:-.03em}
+.linje p{color:var(--dis);font-size:.95rem;line-height:1.6}
+@media(max-width:900px){.under{grid-template-columns:1fr;gap:32px}.linje{grid-template-columns:44px 1fr;gap:14px}
+.linje p{grid-column:2}.wrap{padding:0 20px}.tall{grid-template-columns:1fr;border-top:none}
+.tall div{border-right:none;border-top:1px solid var(--strek)}}
+</style></head><body>
+<canvas id="stillas"></canvas><div class="vignett"></div><div class="grain"></div>
+<main>
+<div class="wrap"><nav><div class="logo">Lærling<b>.</b></div>
+<div><a href="#">Verktøy</a><a href="#">Priser</a><a href="#">Logg inn</a></div></nav></div>
+
+<div class="wrap hero">
+  <div class="strekmerke">AI-medarbeider · bygg og håndverk</div>
+  <h1>Snakk.<span class="tynn">Så står det skrevet.</span></h1>
+  <div class="under">
+    <p class="ingress">Diktér fra bilen. Lærlingen skriver <b>tilbudet, endringsvarselet,
+      dagboka og purringen</b> — med norske fagregler og frister innebygd. Du leser over og sender.</p>
+    <div class="cta"><a class="knapp" href="#">BLI KJENT — 15 MIN</a><a class="knapp tynn" href="#">Se verktøyene</a></div>
+  </div>
+  <div class="tall">
+    <div><b>15 min</b><span>fra samtale til ferdig oppsatt app</span></div>
+    <div><b>0 kr</b><span>ekstra for hele laget — pris per bedrift</span></div>
+    <div><b>100 %</b><span>lagret på din egen telefon</span></div>
+  </div>
+</div>
+
+<section><div class="wrap">
+  <div class="strekmerke">Verktøykassa</div>
+  <h2>Fire jobber den gjør hver uke</h2>
+  <div class="liste">
+    <div class="linje"><div class="n">01</div><h3>Befaring → tilbud</h3>
+      <p>Diktér notatene rått. Ut kommer kunde-e-post og internt tilbudsgrunnlag med omfang, forutsetninger og forbehold.</p></div>
+    <div class="linje"><div class="n">02</div><h3>Endring → varsel samme dag</h3>
+      <p>NS 8407: «uten ugrunnet opphold» er dager, ikke uker. Varselet skrives før du forlater plassen.</p></div>
+    <div class="linje"><div class="n">03</div><h3>Timer og byggedagbok</h3>
+      <p>Store knapper, én tommel, virker uten dekning. Dagboka blir bevis når sluttoppgjøret bestrides.</p></div>
+    <div class="linje"><div class="n">04</div><h3>Purring med norsk trapp</h3>
+      <p>Vennlig påminnelse → forsinkelsesrente → inkassovarsel etter inkassoloven § 9. Riktig trinn til riktig tid.</p></div>
+  </div>
+</div></section>
+</main>
+<script>
+/* Stillaset: et wireframe-rutenett i perspektiv som bygges opp og roterer mot pekeren */
+(function(){
+  var c=document.getElementById("stillas"),x=c.getContext("2d");
+  if(!x) return;
+  var stille=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var d=Math.min(devicePixelRatio||1,2),W,H;
+  function størrelse(){W=c.width=innerWidth*d;H=c.height=innerHeight*d;
+    c.style.width=innerWidth+"px";c.style.height=innerHeight+"px";}
+  addEventListener("resize",størrelse);størrelse();
+  var ay=0.5,ax=0.16,may=0.5,max=0.16;
+  addEventListener("pointermove",function(e){
+    may=0.5+(e.clientX/innerWidth-.5)*0.75; max=0.16+(e.clientY/innerHeight-.5)*0.30;});
+  /* stillasnoder: 3 tårn × 5 etasjer */
+  var noder=[],F=520;
+  for(var t=0;t<3;t++)for(var e2=0;e2<6;e2++)for(var s=0;s<2;s++)
+    noder.push({x:(t-1)*230+ (s? 110:-110), y:e2*-95+230, z:(s?-110:110)+(t-1)*30});
+  function proj(p,cy,sy,cx2,sx2,tid){
+    var X=p.x*cy - p.z*sy, Z=p.x*sy + p.z*cy;
+    var Y=p.y + Math.sin(tid*.6+p.y*.01)*(stille?0:5);
+    var Y2=Y*cx2 - Z*sx2, Z2=Y*sx2 + Z*cx2 + 900;
+    var k=F/Math.max(Z2,60);
+    return {x:W/2+X*k*d, y:H/2+Y2*k*d, k:k};
+  }
+  var t0=performance.now();
+  function tegn(n){
+    var tid=stille?4:(n-t0)/1000;
+    ay+=(may-ay)*.05; ax+=(max-ax)*.05;            /* damping */
+    var rot=ay+(stille?0:tid*.045);
+    var cy=Math.cos(rot),sy=Math.sin(rot),cx2=Math.cos(ax),sx2=Math.sin(ax);
+    x.clearRect(0,0,W,H);
+    var pts=noder.map(function(p){return proj(p,cy,sy,cx2,sx2,tid);});
+    x.lineWidth=1*d;
+    for(var i=0;i<noder.length;i++){
+      for(var j=i+1;j<noder.length;j++){
+        var a=noder[i],b=noder[j];
+        var samme = (Math.abs(a.x-b.x)<1&&Math.abs(a.z-b.z)<1&&Math.abs(a.y-b.y)<100) /* stolper */
+          || (Math.abs(a.y-b.y)<1&&(Math.abs(a.x-b.x)<240)&&Math.abs(a.z-b.z)<240);   /* bjelker */
+        if(!samme) continue;
+        var p1=pts[i],p2=pts[j];
+        var dybde=Math.min(p1.k,p2.k);
+        x.strokeStyle="rgba(57,226,155,"+(0.05+dybde*0.16).toFixed(3)+")";
+        x.beginPath();x.moveTo(p1.x,p1.y);x.lineTo(p2.x,p2.y);x.stroke();
+      }
+    }
+    for(var q=0;q<pts.length;q++){
+      var p=pts[q];
+      x.fillStyle="rgba(57,226,155,"+(0.10+p.k*0.28).toFixed(3)+")";
+      x.beginPath();x.arc(p.x,p.y,1.7*d*p.k,0,6.283);x.fill();
+    }
+    if(!stille) requestAnimationFrame(tegn);
+  }
+  tegn(t0);
+})();
+</script></body></html>

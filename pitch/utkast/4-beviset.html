@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="nb"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Utkast 4 — Beviset</title>
+<style>
+:root{--bunn:#0A100E;--flate:#101815;--lys:#ECF1EC;--dis:#8A9691;--akse:#39E29B;--strek:rgba(160,200,185,.12);
+--serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+--sans:-apple-system,"Segoe UI",system-ui,Inter,sans-serif;--mono:"SF Mono",ui-monospace,Menlo,monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bunn);color:var(--lys);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.grain{position:fixed;inset:0;z-index:9;pointer-events:none;opacity:.038;mix-blend-mode:overlay;
+background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.88'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+.lys{position:fixed;inset:0;z-index:0;pointer-events:none;
+background:radial-gradient(70% 55% at 72% 32%,rgba(57,226,155,.10),transparent 62%),
+radial-gradient(90% 70% at 20% 8%,rgba(30,60,52,.55),transparent 70%)}
+main{position:relative;z-index:2}
+.wrap{max-width:1180px;margin:0 auto;padding:0 34px}
+nav{display:flex;justify-content:space-between;align-items:center;height:78px;font-size:.88rem}
+.logo{font-family:var(--serif);font-size:1.25rem;letter-spacing:-.01em}.logo b{color:var(--akse)}
+nav a{color:var(--dis);text-decoration:none;margin-left:26px}
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:60px;align-items:center;min-height:86vh;padding:20px 0 80px}
+.merke{font-family:var(--mono);font-size:.66rem;letter-spacing:.26em;text-transform:uppercase;color:var(--akse)}
+h1{font-family:var(--serif);font-size:clamp(2.7rem,6.2vw,5.4rem);line-height:1.02;letter-spacing:-.025em;font-weight:400;margin:26px 0 0}
+h1 em{font-style:italic;color:var(--akse)}
+.ingress{margin-top:26px;font-size:1.06rem;color:var(--dis);max-width:44ch;line-height:1.68}
+.cta{display:flex;gap:13px;margin-top:40px;flex-wrap:wrap}
+.knapp{padding:15px 28px;border-radius:8px;background:var(--akse);color:#04120C;text-decoration:none;font-size:.94rem;font-weight:600;
+transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
+.knapp:hover{transform:translateY(-2px);box-shadow:0 16px 44px rgba(57,226,155,.22)}
+.knapp.tynn{background:none;color:var(--lys);border:1px solid var(--strek);font-weight:500}
+.fot{margin-top:30px;font-family:var(--mono);font-size:.66rem;color:var(--dis);letter-spacing:.08em}
+/* dokumentstabel i CSS-3D — vipper mot pekeren */
+.scene{perspective:1400px;perspective-origin:60% 40%}
+.stabel{position:relative;height:470px;transform-style:preserve-3d;transition:transform .1s linear}
+.ark{position:absolute;left:50%;top:0;width:340px;margin-left:-170px;border-radius:12px;
+background:linear-gradient(170deg,#18201D,#0E1512);border:1px solid var(--strek);padding:24px 26px;
+box-shadow:0 40px 90px rgba(0,0,0,.66);transform-style:preserve-3d}
+.ark .stempel{font-family:var(--mono);font-size:.56rem;letter-spacing:.2em;color:var(--akse)}
+.ark h4{font-family:var(--serif);font-size:1.06rem;font-weight:400;margin:12px 0 10px}
+.ark p{font-size:.8rem;color:var(--dis);line-height:1.6}
+.ark .linje{height:1px;background:var(--strek);margin:14px 0}
+.ark .meta{font-family:var(--mono);font-size:.56rem;color:var(--dis);letter-spacing:.12em;display:flex;justify-content:space-between}
+.a1{transform:translateZ(60px) translateY(0) rotate(-1.2deg)}
+.a2{transform:translateZ(20px) translateY(52px) rotate(1.4deg);opacity:.92}
+.a3{transform:translateZ(-20px) translateY(104px) rotate(-.6deg);opacity:.8}
+.a4{transform:translateZ(-60px) translateY(156px) rotate(2deg);opacity:.62}
+section{padding:120px 0 130px;border-top:1px solid var(--strek)}
+h2{font-family:var(--serif);font-size:clamp(1.9rem,3.6vw,3rem);font-weight:400;letter-spacing:-.02em;max-width:20ch;line-height:1.14}
+.brød{margin-top:26px;color:var(--dis);font-size:1rem;line-height:1.75;max-width:58ch}
+.brød b{color:var(--lys);font-weight:500}
+.rad{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:56px}
+.k{border-top:1px solid var(--strek);padding-top:22px}
+.k .t{font-family:var(--mono);font-size:.62rem;letter-spacing:.2em;color:var(--akse)}
+.k h3{font-family:var(--serif);font-size:1.15rem;font-weight:400;margin:14px 0 9px}
+.k p{font-size:.9rem;color:var(--dis);line-height:1.62}
+@media(max-width:900px){.hero{grid-template-columns:1fr;gap:48px}.rad{grid-template-columns:1fr}.wrap{padding:0 22px}
+.stabel{height:400px}.ark{width:290px;margin-left:-145px}}
+</style></head><body>
+<div class="lys"></div><div class="grain"></div>
+<main>
+<div class="wrap"><nav><div class="logo">Lærling<b>.</b></div>
+<div><a href="#">Verktøyene</a><a href="#">Priser</a><a href="#">Logg inn</a></div></nav></div>
+
+<div class="wrap hero">
+  <div>
+    <div class="merke">Tidsnære notater vinner tvister</div>
+    <h1>Det du sa på plassen,<br><em>skrevet ned</em> med dato.</h1>
+    <p class="ingress">Lærling gjør dikteringen din om til tilbud, endringsvarsel og byggedagbok
+      — datostemplet, formriktig og klart til å sendes. Den dagen noen bestrider sluttoppgjøret,
+      har du papirene.</p>
+    <div class="cta"><a class="knapp" href="#">Bli kjent — 15 min</a><a class="knapp tynn" href="#">Se et bevisdokument</a></div>
+    <div class="fot">Alt lagres på din telefon · ingen server med dine data</div>
+  </div>
+  <div class="scene"><div class="stabel" id="stabel">
+    <div class="ark a1"><div class="stempel">ENDRINGSMELDING · NS 8407</div>
+      <h4>Varsel om endring — råteskade sørvegg</h4>
+      <p>Det er avdekket råte i to vindusomramminger. Vi varsler herved endringen. Konsekvens for pris og fremdrift følger så snart omfanget er avklart.</p>
+      <div class="linje"></div><div class="meta"><span>SENDT 14:12</span><span>SAMME DAG</span></div></div>
+    <div class="ark a2"><div class="stempel">BYGGEDAGBOK</div>
+      <h4>Krohgs gate 60 · 14. mai</h4>
+      <p>Mannskap 4. Vindusmontasje 2. etasje. Levering stillas forsinket 3 t. Byggherre varslet muntlig kl. 09.</p>
+      <div class="linje"></div><div class="meta"><span>LÅST</span><span>REV. 1</span></div></div>
+    <div class="ark a3"><div class="stempel">TILBUD</div><h4>Utskifting av 12 vinduer</h4>
+      <p>Omfang, forutsetninger og forbehold — inkludert skjulte feil i eldre bygg.</p>
+      <div class="linje"></div><div class="meta"><span>UTKAST</span><span>FRA BEFARING</span></div></div>
+    <div class="ark a4"><div class="stempel">PURRING · TRINN 2</div><h4>Faktura 1042 — varsel om rente</h4>
+      <p>Forsinkelsesrente etter forsinkelsesrenteloven fra forfall.</p>
+      <div class="linje"></div><div class="meta"><span>47 DAGER</span><span>KLAR</span></div></div>
+  </div></div>
+</div>
+
+<section><div class="wrap">
+  <div class="merke">Hvorfor dette betyr noe</div>
+  <h2>I en tvist er det ikke hvem som har rett. Det er hvem som skrev det ned.</h2>
+  <p class="brød">Norske domstoler legger vekt på <b>tidsnære nedtegnelser</b> — det som ble skrevet
+    da det skjedde, ikke det som ble husket etterpå. Problemet er at ingen orker å skrive dagbok
+    kl. 17 på en fredag. Lærling løser det ved å la deg si det høyt i stedet.</p>
+  <div class="rad">
+    <div class="k"><div class="t">SAMME DAG</div><h3>Varsler før fristen</h3>
+      <p>«Uten ugrunnet opphold» i NS 8407 er dager. Lærlingen skriver varselet mens du står der.</p></div>
+    <div class="k"><div class="t">FAKTABASERT</div><h3>Dagbok som holder</h3>
+      <p>Vær, mannskap, leveranser, hindringer, beskjeder — kort og nøkternt. Aldri pynt.</p></div>
+    <div class="k"><div class="t">DITT ARKIV</div><h3>På din telefon</h3>
+      <p>Ingen skytjeneste med dine prosjektdata. Slutter du, tar du alt med deg.</p></div>
+  </div>
+</div></section>
+</main>
+<script>
+/* dokumentstabelen vipper mot pekeren — dempet, fysisk */
+(function(){
+  var s=document.getElementById("stabel"); if(!s) return;
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches){s.style.transform="rotateX(6deg) rotateY(-10deg)";return;}
+  var rx=6,ry=-10,mrx=6,mry=-10,kjører=false;
+  addEventListener("pointermove",function(e){
+    mry=-10+(e.clientX/innerWidth-.5)*22; mrx=6-(e.clientY/innerHeight-.5)*14;
+    if(!kjører){kjører=true;requestAnimationFrame(løkke);}
+  });
+  s.style.transform="rotateX(6deg) rotateY(-10deg)";
+  function løkke(){
+    rx+=(mrx-rx)*.055; ry+=(mry-ry)*.055;
+    s.style.transform="rotateX("+rx.toFixed(2)+"deg) rotateY("+ry.toFixed(2)+"deg)";
+    if(Math.abs(mrx-rx)>.01||Math.abs(mry-ry)>.01) requestAnimationFrame(løkke); else kjører=false;
+  }
+})();
+</script></body></html>

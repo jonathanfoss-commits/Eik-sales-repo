@@ -1,0 +1,29 @@
+<!DOCTYPE html><html lang="nb"><head><meta charset="utf-8"><style>
+:root{--bunn:#050A0E;--lys:#EAF3EF;--dis:#8FA3A6;--akse:#39E29B;
+--sans:-apple-system,"Segoe UI",system-ui,Inter,sans-serif;--mono:"SF Mono",ui-monospace,Menlo,monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1200px;height:630px;background:var(--bunn);color:var(--lys);font-family:var(--sans);
+overflow:hidden;position:relative}
+.aurora{position:absolute;inset:0;
+background:radial-gradient(90% 70% at 78% -10%,rgba(57,226,155,.42),transparent 58%),
+radial-gradient(70% 60% at 20% 0%,rgba(47,196,217,.22),transparent 60%),
+radial-gradient(120% 90% at 50% 120%,rgba(5,10,14,.9),transparent 60%)}
+.rutenett{position:absolute;inset:0;opacity:.5;
+background-image:linear-gradient(rgba(150,200,195,.07) 1px,transparent 1px),
+linear-gradient(90deg,rgba(150,200,195,.07) 1px,transparent 1px);background-size:60px 60px;
+mask-image:linear-gradient(#000,transparent 70%)}
+.inn{position:relative;padding:78px 84px;height:100%;display:flex;flex-direction:column;justify-content:space-between}
+.merke{font-size:30px;font-weight:650;letter-spacing:-.02em}.merke b{color:var(--akse)}
+h1{font-size:96px;line-height:.96;letter-spacing:-.045em;font-weight:300;max-width:15ch}
+h1 em{font-style:normal;color:var(--akse)}
+.fot{display:flex;justify-content:space-between;align-items:flex-end;
+font-family:var(--mono);font-size:17px;letter-spacing:.14em;color:var(--dis);text-transform:uppercase}
+.fot b{color:var(--lys);font-weight:400}
+</style></head><body>
+<div class="aurora"></div><div class="rutenett"></div>
+<div class="inn">
+  <div class="merke">Lærling<b>.</b></div>
+  <h1>Du snakker.<br>Lærlingen <em>skriver.</em></h1>
+  <div class="fot"><span>AI-medarbeider for bygg og håndverk</span><span><b>15 min</b> · så står appen klar</span></div>
+</div>
+</body></html>

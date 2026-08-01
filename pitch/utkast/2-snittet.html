@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="nb"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Utkast 2 — Snittet</title>
+<style>
+:root{--papir:#F2F0EA;--blekk:#111614;--dis:#6A736F;--akse:#1F9E66;--strek:rgba(17,22,20,.13);
+--sans:-apple-system,"Segoe UI",system-ui,Inter,sans-serif;--mono:"SF Mono",ui-monospace,Menlo,monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--papir);color:var(--blekk);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.55;
+background-image:linear-gradient(var(--strek) 1px,transparent 1px),linear-gradient(90deg,var(--strek) 1px,transparent 1px);
+background-size:74px 74px;mask-image:radial-gradient(120% 90% at 50% 20%,#000 30%,transparent 78%)}
+body::after{content:"";position:fixed;inset:0;z-index:9;pointer-events:none;opacity:.045;mix-blend-mode:multiply;
+background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.85'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E")}
+main{position:relative;z-index:1}
+.wrap{max-width:1200px;margin:0 auto;padding:0 34px}
+nav{display:flex;justify-content:space-between;align-items:center;height:78px;font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase}
+nav .logo{font-family:var(--sans);font-size:1.05rem;font-weight:600;letter-spacing:-.02em;text-transform:none}
+nav .logo b{color:var(--akse)}
+nav a{color:var(--dis);text-decoration:none;margin-left:26px}
+.hero{display:grid;grid-template-columns:1.02fr .98fr;gap:56px;align-items:center;min-height:82vh;padding:20px 0 70px}
+.etikett{font-family:var(--mono);font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;color:var(--akse);
+display:flex;align-items:center;gap:12px}
+.etikett::after{content:"";height:1px;flex:1;background:var(--strek);max-width:120px}
+h1{font-size:clamp(2.7rem,6vw,5.2rem);line-height:1.0;letter-spacing:-.04em;font-weight:400;margin:24px 0 0}
+h1 span{display:block;color:var(--dis)}
+.ingress{margin-top:26px;font-size:1.05rem;color:var(--dis);max-width:42ch;line-height:1.62}
+.cta{display:flex;gap:12px;margin-top:38px;flex-wrap:wrap;align-items:center}
+.knapp{padding:14px 26px;border-radius:6px;background:var(--blekk);color:var(--papir);text-decoration:none;font-size:.93rem;
+font-weight:500;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.knapp:hover{transform:translateY(-2px)}
+.knapp.linje{background:none;color:var(--blekk);border:1px solid var(--strek)}
+.målnote{font-family:var(--mono);font-size:.66rem;color:var(--dis);letter-spacing:.1em;margin-top:26px}
+/* tegningen */
+.tegning{position:relative}
+.tegning svg{width:100%;height:auto;display:block;overflow:visible}
+.tegning .ramme{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dis);
+display:flex;justify-content:space-between;border-top:1px solid var(--strek);padding-top:10px;margin-top:14px}
+path.strek,line.strek,rect.strek,circle.strek{fill:none;stroke:var(--blekk);stroke-width:1.1;vector-effect:non-scaling-stroke;
+stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:tegn 2.6s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes tegn{to{stroke-dashoffset:0}}
+.aks{stroke:var(--akse)!important;stroke-width:1.6}
+.hjelp{stroke:var(--dis)!important;stroke-width:.7;stroke-dasharray:4 4!important;animation:none!important;opacity:.65}
+text.mål{font-family:var(--mono);font-size:9px;fill:var(--dis);letter-spacing:.08em}
+text.tag{font-family:var(--mono);font-size:8.5px;fill:var(--akse);letter-spacing:.14em}
+@media(prefers-reduced-motion:reduce){path.strek,line.strek,rect.strek,circle.strek{animation:none;stroke-dashoffset:0}}
+/* seksjon */
+section{padding:110px 0 130px;border-top:1px solid var(--strek)}
+h2{font-size:clamp(1.8rem,3.4vw,2.7rem);font-weight:400;letter-spacing:-.03em;max-width:20ch;line-height:1.12}
+.rutenett{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--strek);margin-top:54px;border:1px solid var(--strek)}
+.celle{background:var(--papir);padding:30px 26px 34px;min-height:200px}
+.celle .nr{font-family:var(--mono);font-size:.64rem;color:var(--akse);letter-spacing:.2em}
+.celle h3{font-size:1.12rem;font-weight:500;margin:16px 0 10px;letter-spacing:-.02em}
+.celle p{font-size:.9rem;color:var(--dis);line-height:1.6}
+@media(max-width:900px){.hero{grid-template-columns:1fr;gap:44px}.rutenett{grid-template-columns:1fr}.wrap{padding:0 22px}}
+</style></head><body>
+<main>
+<div class="wrap"><nav><div class="logo">Lærling<b>.</b></div>
+<div><a href="#">Verktøyene</a><a href="#">Priser</a><a href="#">Logg inn</a></div></nav></div>
+
+<div class="wrap hero">
+  <div>
+    <div class="etikett">Snitt A–A · norsk byggebransje</div>
+    <h1>Kontoret<span>flyttet ut i bilen.</span></h1>
+    <p class="ingress">Lærling er AI-medarbeideren som skriver tilbudet, endringsmeldingen og
+      byggedagboka mens du dikterer. Bygget for norske regler — og for hansker, dårlig dekning
+      og én tommel.</p>
+    <div class="cta"><a class="knapp" href="#">Bli kjent — 15 min</a><a class="knapp linje" href="#">Se verktøyene</a></div>
+    <div class="målnote">M 1:50 · alt lagres på din telefon · ingen server med dine data</div>
+  </div>
+
+  <div class="tegning" id="tegning">
+    <svg viewBox="0 0 420 330" aria-label="Teknisk snitt av arbeidsdagen">
+      <g id="lag1">
+        <line class="strek hjelp" x1="20" y1="300" x2="400" y2="300"/>
+        <path class="strek" style="--len:900" d="M60 300 L60 150 L210 60 L360 150 L360 300"/>
+        <path class="strek" style="--len:420" d="M60 150 L360 150"/>
+        <path class="strek aks" style="--len:340" d="M110 300 L110 205 L310 205 L310 300"/>
+        <rect class="strek" style="--len:170" x="146" y="228" width="52" height="72"/>
+        <rect class="strek" style="--len:150" x="238" y="228" width="46" height="46"/>
+        <path class="strek hjelp" d="M210 60 L210 300"/>
+        <circle class="strek aks" style="--len:70" cx="310" cy="205" r="11"/>
+        <line class="strek hjelp" x1="60" y1="318" x2="360" y2="318"/>
+        <text class="mål" x="196" y="332">12 400</text>
+        <text class="tag" x="316" y="196">DIKTERING</text>
+        <text class="tag" x="118" y="222">TILBUD</text>
+        <text class="mål" x="240" y="266">DAGBOK</text>
+        <text class="mål" x="152" y="222">TIMER</text>
+      </g>
+    </svg>
+    <div class="ramme"><span>Lærling AS · snitt A–A</span><span>rev. 0.23</span></div>
+  </div>
+</div>
+
+<section><div class="wrap">
+  <div class="etikett">Tre ting den gjør i dag</div>
+  <h2>Ikke et system til. En medarbeider som skriver.</h2>
+  <div class="rutenett">
+    <div class="celle"><div class="nr">01</div><h3>Befaring → tilbud</h3>
+      <p>Diktér notatene rått i bilen. Ut kommer oppsummering til kunden og internt tilbudsgrunnlag med omfang, forutsetninger og forbehold.</p></div>
+    <div class="celle"><div class="nr">02</div><h3>Endring → varsel samme dag</h3>
+      <p>NS 8407 sier «uten ugrunnet opphold» — det er dager, ikke uker. Varselet er skrevet før du forlater plassen.</p></div>
+    <div class="celle"><div class="nr">03</div><h3>Lov- og regelsjekk</h3>
+      <p>«Må vi ha rekkverk ved to meter?» Svar med forskrift og paragraf — og alltid beskjed om å bekrefte med kommunen eller Arbeidstilsynet.</p></div>
+  </div>
+</div></section>
+</main>
+<script>
+/* tegningen svarer på pekeren: lett parallakse i lagene, dempet — ikke lineær */
+(function(){
+  var g=document.getElementById("lag1"); if(!g) return;
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var mx=0,my=0,tx=0,ty=0,kjører=false;
+  addEventListener("pointermove",function(e){
+    tx=(e.clientX/innerWidth-.5); ty=(e.clientY/innerHeight-.5);
+    if(!kjører){kjører=true;requestAnimationFrame(løkke);}
+  });
+  function løkke(){
+    mx+=(tx-mx)*.06; my+=(ty-my)*.06;
+    g.setAttribute("transform","translate("+(mx*14).toFixed(2)+","+(my*9).toFixed(2)+")");
+    if(Math.abs(tx-mx)>.001||Math.abs(ty-my)>.001) requestAnimationFrame(løkke); else kjører=false;
+  }
+})();
+</script></body></html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="nb"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Utkast 1 — Nordlys</title>
+<style>
+:root{--bunn:#050A0E;--lys:#EAF3EF;--dis:#8FA3A6;--akse:#39E29B;--strek:rgba(150,200,195,.13);
+--sans:-apple-system,"Segoe UI",system-ui,Inter,sans-serif;--mono:"SF Mono",ui-monospace,Menlo,monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bunn);color:var(--lys);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+.grain{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.035;mix-blend-mode:overlay;
+background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+canvas#sky{position:fixed;inset:0;z-index:0;display:block}
+.skygge{position:fixed;inset:0;z-index:1;pointer-events:none;
+background:radial-gradient(120% 80% at 50% 8%,transparent 30%,rgba(5,10,14,.86) 78%)}
+main{position:relative;z-index:2}
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px}
+nav{display:flex;justify-content:space-between;align-items:center;height:76px;font-size:.9rem}
+.logo{font-weight:600;letter-spacing:-.02em;font-size:1.05rem}
+.logo b{color:var(--akse)}
+nav a{color:var(--dis);text-decoration:none;margin-left:28px}
+.hero{min-height:88vh;display:flex;flex-direction:column;justify-content:center;padding:40px 0 90px}
+.merke{font-family:var(--mono);font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--akse);opacity:.9}
+h1{font-size:clamp(2.9rem,7.2vw,6.4rem);line-height:.98;letter-spacing:-.045em;font-weight:300;margin:26px 0 0;max-width:16ch}
+h1 em{font-style:normal;color:var(--akse)}
+.ingress{margin-top:30px;font-size:clamp(1rem,1.35vw,1.22rem);color:var(--dis);max-width:46ch;line-height:1.6;font-weight:300}
+.cta{display:flex;gap:14px;margin-top:44px;flex-wrap:wrap}
+.knapp{display:inline-flex;align-items:center;gap:10px;padding:15px 28px;border-radius:100px;font-size:.95rem;
+font-weight:500;text-decoration:none;background:var(--akse);color:#04120C;transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s;
+box-shadow:0 0 0 rgba(57,226,155,0)}
+.knapp:hover{transform:translateY(-2px);box-shadow:0 14px 44px rgba(57,226,155,.28)}
+.knapp.tynn{background:transparent;color:var(--lys);border:1px solid var(--strek)}
+.stat{display:flex;gap:44px;margin-top:70px;font-family:var(--mono);font-size:.74rem;color:var(--dis);letter-spacing:.05em;flex-wrap:wrap}
+.stat b{display:block;font-family:var(--sans);font-size:1.55rem;color:var(--lys);font-weight:300;letter-spacing:-.02em;margin-bottom:4px}
+section.flate{padding:120px 0 140px;border-top:1px solid var(--strek)}
+.to{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}
+h2{font-size:clamp(1.9rem,3.6vw,3rem);font-weight:300;letter-spacing:-.03em;line-height:1.1}
+.punkt{margin-top:34px;display:flex;gap:16px;align-items:flex-start}
+.punkt i{width:6px;height:6px;border-radius:50%;background:var(--akse);margin-top:9px;flex:none;box-shadow:0 0 12px var(--akse)}
+.punkt p{color:var(--dis);font-size:.97rem;line-height:1.65}
+.punkt p b{color:var(--lys);font-weight:500}
+.telefon{width:300px;margin:0 auto;border-radius:42px;border:1px solid var(--strek);padding:11px;
+background:linear-gradient(180deg,rgba(22,34,38,.96),rgba(9,15,19,.96));
+box-shadow:0 50px 110px rgba(0,0,0,.75),0 0 0 1px rgba(57,226,155,.07),0 0 90px rgba(57,226,155,.08)}
+.skjerm{border-radius:32px;background:#070D11;padding:22px 18px;min-height:430px}
+.sk-topp{font-family:var(--mono);font-size:.58rem;color:var(--dis);letter-spacing:.16em;display:flex;justify-content:space-between}
+.sk-h{font-size:1.15rem;font-weight:300;margin:22px 0 16px;letter-spacing:-.02em}
+.kort{border:1px solid var(--strek);border-radius:14px;padding:13px 15px;margin-bottom:9px;background:rgba(255,255,255,.016)}
+.kort .m{font-family:var(--mono);font-size:.55rem;color:var(--akse);letter-spacing:.16em}
+.kort .t{font-size:.83rem;margin-top:5px;color:var(--lys)}
+.kort .u{font-size:.72rem;color:var(--dis);margin-top:3px}
+.puls{width:7px;height:7px;border-radius:50%;background:var(--akse);box-shadow:0 0 10px var(--akse);animation:p 2.4s infinite}
+@keyframes p{50%{opacity:.25}}
+@media(max-width:860px){.to{grid-template-columns:1fr;gap:48px}.wrap{padding:0 22px}.stat{gap:28px}}
+</style></head><body>
+<canvas id="sky"></canvas><div class="skygge"></div><div class="grain"></div>
+<main>
+<div class="wrap"><nav><div class="logo">Lærling<b>.</b></div>
+<div><a href="#">Slik virker det</a><a href="#">Priser</a><a href="#">Logg inn</a></div></nav></div>
+
+<div class="wrap hero">
+  <div class="merke">AI-medarbeider for bygg og håndverk</div>
+  <h1>Du snakker.<br>Lærlingen <em>skriver.</em></h1>
+  <p class="ingress">Diktér fra bilen etter befaringen — få tilbudet, endringsmeldingen eller
+    byggedagboka ferdig skrevet før du er hjemme. Norsk fagspråk, NS-frister og
+    forbrukerregler er innebygd.</p>
+  <div class="cta">
+    <a class="knapp" href="#">Bli kjent med Lærlingen →</a>
+    <a class="knapp tynn" href="#">Se hvordan det virker</a>
+  </div>
+  <div class="stat">
+    <div><b>15 min</b>en samtale, så står appen klar</div>
+    <div><b>Samme dag</b>endringsvarsel før NS-fristen løper</div>
+    <div><b>På telefonen</b>alt lagres hos deg, ikke hos oss</div>
+  </div>
+</div>
+
+<section class="flate"><div class="wrap to">
+  <div>
+    <div class="merke">Hverdagen</div>
+    <h2>Papirarbeidet som spiste søndagene.</h2>
+    <div class="punkt"><i></i><p><b>Befaring → tilbud.</b> Diktér notatene rått. Du får oppsummering til kunden og internt tilbudsgrunnlag med forbehold.</p></div>
+    <div class="punkt"><i></i><p><b>Endring → varsel samme dag.</b> «Uten ugrunnet opphold» er dager, ikke uker. Lærlingen skriver varselet mens du står på plassen.</p></div>
+    <div class="punkt"><i></i><p><b>Timer og dagbok.</b> Store knapper, én tommel, virker uten dekning. Dagboka blir bevis når noen bestrider sluttoppgjøret.</p></div>
+  </div>
+  <div class="telefon"><div class="skjerm">
+    <div class="sk-topp"><span>LÆRLING</span><span class="puls"></span></div>
+    <div class="sk-h">I dag</div>
+    <div class="kort"><div class="m">TILBUD · KROHGS GATE 60</div><div class="t">Utskifting av 12 vinduer</div><div class="u">Utkast klart — les over før du sender</div></div>
+    <div class="kort"><div class="m">ENDRINGSMELDING</div><div class="t">Råteskade i sørvegg</div><div class="u">Varsel sendt 14:12 · samme dag</div></div>
+    <div class="kort"><div class="m">TIMER</div><div class="t">7,5 t · Krohgs gate</div><div class="u">Uka: 32,5 t</div></div>
+    <div class="kort"><div class="m">LOV OG REGEL</div><div class="t">«Rekkverk ved to meter?»</div><div class="u">Svar med forskrift og paragraf</div></div>
+  </div></div>
+</div></section>
+</main>
+<script>
+/* Nordlys: to myke GLSL-bånd som driver sakte og bøyer seg mot pekeren */
+(function(){
+  var c=document.getElementById("sky"),gl=null;
+  try{gl=c.getContext("webgl",{antialias:false,alpha:false});}catch(e){}
+  if(!gl){c.style.background="radial-gradient(80% 60% at 50% 0%,#0E2A24,#050A0E)";return;}
+  var vs="attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}";
+  var fs=`precision highp float;uniform vec2 r;uniform float t;uniform vec2 m;
+  float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+  float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+    return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
+  float fbm(vec2 p){float s=0.,a=.5;for(int i=0;i<5;i++){s+=a*noise(p);p*=2.03;a*=.5;}return s;}
+  float band(vec2 uv,float off,float sp,float thick){
+    float w=fbm(vec2(uv.x*1.6+t*sp,off))*.55+fbm(vec2(uv.x*3.4-t*sp*.6,off+9.))*.22;
+    float y=off*.10+w-.34+m.y*.06;
+    return thick/(abs(uv.y-y)*30.+thick*1.4);}
+  void main(){
+    vec2 uv=gl_FragCoord.xy/r.xy; uv.y=1.-uv.y; uv.x*=r.x/r.y;
+    float b1=band(uv,1.6,.045,.75), b2=band(uv,2.9,.031,.5), b3=band(uv,4.4,.022,.32);
+    vec3 col=vec3(0.);
+    col+=vec3(.22,.89,.61)*b1*.85;
+    col+=vec3(.18,.77,.85)*b2*.55;
+    col+=vec3(.24,.48,.98)*b3*.30;
+    float glow=exp(-length(uv-vec2(.5*r.x/r.y+m.x*.12,.16))*2.4);
+    col+=vec3(.10,.42,.34)*glow*.42;
+    col*= smoothstep(1.15,.05,uv.y);
+    col+=vec3(.012,.026,.030);
+    gl_FragColor=vec4(col,1.);}`;
+  function sh(ty,src){var s=gl.createShader(ty);gl.shaderSource(s,src);gl.compileShader(s);return s;}
+  var pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,vs));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,fs));
+  gl.linkProgram(pr);gl.useProgram(pr);
+  var buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+  var lp=gl.getAttribLocation(pr,"p");gl.enableVertexAttribArray(lp);gl.vertexAttribPointer(lp,2,gl.FLOAT,false,0,0);
+  var ur=gl.getUniformLocation(pr,"r"),ut=gl.getUniformLocation(pr,"t"),um=gl.getUniformLocation(pr,"m");
+  var mx=0,my=0,tx=0,ty2=0;
+  addEventListener("pointermove",function(e){tx=(e.clientX/innerWidth-.5)*2;ty2=(e.clientY/innerHeight-.5)*2;});
+  function størrelse(){var d=Math.min(devicePixelRatio||1,2);c.width=innerWidth*d;c.height=innerHeight*d;
+    c.style.width=innerWidth+"px";c.style.height=innerHeight+"px";gl.viewport(0,0,c.width,c.height);}
+  addEventListener("resize",størrelse);størrelse();
+  var stille=matchMedia("(prefers-reduced-motion: reduce)").matches, t0=performance.now();
+  (function tegn(n){
+    mx+=(tx-mx)*.045; my+=(ty2-my)*.045;                 /* damping, ikke lineær */
+    gl.uniform2f(ur,c.width,c.height);
+    gl.uniform1f(ut,stille?12:(n-t0)/1000);
+    gl.uniform2f(um,mx,my);
+    gl.drawArrays(gl.TRIANGLES,0,3);
+    if(!stille) requestAnimationFrame(tegn);
+  })(t0);
+})();
+</script></body></html>
