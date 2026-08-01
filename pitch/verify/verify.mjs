@@ -51,7 +51,20 @@ for (const [navn, vp] of [["desktop-1440",{width:1440,height:900}],
     window.scrollTo(0, 0);
   });
   await side.waitForTimeout(900);
+  /* tema settes eksplisitt — headless rapporterer «light» som systemvalg */
+  await side.evaluate(() => document.documentElement.setAttribute("data-tema","mørk"));
+  await side.waitForTimeout(600);
   await side.screenshot({ path: path.join(SKJERM, `${navn}-hero.png`) });
+  await side.evaluate(() => document.documentElement.setAttribute("data-tema","lys"));
+  await side.waitForTimeout(700);
+  await side.screenshot({ path: path.join(SKJERM, `${navn}-hero-lys.png`) });
+  if (navn === "desktop-1440") {
+    for (const [sel, fil] of [["#jobbene","jobbene-lys"],["#priser","priser-lys"],["#beviset","beviset-lys"]]) {
+      const el = await side.$(sel); if (el) await el.screenshot({ path: path.join(SKJERM, `${navn}-${fil}.png`) }).catch(()=>{});
+    }
+  }
+  await side.evaluate(() => document.documentElement.setAttribute("data-tema","mørk"));
+  await side.waitForTimeout(500);
   /* seksjonsvise element-skudd — fullPage stitcher feil når sider har faste lag */
   for (const [sel, fil] of [["#jobbene","jobbene"],["#appen","appen"],["#beviset","beviset"],
                             ["#tillit","tillit"],["#priser","priser"],[".slutt","slutt"]]) {
@@ -67,9 +80,10 @@ const axeKilde = await readFile(path.resolve("node_modules/axe-core/axe.min.js")
 const ctxA = await browser.newContext({ viewport: {width:1440,height:900} });
 const sideA = await ctxA.newPage();
 await sideA.goto(URL_, { waitUntil: "networkidle" });
+await sideA.evaluate(() => document.documentElement.setAttribute("data-tema","mørk"));
 /* la avsløringene fullføre — ellers måler axe kontrast på halvgjennomsiktige elementer */
 await sideA.evaluate(() => document.querySelectorAll(".avslør").forEach(e => e.classList.add("inne")));
-await sideA.waitForTimeout(1100);
+await sideA.waitForTimeout(1700);
 await sideA.addScriptTag({ content: axeKilde });
 const axe = await sideA.evaluate(async () => await window.axe.run(document, { resultTypes: ["violations"] }));
 await ctxA.close();
@@ -77,7 +91,25 @@ const kritiske = axe.violations.filter(v => v.impact === "critical" || v.impact 
 await writeFile(path.join(RAPPORT, "a11y.json"), JSON.stringify(axe.violations, null, 1));
 console.log(`✓ axe-core: ${axe.violations.length} avvik (${kritiske.length} kritiske/alvorlige)`);
 axe.violations.forEach(v => console.log(`   – [${v.impact}] ${v.id}: ${v.help} (${v.nodes.length})`));
-if (kritiske.length) feil.push(`axe: ${kritiske.length} kritiske/alvorlige avvik`);
+if (kritiske.length) feil.push(`axe: ${kritiske.length} kritiske/alvorlige avvik (mørk)`);
+
+/* axe også i lys modus — kontrast er tema-avhengig */
+const ctxL2 = await browser.newContext({ viewport: {width:1440,height:900} });
+const sideL2 = await ctxL2.newPage();
+await sideL2.goto(URL_, { waitUntil: "networkidle" });
+await sideL2.evaluate(() => {
+  document.documentElement.setAttribute("data-tema","lys");
+  document.querySelectorAll(".avslør").forEach(e => e.classList.add("inne"));
+});
+await sideL2.waitForTimeout(1700);
+await sideL2.addScriptTag({ content: axeKilde });
+const axeLys = await sideL2.evaluate(async () => await window.axe.run(document, { resultTypes: ["violations"] }));
+await ctxL2.close();
+const kritiskeLys = axeLys.violations.filter(v => v.impact === "critical" || v.impact === "serious");
+await writeFile(path.join(RAPPORT, "a11y-lys.json"), JSON.stringify(axeLys.violations, null, 1));
+console.log(`✓ axe-core (lys modus): ${axeLys.violations.length} avvik (${kritiskeLys.length} kritiske/alvorlige)`);
+axeLys.violations.forEach(v => console.log(`   – [${v.impact}] ${v.id}: ${v.help} (${v.nodes.length})`));
+if (kritiskeLys.length) feil.push(`axe lys modus: ${kritiskeLys.length} kritiske/alvorlige avvik`);
 
 /* ── 3. Lighthouse (egen chromium med feilsøkingsport) ─────── */
 let lhOk = false;

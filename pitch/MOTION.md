@@ -32,3 +32,18 @@ Ingen bevegelse er dekorativ uten grunn, og alt kan skrus av.
 - Render-løkka pauses når heroen er ute av syne og når fanen er skjult.
 - `devicePixelRatio` er kappet til 2 — ellers brenner 4K-skjermer strøm på et bakteppe.
 - Mister nettleseren WebGL-konteksten, byttes canvaset ut med en CSS-gradient.
+
+## Lys og mørk modus
+
+Temaet settes i et lite skript **før første maling**, så siden aldri blinker i feil drakt:
+lagret valg → ellers systemets `prefers-color-scheme`. Bryteren i topplinja lagrer valget
+på brukerens egen enhet (`localStorage`, nøkkel `laerling-tema`) — velger brukeren aldri
+selv, følger siden systemet også når det byttes underveis.
+
+Nordlyset er **ikke** slått av i lys modus: samme shader kjører, men en `lysm`-uniform
+blander resultatet mot papir — båndene blir en pastellgrønn dis i stedet for lysende
+nordlys. `--f-akse` går fra aurora-grønn (#39E29B) til dyp skoggrønn (#0A6640) som holder
+AA mot papir, og knappene snur fra grønn fyll til blekksvart.
+
+Telefonmockupen er et unntak med vilje: `.skjerm` definerer sine egne tokenverdier, slik
+at appen alltid vises i sin mørke drakt uansett hva resten av siden gjør.

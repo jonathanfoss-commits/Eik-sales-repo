@@ -28,6 +28,14 @@
 "inLanguage":"nb-NO","offers":{"@type":"Offer","price":"1990","priceCurrency":"NOK",
 "description":"Per bedrift per måned, eks. mva."}}
 </script>
+<script>
+/* settes før første maling så siden aldri blinker i feil tema */
+(function(){try{
+  var v=localStorage.getItem("laerling-tema");
+  if(!v) v=matchMedia("(prefers-color-scheme: light)").matches?"lys":"mørk";
+  document.documentElement.setAttribute("data-tema",v);
+}catch(e){}})();
+</script>
 <style>
 /* ─────────────────────────────────────────────────────────────
    DESIGN-TOKENS — én kilde. Ingen hardkodede verdier i komponentene.
@@ -39,6 +47,9 @@
   --f-lys:#EAF3EF; --f-dis:#8FA3A6; --f-dis-svak:#7E9094;
   --f-akse:#39E29B; --f-akse-dyp:#1F9E66; --f-akse-mørk:#04120C;
   --f-strek:rgba(150,200,195,.13); --f-strek-sterk:rgba(150,200,195,.26);
+  --f-knapp-bg:var(--f-akse); --f-knapp-tekst:var(--f-akse-mørk);
+  --f-seksjon:rgba(5,10,14,.82); --f-korn-blend:overlay; --f-korn-styrke:.035;
+  --lys-modus:0;
   /* type */
   --t-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
   --t-serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
@@ -56,12 +67,28 @@
   --sk-lav:0 12px 34px rgba(0,0,0,.42);
   --sk-høy:0 44px 110px rgba(0,0,0,.62);
   --glød:0 0 44px rgba(57,226,155,.24);
+  --sk-dok:var(--sk-lav);
   /* bevegelse */
   --m-rask:.22s; --m-mid:.4s; --m-rolig:.8s;
   --m-fjær:cubic-bezier(.2,.8,.2,1); --m-inn:cubic-bezier(.16,1,.3,1);
 }
+/* LYS MODUS — samme tokens, andre verdier. Alt annet arver automatisk. */
+:root[data-tema="lys"]{
+  --f-bunn:#F2F0EA; --f-flate:#FBFAF7; --f-flate-2:#FFFFFF;
+  --f-lys:#101614; --f-dis:#454F4C; --f-dis-svak:#4B5552;
+  --f-akse:#0A6640; --f-akse-dyp:#084E31; --f-akse-mørk:#FFFFFF;
+  --f-strek:rgba(17,22,20,.14); --f-strek-sterk:rgba(17,22,20,.30);
+  --f-knapp-bg:#101614; --f-knapp-tekst:#F7F6F2;
+  --f-seksjon:rgba(242,240,234,.86); --f-korn-blend:multiply; --f-korn-styrke:.05;
+  --sk-lav:0 10px 30px rgba(15,25,20,.10);
+  --sk-høy:0 30px 70px rgba(15,25,20,.16);
+  --sk-dok:0 10px 30px rgba(15,25,20,.08);
+  --glød:0 10px 30px rgba(15,25,20,.18);
+  --lys-modus:1;
+}
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
+html{transition:background-color var(--m-mid)}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 body{background:var(--f-bunn);color:var(--f-lys);font-family:var(--t-sans);
   line-height:1.62;-webkit-font-smoothing:antialiased;overflow-x:hidden}
@@ -70,17 +97,20 @@ a{color:inherit}
 :focus-visible{outline:2px solid var(--f-akse);outline-offset:3px;border-radius:var(--r-1)}
 .skjult-visuelt{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .hopp{position:absolute;left:var(--kant);top:8px;z-index:80;padding:10px 18px;border-radius:var(--b-1);
-  background:var(--f-akse);color:var(--f-akse-mørk);font-weight:600;font-size:var(--t-s);
+  background:var(--f-knapp-bg);color:var(--f-knapp-tekst);font-weight:600;font-size:var(--t-s);
   text-decoration:none;transform:translateY(-160%);transition:transform var(--m-rask)}
 .hopp:focus{transform:none}
 
 /* levende lag */
 #nordlys{position:fixed;inset:0;z-index:0;display:block}
 .nordlys-reserve{position:fixed;inset:0;z-index:0;
-  background:radial-gradient(120% 80% at 50% -10%,#12332B 0%,#081319 45%,var(--f-bunn) 75%)}
+  background:radial-gradient(120% 80% at 50% -10%,
+    color-mix(in srgb,var(--f-akse) 22%,var(--f-bunn)) 0%,var(--f-bunn) 62%)}
 .demping{position:fixed;inset:0;z-index:1;pointer-events:none;
-  background:radial-gradient(120% 80% at 50% 2%,transparent 18%,rgba(5,10,14,.62) 48%,rgba(5,10,14,.94) 78%)}
-.korn{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.035;mix-blend-mode:overlay;
+  background:radial-gradient(120% 80% at 50% 2%,transparent 18%,
+    color-mix(in srgb,var(--f-bunn) 62%,transparent) 48%,
+    color-mix(in srgb,var(--f-bunn) 94%,transparent) 78%)}
+.korn{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:var(--f-korn-styrke);mix-blend-mode:var(--f-korn-blend);
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
 main,header,footer{position:relative;z-index:3}
 .ramme{max-width:var(--bredde);margin:0 auto;padding:0 var(--kant)}
@@ -88,19 +118,30 @@ main,header,footer{position:relative;z-index:3}
 /* topplinje */
 header{position:sticky;top:0;z-index:60;transition:background var(--m-mid),backdrop-filter var(--m-mid),border-color var(--m-mid);
   border-bottom:1px solid transparent}
-header.tett{background:rgba(5,10,14,.72);backdrop-filter:blur(16px);border-bottom-color:var(--f-strek)}
+header.tett{background:color-mix(in srgb,var(--f-bunn) 78%,transparent);backdrop-filter:blur(16px);
+  border-bottom-color:var(--f-strek)}
 header .ramme{display:flex;align-items:center;justify-content:space-between;height:72px}
 .merke{font-weight:650;font-size:var(--t-l);letter-spacing:-.025em;text-decoration:none}
 .merke b{color:var(--f-akse)}
 .meny{display:flex;align-items:center;gap:var(--r-5)}
 .meny a{color:var(--f-dis);text-decoration:none;font-size:var(--t-s);transition:color var(--m-rask)}
 .meny a:hover{color:var(--f-lys)}
-.meny a.knapp{color:var(--f-akse-mørk)}          /* arver ellers --f-dis mot grønn flate */
-@media(max-width:760px){.meny a:not(.knapp){display:none}}
+.meny a.knapp{color:var(--f-knapp-tekst)}        /* arver ellers --f-dis mot fylt flate */
+.tema-bryter{width:40px;height:40px;flex:none;display:grid;place-items:center;cursor:pointer;
+  background:transparent;border:1px solid var(--f-strek);border-radius:50%;color:var(--f-dis);
+  transition:color var(--m-rask),border-color var(--m-rask),transform var(--m-mid) var(--m-fjær)}
+.tema-bryter:hover{color:var(--f-lys);border-color:var(--f-strek-sterk);transform:rotate(-12deg)}
+.tema-bryter svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+.tema-bryter .sol{display:none}
+:root[data-tema="lys"] .tema-bryter .sol{display:block}
+:root[data-tema="lys"] .tema-bryter .måne{display:none}
+@media(prefers-reduced-motion:reduce){.tema-bryter:hover{transform:none}}
+@media(max-width:760px){.meny a:not(.knapp){display:none}.meny{gap:var(--r-3)}}
 
 /* knapper */
 .knapp{display:inline-flex;align-items:center;gap:10px;padding:15px 28px;border-radius:var(--b-4);
-  background:var(--f-akse);color:var(--f-akse-mørk);text-decoration:none;font-size:var(--t-s);font-weight:650;
+  background:var(--f-knapp-bg);color:var(--f-knapp-tekst);text-decoration:none;font-size:var(--t-s);font-weight:650;
   border:none;cursor:pointer;font-family:inherit;
   transition:transform var(--m-mid) var(--m-fjær),box-shadow var(--m-mid)}
 .knapp:hover{transform:translateY(-2px);box-shadow:var(--glød)}
@@ -140,7 +181,7 @@ p{color:var(--f-dis)}
   font-weight:300;letter-spacing:-.025em;margin-bottom:6px}
 
 /* seksjonsrytme */
-section{padding:var(--r-8) 0;background:rgba(5,10,14,.82);backdrop-filter:blur(2px)}
+section{padding:var(--r-8) 0;background:var(--f-seksjon);backdrop-filter:blur(2px)}
 section+section{border-top:1px solid var(--f-strek)}
 .seksjonstopp{max-width:60ch}
 .seksjonstopp h2{margin-top:var(--r-4)}
@@ -155,7 +196,7 @@ section+section{border-top:1px solid var(--f-strek)}
   color:var(--f-dis-svak);letter-spacing:.06em}
 /* dokumentkort (fra «Beviset») */
 .dok{background:linear-gradient(168deg,var(--f-flate-2),var(--f-flate));border:1px solid var(--f-strek);
-  border-radius:var(--b-2);padding:var(--r-5);box-shadow:var(--sk-lav)}
+  border-radius:var(--b-2);padding:var(--r-5);box-shadow:var(--sk-dok)}
 .dok .stempel{font-family:var(--t-mono);font-size:.58rem;letter-spacing:.2em;color:var(--f-akse)}
 .dok .dok-t{font-family:var(--t-serif);font-size:1.1rem;font-weight:400;margin:var(--r-3) 0 var(--r-2);letter-spacing:-.01em}
 .dok p{font-size:var(--t-s);line-height:1.62}
@@ -166,9 +207,12 @@ section+section{border-top:1px solid var(--f-strek)}
 /* MONEY-SHOT: appflaten */
 .flate-vis{display:grid;grid-template-columns:.95fr 1.05fr;gap:var(--r-7);align-items:center;margin-top:var(--r-7)}
 .telefon{width:min(320px,86vw);margin:0 auto;border-radius:42px;border:1px solid var(--f-strek);padding:11px;
-  background:linear-gradient(180deg,rgba(26,40,44,.96),rgba(8,14,18,.96));
+  background:linear-gradient(180deg,#1A282C,#080E12);
   box-shadow:var(--sk-høy),0 0 0 1px rgba(57,226,155,.07),0 0 90px rgba(57,226,155,.07)}
-.skjerm{border-radius:32px;background:#070D11;padding:var(--r-4) var(--r-3);min-height:440px}
+.skjerm{border-radius:32px;background:#070D11;padding:var(--r-4) var(--r-3);min-height:440px;
+  /* appen er mørk uansett sidetema — egne verdier så teksten aldri arver lys modus */
+  --f-lys:#EAF3EF; --f-dis:#8FA3A6; --f-dis-svak:#8C9EA1; --f-akse:#39E29B;
+  --f-strek:rgba(150,200,195,.16); color:var(--f-lys)}
 .sk-topp{font-family:var(--t-mono);font-size:.56rem;color:var(--f-dis-svak);letter-spacing:.16em;
   display:flex;justify-content:space-between;align-items:center}
 .puls{width:7px;height:7px;border-radius:50%;background:var(--f-akse);box-shadow:0 0 10px var(--f-akse);
@@ -261,6 +305,14 @@ footer a:hover{color:var(--f-lys)}
       <a href="#jobbene">Verktøyene</a>
       <a href="#beviset">Dokumentasjon</a>
       <a href="#priser">Priser</a>
+      <button class="tema-bryter" id="tema-bryter" type="button" aria-pressed="false"
+        aria-label="Bytt til lys modus" title="Bytt lys/mørk modus">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path class="måne" d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/>
+          <g class="sol"><circle cx="12" cy="12" r="4.2"/>
+            <path d="M12 2.4v2.2M12 19.4v2.2M2.4 12h2.2M19.4 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"/></g>
+        </svg>
+      </button>
       <a class="knapp liten" href="https://op-bygg-laerling-app.netlify.app/bli-kjent.html?invitasjon=bli-kjent-26">Bli kjent</a>
     </nav>
   </div>
@@ -601,7 +653,35 @@ footer a:hover{color:var(--f-lys)}
       });
   });
 
-  /* ── 5. Nordlyset: sanntids GLSL, robust mot manglende WebGL ── */
+  /* ── 5. Lys/mørk modus — valget huskes på egen enhet ── */
+  (function(){
+    var rot = document.documentElement, bryter = document.getElementById("tema-bryter"),
+        farge = document.querySelector('meta[name="theme-color"]');
+    function tegnOm(tema){
+      rot.setAttribute("data-tema", tema);
+      var lys = tema === "lys";
+      if(farge) farge.setAttribute("content", lys ? "#F2F0EA" : "#050A0E");
+      if(bryter){
+        bryter.setAttribute("aria-pressed", lys ? "true" : "false");
+        bryter.setAttribute("aria-label", lys ? "Bytt til mørk modus" : "Bytt til lys modus");
+      }
+      dispatchEvent(new Event("laerling-tema"));
+    }
+    tegnOm(rot.getAttribute("data-tema") || "mørk");
+    if(bryter) bryter.addEventListener("click", function(){
+      var nytt = rot.getAttribute("data-tema") === "lys" ? "mørk" : "lys";
+      tegnOm(nytt);
+      try{ localStorage.setItem("laerling-tema", nytt); }catch(e){}
+    });
+    /* følger systemet så lenge brukeren ikke har valgt selv */
+    var sys = matchMedia("(prefers-color-scheme: light)");
+    (sys.addEventListener ? sys.addEventListener.bind(sys, "change") : sys.addListener.bind(sys))(function(e){
+      var valgt = null; try{ valgt = localStorage.getItem("laerling-tema"); }catch(x){}
+      if(!valgt) tegnOm(e.matches ? "lys" : "mørk");
+    });
+  })();
+
+  /* ── 6. Nordlyset: sanntids GLSL, robust mot manglende WebGL ── */
   (function(){
     var c = document.getElementById("nordlys"), gl = null;
     function reserve(){
@@ -614,7 +694,7 @@ footer a:hover{color:var(--f-lys)}
     if(!gl){ reserve(); return; }
 
     var vs = "attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}";
-    var fs = "precision highp float;uniform vec2 r;uniform float t;uniform vec2 m;" +
+    var fs = "precision highp float;uniform vec2 r;uniform float t;uniform vec2 m;uniform float lysm;" +
       "float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}" +
       "float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);" +
       "return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}" +
@@ -624,10 +704,15 @@ footer a:hover{color:var(--f-lys)}
       "float y=off*.10+w-.42+m.y*.05;return th/(abs(uv.y-y)*32.+th*1.5);}" +
       "void main(){vec2 uv=gl_FragCoord.xy/r.xy;uv.y=1.-uv.y;uv.x*=r.x/r.y;" +
       "float b1=band(uv,1.6,.042,.46),b2=band(uv,2.9,.030,.30),b3=band(uv,4.4,.021,.18);" +
-      "vec3 col=vec3(0.);col+=vec3(.22,.89,.61)*b1*.44;col+=vec3(.18,.77,.85)*b2*.26;" +
-      "col+=vec3(.24,.48,.98)*b3*.15;" +
-      "float g=exp(-length(uv-vec2(.5*r.x/r.y+m.x*.10,.06))*2.9);col+=vec3(.07,.30,.25)*g*.30;" +
-      "col*=smoothstep(.92,.02,uv.y);col+=vec3(.010,.020,.024);gl_FragColor=vec4(col,1.);}";
+      "float g=exp(-length(uv-vec2(.5*r.x/r.y+m.x*.10,.06))*2.9);" +
+      "float fall=smoothstep(.92,.02,uv.y);" +
+      /* mørk: lysende bånd på natt. lys: samme bånd som pastellskygge på papir */
+      "vec3 natt=vec3(.22,.89,.61)*b1*.44+vec3(.18,.77,.85)*b2*.26+vec3(.24,.48,.98)*b3*.15;" +
+      "natt+=vec3(.07,.30,.25)*g*.30;natt*=fall;natt+=vec3(.010,.020,.024);" +
+      "vec3 papir=vec3(.949,.941,.918);" +
+      "vec3 dag=mix(papir,vec3(.42,.78,.62),clamp((b1*.30+b2*.16+g*.10)*fall,0.,.30));" +
+      "dag=mix(dag,vec3(.55,.72,.80),clamp(b3*.12*fall,0.,.10));" +
+      "gl_FragColor=vec4(mix(natt,dag,lysm),1.);}";
 
     function lagShader(type, kilde){
       var s = gl.createShader(type); gl.shaderSource(s, kilde); gl.compileShader(s);
@@ -643,7 +728,8 @@ footer a:hover{color:var(--f-lys)}
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
     var lp = gl.getAttribLocation(pr, "p"); gl.enableVertexAttribArray(lp);
     gl.vertexAttribPointer(lp, 2, gl.FLOAT, false, 0, 0);
-    var ur = gl.getUniformLocation(pr, "r"), ut = gl.getUniformLocation(pr, "t"), um = gl.getUniformLocation(pr, "m");
+    var ur = gl.getUniformLocation(pr, "r"), ut = gl.getUniformLocation(pr, "t"),
+        um = gl.getUniformLocation(pr, "m"), ulys = gl.getUniformLocation(pr, "lysm");
 
     var mx = 0, my = 0, tx = 0, ty = 0, synlig = true, kjører = false, t0 = performance.now();
     function størrelse(){
@@ -663,6 +749,7 @@ footer a:hover{color:var(--f-lys)}
       gl.uniform2f(ur, c.width, c.height);
       gl.uniform1f(ut, stille ? 12 : (n - t0) / 1000);
       gl.uniform2f(um, mx, my);
+      gl.uniform1f(ulys, document.documentElement.getAttribute("data-tema") === "lys" ? 1 : 0);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       if(stille || !synlig){ kjører = false; return; }          /* pause utenfor viewport */
       requestAnimationFrame(tegn);
@@ -677,6 +764,7 @@ footer a:hover{color:var(--f-lys)}
       }, { threshold: 0 });
       vakt.observe(document.querySelector(".hero"));
     }
+    addEventListener("laerling-tema", function(){ requestAnimationFrame(tegn); });
     addEventListener("visibilitychange", function(){
       synlig = !document.hidden;
       if(synlig && !kjører && !stille) requestAnimationFrame(tegn);

@@ -21,13 +21,16 @@ Krever Chromium; i skyen ligger den på `/opt/pw-browsers/chromium` (kan oversty
 `CHROMIUM_PATH`). WebGL headless krever swiftshader-flaggene — de er satt i scriptet.
 
 **Terskler (feiler bygget om de brytes):** Lighthouse performance ≥ 90, accessibility ≥ 95,
-axe-core: null kritiske/alvorlige avvik. Siste kjøring: **100 / 100 / 100 / 100**, null avvik.
+axe-core: null kritiske/alvorlige avvik — kjøres i **både lys og mørk modus**.
+Siste kjøring: **100 / 100 / 100 / 100**, null avvik i begge temaer.
 
 ## Hvor endrer jeg hva?
 
 | Vil du endre … | Gå til |
 |---|---|
 | Farger, typestørrelser, avstander, radius, skygger, bevegelsestempo | `:root`-blokken øverst i `landing.html` — **alt annet arver herfra** |
+| Lys modus | `:root[data-tema="lys"]` rett under — samme tokennavn, andre verdier |
+| Fargene i telefonmockupen | `.skjerm` har egne token-verdier: appen er mørk uansett sidetema |
 | Bevegelsesspråket | `MOTION.md` + de fire bolkene i skriptet nederst |
 | Nordlyset (form, fart, intensitet) | `fs`-shaderen i skriptet: `band(...)`-kallene styrer bånd, `col+=`-linjene styrer styrke |
 | Teksten på siden | HTML-en i `<main>` — seksjonene ligger i lesbar rekkefølge |
